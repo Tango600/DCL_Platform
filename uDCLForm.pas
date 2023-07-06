@@ -1,0 +1,639 @@
+unit uDCLForm;
+{$I DefineType.pas}
+
+interface
+
+uses
+  Classes, SysUtils, Forms, DB, Generics.Collections,
+  Controls, StdCtrls, ComCtrls, Buttons, Graphics, Menus,
+  uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uStringParams, uDCLQuery,
+  uDCLMeasurements, uDCLDBConnector, uDCLUtils, uDCLVariables, uDCLMultiLang,
+  uDCLImages;
+
+type
+
+  { TDCLForm }
+
+  TDCLForm=class(TForm)
+  private
+    FReject, FFirstPage, FormCanClose, NoCloseable: Boolean;
+    FDBConnector: TDCLDBConnector;
+    FFormCloseStatus: TDCLFormCloseAction;
+    FNameSpace, FDialogName, CloseQueryText: String;
+    FVariables: TVariables;
+    FForms: TList<TForm>;
+    FParentForm, FCallerForm: TDCLForm;
+    FOPL: TStringList;
+    FormBar: TToolBar;
+    TB: TFormPanelButton;
+    FGrids: TList<TDCLGrid>;
+    FFormMenu: TMainMenu;
+    FMainItemMenu: TMenuItem;
+
+    FParentPanel: TWinControl;
+    FPages: TPageControl;
+    FTab: TTabSheet;
+    FCurrentGrid: TDCLGrid;
+    FStatusBar: TStatusBar;
+    FReturnValue: TReturnFormValue;
+    FEvents: TList<TDCLEvent>;
+    FReturnValueParams: TReturnValueParams;
+
+    FIsSingle: Boolean;
+
+    procedure ToolButtonClick(Sender: TObject);
+
+    procedure PageChange(Sender: TObject);
+
+    procedure AddMainPage(Query: TDCLQuery; Data: TDataSource);
+    function AddGrid(Parent: TWinControl; SurfType: TDataControlType; Query: TDCLQuery;
+      Data: TDataSource): TDCLGrid;
+
+    function FindMenuItem(aItems: TMenuItem): TMenuItem;
+    procedure AddMainItem(Caption: String; Action: TNotifyEvent);
+    procedure AddSubItem(Caption: String; Pict: TPicturesTypes; Action: TNotifyEvent);
+    procedure AddCloseFormItem;
+    procedure AddSplitter;
+
+    procedure ResetFieldsSettings(Sender: TObject);
+    procedure ResetAllFieldsSettings(Sender: TObject);
+    procedure DeleteAllBookmarks(Sender: TObject);
+    procedure SaveFieldsSettings(Sender: TObject);
+    procedure CloseDialog(Sender: TObject);
+
+    procedure TranslateVal(var Params: String; CheckParams: Boolean);
+
+    procedure FormShow(Sender: TObject);
+
+    procedure OnFormClose(Sender: TObject; var CloseAction: TCloseAction);
+    procedure OnCloseQuery(Sender: TObject; var CanClose: Boolean);
+
+    procedure SetRecordsStatus(Str: String);
+    procedure SetDBStatus(Str: String);
+
+    procedure ParseEvents(ScrStr: String);
+    procedure AddEvent(EventType: TEventsEnum; ScriptName: String);
+  public
+    constructor Create(DialogName, NameSpace: String; ParentForm: TDCLForm;
+      Variables: TVariables; Forms: TList<TForm>; OPL: TStringList; DBConnector: TDCLDBConnector;
+      Query: TDCLQuery; Data: TDataSource;
+      ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False); overload;
+
+    procedure RefreshForm;
+    procedure CloseForm(Sender: TObject; var Action: TCloseAction);
+    procedure ActivateForm(Sender: TObject);
+
+    procedure SetInfoStatus(Str: String);
+    procedure AddInfoStatus(Str: String; Width: Integer);
+    procedure SetStatusNum(Str: String; Num, Width: Integer);
+
+    property CloseAction: TDCLFormCloseAction read FFormCloseStatus write FFormCloseStatus;
+    property Grids: TList<TDCLGrid> read FGrids;
+    property CurrentGrid: TDCLGrid read FCurrentGrid;
+    property DialogName: String read FDialogName;
+    property IsSingle: Boolean read FIsSingle;
+    property ReturnValue: TReturnFormValue read FReturnValue write FReturnValue;
+    property ReturnValueParams: TReturnValueParams read FReturnValueParams write FReturnValueParams;
+    property ParentForm: TDCLForm read FParentForm;
+    property Reject: Boolean read FReject;
+  end;
+
+implementation
+
+uses
+  uDCLCommand, uDCLValuesParser, uDCLMessages;
+
+{ TDCLForm }
+
+procedure TDCLForm.ToolButtonClick(Sender: TObject);
+begin
+  If WindowState=wsMinimized Then
+    WindowState:=wsNormal;
+  Show;
+  BringToFront;
+end;
+
+procedure TDCLForm.PageChange(Sender: TObject);
+var
+  tab: TTabSheet;
+  i: Integer;
+  c: TControl;
+begin
+  tab:=(Sender as TPageControl).ActivePage;
+  if Assigned(tab) then
+  begin
+    if tab.ControlCount>0 then
+    begin
+      for i:=1 to tab.ControlCount do
+      begin
+        c:=tab.Controls[i-1];
+        if c is TDCLGrid then
+        begin
+          FCurrentGrid:=c as TDCLGrid;
+          break;
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TDCLForm.AddMainPage(Query: TDCLQuery; Data: TDataSource);
+var
+  pc: Integer;
+begin
+  If Not Assigned(FPages) Then
+  begin
+    FPages:=TPageControl.Create(Self);
+    FPages.Parent:=Self;
+    FPages.Name:='Pages_'+FDialogName;
+    FPages.Align:=alClient;
+    FPages.OnChange:=PageChange;
+{$IFNDEF FPC}
+    FPages.TabHeight:=1;
+    FPages.TabWidth:=1;
+{$ELSE}
+    FPages.ShowTabs:=False;
+{$ENDIF}
+  end
+  Else
+  begin
+{$IFNDEF FPC}
+    FPages.TabHeight:=0;
+    FPages.TabWidth:=0;
+{$ELSE}
+    FPages.ShowTabs:=True;
+{$ENDIF}
+  end;
+
+  pc:=FPages.PageCount;
+  FTab:=TTabSheet.Create(FPages);
+  FTab.Caption:=GetDCLMessageString(msPage)+' '+IntToStr(pc+1);
+  FTab.Name:='Page_'+IntToStr(pc+1);
+  FTab.PageControl:=FPages;
+
+  FPages.ActivePage.Align:=alClient;
+  FParentPanel:=FTab.PageControl.Pages[pc];
+
+  FCurrentGrid:=AddGrid(FParentPanel, dctMainGrid, Query, Data);
+
+  FPages.ActivePage:=FPages.Pages[pc];
+  FPages.ActivePageIndex:=pc;
+end;
+
+function TDCLForm.AddGrid(Parent: TWinControl; SurfType: TDataControlType;
+  Query: TDCLQuery; Data: TDataSource): TDCLGrid;
+var
+  grid: TDCLGrid;
+begin
+  grid:=TDCLGrid.Create(FNameSpace, FForms, Self, Parent, FVariables, SurfType, FDBConnector, Query, Data);
+  FGrids.Add(grid);
+  Result:=grid;
+end;
+
+function TDCLForm.FindMenuItem(aItems: TMenuItem): TMenuItem;
+begin
+
+end;
+
+procedure TDCLForm.AddMainItem(Caption: String; Action: TNotifyEvent);
+begin
+  FMainItemMenu:=TMenuItem.Create(FFormMenu);
+  FMainItemMenu.Bitmap:=DrawBMPButton(ptTools);
+  FMainItemMenu.Caption:=Caption;
+  FMainItemMenu.OnClick:=Action;
+  FFormMenu.Items.Add(FMainItemMenu);
+end;
+
+procedure TDCLForm.AddSubItem(Caption: String; Pict: TPicturesTypes; Action: TNotifyEvent);
+var
+  ItemMenu, ToItem: TMenuItem;
+begin
+  ToItem:=FMainItemMenu;  // FindMenuItem(ParentItemId, FMainMenu.Items);
+
+  if Assigned(ToItem) then
+  begin
+    ItemMenu:=TMenuItem.Create(ToItem);
+    //ItemMenu.Tag:=Id;
+    ItemMenu.Bitmap:=DrawBMPButton(Pict);
+    ItemMenu.Caption:=Caption;
+    ItemMenu.OnClick:=Action;
+    ToItem.OnClick:=nil;
+    ToItem.Insert(ToItem.Count, ItemMenu);
+  end;
+end;
+
+procedure TDCLForm.AddCloseFormItem;
+var
+  ItemMenu, ToItem: TMenuItem;
+begin
+  ToItem:=FMainItemMenu;  // FindMenuItem(ParentItemId, FMainMenu.Items);
+
+  if Assigned(ToItem) then
+  begin
+    ItemMenu:=TMenuItem.Create(ToItem);
+    ItemMenu.Caption:=GetDCLMessageString(msClose);
+    ItemMenu.OnClick:=CloseDialog;
+    ItemMenu.Bitmap:=DrawBMPButton(ptEsc);
+    ItemMenu.ShortCut:=TShortCut(27); //  TextToShortCut('Esc');
+
+    ToItem.OnClick:=nil;
+    ToItem.Insert(ToItem.Count, ItemMenu);
+  end;
+end;
+
+procedure TDCLForm.AddSplitter;
+var
+  ItemMenu, ToItem: TMenuItem;
+begin
+  ToItem:=FMainItemMenu;  // FindMenuItem(ParentItemId, FMainMenu.Items);
+
+  if Assigned(ToItem) then
+  begin
+    ItemMenu:=TMenuItem.Create(ToItem);
+    ItemMenu.Caption:='-';
+    ToItem.OnClick:=nil;
+    ToItem.Insert(ToItem.Count, ItemMenu);
+  end;
+end;
+
+procedure TDCLForm.ResetFieldsSettings(Sender: TObject);
+begin
+
+end;
+
+procedure TDCLForm.ResetAllFieldsSettings(Sender: TObject);
+begin
+
+end;
+
+procedure TDCLForm.DeleteAllBookmarks(Sender: TObject);
+begin
+
+end;
+
+procedure TDCLForm.SaveFieldsSettings(Sender: TObject);
+begin
+
+end;
+
+procedure TDCLForm.CloseDialog(Sender: TObject);
+begin
+  if FormCanClose then
+    Close;
+end;
+
+procedure TDCLForm.TranslateVal(var Params: String; CheckParams: Boolean);
+var
+  Parser: TDCLValuseParser;
+begin
+  Parser:=TDCLValuseParser.Create(FNameSpace, FVariables);
+  if Assigned(FCurrentGrid) then
+    Parser.RePlaseVariables(FNameSpace, Params, FCurrentGrid.Query)
+  else
+    Parser.RePlaseVariables(FNameSpace, Params, nil);
+  if CheckParams then
+  if Assigned(FCurrentGrid) then
+    Parser.RePlaseParams(Params, FCurrentGrid.Query);
+end;
+
+procedure TDCLForm.FormShow(Sender: TObject);
+begin
+end;
+
+procedure TDCLForm.OnFormClose(Sender: TObject; var CloseAction: TCloseAction);
+var
+  Grid: TDCLGrid;
+begin
+  for Grid in FGrids do
+  begin
+    Grid.Close;
+  end;
+end;
+
+procedure TDCLForm.OnCloseQuery(Sender: TObject; var CanClose: Boolean);
+var
+  S:String;
+  DlgRes:Integer;
+begin
+  If NoCloseable then
+  Begin
+    CanClose:=not NoCloseable;
+    FormCanClose:=CanClose;
+    {$IFDEF MSWINDOWS}
+      //Beep(500, 500);
+    {$ELSE}
+      Beep;
+    {$ENDIF}
+    Exit;
+  End;
+
+  If CloseQuery then
+  Begin
+    S:=CloseQueryText;
+    if S='' then
+      S:=GetDCLMessageString(msClose);
+    DlgRes:=ShowErrorMessage(10, S);
+    CanClose:=DlgRes=1;
+    FormCanClose:=CanClose;
+  End;
+end;
+
+procedure TDCLForm.SetRecordsStatus(Str: String);
+begin
+  FStatusBar.Panels[StatusRecords].Text:=Str;
+end;
+
+constructor TDCLForm.Create(DialogName, NameSpace: String; ParentForm: TDCLForm;
+  Variables: TVariables; Forms: TList<TForm>; OPL: TStringList;
+  DBConnector: TDCLDBConnector;
+  Query: TDCLQuery; Data: TDataSource;
+  ReturnValueParams: TReturnValueParams; Modal: Boolean=False);
+var
+  Command: TDCLCommand;
+  SrcLine, tmpS, tmpS1: String;
+  ff: TForm;
+  g: TDCLGrid;
+  OnTop: Boolean;
+begin
+  inherited Create(Application);
+  FormCanClose:=True;
+  Self.OnShow:=FormShow;
+  Self.OnClose:=OnClose;
+  FForms:=Forms;
+  FDialogName:=DialogName;
+  FDBConnector:=DBConnector;
+  FFirstPage:=True;
+  FReturnValueParams:=ReturnValueParams;
+  FParentForm:=ParentForm;
+
+  FReject:=False;
+  For ff in FForms do
+  begin
+    If Assigned(ff) Then
+      If (ff as TDCLForm).IsSingle and ((ff as TDCLForm).DialogName=DialogName) Then
+      begin
+        FReject:=True;
+        Exit;
+        break;
+      end;
+  end;
+
+  For ff in FForms do
+  begin
+    If Assigned(ff) Then
+      If (ff as TDCLForm).FormStyle=fsStayOnTop Then
+      begin
+        OnTop:=True;
+        break;
+      end;
+  end;
+
+  FNameSpace:=NameSpace;
+  FVariables:=Variables;
+  FOPL:=OPL;
+  FGrids:=TList<TDCLGrid>.Create;
+  FEvents:=TList<TDCLEvent>.Create;
+
+  Height:=DefaultFormHeight;
+  Width:=DefaultFormWidth;
+  Position:=poScreenCenter;
+  FIsSingle:=False;
+
+  OnClose:=CloseForm;
+  OnActivate:=ActivateForm;
+
+  {$IFNDEF EMBEDDED}
+  If Assigned(Application.MainForm) then
+    If Application.MainForm.FormStyle=fsMDIForm Then
+      FormStyle:=fsMDIChild;
+  {$ENDIF}
+
+  FFormMenu:=TMainMenu.Create(Self);
+
+  AddMainItem(InitCap(GetDCLMessageString(msSettings)), nil);
+  AddSubItem(GetDCLMessageString(msResetFieldsSettings), ptNone, ResetFieldsSettings);
+  AddSubItem(GetDCLMessageString(msResetAllFieldsSettings), ptNone, ResetAllFieldsSettings);
+  AddSubItem(GetDCLMessageString(msDeleteAllBookmarks), ptNone, DeleteAllBookmarks);
+
+  AddSplitter;
+  AddSubItem(GetDCLMessageString(msSaveFieldsSettings), ptNone, SaveFieldsSettings);
+
+  AddSplitter;
+  AddCloseFormItem;
+
+  FormBar:=Application.MainForm.FindComponent('FormBar') as TToolBar;
+  if Assigned(FormBar) then
+  begin
+    TB:=TFormPanelButton.Create(Self);
+    TB.Parent:=FormBar;
+    TB.Width:=FormPanelButtonWidth;
+    TB.Height:=FormPanelButtonHeight;
+    TB.OnClick:=ToolButtonClick;
+    TB.Tag:=Tag;
+    TB.Margin:=PanelButtonTextRight;
+    TB.Glyph:=DrawBMPButton(ptFormDotNew);
+    TB.Font.Style:=[fsItalic];
+  end;
+
+  FStatusBar:=TStatusBar.Create(Self);
+  FStatusBar.SimplePanel:=False;
+  FStatusBar.Parent:=Self;
+  FStatusBar.Panels.Insert(0);
+  FStatusBar.Panels.Insert(1);
+  FStatusBar.Panels.Insert(2);
+  FStatusBar.Panels[0].Width:=100;
+  FStatusBar.Panels[1].Width:=80;
+
+  AddMainPage(Query, Data);
+
+  if Assigned(OPL) then
+  begin
+    Command:=TDCLCommand.Create(FDBConnector, FNameSpace, FForms, Self, FCurrentGrid, FVariables);
+    if Assigned(ReturnValueParams) and ReturnValueParams.Multiselect then
+      FCurrentGrid.MultiSelect:=True;
+
+    Show;
+    for SrcLine in OPL do
+    begin
+      if Pos('//', SrcLine.Trim)=1 then
+        Continue;
+
+      if IsLexem('[Page]', SrcLine) then
+      begin
+        if not FFirstPage then
+          AddMainPage(Query, Data);
+        FFirstPage:=False;
+      end;
+
+      if IsLexem('Title=', SrcLine) then
+      begin
+        tmpS:=SrcLine;
+        TranslateVal(tmpS, True);
+        tmpS:=FindParam('Title=', tmpS);
+        FPages.ActivePage.Caption:=tmpS;
+      end;
+
+      if IsLexem('Caption=', SrcLine) then
+      begin
+        tmpS:=SrcLine;
+        TranslateVal(tmpS, True);
+        tmpS1:=FindParam('Caption=', tmpS);
+        Self.Caption:=tmpS1;
+        if Assigned(TB) then
+          TB.Caption:=tmpS1;
+      end;
+
+      If IsLexem('OnTop=', SrcLine) then
+      begin
+        tmpS:=SrcLine;
+        TranslateVal(tmpS, True);
+        tmpS:=FindParam('OnTop=', tmpS);
+        OnTop:=tmpS='1';
+      end;
+
+      If IsLexem('Single;', SrcLine) then
+      begin
+        FIsSingle:=True;
+      end;
+
+      if IsLexem('Events=', SrcLine) then
+      begin
+        ParseEvents(SrcLine);
+      end;
+
+      Command.RunCommand(SrcLine);
+      if Assigned(FCurrentGrid) then
+      begin
+        FCurrentGrid.ExecScriptLine(SrcLine);
+      end;
+    end;
+  end;
+
+  for g in FGrids do
+  begin
+    g.Prepeare;
+  end;
+
+  {If OnTop Then  // Мешает отладки
+    FormStyle:=fsStayOnTop;}
+  if not Assigned(FReturnValueParams) and not Modal then
+  begin
+    Self.Show;
+  end;
+end;
+
+procedure TDCLForm.RefreshForm;
+var
+  Grid: TDCLGrid;
+begin
+  for Grid in FGrids do
+  begin
+    Grid.ReFreshData;
+  end;
+end;
+
+procedure TDCLForm.CloseForm(Sender: TObject; var Action: TCloseAction);
+begin
+  FFormCloseStatus:=fcaClose;
+end;
+
+procedure TDCLForm.ActivateForm(Sender: TObject);
+var
+  i: Byte;
+  TB1: TFormPanelButton;
+  ff: TForm;
+begin
+  If Assigned(FormBar) Then
+  begin
+    if FormBar.ControlCount>0 then
+    begin
+      For ff in FForms do
+      begin
+        If Assigned(ff) Then
+        begin
+          TB1:=nil;
+          for i:=1 to FormBar.ControlCount do
+          begin
+            if FormBar.Controls[i-1].Owner=ff then
+            begin
+              TB1:=FormBar.Controls[i-1] as TFormPanelButton;
+              break;
+            end;
+          end;
+
+          If Assigned(TB1) Then
+          begin
+            If ff=Screen.ActiveForm Then
+            begin
+              TB1.Glyph:=DrawBMPButton(ptFormDotActive);
+              TB1.Font.Style:=[fsBold];
+            end
+            Else
+            begin
+              TB1.Glyph:=DrawBMPButton(ptFormDotInActive);
+              TB1.Font.Style:=[];
+            end
+          end;
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TDCLForm.SetInfoStatus(Str: String);
+begin
+  FStatusBar.Panels[StatusInfo].Text:=Str;
+end;
+
+procedure TDCLForm.AddInfoStatus(Str: String; Width: Integer);
+var
+  Panel: TStatusPanel;
+begin
+  Panel:=FStatusBar.Panels.Add;
+  Panel.Text:=Str;
+  if Width>10 then
+    Panel.Width:=Width;
+end;
+
+procedure TDCLForm.SetStatusNum(Str: String; Num, Width: Integer);
+begin
+  if (Num>=StatusCustom) and (FStatusBar.Panels.Count>Num) then
+  begin
+    FStatusBar.Panels[Num].Text:=Str;
+
+    if Width>10 then
+      FStatusBar.Panels[Num].Width:=Width;
+  end;
+end;
+
+procedure TDCLForm.SetDBStatus(Str: String);
+begin
+  FStatusBar.Panels[StatusDB].Text:=Str;
+end;
+
+procedure TDCLForm.ParseEvents(ScrStr: String);
+var
+  S: String;
+begin
+  If PosEx('Close=', ScrStr)<>0 Then
+  begin
+    S:=FindParam('Close=', ScrStr);
+    //AddEvent(evtClose, S);
+  end;
+end;
+
+procedure TDCLForm.AddEvent(EventType: TEventsEnum; ScriptName: String);
+var
+  Event: TDCLEvent;
+begin
+  if ScriptName<>'' then
+  begin
+    Event:=TDCLEvent.Create;
+    Event.EventType:=EventType;
+    Event.ScriptName:=ScriptName;
+    FEvents.Add(Event);
+  end;
+end;
+
+end.
+
