@@ -8,6 +8,7 @@
 /lib/*
 /*.dbg
 /*.lps
+/*.bat
 /*.ini
 /backup/*
 /*.exe
