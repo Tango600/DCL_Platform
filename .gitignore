@@ -1,0 +1,13 @@
+*.local
+*.identcache
+*.dcu
+/dcu/*
+*/__history/*
+/__history/*
+/*.res
+/lib/*
+/*.dbg
+/*.lps
+/*.ini
+/backup/*
+/*.exe
