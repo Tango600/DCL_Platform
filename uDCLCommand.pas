@@ -947,12 +947,12 @@ begin
   If Not GPT.NoParamsTable Then
   begin
     If UserID<>'' Then
-      WhereUser:=' and '+GPT.GPTUserIDField+'='+UserID;
+      WhereUser:=' and '+GPTUserIDField+'='+UserID;
 
     ParamsQuery:=TDCLDialogQuery.Create(nil);
     FDBConnector.SetConnector(ParamsQuery);
-    ParamsQuery.SQL.Text:='select '+GPT.GPTValueField+' from '+GPT.GPTTableName+' where '+
-      GPT.UpperString+GPT.GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+
+    ParamsQuery.SQL.Text:='select '+GPTValueField+' from '+GPTTableName+' where '+
+      GPT.UpperString+GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+
       ConfigName+GPT.StringTypeChar+GPT.UpperStringEnd+WhereUser;
     ParamsQuery.Open;
     Result:=TrimRight(ParamsQuery.Fields[0].AsString);
@@ -970,19 +970,19 @@ begin
   If Not GPT.NoParamsTable Then
   begin
     If UserId<>'' Then
-      WhereUser:=' and '+GPT.GPTUserIDField+'='+UserId;
+      WhereUser:=' and '+GPTUserIDField+'='+UserId;
 
     ParamsQuery:=TDCLDialogQuery.Create(nil);
     FDBConnector.SetConnector(ParamsQuery);
-    ParamsQuery.SQL.Text:='select count(*) from '+GPT.GPTTableName+' where '+GPT.UpperString+
-      GPT.GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+ConfigName+
+    ParamsQuery.SQL.Text:='select count(*) from '+GPTTableName+' where '+GPT.UpperString+
+      GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+ConfigName+
       GPT.StringTypeChar+GPT.UpperStringEnd+WhereUser;
     ParamsQuery.Open;
     If ParamsQuery.Fields[0].AsInteger>0 Then
     begin
       ParamsQuery.Close;
-      ParamsQuery.SQL.Text:='update '+GPT.GPTTableName+' set '+GPT.GPTValueField+'='+
-        GPT.StringTypeChar+NewValue+GPT.StringTypeChar+' where '+GPT.UpperString+GPT.GPTNameField+
+      ParamsQuery.SQL.Text:='update '+GPTTableName+' set '+GPTValueField+'='+
+        GPT.StringTypeChar+NewValue+GPT.StringTypeChar+' where '+GPT.UpperString+GPTNameField+
         GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+ConfigName+GPT.StringTypeChar+
         GPT.UpperStringEnd+WhereUser;
       ParamsQuery.ExecSQL;
@@ -991,12 +991,12 @@ begin
     begin
       ParamsQuery.Close;
       If UserID='' Then
-        ParamsQuery.SQL.Text:='insert into '+GPT.GPTTableName+'('+GPT.GPTValueField+', '+
-          GPT.GPTNameField+') values('+GPT.StringTypeChar+NewValue+GPT.StringTypeChar+', '+
+        ParamsQuery.SQL.Text:='insert into '+GPTTableName+'('+GPTValueField+', '+
+          GPTNameField+') values('+GPT.StringTypeChar+NewValue+GPT.StringTypeChar+', '+
           GPT.StringTypeChar+ConfigName+GPT.StringTypeChar+')'
       Else
-        ParamsQuery.SQL.Text:='insert into '+GPT.GPTTableName+'('+GPT.GPTValueField+', '+
-          GPT.GPTNameField+', '+GPT.GPTUserIDField+') values('+GPT.StringTypeChar+NewValue+
+        ParamsQuery.SQL.Text:='insert into '+GPTTableName+'('+GPTValueField+', '+
+          GPTNameField+', '+GPTUserIDField+') values('+GPT.StringTypeChar+NewValue+
           GPT.StringTypeChar+', '+GPT.StringTypeChar+ConfigName+GPT.StringTypeChar+', '+UserID+')';
 
       ParamsQuery.ExecSQL;

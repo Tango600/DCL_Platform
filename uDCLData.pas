@@ -18,24 +18,23 @@ type
 
   TGPT=record
   // EnableSQLTrace,
-    OldStyle, DebugMesseges, OneCopy, ExitCnf, UseMessages, UserLogging, UserLoggingHistory, DebugOn,
+    DebugMesseges, OneCopy, ExitCnf, UseMessages, UserLogging, UserLoggingHistory, DebugOn,
     DisableFieldsList, HashPass, ShowPicture, DialogsSettings, DisableColors,
     DisableIniPasword, IBAll: Boolean;
     CurrentRunningScrString, CurrentRunningCmdString, Port: Integer;
     DateSeparator, TimeSeparator: Char;
     ServerCodePage, DateFormat, TimeFormat, Viewer, ConnectionString, MainFormCaption,
     NewConnectionString, DBPath, ServerName, NewDBUserName, DBType, GeneratorName: String;
-    SQLDialect:Byte;
+    SQLDialect: Byte;
     NoParamsTable, NoUsersTable, DisableLogOnWithoutUser, MultiRolesMode: Boolean;
     DBUserName, DCLUserName, DCLUserPass, EnterPass, LongRoleName, GetValueSeparator, UpperString,
-    UpperStringEnd, NotifycationsTable, IdentifyField, ParentFlgField, CommandField, NumSeqField,
-    GPTTableName, GPTNameField, GPTValueField, GPTUserIDField, IniFileName, TemplatesTable,
-    StringTypeChar, DCLNameField, DCLTextField, DCLTable, ShowRoleField, ACTIVE_USERS_TABLE,
-    USER_LOGIN_HISTORY_TABLE, TemplatesNameField, TemplatesKeyField, TemplatesDataField,
-    UserAdminField, {INITable,} RolesMenuTable, TimeStampFormat, DCLLongUserName, UserID, RoleID,
-    DCLRoleName, NewDBPassword, DBPassword, LibPath, LaunchScrFile, LaunchForm,
+    UpperStringEnd,
+    IniFileName, BaseID, LaunchScrFile, LaunchForm,
+    StringTypeChar, ShowRoleField,
+    TimeStampFormat, DCLLongUserName, UserID, RoleID,
+    DCLRoleName, NewDBPassword, DBPassword, LibPath,
     WordOLEExtension, ExcelOLEExtension: String;
-    FormPosInDB:TIniStore;
+    FormPosInDB: TIniStore;
     OfficeDocumentFormat: TOfficeDocumentFormat;
     OfficeFormat: TOfficeFormat;
     AccessLevel: TUserLevelsType;

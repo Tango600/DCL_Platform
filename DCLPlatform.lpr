@@ -9,17 +9,18 @@ uses
   athreads,
   {$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Classes, Forms, Controls, SysUtils, fMain,
-  uDCLGlobalVariables, uDCLData, uDCLTypes, uDCLConst,
-  uDCLMain, uDCLForm, uDCLCommand, uDCLGrid, uDCLVariables, uDCLDBConnector,
-  uDCLConfig, uStringParams, uDCLDebug, uDCLMenu, uDBUtils, fDCLLoginForm,
-  uSystemUtils, uSQLUtils, uDCLDBStructure, uDCLMultiLang, uDCLValuesParser,
-  uDCLOfficeUtils, uDCLOLE, uDCLMeasurements, uDCLCommandButton, uDCLMD5,
-  uDCLBaseLayoutManger, uDCLButtonLayoutManger, uDCLVerticalFieldLayoutManger,
-  uDCLField, uDCLImages, uSQLParser, cNoScrollBarDBGrid, cMediaFieldGroup,
-  uDCLDataStorage, uDCLOfficeTextReport, uDCLOfficeSheetReport, uDCLTextReport,
-  uSheetOfficeReportSelector, uDCLBaseOfficeReport, uTextOfficeReportSelector,
-  uOfficeReportBaseSelector, uRunProgram, uPrintBase, uDCLFormsNotifier
+  Classes, Forms, Controls, SysUtils, fMain, uDCLGlobalVariables, uDCLData,
+  uDCLTypes, uDCLConst, uDCLMain, uDCLForm, uDCLCommand, uDCLGrid,
+  uDCLVariables, uDCLDBConnector, uDCLConfig, uStringParams, uDCLDebug,
+  uDCLMenu, uDBUtils, fDCLLoginForm, uSystemUtils, uSQLUtils, uDCLDBStructure,
+  uDCLMultiLang, uDCLValuesParser, uDCLOfficeUtils, uDCLOLE, uDCLMeasurements,
+  uDCLCommandButton, uDCLMD5, uDCLBaseLayoutManger, uDCLButtonLayoutManger,
+  uDCLVerticalFieldLayoutManger, uDCLField, uDCLImages, uSQLParser,
+  cNoScrollBarDBGrid, cMediaFieldGroup, uDCLDataStorage, uDCLOfficeTextReport,
+  uDCLOfficeSheetReport, uDCLTextReport, uSheetOfficeReportSelector,
+  uDCLBaseOfficeReport, uTextOfficeReportSelector, uOfficeReportBaseSelector,
+  uRunProgram, uPrintBase, uDCLFormsNotifier, uWindowsScript,
+  fChangePasswordForm, fAbout
   ;
 
 {$R *.res}
@@ -128,7 +129,7 @@ begin
   Application.Initialize;
 
   DCL:=TDCLMain.Create;
-  if DCL.IsNeedLogin then
+  if DCL.IsNeedLogin or KeyState(vk_Shift) then
   begin
     LoginForm:=TLoginForm.Create(DCL.DBConnector);
 
@@ -146,6 +147,7 @@ begin
   begin
     RunInterface;
   end;
+  Application.CreateForm(TAboutForm, AboutForm);
   Application.Run;
 
   FreeAndNil(DCL);

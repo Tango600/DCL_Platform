@@ -153,6 +153,7 @@ const
   DefaultNavigButtonsSet='First,Last,Edit,Delete,Insert,Post,Cancel,Refresh';
 
   DCLDir='DCL5'+PathDelim;
+  FormConfigDir='Dialogs'+PathDelim;
   DefaultTimeSeparator=':';
   DefaultDateSeparator='.';
   DefaultDateFormat='dd'+DefaultDateSeparator+'mm'+DefaultDateSeparator+'yyyy';

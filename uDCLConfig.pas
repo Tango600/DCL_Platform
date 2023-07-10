@@ -16,14 +16,12 @@ type
     FConnector: TDBConnector;
     Params: TStringList;
     lPath: String;
-    lGPT: TGPT;
 
     procedure LoadConfig(FileName: String);
   public
     constructor Create; overload;
 
-    function GetParamsStructure: TGPT;
-    function GetConfig: TGPT;
+    procedure GetParamsStructure;
 
     property Path: String read lPath;
     property DBConnector: TDBConnector read FConnector write FConnector;
@@ -56,31 +54,24 @@ begin
   Params:=TStringList.Create;
   lPath:=ExtractFilePath(Application.ExeName);
   SetCurrentDir(lPath);
-  If lGPT.IniFileName='' Then
-    lGPT.IniFileName:=lPath+'DCL.ini';
+  If GPT.IniFileName='' Then
+    GPT.IniFileName:=lPath+'DCL.ini';
 
-  If (ParamStr(1)<>'') and FileExists(ParamStr(1)) then
-  begin
-      lGPT.IniFileName:=ParamStr(1);
-  end
-  Else
-  begin
-    For i:=1 to ParamCount do
-    Begin
-      If PosEx('-ini', ParamStr(i))<>0 Then
-        GPT.IniFileName:=ParamStr(i+1);
-      If PosEx('-user', ParamStr(i))<>0 Then
-        GPT.DCLUserName:=ParamStr(i+1);
-      If PosEx('-password', ParamStr(i))<>0 Then
-        GPT.EnterPass:=ParamStr(i+1);
-      If PosEx('-scr', ParamStr(i))<>0 Then
-        GPT.LaunchScrFile:=ParamStr(i+1);
-      If PosEx('-dialog', ParamStr(i))<>0 Then
-        GPT.LaunchForm:=ParamStr(i+1);
-    End;
-  end;
+  For i:=1 to ParamCount do
+  Begin
+    If PosEx('-ini', ParamStr(i))<>0 Then
+      GPT.IniFileName:=ParamStr(i+1);
+    If PosEx('-user', ParamStr(i))<>0 Then
+      GPT.DCLUserName:=ParamStr(i+1);
+    If PosEx('-password', ParamStr(i))<>0 Then
+      GPT.EnterPass:=ParamStr(i+1);
+    If PosEx('-scr', ParamStr(i))<>0 Then
+      GPT.LaunchScrFile:=ParamStr(i+1);
+    If PosEx('-dialog', ParamStr(i))<>0 Then
+      GPT.LaunchForm:=ParamStr(i+1);
+  End;
 
-  LoadConfig(lGPT.IniFileName);
+  LoadConfig(GPT.IniFileName);
 
   GetParamsStructure;
 
@@ -96,18 +87,7 @@ begin
   {$ENDIF}
 end;
 
-function TDCLConfig.GetConfig: TGPT;
-begin
-  if not Assigned(FConnector) then
-  begin
-    Result:=lGPT;
-  end
-  else
-  begin
-  end;
-end;
-
-function TDCLConfig.GetParamsStructure;
+procedure TDCLConfig.GetParamsStructure;
 Var
   i: Integer;
   Parser: TDCLValuseParser;
@@ -172,13 +152,6 @@ Begin
             GPT.MultiRolesMode:=True;
         End;
 
-        If PosEx('OldStyle=', Params[i])=1 Then
-        Begin
-          If Trim(FindParam('OldStyle=', Params[i]))='1' Then
-            GPT.OldStyle:=False
-          Else
-            GPT.OldStyle:=True;
-        End;
         If PosEx('Debug=', Params[i])=1 Then
         Begin
           If Trim(FindParam('Debug=', Params[i]))='1' Then
@@ -227,14 +200,6 @@ Begin
             GPT.HashPass:=False;
           End;
         End;
-
-        {If PosEx('ShowFormPanel=', Params[i])=1 Then
-        Begin
-          If Trim(FindParam('ShowFormPanel=', Params[i]))='1' Then
-            ShowFormPanel:=True
-          Else
-            ShowFormPanel:=False;
-        End;}
 
         If PosEx('UseMessages=', Params[i])=1 Then
         Begin

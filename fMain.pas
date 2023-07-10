@@ -4,8 +4,11 @@ unit fMain;
 interface
 
 uses
+  {$IFDEF MSWINDOWS}
+  Windows, Messages, LazUTF8,
+  {$ENDIF}
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  uDCLConst, uDCLData;
+  uDCLConst, uDCLData, uDCLMultiLang;
 
 type
 
@@ -16,16 +19,37 @@ type
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
   private
-
+    procedure ShowAbout;
+    {$IFDEF MSWINDOWS}
+    procedure WMSysCommand(var message: TWMSysCommand); message WM_SysCommand;
+    {$ENDIF}
   public
 
   end;
+
+{$IFDEF MSWINDOWS}
+Const
+  AboutMenuItem=WM_USER+1;
+  LockMenuItem=AboutMenuItem+1;
+{$ENDIF}
 
 implementation
 
 {$R *.lfm}
 
 { TMainForm }
+
+{$IFDEF MSWINDOWS}
+procedure TMainForm.WMSysCommand(var message: TWMSysCommand);
+begin
+  Case message.CmdType of
+  AboutMenuItem: ShowAbout;
+  //LockMenuItem: DCLMainLogOn.Lock;
+  Else
+    inherited;
+  End;
+end;
+{$ENDIF}
 
 procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
@@ -58,6 +82,13 @@ var
   T: TextFile;
 begin
   Caption:='DCL Run v.'+Version;
+  {$IFDEF MSWINDOWS}
+  ParentFont:=True;
+  AppendMenu(GetSystemMenu(Handle, False), MF_SEPARATOR, 0, '');
+  AppendMenu(GetSystemMenu(Handle, False), MF_STRING, AboutMenuItem,
+    Pchar(UTF8ToWinCP('DCL '+GetDCLMessageString(msVersion)+' : '+uDCLConst.Version)));
+  AppendMenu(GetSystemMenu(Handle, False), MF_STRING, LockMenuItem, PChar(UTF8ToWinCP(GetDCLMessageString(msLock)+'...')));
+  {$ENDIF}
 
   MDI:=False;
   if FileExists('interface.ini') then
@@ -75,6 +106,11 @@ begin
 
   if MDI or FindMDI then
     FormStyle:=fsMDIForm;
+end;
+
+procedure TMainForm.ShowAbout;
+begin
+
 end;
 
 end.

@@ -1,0 +1,8 @@
+object AboutForm: TAboutForm
+  Left = 375
+  Height = 240
+  Top = 145
+  Width = 320
+  Caption = 'О ...'
+  LCLVersion = '2.3.0.0'
+end

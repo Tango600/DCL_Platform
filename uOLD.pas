@@ -1004,7 +1004,6 @@ end;
 
 destructor TVariables.Destroy;
 begin
-  FreeAndNil(FVariables);
 end;
 
 
@@ -1045,47 +1044,6 @@ end;
 
 constructor TLogOnForm.Create(var DCLLogOn: TDCLLogOn; UserName: String; NoClose, Relogin: Boolean);
 begin
-  FormCreated:=False;
-  FUserName:=UserName;
-  NoShowRoleField:=False;
-  PressOK:=psNone;
-  FDCLLogOn:=DCLLogOn;
-  If ConnectErrorCode=0 Then
-  begin
-    RolesQuery1:=TDCLDialogQuery.Create(nil);
-    RolesQuery1.Name:='Roles1_'+IntToStr(UpTime);
-    FDCLLogOn.SetDBName(RolesQuery1);
-
-    RolesQuery1.SQL.Text:='select count(*) from '+UsersTable+' where '+GPT.ShowRoleField+'=1';
-    try
-      RolesQuery1.Open;
-      CountShowRole:=RolesQuery1.Fields[0].AsInteger;
-    Except
-      CountShowRole:=0;
-      NoShowRoleField:=True;
-    end;
-
-    If (GPT.ShowRoleField<>'')and((UserName='')or Relogin) Then
-    begin
-      If NoShowRoleField Then
-      begin
-        RolesQuery1.SQL.Text:='select count(*) from '+UsersTable;
-        try
-          RolesQuery1.Open;
-          CountShowRole:=RolesQuery1.Fields[0].AsInteger;
-        Except
-          CountShowRole:=0;
-          ShowErrorMessage( - 5008, '');
-          FDCLLogOn.RoleOK:=lsRejected;
-        end;
-      end;
-
-      If ConnectErrorCode=0 Then
-        CreateForm(NoClose, Relogin, UserName);
-    end;
-  end
-  Else
-    FDCLLogOn.RoleOK:=lsRejected;
 end;
 
 procedure TLogOnForm.CreateForm(NoClose, Relogin: Boolean; UserName: String);
@@ -1114,17 +1072,6 @@ end;
 
 procedure TLogOnForm.OnCloseForm(Sender: TObject; var Action: TCloseAction);
 begin
-  If PressOK<>psConfirmed Then
-  begin
-    FDCLLogOn.RoleOK:=lsRejected;
-    PressOK:=psCanceled;
-  end;
-  If Assigned(RolePassEdit) Then
-    FEnterPassword:=RolePassEdit.Text;
-  If Assigned(RoleNameCombo) Then
-    FUserName:=RoleNameCombo.Text
-  Else If Assigned(RoleNameEdit) Then
-    FUserName:=RoleNameEdit.Text;
 end;
 
 procedure TLogOnForm.OnCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -1182,9 +1129,6 @@ end;
 
 procedure TDCLForm.AddStatus(StatusStr: String; Width: Integer);
 begin
-  DBStatus.Panels.Insert(DBStatus.Panels.Count);
-  DBStatus.Panels[DBStatus.Panels.Count-1].Width:=Width;
-  DBStatus.Panels[DBStatus.Panels.Count-1].Text:=StatusStr;
 end;
 
 procedure TDCLForm.ChangeTabPage(Sender: TObject);
@@ -1192,9 +1136,6 @@ begin
 end;
 
 destructor TDCLForm.Destroy;
-var
-  i: Integer;
-  TB1: TFormPanelButton;
 begin
   FDCLLogOn.IsBusy:=True;
   CloseAction:=fcaInProcess;
@@ -1209,24 +1150,10 @@ begin
     SaveBookMarkMenu;
   end;
 
-
-  For i:=1 to FDCLLogOn.FormsCount do
-  begin
-    If Assigned(FDCLLogOn.Forms[i-1]) Then
-      If Self=FDCLLogOn.Forms[i-1].FParentForm Then
-        FDCLLogOn.CloseForm(FDCLLogOn.Forms[i-1]);
-  end;
-
 end;
 
 procedure TDCLForm.CloseForm(Sender: TObject; var Action: TCloseAction);
 begin
-  If ExitCode=0 Then
-    if Assigned(EventsClose) then
-    begin
-      if (EventsClose.EventType=evtClose) and (EventsClose.Event<>'') then
-        ExecCommand(EventsClose.Event);
-    end;
 end;
 
 procedure TDCLForm.ExecCommand(CommandName: String);
@@ -4353,29 +4280,7 @@ begin
 end;
 
 function TDCLLogOn.GetBaseUID: String;
-var
-  ParamsQuery: TReportQuery;
 begin
-  Result:='';
-  if not GPT.NoParamsTable then
-  Begin
-    ParamsQuery:=TDCLDialogQuery.Create(nil);
-    ParamsQuery.Name:='UID_'+IntToStr(UpTime);
-    SetDBName(ParamsQuery);
-      ParamsQuery.SQL.Text:='select * from '+GPT.GPTTableName+' where '+GPT.UpperString+
-        GPT.GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+'BaseUID'+
-        GPT.StringTypeChar+GPT.UpperStringEnd;
-    ParamsQuery.Open;
-    If ParamsQuery.FieldByName(GPT.GPTValueField).AsString='' then
-    Begin
-      WriteBaseUID;
-      Result:=GetBaseUID;
-    End
-    Else
-      Result:=ParamsQuery.FieldByName(GPT.GPTValueField).AsString;
-    ParamsQuery.Close;
-    FreeAndNil(ParamsQuery);
-  End;
 end;
 
 function TDCLLogOn.GetBusyMode: Boolean;
@@ -4822,10 +4727,6 @@ begin
 end;
 
 function TDCLLogOn.Login(UserName, Password: String; ShowForm: Boolean): TLogOnStatus;
-{$IFNDEF EMBEDDED}
-var
-  LogOnForm: TLogOnForm;
-{$ENDIF}
 begin
 
   If GPT.UserLogging Then
@@ -4847,10 +4748,6 @@ begin
     MessagesTimer.OnTimer:=WaitNotify;
     WaitNotify(nil);
   End;
-{$ELSE}
-  Result:=lsLogonOK;
-  RoleOK:=lsLogonOK;
-{$ENDIF}
 end;
 
 procedure TDCLLogOn.GetUserName(AUserName: String);
@@ -5279,36 +5176,7 @@ begin
 end;
 
 procedure TDCLLogOn.WriteBaseUID;
-var
-  ParamsQuery: TReportQuery;
-  guid:TGUID;
-  sGuid:String;
 begin
-  if not GPT.NoParamsTable then
-  Begin
-    ParamsQuery:=TReportQuery.Create(Self.FDBLogOn);
-    SetDBName(ParamsQuery);
-    ParamsQuery.Name:='UID_'+IntToStr(UpTime);
-      ParamsQuery.SQL.Text:='select count(*) from '+GPT.GPTTableName+' where '+GPT.UpperString+
-        GPT.GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+'BaseUID'+
-        GPT.StringTypeChar+GPT.UpperStringEnd;
-    ParamsQuery.Open;
-    If ParamsQuery.Fields[0].AsInteger=0 Then
-    begin
-      If CreateGUID(guid)=0 then
-      Begin
-        sGuid:=GUIDToString(guid);
-        sGuid:=sGuid.Replace('-', '').Replace('{', '').Replace('}', '');
-        ParamsQuery.Close;
-        ParamsQuery.SQL.Text:='insert into '+GPT.GPTTableName+'('+GPT.GPTNameField+', '+
-          GPT.GPTValueField+') values('+GPT.StringTypeChar+'BaseUID'+GPT.StringTypeChar+', '+
-          GPT.StringTypeChar+sGuid {MD5.MD5DigestToStr(MD5.MD5String(IntToStr(UpTime)))}+GPT.StringTypeChar+')';
-        ParamsQuery.ExecSQL;
-      End;
-    end;
-    ParamsQuery.Close;
-    FreeAndNil(ParamsQuery);
-  End;
 end;
 
 procedure TDCLLogOn.WriteBaseUIDtoINI(FileName, SectionName: string);

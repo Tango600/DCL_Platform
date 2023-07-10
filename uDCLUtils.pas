@@ -6,10 +6,6 @@ interface
 uses
   SysUtils, Forms, ExtCtrls, Dialogs,
   Controls, Classes, DateUtils,
-{$IFDEF MSWINDOWS}
-  Variants, ShlObj,
-  ComObj,
-{$ENDIF}
 {$IFDEF UNIX}
   cwstring, process, unix, lclintf,
 {$ENDIF}
@@ -19,9 +15,6 @@ uses
   Graphics,
   uLZW, uSystemUtils, uDCLDBStructure, uDCLMultiLang,
   uDCLData, uDCLConst, uStringParams;
-
-var
-  ScriptRunCreated: Boolean;
 
 function IsLexem(const Lexem, S: String): Boolean;
 
@@ -54,13 +47,9 @@ function FindSubstrInString(AText:string; AValues:Array of String):Integer;
 function PosInSet(SimbolsSet, SourceStr: String): Cardinal;
 Function GetTempFileName(Ext: String): String;
 
-Procedure ExecuteStatement(Code: String);
 Function ExtractSection(Var SectionStr: String): String;
 function GetGraficFileType(FileName: string): TGraficFileType;
 function GetExtByType(FileType:TGraficFileType):String;
-Function RunScript(Code: String): String;
-procedure ExecVBS(VBSScript: String);
-Procedure AddCodeScript(Code: TStringList);
 Function CopyStrings(FromString, ToString: String; Where: TStringList): TStringList;
 
 function GetIniToRole(UserID: String): String;
@@ -83,9 +72,6 @@ implementation
 
 uses
   SumProps, uDCLGlobalVariables;
-
-var
-  ScriptRun: Variant;
 
 function IsLexem(const Lexem, S: String): Boolean;
 var
@@ -469,105 +455,14 @@ end;
 
 Procedure InitGetAppConfigDir;
 Begin
-{$IFDEF UNIX}
-  UserProfileDir:=ExcludeTrailingPathDelimiter(GetEnvironmentVariable('HOME'));
-{$ENDIF}
-{$IFDEF MSWINDOWS}
-  UserProfileDir:=ExcludeTrailingPathDelimiter(GetSpecialPath(CSIDL_APPDATA));
-{$ENDIF}
+  UserProfileDir:=GetUserDocumentsDir;
   if not DirectoryExists(UserProfileDir) then
     ForceDirectories(UserProfileDir);
 
   AppConfigDir:=UserProfileDir+PathDelim+DCLDir;
-  If not DirectoryExists(AppConfigDir) then
-    ForceDirectories(AppConfigDir);
 End;
-
 
 /// ////////////////////////////////////////////////////////////
-
-Procedure CreateScriptRun;
-Begin
-{$IFDEF MSWINDOWS}
-  If Not ScriptRunCreated Then
-  Begin
-    ScriptRun:=CreateOleObject('ScriptControl');
-    ScriptRun.Language:=ScriptControlLanguage;
-    ScriptRun.UseSafeSubset:=False;
-    ScriptRun.Timeout:=-1;
-    ScriptRunCreated:=True;
-  End;
-{$ENDIF}
-End;
-
-Function RunScript(Code: String): String;
-{$IFDEF MSWINDOWS}
-Var
-  Res: OleVariant;
-Begin
-  CreateScriptRun;
-  Res:=ScriptRun.Eval(Code);
-  Result:=Res;
-{$ELSE}
-Begin
-{$ENDIF}
-End;
-
-Procedure ExecuteStatement(Code: String);
-Begin
-{$IFDEF MSWINDOWS}
-  CreateScriptRun;
-  ScriptRun.ExecuteStatement(Code);
-{$ENDIF}
-End;
-
-Procedure ResetScript;
-Begin
-{$IFDEF MSWINDOWS}
-  If ScriptRunCreated Then
-    ScriptRun.Reset;
-{$ENDIF}
-End;
-
-Procedure AddCodeScript(Code: TStringList);
-Begin
-{$IFDEF MSWINDOWS}
-  CreateScriptRun;
-  ScriptRun.AddCode(Code.Text);
-{$ENDIF}
-End;
-
-procedure ExecVBS(VBSScript: String);
-Var
-  VBSText: TStringList;
-  tmpVBSText: String;
-Begin
-  VBSText:=TStringList.Create;
-  VBSText.Text:=VBSScript;
-  If VBSText.Count>0 Then
-  Begin
-    If PosEx('script type=VBScript', VBSText[0])<>0 Then
-      VBSText.Delete(0);
-  End;
-  If VBSText.Count>0 Then
-  Begin
-    tmpVBSText:=VBSText.Text;
-    ExecuteStatement(tmpVBSText);
-  End;
-  FreeAndNil(VBSText);
-End;
-
-Procedure DestroyScript;
-Begin
-{$IFDEF MSWINDOWS}
-  If ScriptRunCreated Then
-  Begin
-    //FreeAndNil(ScriptRun);
-    ScriptRun:=Unassigned;
-    ScriptRunCreated:=False;
-  End;
-{$ENDIF}
-End;
 
 Function HexToInt64(HexStr: String): Int64;
 Var

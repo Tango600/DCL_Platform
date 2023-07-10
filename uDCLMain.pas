@@ -26,6 +26,9 @@ type
     procedure KillerForms(Sender: TObject);
     function GetDialogScript(DialogName: String): String;
     procedure CloseForm(Form: TDCLForm);
+
+    procedure WriteBaseID;
+    function ReadBaseID: String;
   public
     constructor Create; overload;
 
@@ -52,7 +55,7 @@ implementation
 
 uses
   uDCLConfig, uDCLCommand, uDCLDBStructure, uDCLMultiLang,
-  uDCLGlobalVariables;
+  uDCLGlobalVariables, uDCLUtils;
 
 { TDCLMain }
 
@@ -116,6 +119,50 @@ begin
   FreeAndNil(Form);
 end;
 
+procedure TDCLMain.WriteBaseID;
+var
+  guid:TGUID;
+  sGuid:String;
+  IsEmpty: Boolean;
+begin
+  LocalQuery.SQL.Text:='select count(*) from '+GPTTableName+' where '+GPT.UpperString+
+    GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+'BaseUID'+
+    GPT.StringTypeChar+GPT.UpperStringEnd;
+  LocalQuery.Open;
+  IsEmpty:=LocalQuery.Fields[0].AsInteger=0;
+  LocalQuery.Close;
+
+  If IsEmpty Then
+  begin
+    If CreateGUID(guid)=0 then
+    Begin
+      sGuid:=GUIDToString(guid);
+      sGuid:=sGuid.Replace('-', '').Replace('{', '').Replace('}', '');
+      GPT.BaseID:=sGuid;
+      LocalQuery.SQL.Text:='insert into '+GPTTableName+'('+GPTNameField+', '+
+        GPTValueField+') values('+GPT.StringTypeChar+'BaseUID'+GPT.StringTypeChar+', '+
+        GPT.StringTypeChar+sGuid+GPT.StringTypeChar+')';
+      LocalQuery.ExecSQL;
+    End;
+  end;
+end;
+
+function TDCLMain.ReadBaseID: String;
+begin
+  LocalQuery.SQL.Text:='select * from '+GPTTableName+' where '+GPT.UpperString+
+    GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+'BaseUID'+
+    GPT.StringTypeChar+GPT.UpperStringEnd;
+  LocalQuery.Open;
+  Result:=LocalQuery.FieldByName(GPTValueField).AsString;
+  LocalQuery.Close;
+  If Result='' then
+  Begin
+    WriteBaseID;
+    Result:=ReadBaseID;
+  End;
+  GPT.BaseID:=Result;
+end;
+
 constructor TDCLMain.Create;
 var
   FDCLConfig: TDCLConfig;
@@ -124,6 +171,8 @@ begin
   CoInitialize(nil);
   {$ENDIF}
   inherited Create(Application);
+
+  InitGetAppConfigDir;
   FDCLConfig:=TDCLConfig.Create;
   FVariables:=TVariables.Create;
   FForms:=TList<TForm>.Create;
@@ -149,6 +198,8 @@ begin
   KillerDog.OnTimer:=KillerForms;
   KillerDog.Enabled:=True;
 
+  ReadBaseID;
+
   GPT.TimeFormat:=DefaultTimeFormat;
   GPT.DateFormat:=DefaultDateFormat;
   GPT.DateSeparator:=DefaultDateSeparator;
@@ -158,13 +209,12 @@ begin
 {$ENDIF}
 {$IFDEF FPC}
 {$IFDEF UNIX}
-    FormatSettings.DateSeparator:=GPT.DateSeparator;
-    FormatSettings.ShortDateFormat:=GPT.DateFormat;
-    FormatSettings.LongTimeFormat:=GPT.TimeFormat;
-    FormatSettings.TimeSeparator:=GPT.TimeSeparator;
+  FormatSettings.DateSeparator:=GPT.DateSeparator;
+  FormatSettings.ShortDateFormat:=GPT.DateFormat;
+  FormatSettings.LongTimeFormat:=GPT.TimeFormat;
+  FormatSettings.TimeSeparator:=GPT.TimeSeparator;
 {$ENDIF}
 {$ENDIF}
-
 end;
 
 procedure TDCLMain.CreateMenu(MainForm: TForm);

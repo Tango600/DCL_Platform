@@ -51,6 +51,11 @@ const
   BinStorageNameField='TEMPL_NAME';
   BinDataField='TEMPL_DATA';
 
+  GPTTableName=DCL_TablePrefix+'GLOBAL_PARAMS';
+  GPTNameField='PARAM_NAME';
+  GPTValueField='PARAM_VALUE';
+  GPTUserIDField='PARAM_USERID';
+
 
 implementation
 

@@ -261,17 +261,17 @@ begin
           end;
         end;
         7:
-        TmpStr:=GPT.DCLTable;
+        TmpStr:=DCLTable;
         8:
-        TmpStr:=GPT.DCLNameField;
+        TmpStr:=DCLNameField;
         9:
-        TmpStr:=GPT.DCLTextField;
+        TmpStr:=ScriptField;
         10:
-        TmpStr:=GPT.IdentifyField;
+        TmpStr:=IdentifyField;
         11:
-        TmpStr:=GPT.ParentFlgField;
+        TmpStr:=ParentField;
         12:
-        TmpStr:=GPT.CommandField;
+        TmpStr:=CommandField;
         13:
         TmpStr:=GPT.DBUserName;
         14:

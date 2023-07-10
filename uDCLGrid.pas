@@ -70,6 +70,8 @@ type
 
     UserLevelLocal: TUserLevelsType;
 
+    function GetFieldsCount: Integer;
+
     procedure CreateImageList;
 
     procedure OpenQuery(QText: String);
@@ -195,6 +197,7 @@ type
 
     procedure Open;
     procedure Close;
+    procedure CloseComponent;
     procedure ReFreshData;
 
     procedure ExecScriptLine(ScrStr: String);
@@ -213,6 +216,7 @@ type
     property Query: TDCLQuery read FQuery;
     property Data: TDataSource read FData;
     property Edits: TList<TDCLEdit> read GetEdits;
+    property FieldsCount: Integer read GetFieldsCount;
     property TableParts: TList<TDCLGrid> read FTableParts;
     property CurrentTablePart: TDCLGrid read FCurrentTablePart;
     property Style: TGridStyle read FGridStyle write FGridStyle;
@@ -257,6 +261,14 @@ begin
 end;
 
 { TDCLGrid }
+
+function TDCLGrid.GetFieldsCount: Integer;
+begin
+  if Assigned(FDCLFields) then
+    Result:=FDCLFields.Count
+  else
+    Result:=0;
+end;
 
 procedure TDCLGrid.CreateImageList;
 begin
@@ -2742,39 +2754,47 @@ end;
 procedure TDCLGrid.ReFreshData;
 var
   tpc: TDCLGrid;
+  direction: Integer;
   FLocalBookmark: TBookmark;
 begin
   If FQuery.Active Then
   Begin
-    try
-      If FQuery.State in dsEditModes Then
-        FQuery.Post;
+    If FQuery.State in dsEditModes Then
+      FQuery.Post;
 
-      FLocalBookmark:=FQuery.Bookmark;
-      For tpc in FTableParts do
-      begin
-        tpc.Close;
-      end;
-      Close;
-    Except
-      //
+    direction:=0;
+    if not FQuery.EOF then
+    begin
+      FQuery.Next;
+      direction:=1;
+    end
+    else
+    begin
+      FQuery.Prior;
+      direction:=-1;
     end;
+
+    FLocalBookmark:=FQuery.Bookmark;
+    For tpc in FTableParts do
+    begin
+      tpc.Close;
+    end;
+    Close;
   End;
 
   Open;
-
-  If Assigned(FLocalBookmark) Then
-    try
-      if Length(FLocalBookmark)>0 then
+  {$IFnDEF SQLdbFamily}
+  //If Assigned(FLocalBookmark) Then
+    //try
+      {if Length(FLocalBookmark)>0 then
       If FQuery.Active then
       If FQuery.BookmarkValid(FLocalBookmark) then
-      If FQuery.RecordCount>0 then
-        //FQuery.Bookmark:=Pointer(FLocalBookmark);
-        FQuery.GoToBookmark(Pointer(FLocalBookmark));
-    finally
-      FQuery.FreeBookmark(FLocalBookmark);
-    end;
-
+      If FQuery.RecordCount>0 then}
+        FQuery.Bookmark:=FLocalBookmark;
+    //finally
+      //FQuery.FreeBookmark(FLocalBookmark);
+    //end;
+  {$ENDIF}
   For tpc in FTableParts do
   begin
     tpc.Open;
@@ -2983,7 +3003,10 @@ begin
       FQuery.Post;
     FQuery.Close;
   end;
+end;
 
+procedure TDCLGrid.CloseComponent;
+begin
   ExecEvents(evtClose);
 end;
 
@@ -3637,7 +3660,6 @@ begin
             else
               AddDBEdit(DCLField);
           end;
-
         end;
       end;
     end;

@@ -64,7 +64,7 @@ type
     procedure TranslateVal(var Params: String; CheckParams: Boolean);
 
     procedure FormShow(Sender: TObject);
-
+    procedure OnActivateForm(Sender: TObject);
     procedure OnFormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure OnCloseQuery(Sender: TObject; var CanClose: Boolean);
 
@@ -73,6 +73,8 @@ type
 
     procedure ParseEvents(ScrStr: String);
     procedure AddEvent(EventType: TEventsEnum; ScriptName: String);
+
+    procedure SaveFormPos;
   public
     constructor Create(DialogName, NameSpace: String; ParentForm: TDCLForm;
       Variables: TVariables; Forms: TList<TForm>; OPL: TStringList; DBConnector: TDCLDBConnector;
@@ -80,8 +82,6 @@ type
       ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False); overload;
 
     procedure RefreshForm;
-    procedure CloseForm(Sender: TObject; var Action: TCloseAction);
-    procedure ActivateForm(Sender: TObject);
 
     procedure SetInfoStatus(Str: String);
     procedure AddInfoStatus(Str: String; Width: Integer);
@@ -101,7 +101,7 @@ type
 implementation
 
 uses
-  uDCLCommand, uDCLValuesParser, uDCLMessages;
+  uDCLCommand, uDCLValuesParser, uDCLMessages, uDCLGlobalVariables, IniFiles;
 
 { TDCLForm }
 
@@ -297,17 +297,41 @@ begin
 end;
 
 procedure TDCLForm.FormShow(Sender: TObject);
+var
+  ConfigPath: String;
+  Settings: TIniFile;
 begin
+  ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim;
+  if DirectoryExists(ConfigPath) and FileExists(ConfigPath+'Settings.ini') then
+  begin
+    Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
+    Self.Top:=Settings.ReadInteger('Position', 'Top', Self.Top);
+    Self.Left:=Settings.ReadInteger('Position', 'Left', Self.Left);
+    Self.Height:=Settings.ReadInteger('Position', 'Height', Self.Height);
+    Self.Width:=Settings.ReadInteger('Position', 'Width', Self.Width);
+
+    FreeAndNil(Settings);
+  end;
 end;
 
 procedure TDCLForm.OnFormClose(Sender: TObject; var CloseAction: TCloseAction);
 var
   Grid: TDCLGrid;
+  F: TForm;
 begin
+  for F in FForms do
+  begin
+    if (F as TDCLForm).ParentForm=Self then
+      F.Close;
+  end;
+
   for Grid in FGrids do
   begin
-    Grid.Close;
+    Grid.CloseComponent;
   end;
+
+  SaveFormPos;
+  FFormCloseStatus:=fcaClose;
 end;
 
 procedure TDCLForm.OnCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -354,11 +378,13 @@ var
   ff: TForm;
   g: TDCLGrid;
   OnTop: Boolean;
+  FieldsCount: Integer;
 begin
   inherited Create(Application);
   FormCanClose:=True;
+  Self.OnActivate:=OnActivateForm;
   Self.OnShow:=FormShow;
-  Self.OnClose:=OnClose;
+  Self.OnClose:=OnFormClose;
   FForms:=Forms;
   FDialogName:=DialogName;
   FDBConnector:=DBConnector;
@@ -399,9 +425,6 @@ begin
   Position:=poScreenCenter;
   FIsSingle:=False;
 
-  OnClose:=CloseForm;
-  OnActivate:=ActivateForm;
-
   {$IFNDEF EMBEDDED}
   If Assigned(Application.MainForm) then
     If Application.MainForm.FormStyle=fsMDIForm Then
@@ -426,9 +449,11 @@ begin
   begin
     TB:=TFormPanelButton.Create(Self);
     TB.Parent:=FormBar;
+    TB.AutoSize:=True;
     TB.Width:=FormPanelButtonWidth;
     TB.Height:=FormPanelButtonHeight;
     TB.OnClick:=ToolButtonClick;
+    TB.Constraints.MaxWidth:=110;
     TB.Tag:=Tag;
     TB.Margin:=PanelButtonTextRight;
     TB.Glyph:=DrawBMPButton(ptFormDotNew);
@@ -509,9 +534,17 @@ begin
     end;
   end;
 
+  FieldsCount:=0;
   for g in FGrids do
   begin
     g.Prepeare;
+    if (FieldsCount<g.FieldsCount) and (g.Style<>gsGrid) then
+      FieldsCount:=g.FieldsCount;
+  end;
+  if FieldsCount>0 then
+  begin
+    Self.Height:=(56*8)+110;
+    Self.Width:=((FieldsCount div 8)+1)*280;
   end;
 
   {If OnTop Then  // Мешает отладки
@@ -532,12 +565,7 @@ begin
   end;
 end;
 
-procedure TDCLForm.CloseForm(Sender: TObject; var Action: TCloseAction);
-begin
-  FFormCloseStatus:=fcaClose;
-end;
-
-procedure TDCLForm.ActivateForm(Sender: TObject);
+procedure TDCLForm.OnActivateForm(Sender: TObject);
 var
   i: Byte;
   TB1: TFormPanelButton;
@@ -633,6 +661,24 @@ begin
     Event.ScriptName:=ScriptName;
     FEvents.Add(Event);
   end;
+end;
+
+procedure TDCLForm.SaveFormPos;
+var
+  ConfigPath: String;
+  Settings: TIniFile;
+begin
+  ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim;
+  if not DirectoryExists(ConfigPath) then
+    ForceDirectories(ConfigPath);
+
+  Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
+  Settings.WriteInteger('Position', 'Top', Self.Top);
+  Settings.WriteInteger('Position', 'Left', Self.Left);
+  Settings.WriteInteger('Position', 'Height', Self.Height);
+  Settings.WriteInteger('Position', 'Width', Self.Width);
+
+  FreeAndNil(Settings);
 end;
 
 end.
