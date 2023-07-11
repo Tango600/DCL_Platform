@@ -4,22 +4,22 @@ unit uSystemUtils;
 interface
 
 uses
-  {$IFDEF MSWINDOWS}
-    Windows, ShellApi, Variants, ShlObj,
-    ActiveX, ComObj,
-  {$ENDIF}
-  {$IFDEF FPC}
-    LConvEncoding,
-  {$IFDEF UNIX}
-    cwstring,
-  {$ENDIF}
-  {$ENDIF}
-  {$IFDEF FPC}
-    InterfaceBase, LCLType,
-  {$ENDIF}
-  {$IFDEF UNIX}
-    cwstring, process, unix, lclintf,
-  {$ENDIF}
+{$IFDEF MSWINDOWS}
+  Windows, ShellApi, Variants, ShlObj,
+  ActiveX, ComObj,
+{$ENDIF}
+{$IFDEF FPC}
+  LConvEncoding,
+{$IFDEF UNIX}
+  cwstring,
+{$ENDIF}
+{$ENDIF}
+{$IFDEF FPC}
+  InterfaceBase, LCLType,
+{$ENDIF}
+{$IFDEF UNIX}
+  cwstring, process, unix, lclintf,
+{$ENDIF}
   Classes, Graphics, SysUtils;
 
 function ValidObject(const AObj: TObject): Boolean;

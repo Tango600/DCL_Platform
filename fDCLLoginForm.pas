@@ -44,7 +44,7 @@ type
 implementation
 
 uses
-  fChangePasswordForm;
+  fChangePasswordForm, uDCLGlobalVariables;
 
 {$R *.lfm}
 
@@ -55,7 +55,20 @@ begin
   ModalResult:=mrNone;
 
   if CheckPassword then
-    ModalResult:=mrOK
+  begin
+    ModalResult:=mrOK;
+
+    FQuery:=TDCLDialogQuery.Create(Self);
+    FDBConnector.SetConnector(FQuery);
+    FQuery.Params.Clear;
+    FQuery.SQL.Text:='select '+UserIDField+' from '+UsersTable+' where lower('+UserNameField+')=lower(:User)';
+    FQuery.Params.ParamByName('User').AsString:=cbLogin.Text;
+    FQuery.Open;
+    FQuery.First;
+    GPT.UserID:=FQuery.FieldByName(UserIDField).AsString;
+    FQuery.Close;
+    FreeAndNil(FQuery);
+  end
   else
   begin
     Inc(Tryes);

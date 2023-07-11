@@ -33,7 +33,7 @@ uses
 procedure TDCLOfficeSheetReport.Calc(ParamStr: String; Save, Close: Boolean);
 var
   SQLStr, Fields, FileName, OutFileName, ColorStr, Ext, TemplateExt: String;
-  ToPDF, ToHTML, EnableRowChColor, EnableColChColor: Boolean;
+  ToPDF, ToHTML, EnableRowChColor, EnableColChColor, Any: Boolean;
   v1: Byte;
   RecRepNum: Cardinal;
   StartRow, StartCol, RowRColor, RowBColor, RowGColor, ColRColor, ColBColor, ColGColor: Integer;
@@ -189,6 +189,7 @@ begin
       EnableColChColor:=True;
     end;
 
+    Any:=False;
     RecRepNum:=1;
     While Not DCLQuery.Eof do
     begin
@@ -234,12 +235,12 @@ begin
             Cell.cellBackColor:=(ColRColor or(ColGColor Shl 8)or(ColBColor Shl 16));
       end;
       inc(RecRepNum);
+      Any:=True;
       DCLQuery.Next;
     end;
     DCLQuery.Close;
 
     FileName:=AddToFileName(FileName, '_Report');
-
     If ToPDF Then
       OOExportToFormat(Document, OutFileName, 'pdf');
 
@@ -277,11 +278,14 @@ begin
     Sheets:=Unassigned;
     Sheet:=Unassigned;
 
-    If ToPDF Then
-      OpenFile(FakeFileExt(FileName, 'pdf'));
+    if Any then
+    begin
+      If ToPDF Then
+        OpenFile(FakeFileExt(FileName, 'pdf'));
 
-    If ToHTML Then
-      OpenFile(FakeFileExt(FileName, 'html'));
+      If ToHTML Then
+        OpenFile(FakeFileExt(FileName, 'html'));
+    end;
   end
   Else
     ShowErrorMessage( - 5007, FileName);
@@ -290,7 +294,7 @@ end;
 procedure TDCLOfficeSheetReport.Excel(ParamStr: String; Save, Close: Boolean);
 var
   SQLStr, FileName, OutFileName, ColorStr, Ext, TemplateExt, Fields, sv: String;
-  EnableRowChColor, EnableColChColor, Hide, IsDate: Boolean;
+  EnableRowChColor, EnableColChColor, Hide, IsDate, Any: Boolean;
   RecRepNum, v1: Word;
   RowRColor, RowBColor, RowGColor, ColRColor, ColBColor, ColGColor: Integer;
   DCLQuery: TDCLDialogQuery;
@@ -428,6 +432,7 @@ begin
       EnableColChColor:=True;
     end;
 
+    Any:=False;
     RecRepNum:=0;
     case FillStrategy of
       sfsInsert:RecRepNum:=0;
@@ -494,6 +499,7 @@ begin
       if FillStrategy=sfsReplace then
         inc(RecRepNum);
       DCLQuery.Next;
+      Any:=True;
     end;
     DCLQuery.Close;
     if not Hide then

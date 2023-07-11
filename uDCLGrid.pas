@@ -226,6 +226,7 @@ type
     property MasterValueVariableName: String read FMasterValueVariableName write FMasterValueVariableName;
     property NoDataField: Boolean read FNoDataField write FNoDataField;
     property MultiSelect: Boolean read FMultiSelectMode write SetMultiSelect;
+    property RightsLevel: TUserLevelsType read UserLevelLocal;
   end;
 
   { TLookupTable }
@@ -2907,7 +2908,7 @@ begin
   inherited Create(Parent);
   Self.Parent:=Parent;
 
-  UserLevelLocal:=ulExecute;
+  UserLevelLocal:=GPT.AccessLevel; // ulExecute;
 
   FMainPanel:=TPanel.Create(Parent);
   FMainPanel.Parent:=Parent;

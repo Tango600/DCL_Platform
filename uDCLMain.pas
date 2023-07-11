@@ -74,6 +74,10 @@ begin
     LocalQuery.ParamByName('USER').AsString:=GPT.DCLUserName;
     LocalQuery.Open;
     Result:=not ((GPT.EnterPass=LocalQuery.FieldByName(UserPassField).AsString) and not LocalQuery.IsEmpty);
+    if not Result then
+    begin
+      GPT.UserID:=LocalQuery.FieldByName(UserIDField).AsString;
+    end;
     LocalQuery.Close;
   end;
 end;

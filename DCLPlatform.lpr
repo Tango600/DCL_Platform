@@ -20,7 +20,7 @@ uses
   uDCLOfficeSheetReport, uDCLTextReport, uSheetOfficeReportSelector,
   uDCLBaseOfficeReport, uTextOfficeReportSelector, uOfficeReportBaseSelector,
   uRunProgram, uPrintBase, uDCLFormsNotifier, uWindowsScript,
-  fChangePasswordForm, fAbout
+  fChangePasswordForm, fAbout, uDCLQueryUtils
   ;
 
 {$R *.res}

@@ -821,10 +821,6 @@ Type
 
   TDCLTextReport=class(TObject)
   private
-    GlobalSQL, Template, RepParams, HeadLine, Body, Report, Futer, InitSkrypts,
-      EndSkrypts: TStringList;
-    FDCLLogOn: TDCLLogOn;
-    FDCLGrid: TDCLGrid;
     FReportQuery: TDCLDialogQuery;
     GrabValueForm: TForm;
     VarsToControls: Array of String;
@@ -842,7 +838,6 @@ Type
 
     function SetVarToControl(VarName: String): Integer;
   public
-    FDialogRes: TModalResult;
     InConsoleCodePage:Boolean;
 
     constructor InitReport(const NameSpace: String; DCLLogOn: TDCLLogOn; DCLGrid: TDCLGrid; OPL: TStringList;
@@ -4582,45 +4577,7 @@ begin
 end;
 
 function TDCLLogOn.GetRolesQueryText(QueryType: TSelectType; WhereStr: String): String;
-var
-  FromStr, WhereStr1: String;
 begin
-  If GPT.DCLUserName='' Then
-  begin
-    FromStr:=GPT.DCLTable+' s';
-    WhereStr1:=' where '+WhereStr;
-  end
-  Else
-    If GPT.MultiRolesMode Then
-    begin
-      FromStr:=GPT.DCLTable+' s, '+RolesMenuTable+' rm, '+RolesTable+' r, '+UsersTable+' u, '+
-        RolesToUsersTable+' ru ';
-      WhereStr1:='where r.'+RolesIDFiled+'=rm.'+RolesMenuIDFiled+' and rm.'+RoleMenuItemIDField+'=s.'+
-        GPT.NumSeqField+' and ru.'+RolesToUsersRoleIDField+'=r.'+RolesIDFiled+' and u.'+UserIDField+
-        '=ru.'+RolesToUsersUserIDField+' and u.'+UserIDField+'='+IntToStr(FUserID)+' and '+WhereStr;
-    end
-    Else
-    begin
-  {$IFDEF EMBEDDED}
-      FromStr:=GPT.DCLTable+' s ';
-      WhereStr1:='where '+WhereStr;
-  {$ELSE}
-      FromStr:=GPT.DCLTable+' s, '+RolesMenuTable+' rm, '+RolesTable+' r, '+UsersTable+' u ';
-      WhereStr1:='where r.'+RolesIDFiled+'=rm.'+RolesMenuIDFiled+' and rm.'+RoleMenuItemIDField+'=s.'+
-        GPT.NumSeqField+' and u.'+UserRoleField+'=r.'+RolesIDFiled+' and u.'+UserIDField+'='+
-        IntToStr(FUserID)+' and '+WhereStr;
-  {$ENDIF}
-    end;
-
-  Case QueryType of
-  qtCount:
-  Result:='select Count(*) from '+FromStr+WhereStr1;
-  qtSelect:
-  If GPT.MultiRolesMode Then
-    Result:='select distinct s.* from '+FromStr+WhereStr1
-  Else
-    Result:='select s.* from '+FromStr+WhereStr1;
-  end;
 end;
 
 function TDCLLogOn.LoadScrText(ScrName: String): TStringList;
@@ -4729,14 +4686,6 @@ end;
 function TDCLLogOn.Login(UserName, Password: String; ShowForm: Boolean): TLogOnStatus;
 begin
 
-  If GPT.UserLogging Then
-    GPT.UserLogging:=TableExists(GPT.ACTIVE_USERS_TABLE);
-
-  If GPT.UserLoggingHistory Then
-    GPT.UserLoggingHistory:=TableExists(GPT.USER_LOGIN_HISTORY_TABLE);
-
-  LoggingUser(True);
-
   GPT.UseMessages:=DCLMainLogOn.TableExists(GPT.NotifycationsTable);
   If GPT.UseMessages then
   Begin
@@ -4751,129 +4700,8 @@ begin
 end;
 
 procedure TDCLLogOn.GetUserName(AUserName: String);
-var
-  FromStr, WhereStr, DBUserNameField, DBPasswordField: String;
 begin
-  DBPasswordField:='';
-  DBUserNameField:='';
-{$IFNDEF EMBEDDED}
-  If not GPT.NoUsersTable then
-  Begin
-    GPT.DCLUserName:=AUserName;
-    ShadowQuery.Close;
-    SetDBName(ShadowQuery);
-    If FieldExists(DBUSER_NAME_Field, nil, UsersTable) Then
-      DBUserNameField:=', '+DBUSER_NAME_Field;
-    If FieldExists(DBPASS_Field, nil, UsersTable) Then
-      DBPasswordField:=', '+DBPASS_Field;
 
-    DebugProc('Selecting role...');
-    If LongUserNameField<>'' Then
-    begin
-      ShadowQuery.Close;
-      ShadowQuery.SQL.Text:='select '+UserAdminField+', '+UserIDField+', '+UserPassField+', '+
-        LongUserNameField+', '+UserRoleField+', '+RoleNameField+', '+LongRoleNameField+DBUserNameField
-        +DBPasswordField+' from '+UsersTable+', '+RolesTable+' where '+GPT.UpperString+UserNameField+
-        GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+AUserName+GPT.StringTypeChar+
-        GPT.UpperStringEnd+' and '+UserRoleField+'='+RolesIDFiled;
-      DebugProc('  Query: '+ShadowQuery.SQL.Text);
-      try
-        ShadowQuery.Open;
-        DebugProc('  ... OK');
-      Except
-        On E: Exception do
-        begin
-          DebugProc('  ... Fail/ '+E.Message);
-        end;
-      end;
-      GPT.DCLLongUserName:=TrimRight(ShadowQuery.FieldByName(LongUserNameField).AsString);
-    end;
-
-    If Not ShadowQuery.IsEmpty Then
-    begin
-      GPT.UserID:=ShadowQuery.FieldByName(UserIDField).AsString;
-      FUserID:=ShadowQuery.FieldByName(UserIDField).AsInteger;
-      GPT.RoleID:=ShadowQuery.FieldByName(UserRoleField).AsString;
-      GPT.LongRoleName:=Trim(ShadowQuery.FieldByName(LongRoleNameField).AsString);
-      GPT.DCLRoleName:=Trim(ShadowQuery.FieldByName(RoleNameField).AsString);
-      If DBUserNameField<>'' Then
-      begin
-        Delete(DBUserNameField, 1, 1);
-  {$IFDEF ADO}
-        GPT.NewConnectionString:=Trim(ShadowQuery.FieldByName(Trim(DBUserNameField)).AsString);
-  {$ELSE}
-        GPT.NewDBUserName:=Trim(ShadowQuery.FieldByName(Trim(DBUserNameField)).AsString);
-  {$ENDIF}
-      end;
-
-      If DBPasswordField<>'' Then
-      begin
-        Delete(DBPasswordField, 1, 1);
-        GPT.NewDBPassword:=Trim(ShadowQuery.FieldByName(Trim(DBPasswordField)).AsString);
-      end;
-
-      If GPT.DisableLogOnWithoutUser Then
-      begin
-        try
-          FAccessLevel:=TranslateDigitToUserLevel(ShadowQuery.FieldByName(UserAdminField).AsInteger);
-        Except
-          FAccessLevel:=ulExecute;
-        end;
-      end
-      Else
-        FAccessLevel:=ulExecute;
-
-      If GPT.HashPass Then
-        GPT.DCLUserPass:=TrimRight(ShadowQuery.FieldByName(UserPassField).AsString)
-      Else
-        GPT.DCLUserPass:=TrimRight(ShadowQuery.FieldByName(UserPassField).AsString);
-    end;
-
-    ShadowQuery.Close;
-    If GPT.MultiRolesMode Then
-    begin
-      FromStr:='select max('+DCLROLE_ACCESSLEVEL_FIELD+') from '+RolesTable+' r, '+UsersTable+' u, '+
-        RolesToUsersTable+' ru ';
-      WhereStr:='where ru.'+RolesToUsersRoleIDField+'=r.'+RolesIDFiled+' and u.'+UserIDField+'=ru.'+
-        RolesToUsersUserIDField;
-    end
-    Else
-    begin
-      FromStr:='select '+DCLROLE_ACCESSLEVEL_FIELD+' from '+RolesTable+' r, '+UsersTable+' u ';
-      WhereStr:='where u.'+UserRoleField+'=r.'+RolesIDFiled;
-    end;
-    If GPT.UserID<>'' Then
-    begin
-      ShadowQuery.Close;
-      ShadowQuery.SQL.Text:=FromStr+WhereStr+' and u.'+UserIDField+'='+GPT.UserID;
-      try
-        ShadowQuery.Open;
-        DebugProc('  ... OK');
-      Except
-        DebugProc('  ... Fail');
-      end;
-    end;
-
-    RoleRaightsLevel:=0;
-    If Not ShadowQuery.IsEmpty Then
-    begin
-      try
-        If FieldExists(DCLROLE_ACCESSLEVEL_FIELD, ShadowQuery) Then
-          RoleRaightsLevel:=ShadowQuery.FieldByName(DCLROLE_ACCESSLEVEL_FIELD).AsInteger;
-      Except
-        RoleRaightsLevel:=0
-      end;
-    end
-    Else
-      RoleRaightsLevel:=0;
-
-    ShadowQuery.Close;
-  End
-  Else
-    FAccessLevel:=ulExecute;
-{$ELSE}
-  FAccessLevel:=ulExecute;
-{$ENDIF}
 end;
 
 procedure TDCLLogOn.InitActions(Sender: TObject);
@@ -5180,21 +5008,7 @@ begin
 end;
 
 procedure TDCLLogOn.WriteBaseUIDtoINI(FileName, SectionName: string);
-var
-  S:String;
-  Ini:TIniFile;
 begin
-  If SectionName<>'' then
-  If Not GPT.NoParamsTable Then
-  If FileExists(FileName) then
-  begin
-    S:=GetBaseUID;
-    Ini:=TIniFile.Create(FileName);
-
-    If Ini.SectionExists(SectionName) then
-      Ini.WriteString(SectionName, 'BaseUID', S);
-    Ini.Free;
-  end;
 end;
 
 procedure TDCLLogOn.WriteConfig(ConfigName, NewValue, UserID: String);
@@ -5732,53 +5546,7 @@ begin
 end;
 
 procedure TDCLGrid.AddRollBar(Field: TDCLField);
-var
-  RollBar: TRollBar;
-  TempStr: String;
 begin
-  Field.CurrentEdit:=True;
-  RollBar:=TRollBar.Create;
-  RollBar.RollBar:=TTrackBar.Create(FieldPanel);
-  RollBar.RollBar.Parent:=FieldPanel;
-  RollBar.RollBar.Top:=LayoutParams.Top;
-  RollBar.RollBar.Left:=LayoutParams.Left;
-  RollBar.RollBar.Width:=EditWidth;
-  RollBar.RollBar.Height:=RollHeight;
-  RollBar.RollBar.Tag:=RollBars.Count;
-
-  TempStr:=FindParam('_Min=', Field.OPL);
-  TranslateVal(TempStr);
-  RollBar.RollBar.Min:=StrToIntEx(TempStr);
-
-  TempStr:=FindParam('_Max=', Field.OPL);
-  TranslateVal(TempStr);
-  RollBar.RollBar.Max:=StrToIntEx(TempStr);
-
-  TempStr:=FindParam('_VariableName=', Field.OPL);
-  If TempStr<>'' Then
-  begin
-    If FDCLLogOn.Variables.Exists(GetNamespace, TempStr) Then
-    begin
-      If Not FieldExists(Field.FieldName, Query) Then
-        RollBar.RollBar.Position:=StrToInt(TempStr);
-      RollBar.Variable:=TempStr;
-    end
-    Else
-      FDCLLogOn.Variables.NewVariableWithTest(GetNamespace, TempStr);
-  end;
-
-  If FieldExists(Field.FieldName, Query) Then
-    RollBar.Field:=Field.FieldName;
-
-  If FieldExists(Field.FieldName, Query) Then
-    If Query.Active Then
-      RollBar.RollBar.Position:=Query.FieldByName(Field.FieldName).AsInteger;
-
-  RollBar.RollBar.OnChange:=RollBarOnChange;
-
-  RollBars.Add(RollBar);
-
-  IncXYPos(EditTopStep, RollBar.RollBar.Width, Field);
 end;
 
 procedure TDCLGrid.AddSubPopupItem(Caption, ItemName: String; Action: TNotifyEvent;
@@ -6013,16 +5781,7 @@ begin
 end;
 
 procedure TDCLGrid.ColumnsManege(Sender: TObject);
-var
-  CIndex: Integer;
 begin
-  CIndex:=ColumnsList.ItemIndex;
-  If CIndex<> - 1 Then
-  begin
-    FGrid.Columns.Delete(CIndex);
-    ColumnsList.Items.Delete(CIndex);
-    DeleteList(CIndex);
-  end;
 end;
 
 procedure TDCLGrid.ContextFieldButtonsClick(Sender: TObject);
@@ -6137,56 +5896,13 @@ begin
 end;
 
 procedure TDCLGrid.CreateBookMarkMenu(MenuList: TStringList);
-var
-  v3, i: Integer;
-  FileLine: String;
 begin
-  If MenuList.Count>0 Then
-  begin
-    For i:=1 to MenuList.Count div KeyMarksItems do
-    begin
-      FileLine:=MenuList[i-1];
-
-      v3:=Length(KeyMarks.KeyBookMarks);
-      SetLength(KeyMarks.KeyBookMarks, v3+1);
-
-      FileLine:=MenuList[i-1];
-      KeyMarks.KeyBookMarks[v3].KeyField:=FindParam('Key=', FileLine);
-
-      FileLine:=MenuList[i];
-      KeyMarks.KeyBookMarks[v3].KeyValue:=FindParam('Value=', FileLine);
-
-      FileLine:=MenuList[i+1];
-      If PosEx('Title=', FileLine)<>0 Then
-        KeyMarks.KeyBookMarks[v3].Title:=FindParam('Title=', FileLine)
-      Else
-      begin
-        ShowErrorMessage(0, GetDCLMessageString(msOldBookmarkFormat));
-        Exit;
-      end;
-    end;
-  end;
 
   RefreshBookMarkMenu;
 end;
 
 function TDCLGrid.SaveBookMarkMenu: TStringList;
-var
-  i: Integer;
 begin
-  Result:=TStringList.Create;
-  If Length(KeyMarks.KeyBookMarks)>0 Then
-  begin
-    For i:=1 to Length(KeyMarks.KeyBookMarks) do
-    begin
-      If KeyMarks.KeyBookMarks[i-1].KeyValue<>'' Then
-      begin
-        Result.Append('Key='+KeyMarks.KeyBookMarks[i-1].KeyField);
-        Result.Append('Value='+KeyMarks.KeyBookMarks[i-1].KeyValue);
-        Result.Append('Title='+KeyMarks.KeyBookMarks[i-1].Title);
-      end;
-    end;
-  end;
 end;
 
 procedure TDCLGrid.DeleteAllBookmarks;
@@ -6275,28 +5991,6 @@ begin
           FOPL.Insert(ScrStrNum+v1*2, Query.Fields[v1-1].FieldName);
           FOPL.Insert(ScrStrNum+1+v1*2, Query.Fields[v1-1].FieldName);
         end;
-      end
-      Else If PosEx('LoadFromTable=', FOPL[ScrStrNum+1])<>0 Then
-      begin
-        ShadowQuery:=TDCLDialogQuery.Create(nil);
-        ShadowQuery.Name:='ShadFields_'+IntToStr(UpTime);
-        FDCLLogOn.SetDBName(ShadowQuery);
-        ShadowQuery.SQL.Text:=FindParam('SQL=', FOPL[ScrStrNum+1]);
-        try
-          ShadowQuery.Open;
-        Except
-          ShowErrorMessage(-1103, 'SQL='+ShadowQuery.SQL.Text);
-        end;
-        ShadowQuery.Last;
-        ShadowQuery.First;
-        FOPL[ScrStrNum+1]:=IntToStr(ShadowQuery.RecordCount);
-        For v1:=0 to ShadowQuery.RecordCount-1 do
-        begin
-          FOPL.Insert(ScrStrNum+2+v1*2, Trim(ShadowQuery.Fields[0].AsString));
-          FOPL.Insert(ScrStrNum+3+v1*2, Trim(ShadowQuery.Fields[1].AsString));
-          ShadowQuery.Next;
-        end;
-        FreeAndNil(ShadowQuery);
       end;
 
       try
@@ -6395,11 +6089,6 @@ end;
 
 procedure TDCLGrid.DeleteMenuBookMark(BookMarkNum: Integer);
 begin
-  KeyMarks.KeyBookMarks[BookMarkNum].KeyField:='';
-  KeyMarks.KeyBookMarks[BookMarkNum].KeyValue:='';
-  KeyMarks.KeyBookMarks[BookMarkNum].Title:='';
-
-  RefreshBookMarkMenu;
 end;
 
 procedure TDCLGrid.DropListOnSelectItem(Sender: TObject);
@@ -6441,14 +6130,7 @@ begin
 end;
 
 procedure TDCLGrid.ExecEvents(EventType: TEventsEnum);
-var
-  i: TDCLEvent;
 begin
-  For i in Events do
-  begin
-    if i.EventType=EventType then
-      FDCLForm.ExecCommand(i.Event);
-  end;
 end;
 
 procedure TDCLGrid.ExecFilter(Sender: TObject);
@@ -6460,17 +6142,7 @@ begin
 end;
 
 procedure TDCLGrid.FieldsManege(Sender: TObject);
-var
-  CIndex: Integer;
 begin
-  CIndex:=FieldsList.ItemIndex;
-  If CIndex<> - 1 Then
-  begin
-    FGrid.Columns.Add.FieldName:=StructModify[CIndex].FieldsListField;
-    FGrid.Columns[FGrid.Columns.Count-1].Title.Caption:=StructModify[CIndex].FieldsListCaption;
-    ColumnsList.Items.Append(FGrid.Columns[FGrid.Columns.Count-1].Title.Caption+'\'+
-        FGrid.Columns[FGrid.Columns.Count-1].FieldName);
-  end;
 end;
 
 procedure TDCLGrid.PFind(Sender: TObject);
@@ -6609,10 +6281,6 @@ end;
 
 function TDCLGrid.GetMultiselect: Boolean;
 begin
-  If Assigned(FGrid) Then
-    Result:=dgMultiSelect in FGrid.Options
-  Else
-    Result:=FMultiSelect;
 end;
 
 function TDCLGrid.GetQuery: TDCLQuery;
@@ -6830,19 +6498,7 @@ begin
 end;
 
 procedure TDCLGrid.PClearAllFind(Sender: TObject);
-var
-  StrIndex, i:Integer;
 begin
-  If (Not (FDisplayMode in TDataGrid))or(Not Assigned(FGrid)) Then
-    StrIndex:=1
-  Else
-    StrIndex:=0;
-
-  If not FindProcess then
-    PFind(Sender);
-  If Assigned(FindGrid) then
-    For i:=2 to FindGrid.ColCount do
-      FindGrid.Cells[i-1, StrIndex]:='';
 end;
 
 procedure TDCLGrid.PCopy(Sender: TObject);
@@ -6867,32 +6523,11 @@ begin
 end;
 
 procedure TDCLGrid.Print(Sender: TObject);
-var
-  PrintBase: TPrintBase;
 begin
-  PrintBase:=TPrintBase.Create;
-  PrintBase.Print(FGrid, FQuery, FDCLForm.FForm.Caption);
 end;
 
 procedure TDCLGrid.PSetFind(Sender: TObject);
-var
-  StrIndex, i:Integer;
-  S:String;
 begin
-  If (Not (FDisplayMode in TDataGrid))or(Not Assigned(FGrid)) Then
-    StrIndex:=1
-  Else
-    StrIndex:=0;
-
-  If not FindProcess then
-    PFind(Sender);
-  If Assigned(FindGrid) then
-  If Assigned(FGrid) then
-  Begin
-    S:=FGrid.SelectedField.AsString;
-    i:=FGrid.SelectedIndex;
-    FindGrid.Cells[i+1, StrIndex]:=S;
-  End;
 end;
 
 procedure TDCLGrid.PUndo(Sender: TObject);
@@ -7037,19 +6672,7 @@ begin
 end;
 
 procedure TDCLGrid.SetBookMark(Sender: TObject);
-var
-  l: Integer;
 begin
-  If (KeyMarks.KeyField<>'')and(FieldExists(KeyMarks.KeyField, FQuery)) Then
-  begin
-    l:=Length(KeyMarks.KeyBookMarks);
-    SetLength(KeyMarks.KeyBookMarks, l+1);
-    KeyMarks.KeyBookMarks[l].KeyField:=KeyMarks.KeyField;
-    KeyMarks.KeyBookMarks[l].KeyValue:=FQuery.FieldByName(KeyMarks.KeyField).AsString;
-    KeyMarks.KeyBookMarks[l].Title:=FQuery.FieldByName(KeyMarks.TitleField).AsString;
-
-    RefreshBookMarkMenu;
-  end;
 end;
 
 procedure TDCLGrid.SetColumns(Cols: TDBGridColumns);
@@ -7285,74 +6908,7 @@ begin
 end;
 
 procedure TDCLGrid.Structure(Sender: TObject);
-var
-  v1, v2: Word;
-  StructItem: TStructureModify;
 begin
-  If FDisplayMode in TDataGrid Then
-  begin
-    If Not Assigned(FieldsList) Then
-    begin
-      FGrid.Align:=alLeft;
-      v1:=FGrid.Width div 2;
-      FGrid.Width:=v1;
-
-      Splitter1:=TSplitter.Create(FGridPanel);
-      Splitter1.Parent:=FGridPanel;
-      Splitter1.Left:=(FDCLForm.FForm.Width div 2)+10;
-
-      ColumnsList:=TListBox.Create(FGridPanel);
-      ColumnsList.Parent:=FGridPanel;
-      ColumnsList.OnDblClick:=ColumnsManege;
-      ColumnsList.Left:=(FDCLForm.FForm.Width div 2)+10;
-      ColumnsList.Align:=alLeft;
-
-      Splitter2:=TSplitter.Create(FGridPanel);
-      Splitter2.Parent:=FGridPanel;
-      Splitter2.Left:=FDCLForm.FForm.Width-10;
-
-      FieldsList:=TListBox.Create(FGridPanel);
-      FieldsList.Parent:=FGridPanel;
-      FieldsList.Left:=FDCLForm.FForm.Width-5;
-      FieldsList.OnDblClick:=FieldsManege;
-
-      FieldsList.Align:=alClient;
-      v2:=v1 div 2;
-      ColumnsList.Width:=v2;
-      FieldsList.Width:=v2;
-
-      For v1:=0 to FGrid.Columns.Count-1 do
-      begin
-        ColumnsList.Items.Append(FGrid.Columns[v1].Title.Caption+'\'+FGrid.Columns[v1].FieldName);
-
-        StructItem:=TStructureModify.Create;
-        StructItem.ColumnsListField:=FGrid.Columns[v1].FieldName;
-        StructItem.ColumnsListCaption:=FGrid.Columns[v1].Title.Caption;
-        StructModify.Add(StructItem);
-      end;
-
-      If DataFields.Count>0 Then
-      begin
-        For v1:=0 to DataFields.Count-1 do
-        begin
-          FieldsList.Items.Append(DataFields[v1].Caption+'\'+DataFields[v1].Name);
-
-          StructItem:=TStructureModify.Create;
-          StructItem.FieldsListCaption:=DataFields[v1].Caption;
-          StructItem.FieldsListField:=DataFields[v1].Name;
-          StructModify.Add(StructItem);
-        end;
-      end;
-    end
-    Else
-    begin
-      FreeAndNil(FieldsList);
-      FreeAndNil(ColumnsList);
-      FreeAndNil(Splitter1);
-      FreeAndNil(Splitter2);
-      FGrid.Align:=alClient;
-    end;
-  end;
 end;
 
 procedure TDCLGrid.RePlaseVariables(var VariablesSet: String);
@@ -7449,428 +7005,29 @@ end;
 
 // ==============================Reports===============================
 
-procedure DeleteInString(var S: String; Index, Count: LongInt);
-var
-  T, t1: LongInt;
-begin
-  T:=Index;
-  t1:=T;
-  While (S[T]<>#10)and(T<=Length(S))and(T-t1<=Count-1) do
-  begin
-    inc(T);
-  end;
-  Delete(S, Index, T-t1);
-end;
-
-procedure FillCopy(Source: String; var Dest: String; Start, FillLength, ReplaceLen: Cardinal;
-  Align: String);
-var
-  T, t1: Cardinal;
-  tmpL: String;
-begin
-  DeleteInString(Dest, Start, ReplaceLen);
-  tmpL:=Source;
-  t1:=Length(Source);
-  If PosEx('I', Align)<>0 Then
-    DeleteInString(Dest, Start, FillLength);
-
-  If PosEx('I', Align)=0 Then
-  begin
-    If PosEx('L', Align)<>0 Then
-      If FillLength>t1 Then
-        For T:=Length(tmpL)+1 to FillLength do
-          tmpL:=tmpL+' ';
-    If PosEx('R', Align)<>0 Then
-      If FillLength>t1 Then
-        For T:=Length(tmpL)+1 to FillLength do
-          tmpL:=' '+tmpL;
-    If PosEx('M', Align)<>0 Then
-    begin
-      If FillLength>t1 Then
-      begin
-        For T:=1 to (FillLength div 2)-(t1 div 2) do
-          tmpL:=' '+tmpL;
-        For T:=(FillLength div 2)-(t1 div 2)+t1+1 to FillLength do
-          tmpL:=tmpL+' ';
-      end;
-    end;
-  end;
-  Insert(Copy(tmpL, 1, FillLength), Dest, Start);
-end;
-
 procedure TDCLTextReport.GrabValOnEdit(Sender: TObject);
 begin
-  If Length(VarsToControls)>(Sender as TEdit).Tag Then
-    FDCLLogOn.Variables.Variables[_Namespace, VarsToControls[(Sender as TEdit).Tag]]:=(Sender as TEdit).Text;
 end;
 
 procedure TDCLTextReport.ValComboOnChange(Sender: TObject);
-var
-  Val: String;
 begin
-  If Length(VarsToControls)>(Sender as TDBLookupComboBox).Tag Then
-  begin
-    If (Sender as TDBLookupComboBox).KeyValue=null Then
-      Val:=''
-    Else
-      Val:=(Sender as TDBLookupComboBox).KeyValue;
-
-    FDCLLogOn.Variables.Variables[_Namespace, VarsToControls[(Sender as TDBLookupComboBox).Tag]]:=Val;
-  end;
 end;
 
 procedure TDCLTextReport.GrabDialogButtonsOnClick(Sender: TObject);
 begin
-  If (Sender as TButton).Tag=0 Then
-  begin
-    GrabValueForm.Close;
-    FDialogRes:=mrOk;
-  end;
-  If (Sender as TButton).Tag=1 Then
-  begin
-    GrabValueForm.Close;
-    FDialogRes:=mrCancel;
-  end;
 end;
 
 procedure TDCLTextReport.GrabDateOnChange(Sender: TObject);
 begin
-  If Length(VarsToControls)>(Sender as DateTimePicker).Tag Then
-    FDCLLogOn.Variables.Variables[_Namespace, VarsToControls[(Sender as DateTimePicker).Tag]]:=
-      DateToStr((Sender as DateTimePicker).Date);
 end;
 
 procedure TDCLTextReport.GrabValListOnChange(Sender: TObject);
 begin
-  If Length(VarsToControls)>(Sender as TComboBox).Tag Then
-    FDCLLogOn.Variables.Variables[_Namespace, VarsToControls[(Sender as TComboBox).Tag]]:=
-      (Sender as TComboBox).Text;
 end;
 
 constructor TDCLTextReport.InitReport(const NameSpace: String; DCLLogOn: TDCLLogOn; DCLGrid: TDCLGrid; OPL: TStringList;
   ParamsSet: Cardinal; Mode: TNewQueryMode);
-var
-  RepParamsSet: TDCLDialogQuery;
-  NewNew, GrabFormYes: Boolean;
-  GrabValueEdit: TEdit;
-  GrabDBLookupCombo: TDBLookupComboBox;
-  GrabQuery: TDCLDialogQuery;
-  GrabValueList: TComboBox;
-  GrabDS: TDataSource;
-  BtOk, BtCancel: TButton;
-  ParamsCountList, ElementsTop: Word;
-  GrabLabel: TDialogLabel;
-  GrabDate: DateTimePicker;
-  LocalVar1, LocalVar2, RecCount: Word;
-  tmpSQL, tmpSQL1: String;
-
-  procedure CreateGrabForm;
-  begin
-    If Not GrabFormYes Then
-    begin
-      GrabFormYes:=True;
-      FDialogRes:=mrCancel;
-      GrabValueForm:=TForm.Create(nil);
-      GrabValueForm.Position:=poScreenCenter;
-      GrabValueForm.BorderStyle:=bsSingle;
-      GrabValueForm.BorderIcons:=[biSystemMenu, biMinimize];
-      GrabValueForm.Caption:=GetDCLMessageString(msInputVulues);
-    end;
-  end;
-
 begin
-  InConsoleCodePage:=False;
-  FSaved:=True;
-  _NameSpace:=NameSpace;
-  FDCLLogOn:=DCLLogOn;
-  FDCLGrid:=DCLGrid;
-  Body:=TStringList.Create;
-  Report:=TStringList.Create;
-  RepParams:=TStringList.Create;
-  HeadLine:=TStringList.Create;
-  Futer:=TStringList.Create;
-  Template:=TStringList.Create;
-  GlobalSQL:=TStringList.Create;
-  InitSkrypts:=TStringList.Create;
-  EndSkrypts:=TStringList.Create;
-
-  FDialogRes:=mrOk;
-  GrabFormYes:=False;
-
-  InitSkrypts:=CopyStrings('[INIT REP]', '[END INIT]', OPL);
-  GlobalSQL:=CopyStrings('[GLOBALQUERY]', '[END GLOBALQUERY]', OPL);
-  RepParams:=CopyStrings('[PARAMS]', '[END PARAMS]', OPL);
-  HeadLine:=CopyStrings('[HEADLINE]', '[END HEADLINE]', OPL);
-  Template:=CopyStrings('[BODY]', '[END BODY]', OPL);
-  Futer:=CopyStrings('[FUTER]', '[END FUTER]', OPL);
-  EndSkrypts:=CopyStrings('[CLOSE REP]', '[END CLOSE]', OPL);
-
-  // ParamsSet
-  If ParamsSet<>0 Then
-  begin
-    RepParamsSet:=TDCLDialogQuery.Create(nil);
-    RepParamsSet.Name:='RepParamsSet_'+IntToStr(UpTime);
-    FDCLLogOn.SetDBName(RepParamsSet);
-    RepParamsSet.SQL.Text:=FDCLLogOn.GetRolesQueryText(qtCount, ' s.'+GPT.ParentFlgField+'='+
-        IntToStr(ParamsSet));
-    RepParamsSet.Open;
-    RecCount:=RepParamsSet.Fields[0].AsInteger;
-    If RecCount>0 Then
-    begin
-      RepParamsSet.Close;
-      RepParamsSet.SQL.Text:=FDCLLogOn.GetRolesQueryText(qtSelect, ' s.'+GPT.ParentFlgField+'='+
-          IntToStr(ParamsSet));
-      RepParamsSet.Open;
-
-      While Not RepParamsSet.Eof do
-      begin
-        RepParams.Append(Trim(RepParamsSet.FieldByName(GPT.DCLNameField).AsString));
-        RepParams.Append(Trim(RepParamsSet.FieldByName(GPT.DCLTextField).AsString));
-        RepParamsSet.Next;
-      end;
-    end;
-    RepParamsSet.Close;
-    FreeAndNil(RepParamsSet);
-  end;
-
-  ElementsTop:=BeginStepTop;
-  If InitSkrypts.Count>0 Then
-    For LocalVar1:=0 to InitSkrypts.Count-1 do
-    begin
-      If PosEx('DeclareVariable=', InitSkrypts[LocalVar1])<>0 Then
-      begin
-        FDCLLogOn.Variables.NewVariableWithTest(_Namespace, FindParam('DeclareVariable=', InitSkrypts[LocalVar1]));
-      end;
-
-      If PosEx('GrabValueList=', InitSkrypts[LocalVar1])<>0 Then
-      begin
-        CreateGrabForm;
-        GrabLabel:=TLabel.Create(GrabValueForm);
-        GrabLabel.Parent:=GrabValueForm;
-        GrabLabel.Name:='GrabLabel_'+IntToStr(LocalVar1);
-        GrabLabel.Top:=ElementsTop-14;
-        GrabLabel.Left:=8;
-        tmpSQL:=FindParam('Label=', InitSkrypts[LocalVar1]);
-        If tmpSQL<>'' Then
-          GrabLabel.Caption:=tmpSQL
-        Else
-          GrabLabel.Caption:=FindParam('GrabValueList=', InitSkrypts[LocalVar1]);
-
-        tmpSQL:=FindParam('GrabValueList=', InitSkrypts[LocalVar1]);
-        FDCLLogOn.Variables.NewVariableWithTest(_Namespace, tmpSQL);
-        GrabValueList:=TComboBox.Create(GrabValueForm);
-        GrabValueList.Parent:=GrabValueForm;
-        GrabValueList.Name:='GrabValList_'+IntToStr(LocalVar1);
-        GrabValueList.Text:='';
-        GrabValueList.Tag:=SetVarToControl(tmpSQL);
-
-        tmpSQL:=FindParam('ListValues=', InitSkrypts[LocalVar1]);
-        ParamsCountList:=ParamsCount(tmpSQL);
-        For LocalVar2:=1 to ParamsCountList do
-          GrabValueList.Items.Append(SortParams(tmpSQL, LocalVar2));
-
-        GrabValueList.Top:=ElementsTop;
-        GrabValueList.Left:=8;
-        GrabValueList.Width:=GrabComponentsWidth;
-        GrabValueList.OnChange:=GrabValListOnChange;
-        tmpSQL:=Trim(FindParam('DefaultValue=', InitSkrypts[LocalVar1]));
-        RePlaseVariables(tmpSQL);
-        If tmpSQL<>'' Then
-          GrabValueList.Text:=tmpSQL;
-        inc(ElementsTop, EditTopStep);
-      end;
-
-      If PosEx('GrabValue=', InitSkrypts[LocalVar1])<>0 Then
-      begin
-        CreateGrabForm;
-        GrabLabel:=TDialogLabel.Create(GrabValueForm);
-        GrabLabel.Parent:=GrabValueForm;
-        GrabLabel.Name:='GrabLabel_'+IntToStr(LocalVar1);
-        GrabLabel.Top:=ElementsTop-14;
-        GrabLabel.Left:=8;
-        tmpSQL:=FindParam('Label=', InitSkrypts[LocalVar1]);
-        If tmpSQL<>'' Then
-          GrabLabel.Caption:=tmpSQL
-        Else
-          GrabLabel.Caption:=FindParam('GrabValue=', InitSkrypts[LocalVar1]);
-
-        GrabValueEdit:=TEdit.Create(GrabValueForm);
-        GrabValueEdit.Parent:=GrabValueForm;
-        GrabValueEdit.Name:='GrabValEdit'+IntToStr(LocalVar1);
-        GrabValueEdit.Text:='';
-        GrabValueEdit.Tag:=SetVarToControl(FindParam('GrabValue=', InitSkrypts[LocalVar1]));
-        GrabValueEdit.OnChange:=GrabValOnEdit;
-        tmpSQL:=Trim(FindParam('Long=', InitSkrypts[LocalVar1]));
-        If tmpSQL<>'' Then
-          GrabValueEdit.MaxLength:=StrToIntEx(tmpSQL);
-
-        tmpSQL:=Trim(FindParam('DefaultValue=', InitSkrypts[LocalVar1]));
-        RePlaseVariables(tmpSQL);
-        If tmpSQL<>'' Then
-          GrabValueEdit.Text:=tmpSQL;
-
-        GrabValueEdit.Top:=ElementsTop;
-        GrabValueEdit.Left:=8;
-        GrabValueEdit.Width:=GrabComponentsWidth;
-
-        inc(ElementsTop, EditTopStep);
-      end;
-
-      If PosEx('GrabValueFromBase=', InitSkrypts[LocalVar1])<>0 Then
-      begin
-        CreateGrabForm;
-        GrabLabel:=TDialogLabel.Create(GrabValueForm);
-        GrabLabel.Parent:=GrabValueForm;
-        GrabLabel.Name:='GrabLabel_'+IntToStr(LocalVar1);
-        GrabLabel.Left:=8;
-        GrabLabel.Top:=ElementsTop-14;
-        tmpSQL:=FindParam('Label=', InitSkrypts[LocalVar1]);
-        If tmpSQL<>'' Then
-          GrabLabel.Caption:=tmpSQL
-        Else
-          GrabLabel.Caption:=FindParam('GrabValueFromBase=', InitSkrypts[LocalVar1]);
-
-        GrabDBLookupCombo:=TDBLookupComboBox.Create(GrabValueForm);
-        GrabDBLookupCombo.Parent:=GrabValueForm;
-        GrabDBLookupCombo.Name:='GrabValCombo'+IntToStr(LocalVar1);
-        GrabDBLookupCombo.Top:=ElementsTop;
-        GrabDBLookupCombo.Left:=8;
-        GrabDBLookupCombo.Width:=GrabComponentsWidth;
-        GrabDBLookupCombo.Tag:=SetVarToControl(FindParam('GrabValueFromBase=',
-            InitSkrypts[LocalVar1]));
-
-        GrabQuery:=TDCLDialogQuery.Create(nil);
-        GrabQuery.Name:='RepGabQ_'+IntToStr(UpTime);
-        tmpSQL1:=FindParam('SQL=', InitSkrypts[LocalVar1]);
-        RePlaseVariables(tmpSQL1);
-        GrabQuery.SQL.Text:=tmpSQL1;
-
-        FDCLLogOn.SetDBName(GrabQuery);
-        try
-          GrabQuery.Open;
-          GrabQuery.Last;
-          GrabQuery.First;
-          GrabDS:=TDataSource.Create(nil);
-          GrabDS.DataSet:=GrabQuery;
-          GrabDBLookupCombo.ListSource:=GrabDS;
-          GrabDBLookupCombo.ListField:=GrabQuery.Fields[0].FieldName;
-          If GrabQuery.FieldCount=1 Then
-            GrabDBLookupCombo.KeyField:=GrabQuery.Fields[0].FieldName
-          Else
-            GrabDBLookupCombo.KeyField:=GrabQuery.Fields[1].FieldName;
-
-{$IFDEF FPC}
-          GrabDBLookupCombo.OnSelect:=ValComboOnChange;
-{$ELSE}
-          GrabDBLookupCombo.OnClick:=ValComboOnChange;
-{$ENDIF}
-        Except
-          ShowErrorMessage( - 1108, 'SQL='+tmpSQL1);
-        end;
-
-        inc(ElementsTop, EditTopStep);
-      end;
-
-      If PosEx('GrabDate=', InitSkrypts[LocalVar1])<>0 Then
-      begin
-        CreateGrabForm;
-        GrabLabel:=TDialogLabel.Create(GrabValueForm);
-        GrabLabel.Parent:=GrabValueForm;
-        GrabLabel.Name:='GrabLabel_'+IntToStr(LocalVar1);
-        GrabLabel.Left:=8;
-        GrabLabel.Top:=ElementsTop-14;
-        tmpSQL:=FindParam('Label=', InitSkrypts[LocalVar1]);
-        If tmpSQL<>'' Then
-          GrabLabel.Caption:=tmpSQL
-        Else
-          GrabLabel.Caption:=FindParam('GrabDate=', InitSkrypts[LocalVar1]);
-
-        GrabDate:=DateTimePicker.Create(GrabValueForm);
-        GrabDate.Parent:=GrabValueForm;
-        GrabDate.Name:='GrabDate'+IntToStr(LocalVar1);
-        GrabDate.Date:=Date;
-        GrabDate.Top:=ElementsTop;
-        GrabDate.Left:=8;
-        GrabDate.Width:=GrabComponentsWidth;
-        GrabDate.Tag:=SetVarToControl(FindParam('GrabDate=', InitSkrypts[LocalVar1]));
-        FDCLLogOn.Variables.NewVariable(_Namespace, FindParam('GrabDate=', InitSkrypts[LocalVar1]),
-          DateToStr(GrabDate.Date));
-
-        tmpSQL:=Trim(FindParam('DefaultValue=', InitSkrypts[LocalVar1]));
-        RePlaseVariables(tmpSQL);
-        If tmpSQL<>'' Then
-          GrabDate.Date:=StrToDate(tmpSQL);
-
-        GrabDate.OnChange:=GrabDateOnChange;
-        inc(ElementsTop, EditTopStep);
-      end;
-    end;
-
-  If GrabFormYes Then
-  begin
-    GrabValueForm.ClientHeight:=ElementsTop+BeginStepTop+ButtonPanelHeight;
-    BtOk:=TButton.Create(GrabValueForm);
-    BtOk.Parent:=GrabValueForm;
-    BtOk.Tag:=0;
-    BtOk.Caption:='OK';
-    BtOk.Default:=True;
-    BtCancel:=TButton.Create(GrabValueForm);
-    BtCancel.Parent:=GrabValueForm;
-    BtCancel.Tag:=1;
-    BtCancel.Caption:='Cancel';
-    BtCancel.Cancel:=True;
-    BtOk.OnClick:=GrabDialogButtonsOnClick;
-    BtCancel.OnClick:=GrabDialogButtonsOnClick;
-
-    BtOk.Top:=GrabValueForm.ClientHeight-35;
-    BtCancel.Top:=GrabValueForm.ClientHeight-35;
-    BtOk.Left:=10;
-    BtCancel.Left:=95;
-    GrabValueForm.ShowModal;
-  end;
-
-  If GrabFormYes Then
-  begin
-    GrabValueForm.Release;
-    GrabValueForm:=nil;
-  end;
-
-  If DialogRes=mrCancel Then
-    Exit;
-
-  GrabFormYes:=False;
-
-  NewNew:=False;
-  If Mode=nqmNew Then
-  begin
-    NewNew:=True
-  end
-  Else
-    NewNew:=Not Assigned(DCLGrid);
-
-  If NewNew Then
-  begin
-    FReportQuery:=TReportQuery.Create(nil);
-    FDCLLogOn.SetDBName(FReportQuery);
-  end;
-
-  If GlobalSQL.Count<>0 Then
-  begin
-    tmpSQL:=GlobalSQL.Text;
-    FDCLLogOn.TranslateVal(_Namespace, tmpSQL);
-    FReportQuery.Close;
-    FReportQuery.SQL.Text:=tmpSQL;
-
-    Screen.Cursor:=crSQLWait;
-    try
-      FReportQuery.Open;
-      If GPT.DebugOn Then
-        DebugProc('Report SQL query: '+tmpSQL);
-    Except
-      ShowErrorMessage( - 1106, 'SQL='+tmpSQL);
-    end;
-    Screen.Cursor:=crDefault;
-  end;
 end;
 
 destructor TDCLTextReport.Destroy;
@@ -7878,395 +7035,35 @@ begin
 end;
 
 procedure TDCLTextReport.CloseReport(FileName: String);
-var
-  i: Word;
 begin
-  If EndSkrypts.Count>0 Then
-    For i:=0 to EndSkrypts.Count-1 do
-    begin
-      If PosEx('DisposeVariable=', EndSkrypts[i])<>0 Then
-        FDCLLogOn.Variables.FreeVariable(_Namespace, FindParam('DisposeVariable=', EndSkrypts[i]));
-    end;
-
-  If Not FSaved Then
-    SaveReport(FileName);
-
-  FreeAndNil(Body);
-  FreeAndNil(Report);
-  FreeAndNil(RepParams);
-  FreeAndNil(HeadLine);
-  FreeAndNil(Futer);
-  FreeAndNil(Template);
-  FreeAndNil(GlobalSQL);
-  FreeAndNil(EndSkrypts);
-  FreeAndNil(InitSkrypts);
 end;
 
 function TDCLTextReport.SaveReport(FileName: String): String;
-var
-  i: Integer;
 begin
-  If DialogRes=mrCancel Then
-    Exit;
-
-  Report.AddStrings(HeadLine);
-  Report.AddStrings(Body);
-  Report.AddStrings(Futer);
-
-  If FileName='' Then
-    FileName:='Report.txt';
-  If Not IsFullPAth(FileName) Then
-    FileName:=IncludeTrailingPathDelimiter(AppConfigDir)+FileName;
-
-  RePlaseVariables(FileName);
-
-  i:=Length(FileName);
-  While i<>0 do
-  begin
-    If (FileName[i]='"')or(FileName[i]=CrossDelim)or(FileName[i]='*')or(FileName[i]='?')or
-      (FileName[i]='>')or(FileName[i]='<') Then
-      Delete(FileName, i, 1);
-    Dec(i);
-  end;
-
-  If InConsoleCodePage then
-    Report.Text:=Transcode(tdtDOS, Report.Text);
-  Report.SaveToFile(FileName{$IFNDEF FPC}, TEncoding.UTF8{$ENDIF});
-  Result:=FileName;
-  FSaved:=True;
-
-  Body.Clear;
-  Report.Clear;
 end;
 
 function TDCLTextReport.SetVarToControl(VarName: String): Integer;
-var
-  l: Integer;
 begin
-  l:=Length(VarsToControls);
-  SetLength(VarsToControls, l+1);
-  VarsToControls[l]:=VarName;
-  Result:=l;
 end;
 
 function TDCLTextReport.TranslateRepParams(ParamName: String): String;
-var
-  ParamFieldNum: Byte;
-  ParamNum: Word;
-  ResultString, ReturnField, tmpSQL1: String;
-  ParamsQuery: TReportQuery;
 begin
-  ParamNum:=0;
-  While (UpperCase(RepParams[ParamNum])<>UpperCase(Trim(ParamName)))and
-    (ParamNum+1<>RepParams.Count) do
-    inc(ParamNum);
-  If FindParam('SQL=', RepParams[ParamNum+1])<>'' Then
-  begin
-    ParamsQuery:=TReportQuery.Create(nil);
-    FDCLLogOn.SetDBName(ParamsQuery);
-    tmpSQL1:=FindParam('SQL=', RepParams[ParamNum+1]);
-    RePlaseVariables(tmpSQL1);
-    ParamsQuery.SQL.Text:=tmpSQL1;
-    try
-      ParamsQuery.Open;
-      If GPT.DebugOn Then
-        DebugProc('Report param SQL query: '+tmpSQL1);
-    Except
-      ShowErrorMessage( - 1109, RepParams[ParamNum]+' / SQL='+tmpSQL1);
-    end;
-
-    ReturnField:=FindParam('ReturnField=', RepParams[ParamNum+1]);
-    DeleteNonPrintSimb(ReturnField);
-    ResultString:='';
-    If ReturnField='' Then
-    begin
-      While Not ParamsQuery.Eof do
-      begin
-        tmpSQL1:='';
-        For ParamFieldNum:=0 to ParamsQuery.FieldCount-1 do
-        begin
-          tmpSQL1:=tmpSQL1+TrimRight(ParamsQuery.Fields[ParamFieldNum].AsString);
-        end;
-
-        ResultString:=ResultString+tmpSQL1+#10;
-        ParamsQuery.Next;
-      end;
-    end
-    Else
-    begin
-      While Not ParamsQuery.Eof do
-      begin
-        ResultString:=ResultString+TrimRight(ParamsQuery.FieldByName(ReturnField).AsString)+#10;
-        ParamsQuery.Next;
-      end;
-    end;
-
-    ResultString:=Copy(ResultString, 1, Length(ResultString)-1);
-    RePlaseVariables(ResultString);
-
-    ParamsQuery.Close;
-    FreeAndNil(ParamsQuery);
-  end
-  Else
-  begin
-    ResultString:=FindParam('ReturnValue=', RepParams[ParamNum+1]);
-    DeleteNonPrintSimb(ResultString);
-    RePlaseVariables(ResultString);
-  end;
-  Result:=ResultString;
 end;
 
 procedure TDCLTextReport.ReplaseRepParams(var ReplaseText: TStringList);
-var
-  ParamValue, TmpStr, BodyText: String;
-  InsMode:Boolean;
-  ParamFill, ParamLen, CuteLen, k, k1, k3, DopLength, StringsCounter, StringNum, StartSel: Integer;
 begin
-  BodyText:=ReplaseText.Text;
-  RePlaseVariables(BodyText);
-  StringNum:=0;
-  If (RepParams.Count div 2)>0 Then
-  begin
-    For StringsCounter:=0 to (RepParams.Count div 2)-1 do
-    begin
-      InsMode:=False;
-      StartSel:=PosEx(RepParams[StringNum], BodyText);
-      While StartSel<>0 do
-      begin
-        If StartSel<>0 Then
-          ParamValue:=TranslateRepParams(RepParams[StringNum]);
-
-        k:=StartSel+Length(RepParams[StringNum]);
-        k1:=k;
-        ParamFill:=0;
-        DopLength:=0;
-        If BodyText<>'' Then
-          If BodyText[k]='(' Then
-          begin
-            While BodyText[k]<>')' do
-              inc(k);
-            TmpStr:=Copy(BodyText, k1+1, k-k1-1);
-            ParamFill:=StrToIntEx(TmpStr);
-            ParamLen:=ParamFill;
-            DopLength:=k-k1+1;
-          end
-          else
-            ParamLen:=Length(ParamValue);
-
-        If StartSel<>0 Then
-          If ParamFill=0 Then
-            ParamFill:=Length(ParamValue);
-        If ParamFill>Length(ParamValue) then
-        Begin
-          ParamFill:=ParamFill-Length(ParamValue);
-        End;
-
-        If PosEx('i', TmpStr)<>0 Then
-        begin
-          InsMode:=True;
-          Delete(BodyText, StartSel, Length(RepParams[StringNum])+DopLength);
-          CuteLen:=Length(RepParams[StringNum])+DopLength;
-        end
-        Else
-        begin
-          If PosEx('r', TmpStr)<>0 Then
-          begin
-            If ParamFill>0 Then
-              For k:=1 to ParamFill do
-                ParamValue:=' '+ParamValue;
-          end
-          Else If PosEx('m', TmpStr)<>0 Then
-          begin
-            If ParamFill>0 Then
-            begin
-              k3:=Length(ParamValue);
-              For k:=1 to (ParamFill div 2)-(k3 div 2) do
-                ParamValue:=' '+ParamValue;
-              For k:=(ParamFill div 2)-(k3 div 2)+k3+1 to ParamFill do
-                ParamValue:=ParamValue+' ';
-            end;
-          end
-          Else
-          begin
-            If ParamFill>0 Then
-              For k:=1 to ParamFill do
-                ParamValue:=ParamValue+' ';
-          end;
-          Delete(BodyText, StartSel, Length(RepParams[StringNum])+DopLength);
-        end;
-
-        If not InsMode then
-          Insert(Copy(ParamValue, 1, ParamLen), BodyText, StartSel)
-        Else
-        Begin
-          If CuteLen>=ParamFill then
-          Begin
-            For k:=1 to CuteLen-ParamFill do
-              ParamValue:=ParamValue+' ';
-            Insert(ParamValue, BodyText, StartSel);
-          End
-          Else
-          Begin
-            DeleteInString(BodyText, StartSel, ParamFill-CuteLen);
-            Insert(ParamValue, BodyText, StartSel);
-          End;
-        End;
-        StartSel:=PosEx(RepParams[StringNum], BodyText);
-      end;
-
-      Inc(StringNum, 2);
-    end;
-  end;
-
-  ReplaseText.Text:=BodyText;
 end;
 
 procedure TDCLTextReport.RePlaseVariables(var VarsSet: String);
 begin
-  If Assigned(FDCLGrid) Then
-    FDCLGrid.TranslateVal(VarsSet);
-  FDCLLogOn.TranslateVal(_Namespace, VarsSet);
 end;
 
 procedure TDCLTextReport.PrintigReport;
-var
-  TmpStr, BodyText, BodyText1: String;
-  StartPos, LengthParam, DelLen: Cardinal;
-  FieldsCounter, NameLength, StartSel, FFactor: Word;
-  Alig: String;
 begin
-  If DialogRes=mrCancel Then
-    Exit;
-  FSaved:=False;
-  BodyText:=Template.Text;
-
-  If Not FReportQuery.IsEmpty Then
-  begin
-    For FieldsCounter:=0 to FReportQuery.FieldCount-1 do
-    begin
-      NameLength:=Length(FReportQuery.Fields[FieldsCounter].FieldName);
-
-      StartSel:=PosEx(ParamPrefix+FReportQuery.Fields[FieldsCounter].FieldName, BodyText);
-      While StartSel<>0 do
-      begin
-        Alig:='L';
-        If StartSel<>0 Then
-        begin
-          If BodyText[StartSel+NameLength+1]='(' Then
-          begin
-            StartPos:=StartSel+NameLength+Length(ParamPrefix);
-            While BodyText[StartPos]<>')' do
-              inc(StartPos);
-            TmpStr:=Copy(BodyText, StartSel+NameLength+2, StartPos-StartSel-NameLength-2);
-            LengthParam:=StrToIntEx(TmpStr);
-            If PosEx('R', TmpStr)=0 Then
-              If PosEx('M', TmpStr)=0 Then
-                If PosEx('L', TmpStr)=0 Then
-                  If PosEx('I', TmpStr)=0 Then
-                    TmpStr:='L';
-
-            Alig:=TmpStr;
-            DelLen:=StartPos-StartSel+1;
-
-            If LengthParam=0 Then
-              LengthParam:=Length(TrimRight(FReportQuery.Fields[FieldsCounter].AsString));
-          end
-          Else
-          begin
-            DelLen:=NameLength+Length(ParamPrefix);
-            LengthParam:=Length(TrimRight(FReportQuery.Fields[FieldsCounter].AsString));
-          end;
-
-          FillCopy(TrimRight(FReportQuery.Fields[FieldsCounter].AsString), BodyText, StartSel,
-            LengthParam, DelLen, Alig);
-
-          StartSel:=PosEx(ParamPrefix+FReportQuery.Fields[FieldsCounter].FieldName, BodyText);
-        end;
-      end;
-    end;
-    BodyText1:=Copy(BodyText, 1, Length(BodyText)-Length(CR));
-  end
-  Else
-    BodyText1:='';
-
-  FFactor:=0;
-  TranslateProc(BodyText1, FFactor, nil);
-  Body.Append(BodyText1);
 end;
 
 procedure TDCLTextReport.OpenReport(FileName: String; ViewMode: TReportViewMode);
-// 0-Normal 1 Record;  1-All Records;  2-Bookmarks; 3-All records (Num)
-var
-  BookMarks, Nubers: Cardinal;
 begin
-  If DialogRes=mrCancel Then
-    Exit;
-  If Not FReportQuery.IsEmpty Then
-  begin
-    Case ViewMode of
-    rvmOneRecord:
-    PrintigReport;
-    rvmAllDS:
-    begin
-      FReportQuery.First;
-      While Not FReportQuery.Eof do
-      begin
-        PrintigReport;
-        FReportQuery.Next;
-      end;
-    end;
-    rvmGrid:
-    begin
-      If Assigned(FDCLGrid) Then
-        If FDCLGrid.DisplayMode in TDataGrid Then
-          If FDCLGrid.Grid.SelectedRows.Count>0 Then
-          begin
-            For BookMarks:=0 to FDCLGrid.Grid.SelectedRows.Count-1 do
-            begin
-              FReportQuery.GoToBookmark(TBookmark(FDCLGrid.Grid.SelectedRows[BookMarks]));
-              PrintigReport;
-            end;
-          end
-          Else
-            PrintigReport;
-    end;
-    rvmMultitRecordReport:
-    begin
-      If FileName='' Then
-        FileName:='Report';
-      FReportQuery.First;
-      Nubers:=1;
-      While Not FReportQuery.Eof do
-      begin
-        PrintigReport;
-        SaveReport(FileName+'-'+IntToStr(Nubers)+'.txt');
-        inc(Nubers);
-        FReportQuery.Next;
-      end;
-    end;
-    rvmBookmarcks:
-    begin
-      If Assigned(FDCLGrid) Then
-        If FDCLGrid.DisplayMode in TDataGrid Then
-          If FDCLGrid.Grid.SelectedRows.Count>0 Then
-          begin
-            Nubers:=1;
-            For BookMarks:=0 to FDCLGrid.Grid.SelectedRows.Count-1 do
-            begin
-              FReportQuery.GoToBookmark(TBookmark(FDCLGrid.Grid.SelectedRows[BookMarks]));
-              PrintigReport;
-              SaveReport(FileName+'-'+IntToStr(Nubers)+'.txt');
-              inc(Nubers);
-            end;
-          end;
-    end;
-    end;
-  end
-  Else
-    PrintigReport;
-
-  ReplaseRepParams(HeadLine);
-  ReplaseRepParams(Futer);
 end;
 // =========================================Reports==============================
 

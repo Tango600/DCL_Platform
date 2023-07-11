@@ -23,6 +23,7 @@ type
     FVariables: TVariables;
     FParser: TDCLValuseParser;
     FFormsNotifier: TDCLFormsNotifier;
+    FUserLevelLocal: TUserLevelsType;
 
     procedure TranslateVals(var S: String);
     procedure TranslateVals(var S: String; Query: TDCLDialogQuery); overload;
@@ -89,6 +90,9 @@ begin
   if Assigned(DCLForm) then
     FDCLForm:=(DCLForm as TDCLForm);
   FDCLGrid:=DCLGrid;
+  FUserLevelLocal:=GPT.AccessLevel;
+  if Assigned(DCLGrid) then
+    FUserLevelLocal:=DCLGrid.RightsLevel;
   FNameSpace:=NameSpace;
   FVariables:=Variables;
 
@@ -484,7 +488,7 @@ end;
 
 function TDCLCommand.GetRaights: TUserLevelsType;
 begin
-  Result:=ulLevel4;
+  Result:=FUserLevelLocal;
 end;
 
 procedure TDCLCommand.RunCommand(Command: String);

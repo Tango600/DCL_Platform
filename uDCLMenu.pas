@@ -19,7 +19,6 @@ type
     FDBConnector: TDBConnector;
     LocalQuery: TDCLDialogQuery;
     FormBar: TToolBar;
-    FUserID, FRoleID: Integer;
     findItemFlg: TMenuItem;
     FOpenDialogMethod: TOpenDialogMethod;
 
@@ -29,7 +28,6 @@ type
     procedure FindMenuItem(TagID: Integer; aItems: TMenuItem);
     procedure ClickMenu(Sender: TObject);
 
-    function GetRolesQueryText(Where: String): String;
     procedure AddMainItem(Id: Integer; Capt: String);
     procedure AddSubItem(Id, ParentItemId: Integer; Capt: String);
   public
@@ -43,6 +41,9 @@ type
 
 implementation
 
+uses
+  uDCLGlobalVariables, uDCLQueryUtils;
+
 { TDCLMenu }
 
 procedure TDCLMenu.About;
@@ -52,7 +53,7 @@ end;
 
 function TDCLMenu.GetMenuCommandById(Ident: Integer): String;
 begin
-  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+'='+IntToStr(Ident));
+  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+'='+IntToStr(Ident), GPT.UserID);
   LocalQuery.Open;
   LocalQuery.First;
   Result:=LocalQuery.FieldByName(CommandField).AsString;
@@ -93,11 +94,6 @@ begin
     if IdentID=-999 then
       About;
   end;
-end;
-
-function TDCLMenu.GetRolesQueryText(Where: String): String;
-begin
-  Result:='select * from '+DCLTable+' where '+Where+' order by '+IdentifyField;
 end;
 
 procedure TDCLMenu.AddMainItem(Id: Integer; Capt: String);
@@ -159,13 +155,13 @@ begin
     FormBar.Show;
   end;
 
-  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+'=0');
+  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+'=0', GPT.UserID);
   LocalQuery.Open;
   LocalQuery.First;
   FMainForm.Caption:=LocalQuery.FieldByName(DCLNameField).AsString;
   LocalQuery.Close;
 
-  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 1 and 1000');
+  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 1 and 1000', GPT.UserID);
   LocalQuery.Open;
   while not LocalQuery.EOF do
   begin
@@ -175,7 +171,7 @@ begin
   end;
   LocalQuery.Close;
 
-  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 1001 and 10000');
+  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 1001 and 10000', GPT.UserID);
   LocalQuery.Open;
   while not LocalQuery.EOF do
   begin
@@ -185,7 +181,7 @@ begin
   end;
   LocalQuery.Close;
 
-  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 10001 and 16000');
+  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 10001 and 16000', GPT.UserID);
   LocalQuery.Open;
   while not LocalQuery.EOF do
   begin
@@ -195,7 +191,7 @@ begin
   end;
   LocalQuery.Close;
 
-  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 16001 and 19000');
+  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 16001 and 19000', GPT.UserID);
   LocalQuery.Open;
   while not LocalQuery.EOF do
   begin
