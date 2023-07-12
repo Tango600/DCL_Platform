@@ -1718,22 +1718,6 @@ begin
         end;
       end;
 
-      If PosEx('DataReadOnly=', ScrStr)=1 Then
-      begin
-        TranslateVal(ScrStr, True);
-        TmpStr:=Trim(FindParam('DataReadOnly=', ScrStr));
-        GridIndex.TranslateVal(TmpStr);
-
-        If StrToIntEx(TmpStr)=1 Then
-        Begin
-         // FGrids[GridIndex].FQuery.CanModify:=False;
-          GridIndex.ReadOnly:=True;
-          GridIndex.AddNotAllowedOperation(dsoInsert);
-          GridIndex.AddNotAllowedOperation(dsoDelete);
-          GridIndex.AddNotAllowedOperation(dsoEdit);
-        End;
-      end;
-
       If PosEx('AddNotAllowOperation=', ScrStr)=1 Then
       begin
         TranslateVal(ScrStr, True);
@@ -1852,10 +1836,6 @@ begin
         GridIndex.QueryName:=tmpSQL;
       end;
 
-      If PosEx('Message=', ScrStr)=1 Then
-      begin
-        ExecCommand(ScrStr);
-      end;
 
       If (PosEx('UniqueTable=', ScrStr)=1)or
         (PosSet('UpdateResync=,LockType=,CursorType=', ScrStr)=1)or(PosEx('UniqueTable=', ScrStr)=1)
@@ -2075,22 +2055,10 @@ end;
 
 procedure TDCLForm.DeleteFormPos(All:Boolean);
 begin
-  Case GPT.FormPosInDB of
-  isDisk:
-  DeleteFormPosINI(All);
-  isBase:
-  DeleteFormPosBase(All);
-  isDiskAndBase:
-  begin
-    DeleteFormPosINI(All);
-    DeleteFormPosBase(All);
-  end;
-  end;
 end;
 
 procedure TDCLForm.DeleteFormPosBase(All:Boolean);
 begin
-  DeleteBaseINI(itFormPos, All);
 end;
 
 procedure TDCLForm.DeleteFormPosINI(All:Boolean);
@@ -2158,30 +2126,7 @@ begin
 end;
 
 function TDCLForm.ReadBaseINI(IniType: TINIType):TStringList;
-var
-  FileParams: TStringList;
-  INIQuery:TDCLQuery;
-  appName:String;
 begin
-  Result:=TStringList.Create;
-  If DialogName<>'' Then
-    If GPT.DialogsSettings Then
-    Begin
-      FileParams:=TStringList.Create;
-      INIQuery:=TDCLQuery.Create(FDCLLogOn.FDBLogOn);
-      INIQuery.SQL.Text:='select '+IniParamValField+' from '+INITable+' where '+GetIniToRole(GPT.UserID)+
-        GPT.UpperString+IniDialogNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+InternalAppName+'_'+DialogName+
-          GPT.StringTypeChar+GPT.UpperStringEnd+' and INI_TYPE='+IntToStr(Ord(IniType));
-      INIQuery.Open;
-      If not INIQuery.IsEmpty then
-      Begin
-        appName:='BaseUID:'+InternalAppName+FDCLLogOn.GetBaseUID+'/';
-        FileParams.Text:=INIQuery.FieldByName(IniParamValField).AsString;
-        Result:=CopyStrings(appName+'['+DialogName+']', appName+'[END '+DialogName+']', FileParams);
-      End;
-      FreeAndNil(FileParams);
-      FreeAndNil(INIQuery);
-    End;
 end;
 
 procedure TDCLForm.RefreshForm;
@@ -3782,41 +3727,8 @@ begin
 end;
 
 function TDCLCommand.ExpressionParser(Expression: String): String;
-var
-  ExpressionTmp, ExpressionTmp1: String;
-  DCLQuery: TDCLDialogQuery;
 begin
-  Result:='';
-  ExpressionTmp:=FindParam('SQL=', Expression);
-  If ExpressionTmp<>'' Then
-  begin
-    TranslateValContext(ExpressionTmp);
 
-    DCLQuery:=TDCLDialogQuery.Create(nil);
-    DCLQuery.Name:='Expression_'+IntToStr(UpTime);
-    FDCLLogOn.SetDBName(DCLQuery);
-    DCLQuery.SQL.Text:=ExpressionTmp;
-    try
-      DCLQuery.Open;
-    Except
-      ShowErrorMessage( - 1102, 'SQL='+ExpressionTmp);
-    end;
-    ExpressionTmp1:=FindParam('ReturnField=', Expression);
-    TranslateValContext(ExpressionTmp1);
-    If ExpressionTmp1='' Then
-      If DCLQuery.Active Then
-        ExpressionTmp1:=DCLQuery.Fields[0].FieldName;
-    If DCLQuery.Active Then
-      Result:=TrimRight(DCLQuery.FieldByName(ExpressionTmp1).AsString);
-    If DCLQuery.Active Then
-      DCLQuery.Close;
-    FreeAndNil(DCLQuery);
-  end
-  Else
-  begin
-    TranslateValContext(Expression);
-    Result:=Expression;
-  end;
 end;
 
 procedure TDCLCommand.ExtractScriptFile(FileName: String);
@@ -3826,10 +3738,6 @@ end;
 
 function TDCLCommand.GetRaightsByContext(InContext: Boolean): TUserLevelsType;
 begin
-  If InContext Then
-    Result:=FDCLForm.UserLevelLocal
-  Else
-    Result:=FDCLLogOn.AccessLevel;
 end;
 
 procedure TDCLCommand.RePlaseParamss(var ParamsSet: String; Query: TDCLDialogQuery);

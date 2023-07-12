@@ -2908,7 +2908,7 @@ begin
   inherited Create(Parent);
   Self.Parent:=Parent;
 
-  UserLevelLocal:=GPT.AccessLevel; // ulExecute;
+  UserLevelLocal:=GPT.AccessLevel;
 
   FMainPanel:=TPanel.Create(Parent);
   FMainPanel.Parent:=Parent;
@@ -3240,6 +3240,7 @@ begin
   begin
     TranslateVal(ScrStr, True);
     FDataReadOnly:=FindParam('ReadOnlyData=', ScrStr)='1';
+    FQuery.ReadOnly:=FDataReadOnly;
   end;
 
   if IsLexem('Style=', ScrStr) then
