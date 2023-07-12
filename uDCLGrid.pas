@@ -378,8 +378,53 @@ begin
 end;
 
 procedure TDCLGrid.ScrollDB(Data: TDataSet);
+var
+  Edit: TDCLField;
+  S: String;
 begin
   ExecEvents(evtScroll);
+
+  For Edit in FDCLFields do
+  begin
+    if Assigned(Edit.DCLEditComponent) and Assigned(Edit.DCLEditComponent.Control) then
+    begin
+      if Edit.DCLEditComponent.Control is TEdit then
+      begin
+        If (Edit.DCLEditComponent.EditType in [fbtOutBox, fbtEditBox]) and not Edit.NoDataField Then
+        begin
+          If FieldExists(Edit.FieldName, FQuery) Then
+            (Edit.DCLEditComponent.Control as TEdit).Text:=TrimRight(FQuery.FieldByName(Edit.FieldName).AsString);
+        end;
+      end;
+
+      if Edit.DCLEditComponent.Control is TCheckBox then
+      begin
+        If (not Edit.NoDataField) and FieldExists(Edit.FieldName, FQuery) Then
+        begin
+          S:=TrimRight(FQuery.FieldByName(Edit.FieldName).AsString);
+          If (S='0') or (S='') Then
+            (Edit.DCLEditComponent.Control as TCheckBox).Checked:=False;
+          If S='1' Then
+            (Edit.DCLEditComponent.Control as TCheckBox).Checked:=True;
+        end;
+      end;
+
+      if Edit.DCLEditComponent.Control is DateTimePicker then
+      If (not Edit.NoDataField) and FieldExists(Edit.FieldName, FQuery) then
+      begin
+        (Edit.DCLEditComponent.Control as DateTimePicker).Date:=FQuery.FieldByName(Edit.FieldName).AsDateTime;
+      end;
+
+      if Edit.DCLEditComponent.Control is TComboBox then
+        If (not Edit.NoDataField) and FieldExists(Edit.FieldName, FQuery) Then
+        begin
+          If GetStringDataType(FQuery.FieldByName(Edit.FieldName).AsString)=idDigit then
+            (Edit.DCLEditComponent.Control as TComboBox).ItemIndex:=FQuery.FieldByName(Edit.FieldName).AsInteger
+          Else
+            (Edit.DCLEditComponent.Control as TComboBox).ItemIndex:=(Edit.DCLEditComponent.Control as TComboBox).Items.IndexOf(FQuery.FieldByName(Edit.FieldName).AsString);
+        end;
+    end;
+  end;
 end;
 
 procedure TDCLGrid.AfterOpen(Data: TDataSet);

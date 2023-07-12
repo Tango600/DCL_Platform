@@ -1018,19 +1018,6 @@ end;
 
 procedure TLogOnForm.ChangePassword(AUserID, NewPassword: String);
 begin
-  RolesQuery1.Close;
-  If Not HashPass Then
-    RolesQuery1.SQL.Text:='update '+UsersTable+' set '+UserPassField+'='+GPT.StringTypeChar+
-      NewPassword+GPT.StringTypeChar+' where '+UserIDField+'='+AUserID
-  Else
-    RolesQuery1.SQL.Text:='update '+UsersTable+' set '+UserPassField+'='+GPT.StringTypeChar+
-      HashString(NewPassword)+GPT.StringTypeChar+' where '+UserIDField+'='+AUserID;
-
-  try
-    RolesQuery1.ExecSQL;
-  Except
-    //
-  end;
 end;
 
 destructor TLogOnForm.Destroy;
@@ -1047,22 +1034,10 @@ end;
 
 procedure TLogOnForm.OkButtonClick(Sender: TObject);
 begin
-  PressOK:=psConfirmed;
-  RoleForm.OnCloseQuery:=nil;
-  FEnterPassword:=RolePassEdit.Text;
-  RoleForm.Close;
 end;
 
 procedure TLogOnForm.OkChangePass(Sender: TObject);
 begin
-  GPT.EnterPass:=OldPassEdit.Text;
-  // GetUserName(GPT.DCLUserName);
-  If GPT.DCLUserPass=GPT.EnterPass Then
-  begin
-    ChangePassword(GPT.UserID, NewPassEdit1.Text);
-    ChangePassForm.Close;
-    RolePassEdit.SetFocus;
-  end;
 end;
 
 procedure TLogOnForm.OnCloseForm(Sender: TObject; var Action: TCloseAction);
@@ -1132,19 +1107,6 @@ end;
 
 destructor TDCLForm.Destroy;
 begin
-  FDCLLogOn.IsBusy:=True;
-  CloseAction:=fcaInProcess;
-
-  FForm.OnResize:=nil;
-  FForm.OnActivate:=nil;
-  FForm.OnCloseQuery:=nil;
-
-  If ExitCode=0 Then
-  begin
-    SaveFormPos;
-    SaveBookMarkMenu;
-  end;
-
 end;
 
 procedure TDCLForm.CloseForm(Sender: TObject; var Action: TCloseAction);
@@ -1156,82 +1118,19 @@ begin
 end;
 
 function TDCLForm.GetQueryToRaights(S: String): String;
-var
-  RaightsStr, SQLStr: String;
-  DCLQuery: TDCLDialogQuery;
-  Factor:Word;
 begin
-  Result:=S;
-  DCLQuery:=TDCLDialogQuery.Create(nil);
-  FDCLLogOn.SetDBName(DCLQuery);
-  RaightsStr:=FindParam('UserRaights=', S);
-  RePlaseVariables(RaightsStr);
-  FDCLLogOn.RePlaseVariables(Namespace, RaightsStr);
-  Factor:=0;
-  TranslateProc(RaightsStr, Factor, nil);
-
-  If (GPT.DCLUserName<>'')and(RaightsStr<>'')and(GPT.UserID<>'') Then
-  begin
-    SQLStr:='select count(*) from '+UsersTable+' u where u.'+UserIDField+' '+RaightsStr+' and u.'+
-      UserIDField+'='+GPT.UserID;
-    DCLQuery.SQL.Text:=SQLStr;
-    try
-      DCLQuery.Open;
-    Except
-      ShowErrorMessage( - 9000, 'SQL='+SQLStr);
-    end;
-    If DCLQuery.Fields[0].AsInteger<>0 Then
-      Result:=S
-    Else
-      Result:='';
-  end
-  Else
-    Result:=S;
-
-  DCLQuery.Close;
-  FreeAndNil(DCLQuery);
 end;
 
 procedure TDCLForm.LoadFormPos;
 begin
-  SettingsLoaded:=True;
-  Case GPT.FormPosInDB of
-  isDisk:
-  LoadFormPosINI;
-  isBase:
-  LoadFormPosBase;
-  isDiskAndBase:
-  begin
-    LoadFormPosINI;
-    LoadFormPosBase;
-  end;
-  end;
 end;
 
 procedure TDCLForm.LoadFormPosINI;
-var
-  FileParams, DialogsParams: TStringList;
-  appName:String;
 begin
-  If DialogName<>'' Then
-    If GPT.DialogsSettings Then
-    begin
-      If FileExists(IncludeTrailingPathDelimiter(AppConfigDir)+'Dialogs.ini') Then
-      begin
-        FileParams:=TStringList.Create;
-        FileParams.LoadFromFile(IncludeTrailingPathDelimiter(AppConfigDir)+'Dialogs.ini'{$IFNDEF FPC}, TEncoding.UTF8{$ENDIF});
-        appName:='BaseUID:'+InternalAppName+FDCLLogOn.GetBaseUID+'/';
-        DialogsParams:=CopyStrings(appName+'['+DialogName+']', appName+'[END '+DialogName+']', FileParams);
-        LoadFormPosUni(DialogsParams);
-        FreeAndNil(FileParams);
-        FreeAndNil(DialogsParams);
-      end;
-    end;
 end;
 
 procedure TDCLForm.LoadFormPosBase;
 begin
-  LoadFormPosUni(ReadBaseINI(itFormPos));
 end;
 
 procedure TDCLForm.LoadFormPosUni(DialogParams: TStringList);
@@ -1244,17 +1143,6 @@ end;
 
 procedure TDCLForm.SaveFormPos;
 begin
-  Case GPT.FormPosInDB of
-  isDisk:
-  SaveFormPosINI;
-  isBase:
-  SaveFormPosBase;
-  isDiskAndBase:
-  begin
-    SaveFormPosINI;
-    SaveFormPosBase;
-  end;
-  end;
 end;
 
 procedure TDCLForm.SaveFormPosINI;
@@ -1262,14 +1150,7 @@ begin
 end;
 
 procedure TDCLForm.SaveFormPosBase;
-var
-  DialogSettings: TStringList;
 begin
-  DialogSettings:=TStringList.Create;
-  DialogSettings:=SaveFormPosUni;
-  If DialogSettings.Count>0 then
-    WriteBaseINI(itFormPos, SaveFormPosUni);
-  FreeAndNil(DialogSettings);
 end;
 
 function TDCLForm.SaveFormPosUni: TStringList;
@@ -1292,72 +1173,15 @@ begin
 end;
 
 procedure TDCLForm.SaveBookmarkMenuINI;
-var
-  FileParams, DialogsParams: TStringList;
-  p1, p2, i, j: Integer;
 begin
-  DialogsParams:=SaveBookMarkMenuUni;
-  If DialogsParams.Count>0 Then
-  begin
-    p1:= - 1;
-    p2:= - 1;
-    FileParams:=TStringList.Create;
-    If DialogName<>'' Then
-      If FileExists(IncludeTrailingPathDelimiter(AppConfigDir)+'BookMark.ini') Then
-      begin
-        FileParams.LoadFromFile(IncludeTrailingPathDelimiter(AppConfigDir)+'BookMark.ini'{$IFNDEF FPC}, TEncoding.UTF8{$ENDIF});
-        For i:=1 to FileParams.Count do
-        begin
-          If PosEx('['+DialogName+']', FileParams[i-1])=1 Then
-          begin
-            p1:=i-1;
-            For j:=p1 to FileParams.Count-1 do
-            begin
-              If PosEx('[END '+DialogName+']', FileParams[j])=1 Then
-              begin
-                p2:=j;
-                break;
-              end;
-            end;
-          end;
-        end;
-      end;
-
-    If (p1<p2)and(p1> - 1) Then
-    begin
-      For i:=p1 to p2-p1 do
-        FileParams.Delete(p1);
-    end;
-    FileParams.AddStrings(DialogsParams);
-    FileParams.SaveToFile(IncludeTrailingPathDelimiter(AppConfigDir)+'BookMark.ini'{$IFNDEF FPC}, TEncoding.UTF8{$ENDIF});
-  end;
-  FreeAndNil(DialogsParams);
 end;
 
 procedure TDCLForm.SaveBookmarkMenuBase;
-var
-  DialogSettings: TStringList;
 begin
-  DialogSettings:=TStringList.Create;
-  DialogSettings:=SaveBookMarkMenuUni;
-  if DialogSettings.Count>0 then
-    WriteBaseINI(itBookmarkMenu, DialogSettings);
-  FreeAndNil(DialogSettings);
 end;
 
 procedure TDCLForm.LoadBookmarkMenu;
 begin
-  Case GPT.FormPosInDB of
-  isDisk:
-  LoadBookmarkMenuINI;
-  isBase:
-  LoadBookmarkMenuBase;
-  isDiskAndBase:
-  begin
-    LoadBookmarkMenuINI;
-    LoadBookmarkMenuBase;
-  end;
-  end;
 end;
 
 procedure TDCLForm.LoadBookmarkMenuINI;
@@ -1381,99 +1205,11 @@ begin
 end;
 
 procedure TDCLForm.CreateBookMarkMenuUni(MenuList: TStringList);
-var
-  ParamsCounter, i: Word;
-  g, T: Integer;
-  Grid: TDCLGrid;
-  S: String;
-  DialogParams: TStringList;
 begin
-  DialogParams:=TStringList.Create;
-  DialogParams.Clear;
-
-  If DialogName<>'' Then
-    If MenuList.Count>0 Then
-    begin
-      g:= - 1;
-      T:= - 1;
-      Grid:=nil;
-      ParamsCounter:=0;
-
-      If MenuList.Count>0 Then
-        While (ParamsCounter<MenuList.Count) do
-        begin
-          S:=Trim(MenuList[ParamsCounter]);
-
-          If PosEx('[Page]', S)=1 Then
-          begin
-            inc(ParamsCounter);
-            T:= - 1;
-            inc(g);
-            If g> - 1 Then
-              Grid:=Tables[g];
-          end;
-
-          If PosEx('[TablePart]', S)=1 Then
-          begin
-            inc(ParamsCounter);
-            inc(T);
-            If g> - 1 Then
-              If T> - 1 Then
-                Grid:=Tables[g].TableParts[T];
-            If ParamsCounter>=MenuList.Count Then
-              break;
-            If PosEx('[TablePart]', MenuList[ParamsCounter])=1 Then
-            begin
-              Grid:=nil;
-            end;
-          end;
-
-          If Assigned(Grid) Then
-          begin
-            DialogParams.Clear;
-            For i:=ParamsCounter to ParamsCounter+KeyMarksItems-1 do
-              DialogParams.Append(MenuList[i]);
-            Grid.CreateBookMarkMenu(DialogParams);
-            inc(ParamsCounter, KeyMarksItems-1);
-          end;
-
-          inc(ParamsCounter);
-        end;
-    end;
-  DialogParams.Free;
 end;
 
 function TDCLForm.SaveBookMarkMenuUni: TStringList;
-var
-  l: Word;
-  tablePart, grid: TDCLGrid;
 begin
-  l:=0;
-  Result:=TStringList.Create;
-  If DialogName<>'' Then
-  begin
-    inc(l);
-    Result.Append('['+DialogName+']');
-    For grid in FGrids do
-    begin
-      inc(l);
-      Result.Append('[Page]');
-      Result.AddStrings(grid.SaveBookMarkMenu);
-
-      For tablePart in grid.FTableParts do
-      begin
-        inc(l);
-        Result.Append('[TablePart]');
-        Result.AddStrings(tablePart.SaveBookMarkMenu);
-      end;
-    end;
-
-    inc(l, 2);
-    Result.Append('[END '+DialogName+']');
-    Result.Append('');
-  end;
-  If l=Result.Count Then
-    Result.Clear;
 end;
 
 procedure TDCLForm.AddSubItem(Caption, ItemName, Pict: String; Level: Integer;
@@ -1520,17 +1256,7 @@ begin
 end;
 
 procedure TDCLForm.AddEvents(EventType: TEventsEnum; EventsSet: String);
-var
-  i: Integer;
-  EventItem: TDCLEvent;
 begin
-  for i:=1 to ParamsCount(EventsSet) do
-  begin
-    EventItem:=TDCLEvent.Create;
-    EventItem.EventType:=EventType;
-    EventItem.Event:=SortParams(EventsSet, i);
-    GridIndex.AddEvent(EventItem);
-  end;
 end;
 
 constructor TDCLForm.Create(DialogName: String; var DCLLogOn: TDCLLogOn; ParentForm, CallerForm: TDCLForm;
@@ -1571,36 +1297,6 @@ begin
   if Assigned(Command) then
     Namespace:=Command.GetNamespace;
 
-  FieldsOPL:=nil;
-  ExitCode:=0;
-  FieldsSettingsReseted:=False;
-  SettingsLoaded:=False;
-  NotDestroyedDCLForm:=False;
-  FParentForm:=ParentForm;
-  FCallerForm:=CallerForm;
-  FRetunValue.Choosen:=False;
-  ModalOpen:=(ReturnValueMode<>chmNone) or Modal;
-  FReturnValueParams:=ReturnValueParams;
-  FReturningMode:=ReturnValueMode;
-  ResetChooseValue(FRetunValue);
-  NoStdKeys:=False;
-  LocalVariables:=TVariables.Create(FDCLLogOn, Self);
-  FOPL:=TStringList.Create;
-  FOPL:=OPL;
-  FName:=DialogName;
-  FDialogName:=DialogName;
-  FFormNum:=aFormNum;
-  GridIndex:=nil;
-  Commands:=TDCLCommandButton.Create(DCLLogOn, Self);
-  UserLevelLocal:=FDCLLogOn.AccessLevel;
-  FormHeight:=DefaultFormHeight;
-  FormWidth:=DefaultFormWidth;
-  ExitNoSave:=False;
-  FGrids:=TList<TDCLGrid>.Create;
-
-  FSeed:=FForm.Handle;
-  FFormMenu:=TMainMenu.Create(FForm);
-  // FFormMenu.Parent:=FForm;
   FForm.DisableAlign;
 
   AddMainItem(InitCap(GetDCLMessageString(msSettings)), 'SettingsMenuItem',
@@ -1758,36 +1454,6 @@ begin
       end;
 
       If PosEx('SetMainFormCaption=', ScrStr)=1 Then
-      begin
-        ExecCommand(ScrStr);
-      end;
-
-      If PosEx('Status=', ScrStr)=1 Then
-      begin
-        ExecCommand(ScrStr);
-      end;
-
-      If PosEx('AddStatus=', ScrStr)=1 Then
-      begin
-        ExecCommand(ScrStr);
-      end;
-
-      If PosEx('StatusWidth=', ScrStr)=1 Then
-      begin
-        ExecCommand(ScrStr);
-      end;
-
-      If PosEx('SetStatusText=', ScrStr)=1 Then
-      begin
-        ExecCommand(ScrStr);
-      end;
-
-      If PosEx('DeleteAllStatus;', ScrStr)=1 Then
-      begin
-        ExecCommand(ScrStr);
-      end;
-
-      If PosEx('DeleteStatus=', ScrStr)=1 Then
       begin
         ExecCommand(ScrStr);
       end;
@@ -1995,17 +1661,6 @@ begin
 
     If ExitCode=0 Then
     begin
-      // FItnQuery:=nil;
-      DataGlob:=FGrids[0].DataSource;
-
-      For grid in FGrids do
-        grid.Show;
-
-
-      If FormWidth>FForm.Width Then
-        FForm.Width:=FormWidth;
-
-
       FPages.ActivePageIndex:=0;
       ChangeTabPage(FPages);
 
@@ -2335,32 +1990,6 @@ begin
 
   If Not Executed Then
   begin
-    RecCount:=0;
-    If Pos('''', Command)=0 Then
-      If Pos(#10, Command)=0 Then
-      begin
-        v1:=FDCLLogOn.FindVirtualScript(Command);
-        If v1=-1 then
-        Begin
-        End
-        Else
-        Begin
-          Command:=FDCLLogOn.GetVirtualScriptNum(v1).ScrText;
-        End;
-      end;
-
-    If RecCount=0 Then
-    begin
-      FCommandDCL.Clear;
-      FCommandDCL.Text:=Command;
-      /// DebugProc('Попытка исполнить команду: '+Command);
-      /// If PosEx('script type=visual', FCommandDCL[0])<>0 Then Open(Nil, Nil, Nil, '', FCommandDCL);
-    end
-    Else
-    begin
-      FCommandDCL.Text:=DCLQuery.FieldByName(GPT.DCLTextField).AsString;
-    end;
-    DCLQuery.Close;
 
     StopFlag:=False;
     Breaking:=False;
@@ -2767,12 +2396,6 @@ begin
                 end;
                 FDCLForm.CurrentQuery.EnableControls;
               end;
-            end;
-
-            If PosEx('MultiSelect=', ScrStr)=1 Then
-            begin
-              If Assigned(FDCLForm) Then
-                FDCLForm.CurrentGridIndex.MultiSelect:=FindParam('MultiSelect=', ScrStr)='1';
             end;
 
             If PosEx('TablePartQuery=', ScrStr)=1 Then
@@ -3245,19 +2868,6 @@ begin
               FDCLLogOn.WriteConfig(tmp1, tmp2, tmp3);
             end;
 
-            If PosEx('FormHeight=', ScrStr)=1 Then
-            begin
-              v1:=StrToIntEx(FindParam('FormHeight=', ScrStr));
-              If Assigned(FDCLForm) Then
-                FDCLForm.FForm.ClientHeight:=v1;
-            end;
-
-            If PosEx('FormWidth=', ScrStr)=1 Then
-            begin
-              v1:=StrToIntEx(FindParam('FormWidth=', ScrStr));
-              If Assigned(FDCLForm) Then
-                FDCLForm.FForm.ClientWidth:=v1;
-            end;
 
             If (PosEx('PutInDB=', ScrStr)=1)or(PosEx('PutToDB=', ScrStr)=1) Then
             begin
@@ -3980,13 +3590,6 @@ end;
 
 function TDCLLogOn.CheckPass(UserName, EnterPass, Password: String): Boolean;
 begin
-  If GPT.HashPass Then
-    Result:=(Password=HashString(EnterPass))and(UserName<>'')and(Password<>'')
-  Else
-    Result:=(Password=EnterPass)and(UserName<>'')and(Password<>'');
-
-  If Result Then
-    RoleOK:=lsLogonOK;
 end;
 
 procedure TDCLLogOn.CloseAllForms;
@@ -4493,102 +4096,11 @@ begin
 end;
 
 procedure TDCLLogOn.Lock;
-var
-  OldUserID: String;
-  Res: TLogOnStatus;
-{$IFNDEF EMBEDDED}
-  LogOnForm: TLogOnForm;
-{$ENDIF}
 begin
-{$IFNDEF EMBEDDED}
-  NotifyForms(fnaHide);
-  OldUserID:=GPT.UserID;
-
-  LogOnForm:=TLogOnForm.Create(Self, GPT.DCLUserName, True, True);
-  LogOnForm.CreateForm(True, True, GPT.DCLUserName);
-  Res:=lsUnInitaliced;
-  repeat
-    LogOnForm.ShowForm;
-    GetUserName(LogOnForm.UserName);
-    If CheckPass(LogOnForm.UserName, LogOnForm.EnterPass, GPT.DCLUserPass) Then
-      Res:=lsLogonOK;
-    If LogOnForm.PressOK=psCanceled Then
-      break;
-  until Res=lsLogonOK;
-  FreeAndNil(LogOnForm);
-
-  If (Res=lsLogonOK)and(OldUserID<>GPT.UserID) Then
-    CreateMenu(FMainForm);
-
-  NotifyForms(fnaShow);
-{$ENDIF}
 end;
 
 procedure TDCLLogOn.LoggingUser(Login: Boolean);
-var
-  LoggingQuery: TDCLQuery;
 begin
-  If FDBLogOn.Connected then
-  Begin
-    LoggingQuery:=TDCLQuery.Create(Self.FDBLogOn);
-    LoggingQuery.Name:='LoggingUser_'+IntToStr(UpTime);
-
-    If Login Then
-    begin
-      DCLSession.LoginTime:=TimeStampToStr(Now);
-      DCLSession.UserSystemName:=GetUserFromSystem;
-    end;
-
-    If GPT.UserLogging Then
-    begin
-      If DCLSession.LoginTime<>'' Then
-      begin
-        If Login Then
-        begin
-          LoggingQuery.SQL.Text:='insert into '+GPT.ACTIVE_USERS_TABLE+
-            '(ACTIVE_USER_ID, ACTIVE_USER_HOST, ACTIVE_USER_DCL_VER, ACTIVE_USER_LOGIN_TIME) '
-            +'values('+GPT.UserID+', '''+DCLSession.UserSystemName+''', '''+Version+''', '''+DCLSession.LoginTime+''')';
-        end
-        Else
-          LoggingQuery.SQL.Text:='delete from '+GPT.ACTIVE_USERS_TABLE+' where ACTIVE_USER_ID='+
-            GPT.UserID+' and ACTIVE_USER_DCL_VER='''+Version+
-            ''' and ACTIVE_USER_LOGIN_TIME='''+DCLSession.LoginTime+'''';
-
-        try
-          LoggingQuery.ExecSQL;
-        Except
-
-        end;
-      end;
-    end;
-
-    If GPT.UserLoggingHistory Then
-    begin
-      If DCLSession.LoginTime<>'' Then
-      begin
-        If Login Then
-        Begin
-          LoggingQuery.SQL.Text:='insert into '+GPT.USER_LOGIN_HISTORY_TABLE+
-            '(UL_USER_ID, UL_LOGIN_TIME, UL_HOST_NAME, UL_DCL_VER) '+
-            'values('+GPT.UserID+
-            ', '''+DCLSession.LoginTime+''', '''+
-            DCLSession.UserSystemName+''', '''+Version+''')';
-        End
-        Else
-          LoggingQuery.SQL.Text:='update '+GPT.USER_LOGIN_HISTORY_TABLE+' set UL_LOGOFF_TIME='''+
-            TimeStampToStr(Now)+''' where '+'UL_USER_ID='+GPT.UserID+' and UL_LOGIN_TIME='''+
-            DCLSession.LoginTime+''' and UL_HOST_NAME='''+
-            DCLSession.UserSystemName+''' and UL_DCL_VER='''+Version+'''';
-        try
-          LoggingQuery.ExecSQL;
-        Except
-
-        end;
-      end;
-    end;
-
-    FreeAndNil(LoggingQuery);
-  End;
 end;
 
 function TDCLLogOn.Login(UserName, Password: String; ShowForm: Boolean): TLogOnStatus;
@@ -5826,165 +5338,8 @@ begin
 end;
 
 procedure TDCLGrid.CreateFields(FOPL: TStringList);
-var
-  FFieldColumn: TDCLField;
-  FieldCaptScrStr, FieldNameStr, TmpStr, tmpStr2, ScrStr: String;
-  ScrStrNum, v1, i1, CountFields, FieldNo, OPLStrNo: Integer;
-  ShadowQuery: TDCLDialogQuery;
 begin
-  ScrStrNum:=0;
-  LayoutParams.Top:=BeginStepTop;
-  LayoutParams.Left:=BeginStepLeft;
-  If FOPL.Count>=1 Then
-  begin
-    If (LowerCase(Trim(FOPL[0]))<>'[fields]')and(FOPL.Count=1) Then
-    begin
-      ScrStr:=FOPL[0];
-      TmpStr:=FindParam('Columns=', ScrStr);
-      If TmpStr<>'' Then
-      begin
-        v1:=ParamsCount(TmpStr);
-        FOPL.Append(IntToStr(v1));
-        For i1:=1 to v1 do
-        begin
-          tmpStr2:=SortParams(TmpStr, i1);
-          FieldCaptScrStr:=Copy(tmpStr2, 1, Pos('/', tmpStr2)-1);
-          v1:=0;
-          If Pos('=', FieldCaptScrStr)<>0 Then
-          begin
-            v1:=StrToIntEx(CopyCut(FieldCaptScrStr, Pos('=', FieldCaptScrStr)+1,
-                Length(FieldCaptScrStr)));
-            Delete(FieldCaptScrStr, PosEx('=', FieldCaptScrStr), Length(FieldCaptScrStr));
-          end;
 
-          FFieldColumn:=TDCLField.Create;
-          ResetFieldParams(FFieldColumn);
-          If FieldExists(FieldCaptScrStr, Query) Then
-          begin
-            FFieldColumn.FieldName:=FieldCaptScrStr;
-            FFieldColumn.Caption:=Copy(tmpStr2, Pos('/', tmpStr2)+1, Length(tmpStr2)-1);
-            FFieldColumn.Width:=v1;
-          end
-          Else
-          begin
-            FFieldColumn.Caption:=GetDCLMessageString(msNoField)+FieldCaptScrStr;
-            FFieldColumn.Width:=v1;
-          end;
-
-          tmpStr2:=FFieldColumn.FieldName;
-          If v1<>0 Then
-            tmpStr2:=tmpStr2+';Width='+IntToStr(v1)+';';
-
-          FOPL.Append(FFieldColumn.Caption);
-          FOPL.Append(tmpStr2);
-        end;
-        FOPL[0]:='[Fields]';
-      end;
-    end;
-
-    If (LowerCase(Trim(FOPL[0]))='[fields]')and(FOPL.Count>1) Then
-    begin
-      Show;
-      Query.NotAllowOperations:=NotAllowedOperations;
-
-      If FOPL[ScrStrNum+1]='*' Then
-      begin
-        If (FieldCount>0)or(Query.Active) Then
-          FOPL[ScrStrNum+1]:=IntToStr(FieldCount)
-        Else
-          FOPL[ScrStrNum+1]:='0';
-
-        For v1:=1 to Query.FieldCount do
-        begin
-          FOPL.Insert(ScrStrNum+v1*2, Query.Fields[v1-1].FieldName);
-          FOPL.Insert(ScrStrNum+1+v1*2, Query.Fields[v1-1].FieldName);
-        end;
-      end;
-
-      try
-        CountFields:=StrToInt(Trim(FOPL[ScrStrNum+1]));
-      Except
-        CountFields:=0;
-        ShowErrorMessage(-4002, '');
-      end;
-
-      Case DisplayMode of
-      dctMainGrid:
-      begin
-        If Not ReadOnly Then
-          ReadOnly:=(FUserLevelLocal=ulReadOnly)or(FindNotAllowedOperation(dsoEdit));
-        If (FUserLevelLocal=ulReadOnly)or(FindNotAllowedOperation(dsoEdit)) Then
-          If dgEditing in FGrid.Options then
-            Options:=Options-[dgEditing];
-      end;
-      dctFields, dctFieldsStep:
-      begin
-        { FGrids[GridIndex].FieldPanel:=TDialogPanel.Create(FGrids[GridIndex].FGridPanel);
-          FGrids[GridIndex].FieldPanel.Parent:=FGrids[GridIndex].FGridPanel;
-          FGrids[GridIndex].FieldPanel.Align:=alClient; }
-      end;
-
-      end;
-
-      FieldNo:=0;
-      For OPLStrNo:=1 to CountFields do
-      begin
-
-
-        Case DisplayMode of
-        dctFields, dctFieldsStep:
-        begin
-          If PosEx('[FieldParagraphDown];', FOPL[ScrStrNum+FieldNo+FieldNo])<>0 Then
-          begin
-            Case FFieldColumn.FType of
-            ftGraphic:
-            begin
-            inc(LayoutParams.Top, GraficTopStep);
-            IncXYPos(GraficTopStep, FFieldColumn.Width, FFieldColumn);
-            end;
-            ftMemo:
-            begin
-            inc(LayoutParams.Top, MemoHeight+FieldDownStep);
-            IncXYPos(MemoHeight+FieldDownStep, FFieldColumn.Width, FFieldColumn);
-            end;
-            Else
-            begin
-              inc(LayoutParams.Top, EditTopStep);
-              IncXYPos(EditTopStep, FFieldColumn.Width, FFieldColumn);
-            end;
-            end;
-          end;
-
-
-          // ----------------------------------------------------------------
-
-
-          If PosEx('RollBar=', FieldCaptScrStr)<>0 Then
-          begin
-            AddRollBar(FFieldColumn);
-          end;
-
-          If PosEx('ContextList=', FieldCaptScrStr)<>0 Then
-          begin
-            AddContextList(FFieldColumn);
-          end;
-
-        end;
-        dctMainGrid:
-        begin
-          If Not FieldExists(FFieldColumn.FieldName, Query) Then
-            FFieldColumn.Caption:=GetDCLMessageString(msNoField)+FFieldColumn.FieldName;
-
-          AddColumn(FFieldColumn);
-          If PosEx('DropListBox=', FFieldColumn.OPL)<>0 Then
-            AddDropBox(FFieldColumn);
-        end;
-        end;
-        AddField(FFieldColumn);
-
-      end;
-    end;
-  end;
 end;
 
 procedure TDCLGrid.DBEditClick(Sender: TObject);
@@ -6197,17 +5552,6 @@ end;
 
 function TDCLGrid.GetReadOnly: Boolean;
 begin
-  If FDisplayMode in TDataGrid Then
-  begin
-    If Assigned(FGrid) Then
-      Result:=not (dgEditing in FGrid.Options)
-    Else
-      Result:=FReadOnly;
-  end;
-  If FDisplayMode in TDataFields Then
-  begin
-    Result:=FReadOnly;
-  end;
 end;
 
 function TDCLGrid.GetSQL: String;
@@ -6462,26 +5806,7 @@ begin
 end;
 
 procedure TDCLGrid.RollBarOnChange(Sender: TObject);
-var
-  v1: Integer;
 begin
-  v1:=(Sender as TComponent).Tag;
-  If Query.Active and FieldExists(RollBars[v1].Field, Query) Then
-  begin
-    if Query.CanModify then
-    begin
-      If Query.FieldByName(RollBars[v1].Field).AsString<>IntToStr((Sender as TTrackBar).Position) Then
-      begin
-        If Not (Query.State in dsEditModes) Then
-          Query.Edit;
-
-        Query.FieldByName(RollBars[v1].Field).AsString:=IntToStr((Sender as TTrackBar).Position);
-      end;
-    end;
-  end;
-
-  If RollBars[v1].Variable<>'' Then
-    FDCLLogOn.Variables.Variables[GetNamespace, RollBars[v1].Variable]:=IntToStr((Sender as TTrackBar).Position);
 end;
 
 procedure TDCLGrid.SaveDB;
@@ -6515,68 +5840,8 @@ begin
 
   FDCLForm.SetRecNo;
 
-  For Edit in Edits do
-  begin
-    If (Edit.EditsType in [fbtOutBox, fbtEditBox]) and not Edit.DCLField.NoDataField Then
-    begin
-      If FieldExists(Edit.EditsToFields, FQuery) Then
-        Edit.Edit.Text:=TrimRight(FQuery.FieldByName(Edit.EditsToFields).AsString);
-    end;
-  end;
 
-  If DropBoxes.Count>0 Then
-    For DrpoBox in DropBoxes do
-    begin
-      If FieldExists(DrpoBox.FieldName, FQuery) Then
-        If GetStringDataType(FQuery.FieldByName(DrpoBox.FieldName).AsString)=idDigit then
-          DrpoBox.DropList.ItemIndex:=FQuery.FieldByName(DrpoBox.FieldName).AsInteger
-        Else
-          DrpoBox.DropList.ItemIndex:=DrpoBox.DropList.Items.IndexOf(FQuery.FieldByName(DrpoBox.FieldName).AsString);
-    end;
 
-  If CheckBoxes.Count>0 Then
-    For Check in CheckBoxes do
-    begin
-      If (not Check.NoDataField) and FieldExists(Check.CheckBoxToFields, FQuery) Then
-      begin
-        TmpStr:=TrimRight(FQuery.FieldByName(Check.CheckBoxToFields).AsString);
-        If (TmpStr='0')or(TmpStr='') Then
-          Check.CheckBox.Checked:=False;
-        If TmpStr='1' Then
-          Check.CheckBox.Checked:=True;
-      end;
-    end;
-
-  For DateBox in DateBoxes do
-  begin
-    If (not DateBox.NoDataField) and FieldExists(DateBox.DateBoxToFields, FQuery) Then
-      DateBox.DateBox.Date:=FQuery.FieldByName(DateBox.DateBoxToFields).AsDateTime;
-  end;
-
-  For Roll in RollBars do
-  begin
-    If Roll.Field<>'' Then
-    begin
-      If FieldExists(Roll.Field, FQuery) Then
-        Roll.RollBar.Position:=FQuery.FieldByName(Roll.Field).AsInteger;
-    end;
-  end;
-
-  For ContextList in ContextLists do
-  begin
-    If FieldExists(ContextList.ListField, FQuery) Then
-      ContextList.ContextList.Text:=
-        FQuery.FieldByName(ContextList.ListField).AsString
-    Else
-    begin
-      If FieldExists(ContextList.DataField, FQuery) Then
-      begin
-        ContextList.ContextList.Text:=GetFieldValue(ContextList.Table,
-          ContextList.Field, ' where '+ContextList.KeyField+'='+
-            IntToStr(FQuery.FieldByName(ContextList.DataField).AsInteger));
-      end;
-    end;
-  end;
 end;
 
 procedure TDCLGrid.SetBookMark(Sender: TObject);
