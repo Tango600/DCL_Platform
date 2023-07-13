@@ -1,5 +1,4 @@
 unit uDCLDBStructure;
-
 {$mode Delphi}
 
 interface

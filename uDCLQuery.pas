@@ -34,7 +34,7 @@ const
 
 type
   TUpdateKind=(ukAll, ukKeys);
-  TOperationsTypes=Array of TNotAllowedOperations;
+  TOperationsTypes=Array of TNotAllowedOperation;
   {$IFDEF UPDATESQLDB}
   TUpdateSQLObj=TUpdateObj;
   {$ELSE}
@@ -104,7 +104,7 @@ type
     procedure SetSQL(const AValue: {$IFDEF WITH_WIDEDATASET}TWideStrings{$ELSE}TStringList{$ENDIF});
     function GetSQL: {$IFDEF WITH_WIDEDATASET}TWideStrings{$ELSE}TStringList{$ENDIF};
 
-    Function FindNotAllowedOperation(Value: TNotAllowedOperations): Boolean;
+    Function FindNotAllowedOperation(Value: TNotAllowedOperation): Boolean;
 
   public
     constructor Create(DatabaseObj: TDBConnector); overload;
@@ -589,7 +589,7 @@ Begin
   end;
 End;
 
-function TDCLQuery.FindNotAllowedOperation(Value: TNotAllowedOperations
+function TDCLQuery.FindNotAllowedOperation(Value: TNotAllowedOperation
   ): Boolean;
 Var
   l, i: Byte;

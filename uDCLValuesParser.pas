@@ -401,7 +401,7 @@ var
   FindVar: Boolean;
   FunctionParams: Array Of String;
   FunctionParamsCount: Byte;
-  Sign:TSigns;
+  Sign:TSign;
 Begin
   Inc(Factor);
   StartSearch:=Pos(ProcPrefix, Params);
@@ -662,7 +662,7 @@ Begin
             pv1:=LastDelimiter('<>=', FunctionParams[1]);
             If pv1<>0 then
             Begin
-              Sign:=TSigns(AnsiIndexStr(FunctionParams[1], Signs));
+              Sign:=TSign(AnsiIndexStr(FunctionParams[1], Signs));
 
               pv1:=Pos(Signs[Sign], FunctionParams[1]);
               pv2:=Length(Signs[Sign]);

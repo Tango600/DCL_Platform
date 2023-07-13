@@ -38,6 +38,7 @@ type
     FReturnValue: TReturnFormValue;
     FEvents: TList<TDCLEvent>;
     FReturnValueParams: TReturnValueParams;
+    FUserLevel: TUserLevelsType;
 
     FIsSingle: Boolean;
 
@@ -96,6 +97,7 @@ type
     property ReturnValueParams: TReturnValueParams read FReturnValueParams write FReturnValueParams;
     property ParentForm: TDCLForm read FParentForm;
     property Reject: Boolean read FReject;
+    property RightsLevel: TUserLevelsType read FUserLevel;
   end;
 
 implementation
@@ -301,16 +303,19 @@ var
   ConfigPath: String;
   Settings: TIniFile;
 begin
-  ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim;
-  if DirectoryExists(ConfigPath) and FileExists(ConfigPath+'Settings.ini') then
+  if GPT.DialogsSettings then
   begin
-    Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
-    Self.Top:=Settings.ReadInteger('Position', 'Top', Self.Top);
-    Self.Left:=Settings.ReadInteger('Position', 'Left', Self.Left);
-    Self.Height:=Settings.ReadInteger('Position', 'Height', Self.Height);
-    Self.Width:=Settings.ReadInteger('Position', 'Width', Self.Width);
+    ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim;
+    if DirectoryExists(ConfigPath) and FileExists(ConfigPath+'Settings.ini') then
+    begin
+      Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
+      Self.Top:=Settings.ReadInteger('Position', 'Top', Self.Top);
+      Self.Left:=Settings.ReadInteger('Position', 'Left', Self.Left);
+      Self.Height:=Settings.ReadInteger('Position', 'Height', Self.Height);
+      Self.Width:=Settings.ReadInteger('Position', 'Width', Self.Width);
 
-    FreeAndNil(Settings);
+      FreeAndNil(Settings);
+    end;
   end;
 end;
 
@@ -379,6 +384,7 @@ var
   g: TDCLGrid;
   OnTop: Boolean;
   FieldsCount: Integer;
+  UserLevelLocal: TUserLevelsType;
 begin
   inherited Create(Application);
   FormCanClose:=True;
@@ -391,6 +397,7 @@ begin
   FFirstPage:=True;
   FReturnValueParams:=ReturnValueParams;
   FParentForm:=ParentForm;
+  FUserLevel:=GPT.AccessLevel;
 
   FReject:=False;
   For ff in FForms do
@@ -482,6 +489,25 @@ begin
     begin
       if Pos('//', SrcLine.Trim)=1 then
         Continue;
+
+      If IsLexem('UserAccessRaight=', SrcLine) then
+      begin
+        tmpS:=SrcLine;
+        TranslateVal(tmpS, True);
+        tmpS:=FindParam('UserAccessRaight=', tmpS);
+        Case GetStringDataType(tmpS) of
+        idDigit:
+        UserLevelLocal:=TranslateDigitToUserLevel(StrToIntEx(FindParam('UserAccessRaight=', SrcLine)));
+        idUserLevel:
+        UserLevelLocal:=TranslateDigitToUserLevel(FindParam('UserAccessRaight=', SrcLine));
+        end;
+        If UserLevelLocal>FUserLevel Then
+        begin
+          ShowErrorMessage(0, GetDCLMessageString(msNotAllowOpenForm));
+          ExitCode:=1;
+          Exit;
+        end;
+      end;
 
       if IsLexem('[Page]', SrcLine) then
       begin
@@ -668,17 +694,20 @@ var
   ConfigPath: String;
   Settings: TIniFile;
 begin
-  ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim;
-  if not DirectoryExists(ConfigPath) then
-    ForceDirectories(ConfigPath);
+  if GPT.DialogsSettings then
+  begin
+    ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim;
+    if not DirectoryExists(ConfigPath) then
+      ForceDirectories(ConfigPath);
 
-  Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
-  Settings.WriteInteger('Position', 'Top', Self.Top);
-  Settings.WriteInteger('Position', 'Left', Self.Left);
-  Settings.WriteInteger('Position', 'Height', Self.Height);
-  Settings.WriteInteger('Position', 'Width', Self.Width);
+    Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
+    Settings.WriteInteger('Position', 'Top', Self.Top);
+    Settings.WriteInteger('Position', 'Left', Self.Left);
+    Settings.WriteInteger('Position', 'Height', Self.Height);
+    Settings.WriteInteger('Position', 'Width', Self.Width);
 
-  FreeAndNil(Settings);
+    FreeAndNil(Settings);
+  end;
 end;
 
 end.

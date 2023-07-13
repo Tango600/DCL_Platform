@@ -1079,18 +1079,7 @@ begin
 end;
 
 procedure TDCLGrid.AddNotAllowedOperation(Operation: TNotAllowedOperations);
-var
-  i, l: Byte;
 begin
-  l:=Length(NotAllowedOperations);
-  For i:=1 to l do
-  begin
-    If NotAllowedOperations[i-1]=Operation Then
-      Exit;
-  end;
-
-  SetLength(NotAllowedOperations, l+1);
-  NotAllowedOperations[l]:=Operation;
 end;
 
 procedure TDCLForm.AddMainPage(Query: TDCLDialogQuery; Data: TDataSource);
@@ -1396,35 +1385,6 @@ begin
         end;
       end;
 
-      If PosEx('UserAccessRaight=', ScrStr)=1 Then
-      begin
-        TranslateVal(ScrStr, True);
-        tmpSQL:=FindParam('UserAccessRaight=', ScrStr);
-        Case GetStringDataType(tmpSQL) of
-        idDigit:
-        UserLevel:=TranslateDigitToUserLevel(StrToIntEx(FindParam('UserAccessRaight=', ScrStr)));
-        idUserLevel:
-        UserLevel:=TranslateDigitToUserLevel(FindParam('UserAccessRaight=', ScrStr));
-        end;
-        If UserLevel>UserLevelLocal Then
-        begin
-          ShowErrorMessage(0, GetDCLMessageString(msNotAllowOpenForm));
-          ExitCode:=1;
-          Exit;
-        end;
-      end;
-
-      If PosEx('AddNotAllowOperation=', ScrStr)=1 Then
-      begin
-        TranslateVal(ScrStr, True);
-        TmpStr:=FindParam('AddNotAllowOperation=', ScrStr);
-        If PosEx('Insert', TmpStr)<>0 Then
-          GridIndex.AddNotAllowedOperation(dsoInsert);
-        If PosEx('Delete', TmpStr)<>0 Then
-          GridIndex.AddNotAllowedOperation(dsoDelete);
-        If PosEx('Edit', TmpStr)<>0 Then
-          GridIndex.AddNotAllowedOperation(dsoEdit);
-      end;
 
       If PosEx('QueryKeyField=', ScrStr)=1 Then
       begin
@@ -1493,13 +1453,6 @@ begin
       begin
         CloseQueryText:=FindParam('CloseQuery=', ScrStr);
         CloseQuery:=True;
-      end;
-
-      If PosEx('QueryName=', ScrStr)=1 Then
-      begin
-        TranslateVal(ScrStr, True);
-        tmpSQL:=FindParam('QueryName=', ScrStr);
-        GridIndex.QueryName:=tmpSQL;
       end;
 
 
@@ -1659,39 +1612,6 @@ begin
 {$ENDIF}
     end;
 
-    If ExitCode=0 Then
-    begin
-      FPages.ActivePageIndex:=0;
-      ChangeTabPage(FPages);
-
-      FForm.EnableAlign;
-      If Not FForm.Showing Then
-        If ModalOpen Then
-        Begin
-          LoadFormPos;
-          LoadBookmarkMenu;
-          SettingsLoaded:=True;
-          FForm.ShowModal;
-        End
-        Else
-        begin
-          FForm.Show;
-
-          If FormHeight<>0 Then
-            FForm.ClientHeight:=FormHeight;
-
-          // Query.AfterScroll(Query);
-{$IFNDEF DCLDEBUG}
-          If OnTop Then
-            FForm.FormStyle:=fsStayOnTop;
-{$ENDIF}
-        end;
-    end;
-    If not SettingsLoaded then
-    Begin
-      LoadFormPos;
-      LoadBookmarkMenu;
-    End;
   end;
 end;
 
@@ -1732,20 +1652,7 @@ begin
 end;
 
 function TDCLGrid.FindNotAllowedOperation(Operation: TNotAllowedOperations): Boolean;
-var
-  l, i: Byte;
 begin
-  l:=Length(NotAllowedOperations);
-  Result:=False;
-  If l>0 Then
-    For i:=1 to l do
-    begin
-      If NotAllowedOperations[i-1]=Operation Then
-      begin
-        Result:=True;
-        break;
-      end;
-    end;
 end;
 
 function TDCLForm.GetActive: Boolean;
@@ -4439,7 +4346,6 @@ procedure TDCLMainMenu.ExecCommand(Command: String);
 begin
 end;
 
-
 procedure TDCLMainMenu.ChoseRunType(Command, DCLText, Name: String; Order: Byte);
 var
   DCL: TStringList;
@@ -4800,84 +4706,7 @@ begin
 end;
 
 procedure TDCLGrid.AddContextList(Field: TDCLField);
-var
-  ContextList: TContextList;
-  ShadowQuery: TDCLDialogQuery;
-  lSQL: String;
 begin
-  Field.CurrentEdit:=True;
-
-  ContextList:=TContextList.Create;
-  ContextList.ContextList:=TComboBox.Create(FieldPanel);
-  If FindParam('ComponentName=', Field.OPL)<>'' Then
-    ContextList.ContextList.Name:=FindParam('ComponentName=', Field.OPL)
-  Else
-    ContextList.ContextList.Name:='ContextList'+IntToStr(ContextLists.Count);
-  ContextList.ContextList.Parent:=FieldPanel;
-  ContextList.ContextList.Tag:=ContextLists.Count;
-  ContextList.ContextList.Text:='';
-  ContextList.ContextList.Top:=LayoutParams.Top;
-  ContextList.ContextList.Left:=LayoutParams.Left;
-  If Field.IsFieldWidth Then
-    ContextList.ContextList.Width:=Field.Width
-  Else
-    ContextList.ContextList.Width:=EditWidth;
-  Field.Height:=ContextList.ContextList.Height;
-  ContextList.ContextList.Hint:=Field.Hint;
-  ContextList.ContextList.ShowHint:=True;
-
-  ContextList.Table:=FindParam('ContextListTable=', Field.OPL);
-  ContextList.Field:=FindParam('ContextListField=', Field.OPL);
-  ContextList.KeyField:=FindParam('ContextListKey=', Field.OPL);
-  If FindParam('ContextListData=', Field.OPL)<>'' Then
-    ContextList.ListField:=FindParam('ContextListData=', Field.OPL)
-  Else
-    ContextList.ListField:=ContextList.Field;
-
-  ContextList.DataField:=Field.FieldName;
-  ContextList.Variable:=FindParam('VariableName=', Field.OPL);
-  ContextList.NoData:=Field.NoDataField;
-
-  ShadowQuery:=TDCLDialogQuery.Create(nil);
-  ShadowQuery.Name:='ContextList_'+IntToStr(UpTime);
-  FDCLLogOn.SetDBName(ShadowQuery);
-
-  lSQL:=FindParam('SQL=', Field.OPL);
-  If lSQL<>'' Then
-  begin
-    ContextList.SQL:=lSQL;
-    ShadowQuery.SQL.Text:=lSQL;
-  end
-  Else
-  begin
-    ContextList.SQL:='';
-    ShadowQuery.SQL.Text:='select '+ContextList.Field+' from '+ContextList.Table+
-      ' order by '+ContextList.Field;
-  end;
-  ShadowQuery.Open;
-  ShadowQuery.First;
-
-  lSQL:=ContextList.Field;
-  if ContextList.Field='' then
-  begin
-    lSQL:=ShadowQuery.Fields[0].FieldName;
-  end;
-  ContextList.ContextList.Items.Clear;
-  While Not ShadowQuery.Eof do
-  begin
-    If Trim(ShadowQuery.FieldByName(lSQL).AsString)<>'' Then
-      ContextList.ContextList.Items.Append
-        (Trim(ShadowQuery.FieldByName(lSQL).AsString));
-    ShadowQuery.Next;
-  end;
-  ShadowQuery.Close;
-  FreeAndNil(ShadowQuery);
-
-  ContextList.ContextList.OnKeyDown:=ContextListKeyDown;
-  ContextList.ContextList.OnSelect:=ContextListChange;
-
-  ContextLists.Add(ContextList);
-  IncXYPos(EditTopStep, ContextList.ContextList.Width, Field);
 end;
 
 procedure TDCLGrid.AddDateBox(Field: TDCLField);
@@ -4986,31 +4815,9 @@ procedure TDCLGrid.AfterCancel(Data: TDataSet);
 var
   v1, v2: Integer;
 begin
-  ExecEvents(evtCancel);
 
   SetDataStatus(dssSaved);
-  ScrollDB(Data);
-  For v1:=1 to FDCLLogOn.FormsCount do
-  begin
-    If Assigned(FDCLLogOn.Forms[v1-1]) Then
-      If Assigned(FDCLLogOn.Forms[v1-1].ParentForm) Then
-      begin
-        If FDCLLogOn.Forms[v1-1].ParentForm=FDCLForm Then
-          For v2:=1 to FDCLLogOn.Forms[v1-1].TablesCount do
-            FDCLLogOn.Forms[v1-1].Tables[v2-1].ScrollDB(FQuery);
-      end;
-  end;
 
-  For v1:=1 to FDCLLogOn.FormsCount do
-  begin
-    If Assigned(FDCLLogOn.Forms[v1-1]) Then
-      If Assigned(FDCLLogOn.Forms[v1-1].ParentForm) Then
-      begin
-        If FDCLLogOn.Forms[v1-1].ParentForm=FDCLForm Then
-          For v2:=1 to FDCLLogOn.Forms[v1-1].TablesCount do
-            FDCLLogOn.Forms[v1-1].Tables[v2-1].AfterCancel(FQuery);
-      end;
-  end;
 end;
 
 procedure TDCLGrid.AfterClose(Data: TDataSet);
@@ -5049,42 +4856,8 @@ begin
   If Assigned(FDCLLogOn) Then
   begin
     Screen.Cursor:=crDefault;
-    ExecEvents(evtAfterOpen);
 
-    If Assigned(SumQuery) Then
-    begin
-      tmpSQL:=GetSummQuery;
-      TranslateVal(tmpSQL);
-      SumQuery.Close;
-      SumQuery.SQL.Text:=tmpSQL;
-      try
-        SumQuery.Open;
-      Except
-        ShowErrorMessage( - 1118, 'SQL='+tmpSQL);
-      end;
-    end;
 
-    For v1:=1 to FDCLLogOn.FormsCount do
-    begin
-      If Assigned(FDCLLogOn.Forms[v1-1]) Then
-        If Assigned(FDCLLogOn.Forms[v1-1].ParentForm) Then
-        begin
-          If FDCLLogOn.Forms[v1-1].ParentForm=FDCLForm Then
-            For v2:=1 to FDCLLogOn.Forms[v1-1].TablesCount do
-              FDCLLogOn.Forms[v1-1].Tables[v2-1].ScrollDB(Data);
-        end;
-    end;
-
-    For v1:=1 to FDCLLogOn.FormsCount do
-    begin
-      If Assigned(FDCLLogOn.Forms[v1-1]) Then
-        If Assigned(FDCLLogOn.Forms[v1-1].ParentForm) Then
-        begin
-          If FDCLLogOn.Forms[v1-1].ParentForm=FDCLForm Then
-            For v2:=1 to FDCLLogOn.Forms[v1-1].TablesCount do
-              FDCLLogOn.Forms[v1-1].Tables[v2-1].AfterOpen(Data);
-        end;
-    end;
   end;
 end;
 
@@ -5095,27 +4868,6 @@ begin
   SaveDB;
   ExecEvents(evtAfterPost);
 
-  For v1:=1 to FDCLLogOn.FormsCount do
-  begin
-    If Assigned(FDCLLogOn.Forms[v1-1]) Then
-      If Assigned(FDCLLogOn.Forms[v1-1].ParentForm) Then
-      begin
-        If FDCLLogOn.Forms[v1-1].ParentForm=FDCLForm Then
-          For v2:=1 to FDCLLogOn.Forms[v1-1].TablesCount do
-            FDCLLogOn.Forms[v1-1].Tables[v2-1].ScrollDB(FQuery);
-      end;
-  end;
-
-  For v1:=1 to FDCLLogOn.FormsCount do
-  begin
-    If Assigned(FDCLLogOn.Forms[v1-1]) Then
-      If Assigned(FDCLLogOn.Forms[v1-1].ParentForm) Then
-      begin
-        If FDCLLogOn.Forms[v1-1].ParentForm=FDCLForm Then
-          For v2:=1 to FDCLLogOn.Forms[v1-1].TablesCount do
-            FDCLLogOn.Forms[v1-1].Tables[v2-1].AfterPost(FQuery);
-      end;
-  end;
   ReFreshQuery;
   FDCLLogOn.NotifyForms(fnaRefresh);
 end;
@@ -5143,36 +4895,11 @@ begin
 end;
 
 procedure TDCLGrid.BeforePost(Data: TDataSet);
-var
-  v1, v2: Integer;
 begin
-  ExecEvents(evtBeforePost);
-
-  For v1:=1 to FDCLLogOn.FormsCount do
-  begin
-    If Assigned(FDCLLogOn.Forms[v1-1]) Then
-      If Assigned(FDCLLogOn.Forms[v1-1].ParentForm) Then
-      begin
-        If FDCLLogOn.Forms[v1-1].ParentForm=FDCLForm Then
-          For v2:=1 to FDCLLogOn.Forms[v1-1].TablesCount do
-            FDCLLogOn.Forms[v1-1].Tables[v2-1].BeforePost(FQuery);
-      end;
-  end;
 end;
 
 procedure TDCLGrid.BeforeScroll(Data: TDataSet);
-var
-  i: Integer;
 begin
-  ExecEvents(evtBeforeScroll);
-
-  If Assigned(FDCLForm.ParentForm) Then
-  begin
-    For i:=1 to FDCLForm.ParentForm.TablesCount-1 do
-    begin
-      FDCLForm.ParentForm.Tables[i-1].BeforeScroll(FQuery);
-    end;
-  end;
 end;
 
 procedure TDCLGrid.CalendarOnChange(Sender: TObject);
@@ -5371,25 +5098,7 @@ begin
 end;
 
 procedure TDCLGrid.ExcludeNotAllowedOperation(Operation: TNotAllowedOperations);
-var
-  i, l: Byte;
 begin
-  l:=Length(NotAllowedOperations);
-  For i:=1 to l do
-  begin
-    If NotAllowedOperations[i-1]=Operation Then
-    begin
-      l:=i-1;
-      break;
-    end;
-  end;
-
-  If (l>0)and(l<Length(NotAllowedOperations)) Then
-  begin
-    For i:=0 to l-1 do
-      NotAllowedOperations[i]:=NotAllowedOperations[i+1];
-    SetLength(NotAllowedOperations, l);
-  end;
 end;
 
 procedure TDCLGrid.ExecEvents(EventType: TEventsEnum);
@@ -5902,37 +5611,6 @@ end;
 
 procedure TDCLGrid.SetReadOnly(Value: Boolean);
 begin
-  FReadOnly:=Value;
-
-  If Value Then
-  begin
-    If Assigned(Navig) Then
-    begin
-      if nbInsert in Navig.VisibleButtons then
-        Navig.VisibleButtons:=Navig.VisibleButtons-[nbInsert];
-      if nbDelete in Navig.VisibleButtons then
-        Navig.VisibleButtons:=Navig.VisibleButtons-[nbDelete];
-      if nbPost in Navig.VisibleButtons then
-        Navig.VisibleButtons:=Navig.VisibleButtons-[nbPost];
-      if nbCancel in Navig.VisibleButtons then
-        Navig.VisibleButtons:=Navig.VisibleButtons-[nbCancel];
-      if nbEdit in Navig.VisibleButtons then
-        Navig.VisibleButtons:=Navig.VisibleButtons-[nbEdit];
-    end;
-    If Assigned(FGrid) Then
-      If dgEditing in FGrid.Options then
-        FGrid.Options:=FGrid.Options-[dgEditing];
-
-    {AddNotAllowedOperation(dsoDelete);
-    AddNotAllowedOperation(dsoInsert);
-    AddNotAllowedOperation(dsoEdit);}
-  end
-  Else
-  begin
-    If Assigned(FGrid) Then
-      If not (dgEditing in FGrid.Options) then
-        FGrid.Options:=FGrid.Options+[dgEditing];
-  end
 end;
 
 procedure TDCLGrid.SetSQL(SQL: String);
@@ -6001,45 +5679,11 @@ begin
     AddNotAllowedOperation(dsoEdit);
   end;
 
-  {If Assigned(FQuery) Then
-    FQuery.NotAllowOperations:=NotAllowedOperations;}
-
-  If Assigned(Navig) Then
-  begin
-    If FindNotAllowedOperation(dsoDelete) Then
-      Navig.VisibleButtons:=Navig.VisibleButtons-[nbDelete];
-    If FindNotAllowedOperation(dsoInsert) Then
-    begin
-      Navig.VisibleButtons:=Navig.VisibleButtons-[nbInsert];
-      Navig.VisibleButtons:=Navig.VisibleButtons-[nbPost];
-      Navig.VisibleButtons:=Navig.VisibleButtons-[nbCancel];
-    end;
-    If FindNotAllowedOperation(dsoEdit) Then
-    begin
-      Navig.VisibleButtons:=Navig.VisibleButtons-[nbEdit];
-      Navig.VisibleButtons:=Navig.VisibleButtons-[nbPost];
-      Navig.VisibleButtons:=Navig.VisibleButtons-[nbCancel];
-    end;
-  end;
-
   If Not FShowed Then
   begin
     If FDisplayMode in TDataGrid Then
     begin
-      FGrid:=TDCLDBGrid.Create(FGridPanel);
-      FGrid.Parent:=FGridPanel;
-      FGrid.DataSource:=FData;
-      Case FDisplayMode of
-      dctMainGrid, dctTablePart, dctLookupGrid:
-        FGrid.Align:=alClient;
-      dctSideGrid:
-        FGrid.Align:=alRight;
-      end;
-      FGrid.OnDblClick:=GridDblClick;
-      FGrid.OnTitleClick:=SortDB;
-{$IFDEF FPC}
-      FGrid.AlternateColor:=GridAlternateColor;
-{$ENDIF}
+
       If Not GPT.DisableColors Then
       begin
         FGrid.DefaultDrawing:=True;
@@ -6051,15 +5695,10 @@ begin
       SetPopupMenuItems(True);
 
       FGrid.PopupMenu:=PopupGridMenu;
-
     end;
 
     If FDisplayMode in TDataFields Then
     begin
-      FieldPanel:=TDialogPanel.Create(FGridPanel);
-      FieldPanel.Parent:=FGridPanel;
-      FieldPanel.Align:=alClient;
-
       PopupGridMenu:=TPopupMenu.Create(FieldPanel);
 
       SetPopupMenuItems(False);

@@ -45,21 +45,9 @@ type
     Value: String;
   End;
 
-  { TDependFind }
-
-  TDependFind=class
-    GetResultFields, ReturnFields: TList<String>;
-    GetToResultTable: String;
-    DependFindMode: Byte;
-
-    constructor Create;
-    destructor Destroy; override;
-  End;
-
   TDCLEdit=class
     Control: TWinControl;
     EditType: TFieldBoxType;
-    GetResultFields: TDependFind;
     Variable: String;
   end;
 
@@ -127,11 +115,6 @@ type
     Button: TDialogSpeedButton;
     Command: String;
   End;
-
-  TRollBar=class
-    RollBar: TTrackBar;
-    Event, Variable, Field: String;
-  end;
 
   TDCLEvent=class
     ScriptName: String;
@@ -211,21 +194,6 @@ var
   TDateTimeTypedFields: set of TFieldType;
 
 implementation
-
-{ TDependFind }
-
-constructor TDependFind.Create;
-begin
-  GetResultFields:=TList<String>.Create;
-  ReturnFields:=TList<String>.Create;
-end;
-
-destructor TDependFind.Destroy;
-begin
-  inherited;
-  FreeAndNil(GetResultFields);
-  FreeAndNil(ReturnFields);
-end;
 
 { TKeyBookmarks }
 

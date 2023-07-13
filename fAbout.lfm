@@ -1,8 +1,10 @@
 object AboutForm: TAboutForm
   Left = 375
-  Height = 240
+  Height = 300
   Top = 145
-  Width = 320
+  Width = 400
   Caption = 'О ...'
+  DesignTimePPI = 120
+  Position = poScreenCenter
   LCLVersion = '2.3.0.0'
 end

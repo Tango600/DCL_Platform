@@ -179,7 +179,7 @@ Type
   TGridStyle=(gsFields, gsFieldsHorizontal, gsGrid);
   TDataControlType=(dctMainGrid, dctSideGrid, dctTablePart, dctLookupGrid);
 
-  TNotAllowedOperations=(dsoNone, dsoDelete, dsoInsert, dsoEdit);
+  TNotAllowedOperation=(dsoNone, dsoDelete, dsoInsert, dsoEdit);
 
   TLogOnStatus=(lsUnInitaliced, lsLogonOK, lsRejected, lsNotNeed);
   TPassStatus=(psNone, psConfirmed, psCanceled);
@@ -208,10 +208,9 @@ Type
   TFindType=(ftByIndex, ftByName, ftSQL);
   TNewQueryMode=(nqmNew, nqmFromGrid);
   TMessageType=(mbtError=0, mbtWarning=1, mbtInformation=9, mbtConfirmation=10);
-  TSigns=(sEquals, sGreater, sLess, sNotEqual, sGreaterEq, sLessEq);
+  TSign=(sEquals, sGreater, sLess, sNotEqual, sGreaterEq, sLessEq);
   TSimplyFieldType=(sftNotDefine, sftString, sftDigit, sftFloat, sftDateTime, fstBlobMemo);
   TDCLFormCloseAction=(fcaNone, fcaClose);
-  //TFastReportsScriptLanguage=(fslPascal, fslBasic, fslCppScript, fslJScript);
   TINIType=(itNone, itFormPos, itBookmarkMenu);
   TFieldFormat=(fftNone, fftDigit, fftDate, fftTime, fftDateTime, fftTrim, fftFloat);
   TSheetFillStrategy=(sfsInsert, sfsReplace);
@@ -222,10 +221,7 @@ Type
 const
   ReleaseStatus=rsAlpha;
   ReliseStatues:Array[TReliseStatus] of String=('Alpha', 'Betta', 'Pre relase', 'Unstable', 'Stable');
-  Signs:Array[TSigns] of String=('=', '<', '>', '<>', '<=', '>=');
-  //FastReportsScriptLanguages:array[TFastReportsScriptLanguage] of String=('PascalScript', 'BasicScript', 'C++Script', 'JScript');
-
-  //DefaultFRScriptLanguage=fslPascal;
+  Signs:Array[TSign] of String=('=', '<', '>', '<>', '<=', '>=');
 
 implementation
 

@@ -13,13 +13,17 @@ uses
   uDCLImages, cNoScrollBarDBGrid, cMediaFieldGroup;
 
 type
+  TGridFieldSetting=class
+    FieldName: String;
+    Index, Width: Integer;
+  end;
 
   { TDCLGrid }
 
   TDCLGrid=class(TWinControl)
   private
     FNameSpace, FDependField, FMasterDataField, FMasterValueVariableName,
-      FSummFieldsSet, FNavigatorExpr: String;
+      FSummFieldsSet, FNavigatorExpr, FSeed, FDialogName: String;
     FForms: TList<TForm>;
     FForm: TForm;
     FVariables: TVariables;
@@ -64,11 +68,14 @@ type
     FSumQuery: TDCLDialogQuery;
     FSummGrid: TNoScrollBarDBGrid;
     FEvents: TList<TDCLEvent>;
+    FNotAllowedOperations: TList<TNotAllowedOperation>;
 
     //FButtonLayout: TDCLButtonLayoutManger<TDCLCommandButton>;
     FFieldLayout: TDCLVerticalFieldLayoutManger<TDCLField>;
 
-    UserLevelLocal: TUserLevelsType;
+    FUserLevel: TUserLevelsType;
+
+    function FindDCLFieldByName(FieldName: String): TDCLField;
 
     function GetFieldsCount: Integer;
 
@@ -82,6 +89,7 @@ type
 
     procedure ClickNavigator(Sender: TObject; Button: TNavigateBtn);
 
+    procedure UpdateAllControls;
     // DataEvents
     procedure AfterInsert(Data: TDataSet);
     procedure ScrollDB(Data: TDataSet);
@@ -189,9 +197,20 @@ type
     function GetSQLFromStorage: String;
 
     procedure ParseEvents(ScrStr: String);
+
+    procedure ClearNotAllowedOperations;
+    procedure ExcludeNotAllowedOperation(Operation: TNotAllowedOperation);
+    procedure AddNotAllowedOperation(Operation: TNotAllowedOperation);
+    function FindNotAllowedOperation(Operation: TNotAllowedOperation): Boolean;
+
+    function GetFieldSetting(var List: TList<TGridFieldSetting>; FieldName: String): TGridFieldSetting;
+
+    function CalculateSeed: String;
+    function GetGridSeed: String;
   public
     constructor Create(NameSpace: String; Forms: TList<TForm>; Form: TForm; Parent: TWinControl; Variables: TVariables; SurfType: TDataControlType;
       DBConnector: TDCLDBConnector; Query: TDCLQuery; Data: TDataSource); overload;
+    destructor Destroy; override;
 
     procedure AddField(Field: TDCLField);
 
@@ -213,6 +232,9 @@ type
     function CheckEdits: Boolean;
     procedure NotifyEditFieldError(Field: TDCLField);
 
+    procedure GetDBGridFieldsPos(var Settings: TStringList);
+    function LoadDBGridFieldsPos: TList<TGridFieldSetting>;
+
     property Query: TDCLQuery read FQuery;
     property Data: TDataSource read FData;
     property Edits: TList<TDCLEdit> read GetEdits;
@@ -226,7 +248,8 @@ type
     property MasterValueVariableName: String read FMasterValueVariableName write FMasterValueVariableName;
     property NoDataField: Boolean read FNoDataField write FNoDataField;
     property MultiSelect: Boolean read FMultiSelectMode write SetMultiSelect;
-    property RightsLevel: TUserLevelsType read UserLevelLocal;
+    property RightsLevel: TUserLevelsType read FUserLevel;
+    property Seed: String read GetGridSeed;
   end;
 
   { TLookupTable }
@@ -245,7 +268,7 @@ implementation
 
 uses
   uDCLCommand, uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, uDCLForm,
-  uPrintBase, uDCLGlobalVariables;
+  uPrintBase, uDCLGlobalVariables, uDCLMD5;
 
 { TLookupTable }
 
@@ -262,6 +285,21 @@ begin
 end;
 
 { TDCLGrid }
+
+function TDCLGrid.FindDCLFieldByName(FieldName: String): TDCLField;
+var
+  f: TDCLField;
+begin
+  Result:=nil;
+  for f in FDCLFields do
+  begin
+    if f.FieldName.ToLower=FieldName.ToLower then
+    begin
+      Result:=f;
+      break;
+    end;
+  end;
+end;
 
 function TDCLGrid.GetFieldsCount: Integer;
 begin
@@ -335,55 +373,11 @@ begin
     ReFreshData;
 end;
 
-procedure TDCLGrid.AfterInsert(Data: TDataSet);
-begin
-  If UserLevelLocal<ulWrite Then
-    Data.Cancel
-  Else
-  begin
-    If FDependField<>'' Then
-    Begin
-      if not FNoDataField then
-      begin
-        If FMasterDataField<>'' Then
-        begin
-          Data.FieldByName(FDependField).AsString:=FQuery.FieldByName
-            (FMasterDataField).AsString;
-        end;
-      end
-      else
-      begin
-        if MasterValueVariableName<>'' then
-        begin
-          Data.FieldByName(DependField).AsString:=FVariables.Variables[FNamespace, FMasterValueVariableName];
-        end;
-      end;
-    End;
-
-    //ExecEvents(evtInsert);
-
-    //SetDataStatus(dssChanged);
-  end;
-
-  {For v1:=1 to FDCLLogOn.FormsCount do
-  begin
-    If Assigned(FDCLLogOn.Forms[v1-1]) Then
-      If Assigned(FDCLLogOn.Forms[v1-1].ParentForm) Then
-      begin
-        If FDCLLogOn.Forms[v1-1].ParentForm=FDCLForm Then
-          For v2:=1 to FDCLLogOn.Forms[v1-1].TablesCount do
-            FDCLLogOn.Forms[v1-1].Tables[v2-1].AfterInsert(Data);
-      end;
-  end;}
-end;
-
-procedure TDCLGrid.ScrollDB(Data: TDataSet);
+procedure TDCLGrid.UpdateAllControls;
 var
   Edit: TDCLField;
   S: String;
 begin
-  ExecEvents(evtScroll);
-
   For Edit in FDCLFields do
   begin
     if Assigned(Edit.DCLEditComponent) and Assigned(Edit.DCLEditComponent.Control) then
@@ -427,19 +421,76 @@ begin
   end;
 end;
 
+procedure TDCLGrid.AfterInsert(Data: TDataSet);
+begin
+  If FUserLevel<ulWrite Then
+    Data.Cancel
+  Else
+  begin
+    If FDependField<>'' Then
+    Begin
+      if not FNoDataField then
+      begin
+        If FMasterDataField<>'' Then
+        begin
+          Data.FieldByName(FDependField).AsString:=FQuery.FieldByName
+            (FMasterDataField).AsString;
+        end;
+      end
+      else
+      begin
+        if MasterValueVariableName<>'' then
+        begin
+          Data.FieldByName(DependField).AsString:=FVariables.Variables[FNamespace, FMasterValueVariableName];
+        end;
+      end;
+    End;
+
+    ExecEvents(evtInsert);
+
+    //SetDataStatus(dssChanged);
+  end;
+
+  UpdateAllControls;
+  {For v1:=1 to FDCLLogOn.FormsCount do
+  begin
+    If Assigned(FDCLLogOn.Forms[v1-1]) Then
+      If Assigned(FDCLLogOn.Forms[v1-1].ParentForm) Then
+      begin
+        If FDCLLogOn.Forms[v1-1].ParentForm=FDCLForm Then
+          For v2:=1 to FDCLLogOn.Forms[v1-1].TablesCount do
+            FDCLLogOn.Forms[v1-1].Tables[v2-1].AfterInsert(Data);
+      end;
+  end;}
+end;
+
+procedure TDCLGrid.ScrollDB(Data: TDataSet);
+begin
+  ExecEvents(evtScroll);
+
+  UpdateAllControls;
+end;
+
 procedure TDCLGrid.AfterOpen(Data: TDataSet);
 begin
+  if Assigned(FSumQuery) then
+  begin
+    FSumQuery.Close;
+    FSumQuery.SQL.Text:=GetSummQuery;
+    FSumQuery.Open;
+  end;
 
+  ExecEvents(evtAfterOpen);
 end;
 
 procedure TDCLGrid.AfterEdit(Data: TDataSet);
 begin
-
+  UpdateAllControls;
 end;
 
 procedure TDCLGrid.AfterPost(Data: TDataSet);
 begin
-
+  UpdateAllControls;
 end;
 
 procedure TDCLGrid.AfterCancel(Data: TDataSet);
@@ -464,7 +515,7 @@ end;
 
 procedure TDCLGrid.OnDelete(Data: TDataSet);
 begin
-
+  UpdateAllControls;
 end;
 
 procedure TDCLGrid.Find(Sender: TObject);
@@ -2800,25 +2851,12 @@ end;
 procedure TDCLGrid.ReFreshData;
 var
   tpc: TDCLGrid;
-  direction: Integer;
   FLocalBookmark: TBookmark;
 begin
   If FQuery.Active Then
   Begin
     If FQuery.State in dsEditModes Then
       FQuery.Post;
-
-    direction:=0;
-    if not FQuery.EOF then
-    begin
-      FQuery.Next;
-      direction:=1;
-    end
-    else
-    begin
-      FQuery.Prior;
-      direction:=-1;
-    end;
 
     FLocalBookmark:=FQuery.Bookmark;
     For tpc in FTableParts do
@@ -2945,6 +2983,98 @@ begin
   end;
 end;
 
+procedure TDCLGrid.ClearNotAllowedOperations;
+begin
+  FNotAllowedOperations.Clear;
+end;
+
+procedure TDCLGrid.ExcludeNotAllowedOperation(Operation: TNotAllowedOperation);
+var
+  O: TNotAllowedOperation;
+begin
+  for O in FNotAllowedOperations do
+  begin
+    if O=Operation then
+    begin
+      FNotAllowedOperations.Remove(O);
+      break;
+    end;
+  end;
+end;
+
+procedure TDCLGrid.AddNotAllowedOperation(Operation: TNotAllowedOperation);
+begin
+  if not FindNotAllowedOperation(Operation) then
+    FNotAllowedOperations.Add(Operation);
+end;
+
+function TDCLGrid.FindNotAllowedOperation(Operation: TNotAllowedOperation
+  ): Boolean;
+var
+  O: TNotAllowedOperation;
+begin
+  Result:=False;
+  for O in FNotAllowedOperations do
+  begin
+    if O=Operation then
+    begin
+      Result:=True;
+      break;
+    end;
+  end;
+end;
+
+function TDCLGrid.GetFieldSetting(var List: TList<TGridFieldSetting>; FieldName: String): TGridFieldSetting;
+var
+  Item: TGridFieldSetting;
+begin
+  Result:=nil;
+  for Item in List do
+  begin
+    if Item.FieldName=FieldName.ToUpper then
+    begin
+      Result:=Item;
+      break;
+    end;
+  end;
+end;
+
+function TDCLGrid.CalculateSeed: String;
+var
+  Fields: TSortedList<String>;
+  FN: TField;
+  S, F, Se: String;
+begin
+  Result:='';
+
+  Fields:=TSortedList<String>.Create;
+  Fields.Duplicates:=dupIgnore;
+  if Assigned(FQuery) and FQuery.Active then
+  begin
+    for FN in FQuery.Fields do
+    begin
+      S:=OnlyLitters(FN.FieldName);
+      if S<>'' then
+        Fields.Add(S.ToLowerInvariant);
+    end;
+  end;
+  Fields.Sort;
+
+  Se:='';
+  for F in Fields do
+  begin
+    Se:=Se+F;
+  end;
+  Result:=MD5String(Se);
+end;
+
+function TDCLGrid.GetGridSeed: String;
+begin
+  if FSeed='' then
+    FSeed:=CalculateSeed;
+  Result:=FSeed;
+end;
+
 constructor TDCLGrid.Create(NameSpace: String; Forms: TList<TForm>; Form: TForm; Parent: TWinControl; Variables: TVariables; SurfType: TDataControlType;
   DBConnector: TDCLDBConnector; Query: TDCLQuery; Data: TDataSource);
 var
@@ -2953,14 +3083,15 @@ begin
   inherited Create(Parent);
   Self.Parent:=Parent;
 
-  UserLevelLocal:=GPT.AccessLevel;
+  FUserLevel:=(Form as TDCLForm).RightsLevel;
 
-  FMainPanel:=TPanel.Create(Parent);
+  FMainPanel:=TPanel.Create(Self);
   FMainPanel.Parent:=Parent;
 
   FForm:=Form;
   FForms:=Forms;
 
+  FDialogName:=(Form as TDCLForm).DialogName;
   FDBConnector:=DBConnector;
   FNameSpace:=NameSpace;
   FVariables:=Variables;
@@ -2993,6 +3124,7 @@ begin
   FFilters:=TList<TDBFilter>.Create;
   FCalendars:=TList<TDCLCalendar>.Create;
   FEvents:=TList<TDCLEvent>.Create;
+  FNotAllowedOperations:=TList<TNotAllowedOperation>.Create;
 
   FOrderByFields:=TStringList.Create;
   FNotOrderByFields:=TStringList.Create;
@@ -3024,6 +3156,26 @@ begin
   FData:=TDataSource.Create(Self);
   if Assigned(Query) then
     FData.DataSet:=Query;
+end;
+
+destructor TDCLGrid.Destroy;
+var
+  FieldsPos: TStringList;
+  ConfigPath, Seed: String;
+begin
+  ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim+'Grids'+PathDelim;
+  if not DirectoryExists(ConfigPath) then
+    ForceDirectories(ConfigPath);
+
+  Seed:=GetGridSeed;
+  FieldsPos:=TStringList.Create;
+
+  GetDBGridFieldsPos(FieldsPos);
+  if FieldsPos.Count>0 then
+    FieldsPos.SaveToFile(ConfigPath+Seed+'.ini', TEncoding.UTF8);
+
+  FreeAndNil(FieldsPos);
+  inherited Destroy;
 end;
 
 procedure TDCLGrid.AddField(Field: TDCLField);
@@ -3125,8 +3277,8 @@ begin
         flg:=False;
         IsDigitType:=GetStringDataType(tmpS);
         Case IsDigitType of
-          idDigit: flg:=TranslateDigitToUserLevel(StrToIntEx(FindParam('AccessLevel=', ScrStr)))<=UserLevelLocal;
-          idString: flg:=TranslateDigitToUserLevel(FindParam('AccessLevel=', ScrStr))<=UserLevelLocal;
+          idDigit: flg:=TranslateDigitToUserLevel(StrToIntEx(FindParam('AccessLevel=', ScrStr)))<=FUserLevel;
+          idString: flg:=TranslateDigitToUserLevel(FindParam('AccessLevel=', ScrStr))<=FUserLevel;
         end;
       end;
 
@@ -3198,10 +3350,10 @@ begin
         IsDigitType:=GetStringDataType(tmpS);
         Case IsDigitType of
         idDigit:
-          If TranslateDigitToUserLevel(StrToIntEx(FindParam('AccessLevel=', ScrStr)))<=UserLevelLocal Then
+          If TranslateDigitToUserLevel(StrToIntEx(FindParam('AccessLevel=', ScrStr)))<=FUserLevel Then
             flg:=True;
         idString:
-          If TranslateDigitToUserLevel(FindParam('AccessLevel=', ScrStr))<=UserLevelLocal Then
+          If TranslateDigitToUserLevel(FindParam('AccessLevel=', ScrStr))<=FUserLevel Then
             flg:=True;
         end;
       end;
@@ -3551,10 +3703,24 @@ begin
     AddCalendar(ScrStr);
   end;
 
-  If IsLexem('NoButtonsPanel;', ScrStr) Then
+  If IsLexem('NoButtonsPanel;', ScrStr) then
   begin
     FNoButtonPanel:=True;
   end;
+
+  If IsLexem('AddNotAllowOperation=', ScrStr) then
+  begin
+    TranslateVal(ScrStr, True);
+    tmpS:=FindParam('AddNotAllowOperation=', ScrStr);
+    If PosEx('Insert', tmpS)<>0 then
+      AddNotAllowedOperation(dsoInsert);
+    If PosEx('Delete', tmpS)<>0 then
+      AddNotAllowedOperation(dsoDelete);
+    If PosEx('Edit', tmpS)<>0 then
+      AddNotAllowedOperation(dsoEdit);
+  end;
+
+
 
   If IsLexem('Events=', ScrStr) then
   begin
@@ -3576,6 +3742,8 @@ var
   Grid: TDCLGrid;
   btc: TDCLCommandButton;
   tmpS: String;
+  FieldsPos: TList<TGridFieldSetting>;
+  FieldPos: TGridFieldSetting;
 begin
   CreateToolPanel;
 
@@ -3614,6 +3782,23 @@ begin
         If tmpS='1' Then
           FNavig.Flat:=True;
       end;
+    end;
+  end;
+  if Assigned(FNavig) then
+  begin
+    If FindNotAllowedOperation(dsoDelete) Then
+      FNavig.VisibleButtons:=FNavig.VisibleButtons-[nbDelete];
+    If FindNotAllowedOperation(dsoInsert) Then
+    begin
+      FNavig.VisibleButtons:=FNavig.VisibleButtons-[nbInsert];
+      FNavig.VisibleButtons:=FNavig.VisibleButtons-[nbPost];
+      FNavig.VisibleButtons:=FNavig.VisibleButtons-[nbCancel];
+    end;
+    If FindNotAllowedOperation(dsoEdit) Then
+    begin
+      FNavig.VisibleButtons:=FNavig.VisibleButtons-[nbEdit];
+      FNavig.VisibleButtons:=FNavig.VisibleButtons-[nbPost];
+      FNavig.VisibleButtons:=FNavig.VisibleButtons-[nbCancel];
     end;
   end;
 
@@ -3775,9 +3960,25 @@ begin
 
     FDBGrid.Columns.Clear;
 
-    for DCLField in FDCLFields do
+    FieldsPos:=LoadDBGridFieldsPos;
+    if FieldsPos.Count>0 then
     begin
-      AddColumn(DCLField);
+      for FieldPos in FieldsPos do
+      begin
+        DCLField:=FindDCLFieldByName(FieldPos.FieldName);
+        if Assigned(DCLField) then
+        begin
+          DCLField.Width:=FieldPos.Width;
+          AddColumn(DCLField);
+        end;
+      end;
+    end
+    else
+    begin
+      for DCLField in FDCLFields do
+      begin
+        AddColumn(DCLField);
+      end;
     end;
   end;
 
@@ -3797,6 +3998,10 @@ begin
   begin
     FDBGrid.Align:=alClient;
   end;
+
+  FSeed:=CalculateSeed;
+  If Assigned(FQuery) then
+    FQuery.NotAllowOperations:=FNotAllowedOperations.ToArray;
 
   FMainPanel.Align:=alClient;
 
@@ -3857,13 +4062,18 @@ begin
     If PosEx('last', ButtonsExpr)<>0 Then
       NavigVisiButtonsVar[4]:=[nbLast];
 
-    If UserLevelLocal>ulReadOnly Then
+    If FUserLevel>ulReadOnly Then
     if AllowEdit then
     begin
+      if not FindNotAllowedOperation(dsoInsert) then
       If PosEx('insert', ButtonsExpr)<>0 Then
         NavigVisiButtonsVar[5]:=[nbInsert];
+
+      if not FindNotAllowedOperation(dsoDelete) then
       If PosEx('delete', ButtonsExpr)<>0 Then
         NavigVisiButtonsVar[6]:=[nbDelete];
+
+      if not FindNotAllowedOperation(dsoEdit) then
       If PosEx('edit', ButtonsExpr)<>0 Then
         NavigVisiButtonsVar[7]:=[nbEdit];
 
@@ -3948,7 +4158,69 @@ end;
 
 procedure TDCLGrid.NotifyEditFieldError(Field: TDCLField);
 begin
+  ////
+end;
 
+procedure TDCLGrid.GetDBGridFieldsPos(var Settings: TStringList);
+var
+  i: Integer;
+  C: TColumn;
+begin
+  if Assigned(Settings) and not GPT.DisableFieldsList then
+  begin
+    if (Style=gsGrid) and Assigned(FDBGrid) then
+    begin
+      for i:=1 to FDBGrid.Columns.Count do
+      begin
+        C:=FDBGrid.Columns[i-1];
+        Settings.Add(C.FieldName.ToUpper+'\'+IntToStr(C.Width));
+      end;
+    end;
+  end;
+end;
+
+function TDCLGrid.LoadDBGridFieldsPos: TList<TGridFieldSetting>;
+var
+  Item: TGridFieldSetting;
+  ConfigPath, S: String;
+  SplitterPos, i: Integer;
+  FieldsPos: TStringList;
+begin
+  Result:=TList<TGridFieldSetting>.Create;
+
+  if Assigned(FDBGrid) and (Style=gsGrid) and not GPT.DisableFieldsList then
+  begin
+    S:=GetGridSeed;
+    ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim+'Grids'+PathDelim;
+    if DirectoryExists(ConfigPath) and FileExists(ConfigPath+S+'.ini') then
+    begin
+      FieldsPos:=TStringList.Create;
+      FieldsPos.LoadFromFile(ConfigPath+S+'.ini', TEncoding.UTF8);
+      if FieldsPos.Count>0 then
+      begin
+        for i:=1 to FieldsPos.Count do
+        begin
+          S:=FieldsPos[i-1];
+          if S='' then Continue;
+
+          Item:=TGridFieldSetting.Create;
+          Item.Index:=i-1;
+          Item.Width:=0;
+          SplitterPos:=Pos('\', S);
+          if SplitterPos=0 then
+            Item.FieldName:=S
+          else
+          begin
+            Item.FieldName:=S.Substring(0, SplitterPos-1);
+            Item.Width:=StrToInt(S.Substring(SplitterPos));
+          end;
+          Result.Add(Item);
+        end;
+      end;
+
+      FreeAndNil(FieldsPos);
+    end;
+  end;
 end;
 
 end.

@@ -20,6 +20,6 @@ implementation
 Initialization
 
   GPT.StringTypeChar:='''';
-
+  GPT.DialogsSettings:=True;
 end.
 

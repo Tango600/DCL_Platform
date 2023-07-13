@@ -67,6 +67,7 @@ function EncodeScriptData(Script:TStringList):TMemoryStream;
 function GetScriptVersion(Data:TMemoryStream):String;
 
 function IsDigits(Value: String): Boolean;
+function OnlyLitters(S: String): String;
 
 implementation
 
@@ -827,6 +828,20 @@ begin
     end;
   end;
   Result:=True;
+end;
+
+function OnlyLitters(S: String): String;
+var
+  c: Char;
+begin
+  Result:='';
+  for C in S.ToLower do
+  begin
+    if C in ['a'..'z'] then
+    begin
+      Result:=Result+C;
+    end;
+  end;
 end;
 
 end.
