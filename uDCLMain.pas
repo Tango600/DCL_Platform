@@ -61,7 +61,7 @@ uses
 
 function TDCLMain.IsNeedLogin: Boolean;
 begin
-  Result:=True;
+  Result:=False;
 
   LocalQuery.SQL.Text:='select * from '+UsersTable;
   LocalQuery.Open;
@@ -70,8 +70,9 @@ begin
 
   if (GPT.DCLUserName<>'') and (GPT.EnterPass<>'') then
   begin
-    LocalQuery.SQL.Text:='select * from '+UsersTable+' where lower('+UserNameField+')=lower(:USER)';
-    LocalQuery.ParamByName('USER').AsString:=GPT.DCLUserName;
+    LocalQuery.SQL.Text:='select * from '+UsersTable+' where lower('+UserNameField+')=lower(:UN)';
+    LocalQuery.Prepare;
+    LocalQuery.ParamByName('UN').AsString:=GPT.DCLUserName;
     LocalQuery.Open;
     Result:=not ((GPT.EnterPass=LocalQuery.FieldByName(UserPassField).AsString) and not LocalQuery.IsEmpty);
     if not Result then
@@ -108,6 +109,7 @@ end;
 
 function TDCLMain.GetDialogScript(DialogName: String): String;
 begin
+  LocalQuery.Params.Clear;
   LocalQuery.SQL.Text:='select '+ScriptField+' from '+DCLTable+' where lower('+DCLNameField+') = lower(:NAME)';
   LocalQuery.ParamByName('NAME').AsString:=DialogName;
   LocalQuery.Open;
@@ -196,6 +198,7 @@ begin
 
   LocalQuery:=TDCLDialogQuery.Create(Self);
   FDBConnector.SetConnector(LocalQuery);
+  LocalQuery.AllowAutoActivateTransaction:=True;
 
   KillerDog:=TTimer.Create(Self);
   KillerDog.Interval:=KillerTimerInterval;

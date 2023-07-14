@@ -10,8 +10,7 @@ uses
   {$ENDIF}
   {$IFDEF FPC}
     {$IFDEF IBX}
-      IBDatabase, IBTable, IBCustomDataSet, IBHeader, IBSQL, IBQuery,
-      IBXConst,
+      IB, IBDatabase, IBTable, IBCustomDataSet, IBHeader, IBSQL, IBQuery,
     {$ENDIF}
   {$ELSE}
     {$IFDEF IBX}
@@ -108,7 +107,7 @@ begin
     GPT.NewDBUserName:='';
     GPT.IBAll:=True;
 
-    If Not Assigned(FDBLogOn.DefaultTransaction) Then
+    If Not Assigned(DefaultTransaction) Then
     begin
       IBTransaction:=TTransaction.Create(nil);
       IBTransaction.Params.Clear;
@@ -119,24 +118,24 @@ begin
       {$IFNDEF FPC}
       IBTransaction.AllowAutoStart:=True;
       {$ENDIF}
-      IBTransaction.DefaultDataBase:=FDBLogOn;
-      FDBLogOn.DefaultTransaction:=IBTransaction;
+      IBTransaction.DefaultDataBase:=Self;
+      DefaultTransaction:=IBTransaction;
     end
     Else
-      IBTransaction:=FDBLogOn.DefaultTransaction;
+      IBTransaction:=DefaultTransaction;
 
-    If Not FDBLogOn.Connected Then
+    If Not Connected Then
     begin
       If GPT.DBPath<>'' Then
       begin
         {$IFDEF FPC}
         If GPT.LibPath<>'' Then
-          FDBLogOn.LibraryName:=GPT.LibPath
+          FirebirdLibraryPathName:=GPT.LibPath
         Else
-          FDBLogOn.LibraryName:=DefaultLibraryLocation;
+          FirebirdLibraryPathName:=DefaultLibraryLocation;
         {$ENDIF}
 
-        FDBLogOn.Params.Clear;
+        Params.Clear;
         If Not IsFullPAth(GPT.DBPath) Then
           GPT.DBPath:=ExtractFilePath(Application.ExeName)+GPT.DBPath;
 
@@ -144,58 +143,54 @@ begin
         begin
           DebugProc('  DBPath: '+GPT.DBPath);
           DebugProc('UNC paths not supported.');
-          ShowErrorMessage(0, 'UNC '+GetDCLMessageString(msPathsNotSupported)+'.');
-          Result:=255;
+          //ShowErrorMessage(0, 'UNC '+GetDCLMessageString(msPathsNotSupported)+'.');
           Exit;
         end;
 
         If GPT.ServerName<>'' Then
         begin
-          FDBLogOn.DatabaseName:=GPT.ServerName+':'+GPT.DBPath;
+          DatabaseName:=GPT.ServerName+':'+GPT.DBPath;
           DebugProc('  DBPath: '+GPT.ServerName+':'+GPT.DBPath);
         end
         Else
         begin
-          FDBLogOn.DatabaseName:=GPT.DBPath;
+          DatabaseName:=GPT.DBPath;
           DebugProc('  DBPath: '+GPT.DBPath);
         end;
-        FDBLogOn.Params.Append('USER_NAME='+GPT.DBUserName);
+        Params.Append('USER_NAME='+GPT.DBUserName);
         DebugProc('  USER NAME='+GPT.DBUserName);
         If GPT.DBPassword<>'' Then
         begin
-          FDBLogOn.Params.Append('PASSWORD='+GPT.DBPassword);
-          FDBLogOn.LoginPrompt:=False;
+          Params.Append('PASSWORD='+GPT.DBPassword);
+          LoginPrompt:=False;
         end
         Else
-          FDBLogOn.LoginPrompt:=True;
+          LoginPrompt:=True;
 
         If GPT.ServerCodePage='' Then
         Begin
           raise Exception.Create('Server code page not define!');
         End
         Else
-          FDBLogOn.Params.Append('lc_ctype='+UpperCase(ReplaseCPtoWIN(GPT.ServerCodePage)));
+          Params.Append('lc_ctype='+UpperCase(ReplaseCPtoWIN(GPT.ServerCodePage)));
 
-        FDBLogOn.SQLDialect:=GPT.SQLDialect;
+        SQLDialect:=GPT.SQLDialect;
         try
           DebugProc('Connected...');
-          FDBLogOn.Open;
+          Open;
 
           IBTransaction.DefaultAction:=TACommit; // Retaining;
-          IBTransaction.DefaultDataBase:=FDBLogOn;
-          FDBLogOn.DefaultTransaction:=IBTransaction;
+          IBTransaction.DefaultDataBase:=Self;
+          DefaultTransaction:=IBTransaction;
 
           DebugProc('  ... OK');
-          Result:=0;
           ConnectErrorCode:=0;
         Except
           On E: Exception do
           begin
             DebugProc('  ... Fail');
             ConnectErrorCode:=255;
-            ShowErrorMessage(0, GetDCLMessageString(msConnectDBError)+' 0000 / '+
-                  E.Message);
-            Result:=255;
+            //ShowErrorMessage(0, GetDCLMessageString(msConnectDBError)+' 0000 / '+E.Message);
           end;
         end;
       end;
@@ -495,7 +490,10 @@ begin
   Query.Transaction:=Transaction;
   {$ENDIF}
   {$IFDEF IBX}
-  Query.Transaction:=DefaultTransaction;
+  Query.Transaction:=Self.DefaultTransaction;
+  {$ENDIF}
+  {$IFDEF IBXLaz}
+  Query.AllowAutoActivateTransaction:=True;
   {$ENDIF}
   {$ENDIF}
 end;
@@ -505,7 +503,7 @@ function TDCLDBConnector.NewTransaction(RW: TTransactionType): TTransaction;
 begin
   Result:=TTransaction.Create(Self);
   {$IFDEF IBX}
-  Result.DefaultDatabase:=FDBLogOn;
+  Result.DefaultDatabase:=Self;
   Result.DefaultAction:=TACommit;
   {$ENDIF}
   {$IFDEF SQLdbFamily}

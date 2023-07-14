@@ -1012,7 +1012,7 @@ end;
 
 function TDCLCommand.ReadConfig(ConfigName, UserId: String): String;
 var
-  ParamsQuery: TReportQuery;
+  ParamsQuery: TDCLSimlyQuery;
   WhereUser: String;
 begin
   Result:='';
@@ -1022,7 +1022,7 @@ begin
     If UserID<>'' Then
       WhereUser:=' and '+GPTUserIDField+'='+UserID;
 
-    ParamsQuery:=TDCLDialogQuery.Create(nil);
+    ParamsQuery:=TDCLSimlyQuery.Create(nil);
     FDBConnector.SetConnector(ParamsQuery);
     ParamsQuery.SQL.Text:='select '+GPTValueField+' from '+GPTTableName+' where '+
       GPT.UpperString+GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+
@@ -1036,7 +1036,7 @@ end;
 
 procedure TDCLCommand.WriteConfig(ConfigName, NewValue, UserId: String);
 var
-  ParamsQuery: TReportQuery;
+  ParamsQuery: TDCLSimlyQuery;
   WhereUser: String;
 begin
   WhereUser:='';
@@ -1045,7 +1045,7 @@ begin
     If UserId<>'' Then
       WhereUser:=' and '+GPTUserIDField+'='+UserId;
 
-    ParamsQuery:=TDCLDialogQuery.Create(nil);
+    ParamsQuery:=TDCLSimlyQuery.Create(nil);
     FDBConnector.SetConnector(ParamsQuery);
     ParamsQuery.SQL.Text:='select count(*) from '+GPTTableName+' where '+GPT.UpperString+
       GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+ConfigName+

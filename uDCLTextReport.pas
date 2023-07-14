@@ -265,7 +265,7 @@ var
   ParamFieldNum: Byte;
   ParamNum: Word;
   ResultString, ReturnField, tmpSQL1: String;
-  ParamsQuery: TReportQuery;
+  ParamsQuery: TDCLSimlyQuery;
 begin
   ParamNum:=0;
   While (UpperCase(RepParams[ParamNum])<>UpperCase(Trim(ParamName)))and
@@ -273,7 +273,7 @@ begin
     inc(ParamNum);
   If FindParam('SQL=', RepParams[ParamNum+1])<>'' Then
   begin
-    ParamsQuery:=TReportQuery.Create(nil);
+    ParamsQuery:=TDCLSimlyQuery.Create(nil);
     FDBConnector.SetConnector(ParamsQuery);
     tmpSQL1:=FindParam('SQL=', RepParams[ParamNum+1]);
     RePlaseVariables(tmpSQL1);
@@ -637,7 +637,7 @@ begin
 
   If NewNew Then
   begin
-    FReportQuery:=TReportQuery.Create(nil);
+    FReportQuery:=TDCLSimlyQuery.Create(nil);
     FDBConnector.SetConnector(FReportQuery);
   end;
 

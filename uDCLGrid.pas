@@ -2867,17 +2867,17 @@ begin
   End;
 
   Open;
-  {$IFnDEF SQLdbFamily}
-  //If Assigned(FLocalBookmark) Then
-    //try
-      {if Length(FLocalBookmark)>0 then
+  {$IFnDEF NODSBOOKMARKS}
+  If Assigned(FLocalBookmark) Then
+    try
+      if Length(FLocalBookmark)>0 then
       If FQuery.Active then
       If FQuery.BookmarkValid(FLocalBookmark) then
-      If FQuery.RecordCount>0 then}
+      If FQuery.RecordCount>0 then
         FQuery.Bookmark:=FLocalBookmark;
-    //finally
-      //FQuery.FreeBookmark(FLocalBookmark);
-    //end;
+    finally
+      FQuery.FreeBookmark(FLocalBookmark);
+    end;
   {$ENDIF}
   For tpc in FTableParts do
   begin
@@ -3437,7 +3437,9 @@ begin
   begin
     TranslateVal(ScrStr, True);
     FDataReadOnly:=FindParam('ReadOnlyData=', ScrStr)='1';
+    {$IFDEF SQLdbFamily}
     FQuery.ReadOnly:=FDataReadOnly;
+    {$ENDIF}
   end;
 
   if IsLexem('Style=', ScrStr) then
@@ -3845,8 +3847,10 @@ begin
     Inc(FToolButtonsCount);
   end;
 
+  {$IFDEF SQLdbFamily}
   if FDataReadOnly then
     FQuery.ReadOnly:=True;
+  {$ENDIF}
 
   if FGridStyle in TDataFields then
   begin

@@ -11,8 +11,8 @@ uses
 {$ENDIF}
 {$IFDEF FPC}
   {$IFDEF IBX}
-  IBDatabase, IBTable, IBCustomDataSet, IBSQL, IBQuery,
-  IBXConst, uIBUpdateSQLW,
+  IB, IBDatabase, IBTable, IBCustomDataSet, IBSQL, IBQuery,
+  uIBUpdateSQLW,
   {$ENDIF}
 {$ELSE}
   {$IFDEF IBX}
@@ -110,7 +110,7 @@ type
     constructor Create(DatabaseObj: TDBConnector); overload;
     destructor Destroy; override;
 
-    procedure Open;
+    procedure Open; overload;
     procedure Append;
     procedure Insert;
     procedure Edit;
@@ -358,9 +358,9 @@ begin
 {$IFDEF IBX}
   Database:=DatabaseObj;
   {$IFDEF FPC}
-  AutoStartTransaction:=True;
-  AutoCommit:=True;
-  AutoTrim:=True;
+  AllowAutoActivateTransaction:=True;
+  AutoCommit:=acCommitRetaining;
+  //AutoTrim:=True;
   {$ENDIF}
 {$ENDIF}
 {$IFDEF SQLdbFamily}
@@ -388,9 +388,9 @@ begin
 {$IFDEF IBX}
   ShadowQuery.Database:=DatabaseObj;
   {$IFDEF FPC}
-  ShadowQuery.AutoStartTransaction:=True;
-  ShadowQuery.AutoCommit:=True;
-  ShadowQuery.AutoTrim:=True;
+  ShadowQuery.AllowAutoActivateTransaction:=True;
+  ShadowQuery.AutoCommit:=acCommitRetaining;
+  //ShadowQuery.AutoTrim:=True;
   {$ENDIF}
 {$ENDIF}
 {$IFDEF SQLdbFamily}
@@ -821,6 +821,7 @@ begin
 {$IFDEF UPDATESQLDB}{$IFDEF IBALL}
     If TableName<>'' then
     Begin
+      ShadowQuery.Params.Clear;
       ShadowQuery.SQL.Text:='select RDB$FIELD_NAME '+
         'from RDB$RELATION_CONSTRAINTS C, RDB$INDICES I, RDB$INDEX_SEGMENTS S '+
         'where upper(C.RDB$RELATION_NAME) = upper(:TABLENAME) and '+

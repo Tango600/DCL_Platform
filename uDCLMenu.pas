@@ -5,8 +5,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Menus, ComCtrls,
-  uDCLConst, uDCLData, uDCLDBConnector, uDBUtils,
-  uDCLMeasurements, uDCLTypes, uDCLDBStructure;
+  uDCLConst, uDCLData, uDCLDBConnector, uDBUtils, uDCLMeasurements, uDCLTypes,
+  uDCLDBStructure;
 
 type
 

@@ -43,13 +43,13 @@ type
 
 {$IFDEF ADO}
   TDCLDialogQuery=TADOQuery;
-  TReportQuery=TADOQuery;
+  TDCLSimlyQuery=TADOQuery;
   TDBConnector=TADOConnection;
   TCommandQuery=TADOCommand;
 {$ENDIF}
 {$IFDEF IBX}
   TDCLDialogQuery=TIBQuery;
-  TReportQuery=TIBQuery;
+  TDCLSimlyQuery=TIBQuery;
   TDBConnector=TIBDatabase;
   TCommandQuery=TIBQuery;
   TTransaction=TIBTransaction;
@@ -57,14 +57,14 @@ type
 {$ENDIF}
 {$IFDEF ZEOS}
   TDBConnector=TZConnection;
-  TReportQuery=TZQuery;
+  TDCLSimlyQuery=TZQuery;
   TDCLDialogQuery=TZQuery;
   TUpdateObj=TZUpdateSQL;
   TCommandQuery=TZReadOnlyQuery;
 {$ENDIF}
 {$IFDEF SQLdbFamily}
   TDCLDialogQuery=TSQLQuery;
-  TReportQuery=TSQLQuery;
+  TDCLSimlyQuery=TSQLQuery;
   TCommandQuery=TSQLQuery;
   TTransaction=TSQLTransaction;
   TUpdateObj=TSQLQuery;
