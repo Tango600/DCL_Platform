@@ -27,6 +27,8 @@ Function KeyState(Key: Integer): Boolean;
 Function IsUNCPath(Path: String): Boolean;
 Function IsFullPath(Path: String): Boolean;
 Function ShiftDown: Boolean;
+
+function GetUserProfileDir: String;
 function GetUserDocumentsDir: String;
 
 function GetAppName(App: String): String;
@@ -53,13 +55,23 @@ begin
   Result:=Assigned(AObj){$IFDEF AUTOREFCOUNT}and(not AObj.Disposed){$ENDIF};
 end;
 
+function GetUserProfileDir: String;
+Begin
+{$IFDEF UNIX}
+  Result:=GetEnvironmentVariable('HOME')+PathDelim;
+{$ENDIF}
+{$IFDEF MSWINDOWS}
+  Result:=GetSpecialPath(CSIDL_PERSONAL)+PathDelim;
+{$ENDIF}
+End;
+
 function GetUserDocumentsDir: String;
 Begin
 {$IFDEF UNIX}
-  Result:=GetEnvironmentVariable('HOME');
+  Result:=GetEnvironmentVariable('HOME')+PathDelim;
 {$ENDIF}
 {$IFDEF MSWINDOWS}
-  Result:=GetSpecialPath(CSIDL_PERSONAL);
+  Result:=GetSpecialPath(CSIDL_MYDOCUMENTS)+PathDelim;
 {$ENDIF}
 End;
 

@@ -35,6 +35,9 @@ Const
 
 implementation
 
+uses
+  fAbout;
+
 {$R *.lfm}
 
 { TMainForm }
@@ -109,8 +112,12 @@ begin
 end;
 
 procedure TMainForm.ShowAbout;
+var
+  About: TAboutForm;
 begin
+  About:=TAboutForm.Create(Self);
 
+  About.ShowModal;
 end;
 
 end.

@@ -456,11 +456,11 @@ end;
 
 Procedure InitGetAppConfigDir;
 Begin
-  UserProfileDir:=GetUserDocumentsDir;
+  UserProfileDir:=GetUserProfileDir;
   if not DirectoryExists(UserProfileDir) then
     ForceDirectories(UserProfileDir);
 
-  AppConfigDir:=UserProfileDir+PathDelim+DCLDir;
+  AppConfigDir:=UserProfileDir+DCLDir;
 End;
 
 /// ////////////////////////////////////////////////////////////

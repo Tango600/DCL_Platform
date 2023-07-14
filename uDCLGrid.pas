@@ -612,7 +612,7 @@ var
 begin
   Print:=TPrintBase.Create(FQuery);
   Print.Print(FDBGrid, FForm.Caption);
-  Print.Save(UserProfileDir+'table.tmp');
+  Print.Save(AppConfigDir+'table.tmp');
 end;
 
 procedure TDCLGrid.ExecEvents(EventType: TEventsEnum);

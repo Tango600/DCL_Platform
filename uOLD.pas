@@ -2136,38 +2136,7 @@ begin
               FDCLForm.CurrentGridIndex.Query.FieldList.SaveToFile(tmp1);
             end;
   {$ENDIF}
-            If PosEx('SetContextFilterText=', ScrStr)=1 Then
-            begin
-              TmpStr:=FindParam('ComponentName=', ScrStr);
-              If TmpStr='' Then
-              begin
-                TmpStr:=FindParam('ComponentNumber=', ScrStr);
-                If TmpStr='' Then
-                  TmpStr:='ContextFilter_1'
-                Else
-                  TmpStr:='ContextFilter_'+TmpStr;
-              end;
-              If Assigned(FDCLForm) Then
-                If Assigned(FDCLForm.CurrentGridIndex.ToolPanel) Then
-                  If Assigned(FDCLForm.CurrentGridIndex.ToolPanel.FindComponent(TmpStr)) Then
-                  begin
-                    tmpStr1:=FindParam('SetContextFilterText=', ScrStr);
-                    RePlaseVariabless(tmpStr1);
-                    (FDCLForm.CurrentGridIndex.ToolPanel.FindComponent(TmpStr) as TEdit).Text:=tmpStr1;
-                  end;
-            end;
 
-            If PosEx('ClearAllContextFilters;', ScrStr)=1 Then
-            begin
-              If Assigned(FDCLForm) Then
-                If FDCLForm.CurrentGridIndex.DBFilters.Count>0 Then
-                  For v1:=1 to FDCLForm.CurrentGridIndex.DBFilters.Count do
-                  begin
-                    If FDCLForm.CurrentGridIndex.DBFilters[v1-1].FilterType=ftContextFilter Then
-                      If Assigned(FDCLForm.CurrentGridIndex.DBFilters[v1-1].Edit) Then
-                        FDCLForm.CurrentGridIndex.DBFilters[v1-1].Edit.Clear;
-                  end;
-            end;
 
             If PosEx('DownloadHTTP=', ScrStr)=1 Then
             begin
@@ -2549,88 +2518,6 @@ begin
             end;
 
 
-            If PosEx('Insert_part;', ScrStr)=1 Then
-            begin
-              If GetRaightsByContext(InContext)>ulReadOnly Then
-                If Assigned(FDCLForm) Then
-                If Assigned(FDCLForm.CurrentGridIndex.CurrentPart) Then
-                  FDCLForm.CurrentGridIndex.CurrentPart.Query.Insert;
-            end;
-
-            If PosEx('Append_part;', ScrStr)=1 Then
-            begin
-              If GetRaightsByContext(InContext)>ulReadOnly Then
-                If Assigned(FDCLForm) Then
-                If Assigned(FDCLForm.CurrentGridIndex.CurrentPart) Then
-                  FDCLForm.CurrentGridIndex.CurrentPart.Query.Append;
-            end;
-
-            If PosEx('Post_part;', ScrStr)=1 Then
-            begin
-              If GetRaightsByContext(InContext)>ulReadOnly Then
-                If Assigned(FDCLForm) Then
-                If Assigned(FDCLForm.CurrentGridIndex.CurrentPart) Then
-                  FDCLForm.CurrentGridIndex.CurrentPart.Query.Post;
-            end;
-
-            If PosEx('Delete_part;', ScrStr)=1 Then
-            begin
-              If GetRaightsByContext(InContext)>ulReadOnly Then
-                If Assigned(FDCLForm) Then
-                If Assigned(FDCLForm.CurrentGridIndex.CurrentPart) Then
-                  FDCLForm.CurrentGridIndex.CurrentPart.Query.Delete;
-            end;
-
-            If PosEx('DeleteConf_part;', ScrStr)=1 Then
-            begin
-              If GetRaightsByContext(InContext)>ulReadOnly Then
-                If Assigned(FDCLForm) Then
-                If Assigned(FDCLForm.CurrentGridIndex.CurrentPart) Then
-                  If ShowErrorMessage(10, GetDCLMessageString(msDeleteRecordQ))=1 Then
-                    FDCLForm.CurrentGridIndex.CurrentPart.Query.Delete;
-            end;
-
-            If PosEx('Edit_part;', ScrStr)=1 Then
-            begin
-              If GetRaightsByContext(InContext)>ulReadOnly Then
-                If Assigned(FDCLForm) Then
-                If Assigned(FDCLForm.CurrentGridIndex.CurrentPart) Then
-                  FDCLForm.CurrentGridIndex.CurrentPart.Query.Edit;
-            end;
-
-            If PosEx('Next_part;', ScrStr)=1 Then
-            begin
-              If GetRaightsByContext(InContext)>ulReadOnly Then
-                If Assigned(FDCLForm) Then
-                If Assigned(FDCLForm.CurrentGridIndex.CurrentPart) Then
-                  FDCLForm.CurrentGridIndex.CurrentPart.Query.Next;
-            end;
-
-            If PosEx('Prior_part;', ScrStr)=1 Then
-            begin
-              If GetRaightsByContext(InContext)>ulReadOnly Then
-                If Assigned(FDCLForm) Then
-                If Assigned(FDCLForm.CurrentGridIndex.CurrentPart) Then
-                  FDCLForm.CurrentGridIndex.CurrentPart.Query.Prior;
-            end;
-
-            If PosEx('First_part;', ScrStr)=1 Then
-            begin
-              If GetRaightsByContext(InContext)>ulReadOnly Then
-                If Assigned(FDCLForm) Then
-                If Assigned(FDCLForm.CurrentGridIndex.CurrentPart) Then
-                  FDCLForm.CurrentGridIndex.CurrentPart.Query.First;
-            end;
-
-            If PosEx('Last_part;', ScrStr)=1 Then
-            begin
-              If GetRaightsByContext(InContext)>ulReadOnly Then
-                If Assigned(FDCLForm) Then
-                If Assigned(FDCLForm.CurrentGridIndex.CurrentPart) Then
-                  FDCLForm.CurrentGridIndex.CurrentPart.Query.Last;
-            end;
-
-
 
             If PosEx('PostClose;', ScrStr)=1 Then
             begin
@@ -2665,14 +2552,6 @@ begin
               End;
             end;
 
-
-
-            If PosEx('Refresh;', ScrStr)=1 Then
-            begin
-              If Assigned(FDCLForm) then
-                FDCLForm.CurrentGridIndex.ReFreshQuery;
-            end;
-
             If PosEx('EvalFormula=', ScrStr)=1 Then
             begin
               tmp1:=FindParam('EvalFormula=', ScrStr);
@@ -2684,20 +2563,6 @@ begin
               FDCLLogOn.EvalFormula:=Calculate(tmp1);
             end;
 
-            If PosEx('OnTop=', ScrStr)=1 Then
-            begin
-  {$IFNDEF DCLDEBUG}
-              TmpStr:=Trim(FindParam('OnTop=', ScrStr));
-              If Assigned(FDCLForm) then
-              begin
-                if TmpStr='1' then
-                  If Not FDCLForm.OnTop Then
-                    FDCLForm.Form.FormStyle:=fsStayOnTop
-                else
-                  FDCLForm.Form.FormStyle:=fsNormal;
-              end;
-  {$ENDIF}
-            end;
 
 
             If PosEx('Debug;', ScrStr)=1 Then

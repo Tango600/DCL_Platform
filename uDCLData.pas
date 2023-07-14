@@ -60,24 +60,6 @@ type
     ReOpen: Boolean;
   end;
 
-  TExpr=Record
-    Oper1, Oper2, ValResult: Real;
-    Sign, Result: String;
-  End;
-
-  TSignInfo=Record
-    SignPos: Word;
-    SignLong:Byte;
-  End;
-
-  TDateTimeItem=Record
-    Hour, Min, Sec, mSec, Year, Month, Day: Word;
-  End;
-
-  TDCLSession=Record
-    LoginTime, UserSystemName: String;
-  End;
-
   TStructureModify=class
     ColumnsListCaption, FieldsListCaption: String;
     ColumnsListField, FieldsListField: String;
@@ -124,12 +106,6 @@ type
   TBrushColor=class
     Color: TColor;
     Value, Key: String;
-  end;
-
-  TContextList=class
-    ContextList: TComboBox;
-    SQL, Table, Field, KeyField, DataField, ListField, Variable: String;
-    NoData: Boolean;
   end;
 
   TKeyBookMark=class

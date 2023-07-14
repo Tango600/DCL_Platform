@@ -731,8 +731,10 @@ begin
 
   if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) and FDCLGrid.Query.Active then
   begin
-
-
+    If IsLexem('Refresh;', Command) then
+    begin
+      FDCLGrid.ReFreshData;
+    end;
 
     if IsLexem('First;', Command) then
     begin
@@ -859,8 +861,75 @@ begin
 
   if Assigned(FDCLGrid) and Assigned(FDCLGrid.CurrentTablePart) and FDCLGrid.CurrentTablePart.Query.Active then
   begin
+    If GetRaights>ulReadOnly Then
+    begin
+      If IsLexem('Insert_part;', Command) then
+      begin
+        FDCLGrid.CurrentTablePart.Query.Insert;
+      end;
+
+      If IsLexem('Append_part;', Command) then
+      begin
+        FDCLGrid.CurrentTablePart.Query.Append;
+      end;
+
+      If IsLexem('Post_part;', Command) then
+      begin
+        FDCLGrid.CurrentTablePart.Query.Post;
+      end;
+
+      If IsLexem('Delete_part;', Command) then
+      begin
+        FDCLGrid.CurrentTablePart.Query.Delete;
+      end;
+
+      If IsLexem('DeleteConf_part;', Command) then
+      begin
+        If ShowErrorMessage(10, GetDCLMessageString(msDeleteRecordQ))=1 then
+          FDCLGrid.CurrentTablePart.Query.Delete;
+      end;
+
+      If IsLexem('Edit_part;', Command) then
+      begin
+        FDCLGrid.CurrentTablePart.Query.Edit;
+      end;
+    end;
+
+    If IsLexem('Next_part;', Command) then
+    begin
+      FDCLGrid.CurrentTablePart.Query.Next;
+    end;
+
+    If IsLexem('Prior_part;', Command) then
+    begin
+      FDCLGrid.CurrentTablePart.Query.Prior;
+    end;
+
+    If IsLexem('First_part;', Command) then
+    begin
+      FDCLGrid.CurrentTablePart.Query.First;
+    end;
+
+    If IsLexem('Last_part;', Command) then
+    begin
+      FDCLGrid.CurrentTablePart.Query.Last;
+    end;
 
 
+
+  end;
+
+  if Assigned(FDCLForm) then
+  begin
+    If IsLexem('OnTop=', Command) then
+    begin
+{$IFNDEF DCLDEBUG}
+      if (Trim(FindParam('OnTop=', Command))='1') and (FDCLForm.FormStyle=fsNormal) then
+          FDCLForm.FormStyle:=fsStayOnTop
+      else
+        FDCLForm.FormStyle:=fsNormal;
+    end;
+{$ENDIF}
 
   end;
 end;
