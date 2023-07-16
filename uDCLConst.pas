@@ -188,30 +188,25 @@ Type
     fnaResumeAutoRefresh);
   TIsDigitType=(idString, idDigit, idFloatDigit, idHex, idColor, idDateTime, idUserLevel);
   TDataStatus=(dssChanged, dssSaved);
-  TIniStore=(isDisk, isBase, isDiskAndBase, isNone);
   TNotifyActionsType=(naDone, naScriptRun, naMessage, naExecAndWait, naExec, naExitToTime);
   TQueryType=(qtMain, qtFind, qtDefault);
   TFilterType=(ftNone, ftDBFilter, ftContextFilter, ftComboFilter);
   TOfficeFormat=(ofNone, ofMSO, ofOO, ofPossible);
   TOfficeDocumentFormat=(odfNone, odfMSO97, odfMSO2007, odfOO, odfPossible);
   TDocumentType=(dtNone, dtSheet, dtText);
-  TIfSign=(isND, isEq, isGt, isLe, isGtEq, isLeEq, isNotEq);
+  TSign=(isND, isEq, isGt, isLe, isGtEq, isLeEq, isNotEq);
   TReportViewMode=(rvmOneRecord, rvmAllDS, rvmGrid, rvmMultitRecordReport, rvmBookmarcks);
   TFieldBoxType=(fbtDBField, fbtDBCheck, fbtOutBox, fbtInputBox, fbtEditBox, fbtSimplyCombo, fbtDBLookup, fbtDBCombo, fbtGrid);
   TGraficFileType=(gftNone, gftBMP, gftJPEG, gftPNG, gftIcon, gftGIF, gftTIFF, gftOther);
   TDataFieldTypeType=(dftDefault, dftMemo, dftGrafic, dftRichText, dftLogic, dftFloat);
   TSpoolType=(stNone, stSpool, stText);
   TGroupType=(gtGrafic, gtMemo, gtRichText);
-  TQueryBehavior=(qbNormal, qbNotReload, qbEnding);
   TReportType=(rtWord, rtFast);
-  TSelectType=(qtCount, qtSelect);
   TFindType=(ftByIndex, ftByName, ftSQL);
   TNewQueryMode=(nqmNew, nqmFromGrid);
   TMessageType=(mbtError=0, mbtWarning=1, mbtInformation=9, mbtConfirmation=10);
-  TSign=(sEquals, sGreater, sLess, sNotEqual, sGreaterEq, sLessEq);
   TSimplyFieldType=(sftNotDefine, sftString, sftDigit, sftFloat, sftDateTime, fstBlobMemo);
   TDCLFormCloseAction=(fcaNone, fcaClose);
-  TINIType=(itNone, itFormPos, itBookmarkMenu);
   TFieldFormat=(fftNone, fftDigit, fftDate, fftTime, fftDateTime, fftTrim, fftFloat);
   TSheetFillStrategy=(sfsInsert, sfsReplace);
   TFieldParsingMode=(fpmNone, fpmCaption, fpmField);
@@ -221,7 +216,6 @@ Type
 const
   ReleaseStatus=rsAlpha;
   ReliseStatues:Array[TReliseStatus] of String=('Alpha', 'Betta', 'Pre relase', 'Unstable', 'Stable');
-  Signs:Array[TSign] of String=('=', '<', '>', '<>', '<=', '>=');
 
 implementation
 

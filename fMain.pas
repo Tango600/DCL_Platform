@@ -18,6 +18,7 @@ type
     StatusBar1: TStatusBar;
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     procedure ShowAbout;
     {$IFDEF MSWINDOWS}
@@ -85,13 +86,6 @@ var
   T: TextFile;
 begin
   Caption:='DCL Run v.'+Version;
-  {$IFDEF MSWINDOWS}
-  ParentFont:=True;
-  AppendMenu(GetSystemMenu(Handle, False), MF_SEPARATOR, 0, '');
-  AppendMenu(GetSystemMenu(Handle, False), MF_STRING, AboutMenuItem,
-    Pchar(UTF8ToWinCP('DCL '+GetDCLMessageString(msVersion)+' : '+uDCLConst.Version)));
-  AppendMenu(GetSystemMenu(Handle, False), MF_STRING, LockMenuItem, PChar(UTF8ToWinCP(GetDCLMessageString(msLock)+'...')));
-  {$ENDIF}
 
   MDI:=False;
   if FileExists('interface.ini') then
@@ -108,7 +102,21 @@ begin
   end;
 
   if MDI or FindMDI then
+  begin
     FormStyle:=fsMDIForm;
+
+    Height:=600;
+  end;
+end;
+
+procedure TMainForm.FormShow(Sender: TObject);
+begin
+  {$IFDEF MSWINDOWS}
+  AppendMenu(GetSystemMenu(Handle, False), MF_SEPARATOR, 0, '');
+  AppendMenu(GetSystemMenu(Handle, False), MF_STRING, AboutMenuItem,
+    Pchar(UTF8ToWinCP('DCL '+GetDCLMessageString(msVersion)+' : '+uDCLConst.Version)));
+  AppendMenu(GetSystemMenu(Handle, False), MF_STRING, LockMenuItem, PChar(UTF8ToWinCP(GetDCLMessageString(msLock)+'...')));
+  {$ENDIF}
 end;
 
 procedure TMainForm.ShowAbout;

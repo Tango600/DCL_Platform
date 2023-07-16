@@ -251,11 +251,6 @@ Begin
           GPT.DisableIniPasword:=True;
         End;
 
-        If PosEx('FormPosInDB=', Params[i])=1 Then
-        Begin
-          GPT.FormPosInDB:=TIniStore(StrToInt(FindParam('FormPosInDB=', Params[i])));
-        End;
-
 {$IFDEF CPU32}
         If PosEx('LibPath=', Params[i])=1 Then
         Begin

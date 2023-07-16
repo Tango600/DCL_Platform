@@ -3437,9 +3437,6 @@ begin
   begin
     TranslateVal(ScrStr, True);
     FDataReadOnly:=FindParam('ReadOnlyData=', ScrStr)='1';
-    {$IFDEF SQLdbFamily}
-    FQuery.ReadOnly:=FDataReadOnly;
-    {$ENDIF}
   end;
 
   if IsLexem('Style=', ScrStr) then
@@ -3847,10 +3844,16 @@ begin
     Inc(FToolButtonsCount);
   end;
 
-  {$IFDEF SQLdbFamily}
   if FDataReadOnly then
+  begin
+    {$IFDEF SQLdbFamily}
     FQuery.ReadOnly:=True;
-  {$ENDIF}
+    {$ELSE}
+    AddNotAllowedOperation(dsoInsert);
+    AddNotAllowedOperation(dsoDelete);
+    AddNotAllowedOperation(dsoEdit);
+    {$ENDIF}
+  end;
 
   if FGridStyle in TDataFields then
   begin

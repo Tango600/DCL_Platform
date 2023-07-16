@@ -395,10 +395,11 @@ end;
 procedure TDCLValuseParser.RePlaceProc(var Params: String; var Factor: Integer;
   Query: TDCLDialogQuery);
 var
-  ReplaseProc, Param, TmpStr, TmpStr2, TmpStr3: String;
+  ReplaseProc, Param, TmpStr, TmpStr1, TmpStr2, TmpStr3, SignStr: String;
   StartSel, ParamLen, StartSearch, pv1, pv2, pv3, pv4, FindProcNum, Skobki, VarNameLength,
     MaxMatch: Word;
   FindVar: Boolean;
+  c: Char;
   FunctionParams: Array Of String;
   FunctionParamsCount: Byte;
   Sign:TSign;
@@ -662,51 +663,92 @@ Begin
             pv1:=LastDelimiter('<>=', FunctionParams[1]);
             If pv1<>0 then
             Begin
-              Sign:=TSign(AnsiIndexStr(FunctionParams[1], Signs));
+              TmpStr:=FunctionParams[1];
+              SignStr:='';
 
-              pv1:=Pos(Signs[Sign], FunctionParams[1]);
-              pv2:=Length(Signs[Sign]);
-              TmpStr2:=Copy(FunctionParams[1], 1, pv1-1);
-              TmpStr3:=Copy(FunctionParams[1], pv1+pv2+1, Length(FunctionParams[1]));
-              TmpStr2:=Trim(AnsiLowerCase(TmpStr2));
-              TmpStr3:=Trim(AnsiLowerCase(TmpStr3));
+              pv1:=1;
+              for c in TmpStr do
+              begin
+                if c in ['=', '<', '>'] then
+                begin
+                  break;
+                end;
+                Inc(pv1);
+              end;
 
-              If Sign=sEquals then
+              TmpStr1:=Copy(TmpStr, 1, pv1-1);
+              Delete(TmpStr, 1, pv1-1);
+
+              pv1:=1;
+              for c in TmpStr do
+              begin
+                if not (c in ['=', '<', '>']) then
+                begin
+                  break;
+                end;
+                Inc(pv1);
+              end;
+
+              SignStr:=Copy(TmpStr, 1, pv1-1);
+              Delete(TmpStr, 1, pv1-1);
+
+              TmpStr3:=TmpStr;
+
+              Sign:=isND;
+              if SignStr='=' then
+                Sign:=isEq
+              else
+              if SignStr='<' then
+                Sign:=isLe
+              else
+              if SignStr='>' then
+                Sign:=isGt
+              else
+              if SignStr='>=' then
+                Sign:=isGtEq
+              else
+              if SignStr='<=' then
+                Sign:=isLeEq
+              else
+              if SignStr='<>' then
+                Sign:=isNotEq;
+
+              If Sign=isEq then
               Begin
                 If TmpStr2=TmpStr3 then
                   TmpStr:=FunctionParams[2]
                 Else
                   TmpStr:=FunctionParams[3];
               End
-              Else If Sign=sLess then
+              Else If Sign=isLe then
               Begin
                 If TmpStr2>TmpStr3 then
                   TmpStr:=FunctionParams[2]
                 Else
                   TmpStr:=FunctionParams[3];
               End
-              Else If Sign=sGreater then
+              Else If Sign=isGt then
               Begin
                 If TmpStr2<TmpStr3 then
                   TmpStr:=FunctionParams[2]
                 Else
                   TmpStr:=FunctionParams[3];
               End
-              Else If Sign=sNotEqual then
+              Else If Sign=isNotEq then
               Begin
                 If TmpStr2<>TmpStr3 then
                   TmpStr:=FunctionParams[2]
                 Else
                   TmpStr:=FunctionParams[3];
               End
-              Else If Sign=sGreaterEq then
+              Else If Sign=isGtEq then
               Begin
                 If TmpStr2<=TmpStr3 then
                   TmpStr:=FunctionParams[2]
                 Else
                   TmpStr:=FunctionParams[3];
               End
-              Else If Sign=sLessEq then
+              Else If Sign=isLeEq then
               Begin
                 If TmpStr2>=TmpStr3 then
                   TmpStr:=FunctionParams[2]

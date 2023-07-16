@@ -433,7 +433,7 @@ begin
   FIsSingle:=False;
 
   {$IFNDEF EMBEDDED}
-  If Assigned(Application.MainForm) then
+  If Assigned(Application.MainForm) and not Modal then
     If Application.MainForm.FormStyle=fsMDIForm Then
       FormStyle:=fsMDIChild;
   {$ENDIF}
@@ -573,8 +573,10 @@ begin
     Self.Width:=((FieldsCount div 8)+1)*280;
   end;
 
-  {If OnTop Then  // Мешает отладки
-    FormStyle:=fsStayOnTop;}
+  {$IFNDEF NOONTOP}
+  If OnTop Then  // Мешает отладки
+    FormStyle:=fsStayOnTop;
+  {$ENDIF}
   if not Assigned(FReturnValueParams) and not Modal then
   begin
     Self.Show;
@@ -694,7 +696,7 @@ var
   ConfigPath: String;
   Settings: TIniFile;
 begin
-  if GPT.DialogsSettings then
+  if GPT.DialogsSettings and (Self.WindowState=wsNormal) then
   begin
     ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim;
     if not DirectoryExists(ConfigPath) then

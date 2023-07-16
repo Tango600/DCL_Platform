@@ -112,7 +112,7 @@ var
     IfResult, Flg, Skp: Boolean;
     posI, posI2: Integer;
     c: Char;
-    Sign: TIfSign;
+    Sign: TSign;
     Line, IfCondition, SignStr, Expression1, Expression2: String;
   begin
     Flg:=IfFlag;
@@ -923,13 +923,13 @@ begin
   begin
     If IsLexem('OnTop=', Command) then
     begin
-{$IFNDEF DCLDEBUG}
+{$IFNDEF NOONTOP}
       if (Trim(FindParam('OnTop=', Command))='1') and (FDCLForm.FormStyle=fsNormal) then
           FDCLForm.FormStyle:=fsStayOnTop
       else
         FDCLForm.FormStyle:=fsNormal;
-    end;
 {$ENDIF}
+    end;
 
   end;
 end;
@@ -948,8 +948,10 @@ begin
   DCLQuery.ParamByName('COMMAND').AsString:=Command;
   DCLQuery.Open;
   Empty:=DCLQuery.IsEmpty;
-  Script:=DCLQuery.FieldByName(ScriptField).AsString;
+  if not Empty then
+    Script:=DCLQuery.FieldByName(ScriptField).AsString;
   DCLQuery.Close;
+  FreeAndNil(DCLQuery);
 
   if Empty then
   begin
