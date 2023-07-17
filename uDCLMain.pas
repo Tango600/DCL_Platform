@@ -198,7 +198,6 @@ begin
 
   LocalQuery:=TDCLDialogQuery.Create(Self);
   FDBConnector.SetConnector(LocalQuery);
-  LocalQuery.AllowAutoActivateTransaction:=True;
 
   KillerDog:=TTimer.Create(Self);
   KillerDog.Interval:=KillerTimerInterval;
@@ -246,7 +245,7 @@ begin
   t.Text:=GetDialogScript(DialogName);
   if t.Text<>'' then
   begin
-    lForm:=TDCLForm.Create(DialogName, NameSpace, nil, FVariables, FForms, t, FDBConnector, nil, nil);
+    lForm:=TDCLForm.Create(DialogName, NameSpace, nil, FVariables, FForms, t, FDBConnector, nil, nil, nil);
     if not lForm.Reject then
       FForms.Add(lForm);
   end;

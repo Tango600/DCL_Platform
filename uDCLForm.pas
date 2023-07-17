@@ -22,7 +22,8 @@ type
     FNameSpace, FDialogName, CloseQueryText: String;
     FVariables: TVariables;
     FForms: TList<TForm>;
-    FParentForm, FCallerForm: TDCLForm;
+    FParentForm: TDCLForm;
+    FRetValueProc: TGetValueProc;
     FOPL: TStringList;
     FormBar: TToolBar;
     TB: TFormPanelButton;
@@ -47,7 +48,7 @@ type
     procedure PageChange(Sender: TObject);
 
     procedure AddMainPage(Query: TDCLQuery; Data: TDataSource);
-    function AddGrid(Parent: TWinControl; SurfType: TDataControlType; Query: TDCLQuery;
+    function AddGrid(ParentControl: TWinControl; SurfType: TDataControlType; Query: TDCLQuery;
       Data: TDataSource): TDCLGrid;
 
     function FindMenuItem(aItems: TMenuItem): TMenuItem;
@@ -79,7 +80,7 @@ type
   public
     constructor Create(DialogName, NameSpace: String; ParentForm: TDCLForm;
       Variables: TVariables; Forms: TList<TForm>; OPL: TStringList; DBConnector: TDCLDBConnector;
-      Query: TDCLQuery; Data: TDataSource;
+      Query: TDCLQuery; Data: TDataSource; RetValueProc: TGetValueProc;
       ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False); overload;
 
     procedure RefreshForm;
@@ -95,6 +96,7 @@ type
     property IsSingle: Boolean read FIsSingle;
     property ReturnValue: TReturnFormValue read FReturnValue write FReturnValue;
     property ReturnValueParams: TReturnValueParams read FReturnValueParams write FReturnValueParams;
+    property RetValueMethod: TGetValueProc read FRetValueProc;
     property ParentForm: TDCLForm read FParentForm;
     property Reject: Boolean read FReject;
     property RightsLevel: TUserLevelsType read FUserLevel;
@@ -169,6 +171,7 @@ begin
 
   pc:=FPages.PageCount;
   FTab:=TTabSheet.Create(FPages);
+  FTab.Parent:=FPages;
   FTab.Caption:=GetDCLMessageString(msPage)+' '+IntToStr(pc+1);
   FTab.Name:='Page_'+IntToStr(pc+1);
   FTab.PageControl:=FPages;
@@ -182,12 +185,12 @@ begin
   FPages.ActivePageIndex:=pc;
 end;
 
-function TDCLForm.AddGrid(Parent: TWinControl; SurfType: TDataControlType;
+function TDCLForm.AddGrid(ParentControl: TWinControl; SurfType: TDataControlType;
   Query: TDCLQuery; Data: TDataSource): TDCLGrid;
 var
   grid: TDCLGrid;
 begin
-  grid:=TDCLGrid.Create(FNameSpace, FForms, Self, Parent, FVariables, SurfType, FDBConnector, Query, Data);
+  grid:=TDCLGrid.Create(FNameSpace, FForms, Self, ParentControl, FVariables, SurfType, FDBConnector, Query, Data);
   FGrids.Add(grid);
   Result:=grid;
 end;
@@ -374,9 +377,9 @@ end;
 
 constructor TDCLForm.Create(DialogName, NameSpace: String; ParentForm: TDCLForm;
   Variables: TVariables; Forms: TList<TForm>; OPL: TStringList;
-  DBConnector: TDCLDBConnector;
-  Query: TDCLQuery; Data: TDataSource;
-  ReturnValueParams: TReturnValueParams; Modal: Boolean=False);
+  DBConnector: TDCLDBConnector; Query: TDCLQuery; Data: TDataSource;
+  RetValueProc: TGetValueProc; ReturnValueParams: TReturnValueParams;
+  Modal: Boolean=False);
 var
   Command: TDCLCommand;
   SrcLine, tmpS, tmpS1: String;
@@ -397,6 +400,7 @@ begin
   FFirstPage:=True;
   FReturnValueParams:=ReturnValueParams;
   FParentForm:=ParentForm;
+  FRetValueProc:=RetValueProc;
   FUserLevel:=GPT.AccessLevel;
 
   FReject:=False;

@@ -13,7 +13,7 @@ type
 
   { TDCLCommand }
 
-  TDCLCommand=class
+  TDCLCommand=class(TComponent)
   private
     FDBConnector: TDCLDBConnector;
     FForms: TList<TForm>;
@@ -42,12 +42,15 @@ type
 
     function CreateForm(NameSpace, DialogName: String; NoContext: Boolean;
       ParentForm: TDCLForm; Grid: TDCLGrid;
-      ReturnValueParams: TReturnValueParams; Modal: Boolean): TDCLForm;
+      ReturnValueParams: TReturnValueParams; Modal: Boolean;
+      RetValueProc: TGetValueProc): TDCLForm;
 
     function ReadConfig(ConfigName, UserId: String): String;
     procedure WriteConfig(ConfigName, NewValue, UserId: String);
 
     procedure DialogCommand(ScrStr: String);
+
+    procedure RetValue(ReturnValue: TReturnFormValue);
   end;
 
 implementation
@@ -239,7 +242,7 @@ var
 
 begin
   Result:=False;
-  DCLQuery:=TDCLDialogQuery.Create(nil);
+  DCLQuery:=TDCLDialogQuery.Create(Self);
   FDBConnector.SetConnector(DCLQuery);
 
   DCLQuery.SQL.Text:='select * from '+DCLTable+' where lower('+DCLNameField+')=lower(:COMMAND)';
@@ -337,7 +340,7 @@ begin
     TranslateVals(SQLText);
     If SQLText<>'' Then
     begin
-      DCLQuery:=TDCLDialogQuery.Create(nil);
+      DCLQuery:=TDCLDialogQuery.Create(Self);
       FDBConnector.SetConnector(DCLQuery);
 
       {$IFDEF TRANSACTIONDB}
@@ -430,7 +433,7 @@ var
 begin
   If GetRaights>ulWrite then
   begin
-    ADOCommand:=TCommandQuery.Create(nil);
+    ADOCommand:=TCommandQuery.Create(Self);
     If GPT.DebugOn Then
     begin
       //DebugProc('ExecSQLCommand: '+SQLCommand);
@@ -941,7 +944,7 @@ var
   Script: String;
   DCL: TStringList;
 begin
-  DCLQuery:=TDCLDialogQuery.Create(nil);
+  DCLQuery:=TDCLDialogQuery.Create(Self);
   FDBConnector.SetConnector(DCLQuery);
 
   DCLQuery.SQL.Text:='select * from '+DCLTable+' where lower('+DCLNameField+')=lower(:COMMAND)';
@@ -970,7 +973,7 @@ end;
 
 function TDCLCommand.CreateForm(NameSpace, DialogName: String; NoContext: Boolean;
   ParentForm: TDCLForm; Grid: TDCLGrid; ReturnValueParams: TReturnValueParams;
-  Modal: Boolean): TDCLForm;
+  Modal: Boolean; RetValueProc: TGetValueProc): TDCLForm;
 var
   DCLQuery: TDCLDialogQuery;
   Empty: Boolean;
@@ -978,14 +981,15 @@ var
   DCL: TStringList;
   lForm: TDCLForm;
 begin
-  DCLQuery:=TDCLDialogQuery.Create(nil);
+  DCLQuery:=TDCLDialogQuery.Create(Self);
   FDBConnector.SetConnector(DCLQuery);
 
   DCLQuery.SQL.Text:='select * from '+DCLTable+' where lower('+DCLNameField+')=lower(:COMMAND)';
   DCLQuery.ParamByName('COMMAND').AsString:=DialogName;
   DCLQuery.Open;
   Empty:=DCLQuery.IsEmpty;
-  Script:=DCLQuery.FieldByName(ScriptField).AsString;
+  if not Empty then
+    Script:=DCLQuery.FieldByName(ScriptField).AsString;
   DCLQuery.Close;
 
   Result:=nil;
@@ -996,11 +1000,11 @@ begin
     if DCL.Count>0 then
     begin
       if NoContext then
-        lForm:=TDCLForm.Create(DialogName, NameSpace, ParentForm, FVariables, FForms, DCL, FDBConnector, nil, nil,
-          ReturnValueParams, Modal)
+        lForm:=TDCLForm.Create(DialogName, NameSpace, ParentForm, FVariables, FForms, DCL, FDBConnector,
+          nil, nil, RetValueProc, ReturnValueParams, Modal)
       else
-        lForm:=TDCLForm.Create(DialogName, NameSpace, ParentForm, FVariables, FForms, DCL, FDBConnector, Grid.Query, Grid.Data,
-          ReturnValueParams, Modal);
+        lForm:=TDCLForm.Create(DialogName, NameSpace, ParentForm, FVariables, FForms, DCL, FDBConnector,
+          Grid.Query, Grid.Data, RetValueProc, ReturnValueParams, Modal);
 
       if not lForm.Reject then
       begin
@@ -1024,11 +1028,12 @@ begin
     If UserID<>'' Then
       WhereUser:=' and '+GPTUserIDField+'='+UserID;
 
-    ParamsQuery:=TDCLSimlyQuery.Create(nil);
+    ParamsQuery:=TDCLSimlyQuery.Create(Self);
     FDBConnector.SetConnector(ParamsQuery);
     ParamsQuery.SQL.Text:='select '+GPTValueField+' from '+GPTTableName+' where '+
-      GPT.UpperString+GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+
-      ConfigName+GPT.StringTypeChar+GPT.UpperStringEnd+WhereUser;
+      GPT.UpperString+GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+':ParamName'+
+      GPT.UpperStringEnd+WhereUser;
+    ParamsQuery.ParamByName('ParamName').AsString:=ConfigName;
     ParamsQuery.Open;
     Result:=TrimRight(ParamsQuery.Fields[0].AsString);
     ParamsQuery.Close;
@@ -1047,7 +1052,7 @@ begin
     If UserId<>'' Then
       WhereUser:=' and '+GPTUserIDField+'='+UserId;
 
-    ParamsQuery:=TDCLSimlyQuery.Create(nil);
+    ParamsQuery:=TDCLSimlyQuery.Create(Self);
     FDBConnector.SetConnector(ParamsQuery);
     ParamsQuery.SQL.Text:='select count(*) from '+GPTTableName+' where '+GPT.UpperString+
       GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+ConfigName+
@@ -1084,11 +1089,10 @@ procedure TDCLCommand.DialogCommand(ScrStr: String);
 var
   TmpStr, DialogName: String;
   ModalOpen, NoContext: Boolean;
-  v1, ModalResult, vc: Integer;
+  v1, ModalResult: Integer;
   ReturnValueParams: TReturnValueParams;
-  RetVal: TReturnFormValue;
-  ReturnValueItem: TGetValueItem;
-  Edit: TDCLEdit;
+  RetValueMethod: TGetValueProc;
+  lDCLForm: TDCLForm;
 begin
   DialogName:=FindParam('Dialog=', ScrStr);
   ModalOpen:=FindParam('ModalOpen=', ScrStr)='1';
@@ -1101,7 +1105,8 @@ begin
       FindParam('KeyModifyField=', ScrStr), FindParam('ValueModifyField=', ScrStr),
       FindParam('KeyVariable=', ScrStr), FindParam('ValueVariable=', ScrStr),
       FindParam('BatchScript=', ScrStr), FindParam('MultiSelect=', ScrStr)='1');
-    ModalOpen:=True;
+    RetValueMethod:=RetValue;
+    ModalOpen:=FindParam('BatchScript=', ScrStr)='1';
   end;
   NoContext:=FindParam('NoContext=', ScrStr)='1';
 
@@ -1112,98 +1117,111 @@ begin
     Begin
       v1:=StrToIntEx(TmpStr)-1;
       If Assigned(FDCLForm.CurrentGrid.TableParts[v1]) Then
-        FDCLForm:=CreateForm(FNameSpace, DialogName, NoContext, FDCLForm, FDCLGrid,
-          ReturnValueParams, ModalOpen);
+        lDCLForm:=CreateForm(FNameSpace, DialogName, NoContext, FDCLForm, FDCLGrid,
+          ReturnValueParams, ModalOpen, RetValueMethod);
     End;
   end
   Else
-    FDCLForm:=CreateForm(FNameSpace, DialogName, NoContext, FDCLForm, FDCLGrid,
-      ReturnValueParams, ModalOpen);
+    lDCLForm:=CreateForm(FNameSpace, DialogName, NoContext, FDCLForm, FDCLGrid,
+      ReturnValueParams, ModalOpen, RetValueMethod);
 
-  If Assigned(FDCLForm) Then
+  If Assigned(lDCLForm) Then
   begin
     if ModalOpen then
     begin
-      if FDCLForm.Showing then
-        FDCLForm.Hide;
-      ModalResult:=FDCLForm.ShowModal;
-    end;
+      if lDCLForm.Showing then
+        lDCLForm.Hide;
+      ModalResult:=lDCLForm.ShowModal;
 
-    If (ModalResult=mrOK) and Assigned(FDCLForm.ReturnValue) and (FDCLForm.ReturnValue.Values.Count>0) Then
-    begin
-      RetVal:=FDCLForm.ReturnValue;
-      vc:=RetVal.Values.Count;
-
-      FDCLForm:=FDCLForm.ParentForm;
-
-      for ReturnValueItem in RetVal.Values do
+      If (ModalResult=mrOK) and Assigned(lDCLForm.ReturnValue) and (lDCLForm.ReturnValue.Values.Count>0) Then
       begin
-        If FieldExists(RetVal.KeyModifyField, FDCLForm.CurrentGrid.Query) Then
+        RetValue(lDCLForm.ReturnValue);
+      end;
+    end;
+    FDCLForm:=lDCLForm.ParentForm;
+  end;
+end;
+
+procedure TDCLCommand.RetValue(ReturnValue: TReturnFormValue);
+var
+  vc: Integer;
+  ReturnValueItem: TGetValueItem;
+  Edit: TDCLEdit;
+  lDCLForm: TDCLForm;
+begin
+  If Assigned(ReturnValue) and (ReturnValue.Values.Count>0) Then
+  begin
+    vc:=ReturnValue.Values.Count;
+
+    lDCLForm:=FDCLForm.ParentForm;
+
+    for ReturnValueItem in ReturnValue.Values do
+    begin
+      If FieldExists(ReturnValue.KeyModifyField, lDCLForm.CurrentGrid.Query) Then
+      begin
+        If lDCLForm.CurrentGrid.Query.Active then
         begin
-          If FDCLForm.CurrentGrid.Query.Active then
+          if lDCLForm.CurrentGrid.Query.CanModify then
           begin
-            if FDCLForm.CurrentGrid.Query.CanModify then
-            begin
-              if not (FDCLForm.CurrentGrid.Query.State in dsEditModes) then
-                FDCLForm.CurrentGrid.Query.Edit;
-              FDCLForm.CurrentGrid.Query.FieldByName(RetVal.KeyModifyField).AsString:=ReturnValueItem.Key;
-            end;
+            if not (lDCLForm.CurrentGrid.Query.State in dsEditModes) then
+              lDCLForm.CurrentGrid.Query.Edit;
+            lDCLForm.CurrentGrid.Query.FieldByName(ReturnValue.KeyModifyField).AsString:=ReturnValueItem.Key;
           end;
         end;
+      end;
 
-        If FieldExists(RetVal.ValueModifyField, FDCLForm.CurrentGrid.Query) Then
+      If FieldExists(ReturnValue.ValueModifyField, lDCLForm.CurrentGrid.Query) Then
+      begin
+        If lDCLForm.CurrentGrid.Query.Active Then
         begin
-          If FDCLForm.CurrentGrid.Query.Active Then
+          If lDCLForm.CurrentGrid.Query.CanModify Then
           begin
-            If FDCLForm.CurrentGrid.Query.CanModify Then
-            begin
-              if not (FDCLForm.CurrentGrid.Query.State in dsEditModes) then
-                FDCLForm.CurrentGrid.Query.Edit;
-              FDCLForm.CurrentGrid.Query.FieldByName(RetVal.ValueModifyField).AsString:=ReturnValueItem.Value;
-            end;
+            if not (lDCLForm.CurrentGrid.Query.State in dsEditModes) then
+              lDCLForm.CurrentGrid.Query.Edit;
+            lDCLForm.CurrentGrid.Query.FieldByName(ReturnValue.ValueModifyField).AsString:=ReturnValueItem.Value;
           end;
         end;
+      end;
 
-        If RetVal.KeyEditName<>'' Then
+      If ReturnValue.KeyEditName<>'' Then
+      begin
+        For Edit in lDCLForm.CurrentGrid.Edits do
         begin
-          For Edit in FDCLForm.CurrentGrid.Edits do
+          If CompareString(ReturnValue.KeyEditName, Edit.Control.Name) Then
           begin
-            If CompareString(RetVal.KeyEditName, Edit.Control.Name) Then
-            begin
-              (Edit.Control as TEdit).Text:=ReturnValueItem.Key;
-              break;
-            end;
+            (Edit.Control as TEdit).Text:=ReturnValueItem.Key;
+            break;
           end;
         end;
+      end;
 
-        If RetVal.ValueEditName<>'' Then
+      If ReturnValue.ValueEditName<>'' Then
+      begin
+        For Edit in lDCLForm.CurrentGrid.Edits do
         begin
-          For Edit in FDCLForm.CurrentGrid.Edits do
+          If CompareString(ReturnValue.ValueEditName, Edit.Control.Name) Then
           begin
-            If CompareString(RetVal.ValueEditName, Edit.Control.Name) Then
-            begin
-              (Edit.Control as TEdit).Text:=ReturnValueItem.Value;
-              break;
-            end;
+            (Edit.Control as TEdit).Text:=ReturnValueItem.Value;
+            break;
           end;
         end;
+      end;
 
-        if RetVal.KeyVar<>'' then
-        begin
-          FVariables.NewVariableWithTest(FNamespace, RetVal.KeyVar);
-          FVariables.Variables[FNamespace, RetVal.KeyVar]:=ReturnValueItem.Key;
-        end;
+      if ReturnValue.KeyVar<>'' then
+      begin
+        FVariables.NewVariableWithTest(FNamespace, ReturnValue.KeyVar);
+        FVariables.Variables[FNamespace, ReturnValue.KeyVar]:=ReturnValueItem.Key;
+      end;
 
-        if RetVal.ValueVar<>'' then
-        begin
-          FVariables.NewVariableWithTest(FNamespace, RetVal.ValueVar);
-          FVariables.Variables[FNamespace, RetVal.ValueVar]:=ReturnValueItem.Value;
-        end;
+      if ReturnValue.ValueVar<>'' then
+      begin
+        FVariables.NewVariableWithTest(FNamespace, ReturnValue.ValueVar);
+        FVariables.Variables[FNamespace, ReturnValue.ValueVar]:=ReturnValueItem.Value;
+      end;
 
-        if (vc>1) and (RetVal.BatchScript<>'') then
-        begin
-          RunCommandScript(RetVal.BatchScript);
-        end;
+      if (vc>1) and (ReturnValue.BatchScript<>'') then
+      begin
+        RunCommandScript(ReturnValue.BatchScript);
       end;
     end;
   end;

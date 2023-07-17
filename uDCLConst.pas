@@ -4,6 +4,9 @@ unit uDCLConst;
 interface
 
 uses
+{$IFDEF IBX}
+  IBVersion,
+{$ENDIF}
 {$IFnDEF FPC}
   Vcl.DBCtrls
 {$ELSE}
@@ -21,7 +24,11 @@ const
   DBEngineType='ADODB (Universal)';
 {$ENDIF}
 {$IFDEF IBX}
-  DBEngineType='IBX';
+  {$IFDEF IBXLaz}
+  DBEngineType='IBX for Lazarus '+IBX_VERSION;
+  {$ELSE}
+  DBEngineType='IBX'+IBX_VERSION;
+  {$ENDIF}
 {$ENDIF}
 {$IFDEF ZEOS}
   DBEngineType='ZEOS (Universal)';

@@ -208,7 +208,7 @@ type
     function CalculateSeed: String;
     function GetGridSeed: String;
   public
-    constructor Create(NameSpace: String; Forms: TList<TForm>; Form: TForm; Parent: TWinControl; Variables: TVariables; SurfType: TDataControlType;
+    constructor Create(NameSpace: String; Forms: TList<TForm>; Form: TForm; ParentControl: TWinControl; Variables: TVariables; SurfType: TDataControlType;
       DBConnector: TDCLDBConnector; Query: TDCLQuery; Data: TDataSource); overload;
     destructor Destroy; override;
 
@@ -1319,7 +1319,6 @@ begin
   FDBConnector.SetConnector(FQuery);
   SetQueryEvents(FQuery);
 
-  //FData:=TDataSource.Create(Self);
   FData.DataSet:=FQuery;
   FQuery.DataSource:=Data;
 end;
@@ -1402,13 +1401,14 @@ begin
 
   pc:=FTablePartsPages.PageCount;
   FTablePartsTabs:=TTabSheet.Create(FTablePartsPages);
+  FTablePartsTabs.Parent:=FTablePartsPages;
+  FTablePartsTabs.Name:='TablePart_'+IntToStr(pc+1);
+  FTablePartsTabs.PageControl:=FTablePartsPages;
+
   If Title='' Then
     FTablePartsTabs.Caption:=GetDCLMessageString(msPage)+' '+IntToStr(pc+1)
   Else
     FTablePartsTabs.Caption:=InitCap(Title);
-
-  FTablePartsTabs.Name:='TablePart_'+IntToStr(pc+1);
-  FTablePartsTabs.PageControl:=FTablePartsPages;
 
   grid:=TDCLGrid.Create(FNameSpace, FForms, FForm, FTablePartsTabs, FVariables, dctTablePart, FDBConnector, nil, Data);
   FCurrentTablePart:=grid;
@@ -2899,6 +2899,7 @@ begin
       FieldExists(ReturnValueParams.ValueField, FQuery) then
     begin
       ReturnValue:=TReturnFormValue.Create;
+      ReturnValue.DestinationForm:=FForm;
       ReturnValue.KeyModifyField:=ReturnValueParams.KeyModifyField;
       ReturnValue.ValueModifyField:=ReturnValueParams.ValueModifyField;
       ReturnValue.KeyEditName:=ReturnValueParams.KeyEditName;
@@ -2931,7 +2932,13 @@ begin
       end;
       (FForm as TDCLForm).ReturnValue:=ReturnValue;
 
-      FForm.ModalResult:=mrOk;
+      if Assigned((FForm as TDCLForm).RetValueMethod) then
+        (FForm as TDCLForm).RetValueMethod(ReturnValue);
+
+      if ReturnValueParams.Modal then
+        FForm.ModalResult:=mrOk
+      else
+        FForm.Close;
     end;
   end;
 end;
@@ -3075,13 +3082,13 @@ begin
   Result:=FSeed;
 end;
 
-constructor TDCLGrid.Create(NameSpace: String; Forms: TList<TForm>; Form: TForm; Parent: TWinControl; Variables: TVariables; SurfType: TDataControlType;
+constructor TDCLGrid.Create(NameSpace: String; Forms: TList<TForm>; Form: TForm; ParentControl: TWinControl; Variables: TVariables; SurfType: TDataControlType;
   DBConnector: TDCLDBConnector; Query: TDCLQuery; Data: TDataSource);
 var
   ChooseButton, ButtonClose: TDCLCommandButton;
 begin
-  inherited Create(Parent);
-  Self.Parent:=Parent;
+  inherited Create(ParentControl);
+  Self.Parent:=ParentControl;
 
   FUserLevel:=(Form as TDCLForm).RightsLevel;
 
@@ -3163,18 +3170,22 @@ var
   FieldsPos: TStringList;
   ConfigPath, Seed: String;
 begin
-  ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim+'Grids'+PathDelim;
-  if not DirectoryExists(ConfigPath) then
-    ForceDirectories(ConfigPath);
+  if not GPT.DisableFieldsList then
+  if (Style=gsGrid) and Assigned(FDBGrid) then
+  begin
+    ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim+'Grids'+PathDelim;
+    if not DirectoryExists(ConfigPath) then
+      ForceDirectories(ConfigPath);
 
-  Seed:=GetGridSeed;
-  FieldsPos:=TStringList.Create;
+    Seed:=GetGridSeed;
+    FieldsPos:=TStringList.Create;
+    GetDBGridFieldsPos(FieldsPos);
 
-  GetDBGridFieldsPos(FieldsPos);
-  if FieldsPos.Count>0 then
-    FieldsPos.SaveToFile(ConfigPath+Seed+'.ini', TEncoding.UTF8);
+    if FieldsPos.Count>0 then
+      FieldsPos.SaveToFile(ConfigPath+Seed+'.ini', TEncoding.UTF8);
 
-  FreeAndNil(FieldsPos);
+    FreeAndNil(FieldsPos);
+  end;
   inherited Destroy;
 end;
 

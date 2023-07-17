@@ -113,7 +113,11 @@ begin
   FQuery.Params.ParamByName('User').AsString:=cbLogin.Text;
   FQuery.Open;
   FQuery.First;
-  Result:=(edPassword.Text=FQuery.FieldByName(UserPassField).AsString) and not FQuery.IsEmpty;
+  Result:=not FQuery.IsEmpty;
+  if Result then
+    Result:=(edPassword.Text=FQuery.FieldByName(UserPassField).AsString)
+  else
+    Result:=False;
   FQuery.Close;
   FreeAndNil(FQuery);
 end;

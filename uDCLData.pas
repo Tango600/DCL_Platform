@@ -5,7 +5,7 @@ interface
 
 uses
   StdCtrls, ComCtrls, Controls, Graphics, ExtCtrls, DB, Buttons, Classes,
-  Generics.Collections, SysUtils,
+  Generics.Collections, SysUtils, Forms,
 {$IFnDEF FPC}
   Vcl.DBCtrls,
 {$ELSE}
@@ -14,8 +14,6 @@ uses
   uDCLConst, uDCLTypes;
 
 type
-  //TOrientation=(oVertical, oHorizontal);
-
   TGPT=record
   // EnableSQLTrace,
     DebugMesseges, OneCopy, ExitCnf, UseMessages, UserLogging, UserLoggingHistory, DebugOn,
@@ -34,7 +32,6 @@ type
     TimeStampFormat, DCLLongUserName, UserID, RoleID,
     DCLRoleName, NewDBPassword, DBPassword, LibPath,
     WordOLEExtension, ExcelOLEExtension: String;
-    FormPosInDB: TIniStore;
     OfficeDocumentFormat: TOfficeDocumentFormat;
     OfficeFormat: TOfficeFormat;
     AccessLevel: TUserLevelsType;
@@ -136,6 +133,7 @@ type
     KeyModifyField, ValueModifyField, KeyVar, ValueVar, KeyEditName, ValueEditName, BatchScript: String;
     Multiselect: Boolean;
     Values: TList<TGetValueItem>;
+    DestinationForm: TForm;
 
     constructor Create;
   end;
@@ -150,7 +148,7 @@ type
   public
     KeyField, ValueField, KeyEditName, ValueEditName, KeyModifyField, ValueModifyField,
       KeyVar, ValueVar, BatchScript: String;
-    Multiselect: Boolean;
+    Multiselect, Modal: Boolean;
     constructor Create(aKeyField, aValueField, aKeyEditName, aValueEditName, aKeyModifyField, aValueModifyField,
       aKeyVar, aValueVar, aBatchScript: String; aMultiselect: Boolean);
   end;
@@ -158,6 +156,8 @@ type
   TComboFilterItem=class
     Key, Value:String;
   end;
+
+  TGetValueProc=procedure(Value: TReturnFormValue) of Object;
 
 var
   TDataGrid: set of TGridStyle;
