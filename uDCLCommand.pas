@@ -1138,7 +1138,7 @@ begin
         RetValue(lDCLForm.ReturnValue);
       end;
     end;
-    FDCLForm:=lDCLForm.ParentForm;
+    FDCLForm:=lDCLForm;
   end;
 end;
 
@@ -1153,7 +1153,7 @@ begin
   begin
     vc:=ReturnValue.Values.Count;
 
-    lDCLForm:=FDCLForm.ParentForm;
+    lDCLForm:=(ReturnValue.DestinationForm as TDCLForm).ParentForm;
 
     for ReturnValueItem in ReturnValue.Values do
     begin
@@ -1224,6 +1224,8 @@ begin
         RunCommandScript(ReturnValue.BatchScript);
       end;
     end;
+
+    FDCLForm:=lDCLForm;
   end;
 end;
 
