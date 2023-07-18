@@ -6,7 +6,7 @@ interface
 uses
   Classes, SysUtils, Controls, Forms, DB, Generics.Collections, ToolWin,
   ComCtrls, StdCtrls, Buttons, ExtCtrls, Graphics, DBCtrls, DBGrids, Grids,
-  DBExtCtrls,
+  DBExtCtrls, CheckLst,
   uDCLData, uDCLTypes, uDCLConst, uDCLVariables, uStringParams,
   uDCLDBConnector, uDCLQuery, uDCLMeasurements, uDBUtils, uDCLMultiLang,
   uDCLCommandButton, uDCLVerticalFieldLayoutManger, uDCLField, uDCLMessages,
@@ -16,6 +16,10 @@ type
   TGridFieldSetting=class
     FieldName: String;
     Index, Width: Integer;
+  end;
+
+  TStructureField=class
+    FieldName: String;
   end;
 
   { TDCLGrid }
@@ -69,6 +73,7 @@ type
     FSummGrid: TNoScrollBarDBGrid;
     FEvents: TList<TDCLEvent>;
     FNotAllowedOperations: TList<TNotAllowedOperation>;
+    FStructureList: TCheckListBox;
 
     //FButtonLayout: TDCLButtonLayoutManger<TDCLCommandButton>;
     FFieldLayout: TDCLVerticalFieldLayoutManger<TDCLField>;
@@ -207,6 +212,9 @@ type
 
     function CalculateSeed: String;
     function GetGridSeed: String;
+
+    procedure Structure(Sender: TObject);
+    function IsGridColumnExists(FieldName: String): Boolean;
   public
     constructor Create(NameSpace: String; Forms: TList<TForm>; Form: TForm; ParentControl: TWinControl; Variables: TVariables; SurfType: TDataControlType;
       DBConnector: TDCLDBConnector; Query: TDCLQuery; Data: TDataSource); overload;
@@ -3082,6 +3090,83 @@ begin
   Result:=FSeed;
 end;
 
+procedure TDCLGrid.Structure(Sender: TObject);
+var
+  F: TDCLField;
+  SF: TStructureField;
+  i, c: Integer;
+begin
+  if Assigned(FDBGrid) then
+  begin
+    if not Assigned(FStructureList) then
+    begin
+      FStructureList:=TCheckListBox.Create(FMainPanel);
+      FStructureList.Parent:=FMainPanel;
+      FStructureList.Align:=alRight;
+      FStructureList.Width:=FMainPanel.Width div 3;
+
+      for F in FDCLFields do
+      begin
+        SF:=TStructureField.Create;
+        SF.FieldName:=F.FieldName;
+
+        FStructureList.AddItem(F.Caption+'\'+F.FieldName.ToUpper, SF);
+        FStructureList.Checked[FStructureList.Count-1]:=IsGridColumnExists(F.FieldName);
+      end;
+    end
+    else
+    begin
+      for F in FDCLFields do
+      begin
+        for i:=1 to FStructureList.Count do
+        begin
+          SF:=FStructureList.Items.Objects[i-1] as TStructureField;
+          if SF.FieldName.Equals(F.FieldName, True) then
+          begin
+            if FStructureList.Checked[i-1] and not IsGridColumnExists(F.FieldName) then
+            begin
+              AddColumn(F);
+            end
+            else
+            begin
+              if not FStructureList.Checked[i-1] and IsGridColumnExists(F.FieldName) then
+              begin
+                for c:=1 to FDBGrid.Columns.Count do
+                begin
+                  if FDBGrid.Columns[c-1].FieldName.Equals(F.FieldName, True) then
+                  begin
+                    FDBGrid.Columns[c-1].Destroy;
+                    break;
+                  end;
+                end;
+              end;
+            end;
+            break;
+          end;
+        end;
+      end;
+
+      FStructureList.Clear;
+      FreeAndNil(FStructureList);
+    end;
+  end;
+end;
+
+function TDCLGrid.IsGridColumnExists(FieldName: String): Boolean;
+var
+  i: Integer;
+begin
+  Result:=False;
+  for i:=1 to FDBGrid.Columns.Count do
+  begin
+    if FDBGrid.Columns[i-1].FieldName.Equals(FieldName, True) then
+    begin
+      Result:=True;
+      break;
+    end;
+  end;
+end;
+
 constructor TDCLGrid.Create(NameSpace: String; Forms: TList<TForm>; Form: TForm; ParentControl: TWinControl; Variables: TVariables; SurfType: TDataControlType;
   DBConnector: TDCLDBConnector; Query: TDCLQuery; Data: TDataSource);
 var
@@ -3930,6 +4015,7 @@ begin
       FToolBarButtonStruct:=TToolButton.Create(FToolBar);
       FToolBarButtonStruct.Parent:=FToolBar;
       FToolBarButtonStruct.ImageIndex:=FPicturesIndexes[ptStructure];
+      FToolBarButtonStruct.OnClick:=Structure;
       Inc(FToolButtonsCount);
 
       if Assigned(FQuery) then
