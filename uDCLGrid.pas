@@ -3135,7 +3135,7 @@ begin
                 begin
                   if FDBGrid.Columns[c-1].FieldName.Equals(F.FieldName, True) then
                   begin
-                    FDBGrid.Columns[c-1].Destroy;
+                    FDBGrid.Columns[c-1].Free;
                     break;
                   end;
                 end;
