@@ -61,7 +61,7 @@ type
     procedure ResetAllFieldsSettings(Sender: TObject);
     procedure DeleteAllBookmarks(Sender: TObject);
     procedure SaveFieldsSettings(Sender: TObject);
-    procedure CloseDialog(Sender: TObject);
+    procedure CloseDialogCommand(Sender: TObject);
 
     procedure TranslateVal(var Params: String; CheckParams: Boolean);
 
@@ -237,7 +237,7 @@ begin
   begin
     ItemMenu:=TMenuItem.Create(ToItem);
     ItemMenu.Caption:=GetDCLMessageString(msClose);
-    ItemMenu.OnClick:=CloseDialog;
+    ItemMenu.OnClick:=CloseDialogCommand;
     ItemMenu.Bitmap:=DrawBMPButton(ptEsc);
     ItemMenu.ShortCut:=TShortCut(27); //  TextToShortCut('Esc');
 
@@ -281,7 +281,7 @@ begin
 
 end;
 
-procedure TDCLForm.CloseDialog(Sender: TObject);
+procedure TDCLForm.CloseDialogCommand(Sender: TObject);
 begin
   if FormCanClose then
     Close;
@@ -518,6 +518,11 @@ begin
         if not FFirstPage then
           AddMainPage(Query, Data);
         FFirstPage:=False;
+      end;
+
+      If IsLexem('NoCloseable=', SrcLine) Then
+      begin
+        NoCloseable:=Trim(FindParam('NoCloseable=', SrcLine))='1';
       end;
 
       if IsLexem('Title=', SrcLine) then

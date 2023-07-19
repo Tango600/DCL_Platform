@@ -460,16 +460,6 @@ begin
   end;
 
   UpdateAllControls;
-  {For v1:=1 to FDCLLogOn.FormsCount do
-  begin
-    If Assigned(FDCLLogOn.Forms[v1-1]) Then
-      If Assigned(FDCLLogOn.Forms[v1-1].ParentForm) Then
-      begin
-        If FDCLLogOn.Forms[v1-1].ParentForm=FDCLForm Then
-          For v2:=1 to FDCLLogOn.Forms[v1-1].TablesCount do
-            FDCLLogOn.Forms[v1-1].Tables[v2-1].AfterInsert(Data);
-      end;
-  end;}
 end;
 
 procedure TDCLGrid.ScrollDB(Data: TDataSet);
@@ -523,6 +513,7 @@ end;
 
 procedure TDCLGrid.OnDelete(Data: TDataSet);
 begin
+  ExecEvents(evtDelete);
   UpdateAllControls;
 end;
 

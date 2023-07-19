@@ -35,14 +35,29 @@ begin
 end;
 
 procedure TDCLFormsNotifier.NotifyForms(Action: TFormsNotifyAction);
+var
+  F: TForm;
 begin
-
+  for F in FForms do
+  begin
+    NotifyForm(F as TDCLForm, Action);
+  end;
 end;
 
 procedure TDCLFormsNotifier.NotifyForm(Form: TDCLForm;
   Action: TFormsNotifyAction);
 begin
-  Form.RefreshForm;
+  case Action of
+  fnaRefresh: Form.RefreshForm;
+  fnaClose: Form.Close;
+  fnaHide: Form.Hide;
+  fnaShow: begin
+    if not Form.Showing then
+      Form.Show;
+    Form.SetFocus;
+    end;
+  //fnaStopAutoRefresh, fnaStartAutoRefresh, fnaPauseAutoRefresh, fnaResumeAutoRefresh
+  end;
 end;
 
 end.

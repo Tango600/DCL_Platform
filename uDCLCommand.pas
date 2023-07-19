@@ -484,8 +484,9 @@ begin
     FreeAndNil(ADOCommand);
 
     if Assigned(FDCLForm) then
-      FormsNotifier.NotifyForm(FDCLForm, fnaRefresh);
-    FormsNotifier.NotifyForms(fnaRefresh);
+      FormsNotifier.NotifyForm(FDCLForm, fnaRefresh)
+    else
+      FormsNotifier.NotifyForms(fnaRefresh);
   end;
 end;
 
@@ -1010,6 +1011,11 @@ begin
       begin
         FForms.Add(lForm);
         Result:=lForm;
+      end
+      else
+      begin
+        lForm.Release;
+        FreeAndNil(lForm);
       end;
     end;
     FreeAndNil(DCL);

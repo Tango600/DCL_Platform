@@ -1,20 +1,20 @@
 object MainForm: TMainForm
   Left = 248
-  Height = 89
+  Height = 71
   Top = 125
-  Width = 545
+  Width = 436
   Caption = 'MainForm'
-  ClientHeight = 89
-  ClientWidth = 545
-  DesignTimePPI = 120
+  ClientHeight = 71
+  ClientWidth = 436
   OnClose = FormClose
   OnCreate = FormCreate
-  LCLVersion = '2.3.0.0'
+  OnShow = FormShow
+  LCLVersion = '3.99.0.0'
   object StatusBar1: TStatusBar
     Left = 0
-    Height = 29
-    Top = 60
-    Width = 545
+    Height = 23
+    Top = 48
+    Width = 436
     Panels = <>
   end
 end

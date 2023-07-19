@@ -1046,17 +1046,14 @@ end;
 
 procedure TLogOnForm.OnCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-  CanClose:=False;
 end;
 
 procedure TLogOnForm.OnSetHashPassword(Sender: TObject);
 begin
-  HashPass:=(Sender as TCheckbox).Checked;
 end;
 
 procedure TLogOnForm.OnShowForm(Sender: TObject);
 begin
-  RolePassEdit.SetFocus;
 end;
 
 procedure TLogOnForm.ShowChangePasswordForm;
@@ -1148,17 +1145,6 @@ end;
 
 procedure TDCLForm.SaveBookMarkMenu;
 begin
-  Case GPT.FormPosInDB of
-  isDisk:
-  SaveBookmarkMenuINI;
-  isBase:
-  SaveBookmarkMenuBase;
-  isDiskAndBase:
-  begin
-    SaveBookmarkMenuINI;
-    SaveBookmarkMenuBase;
-  end;
-  end;
 end;
 
 procedure TDCLForm.SaveBookmarkMenuINI;
@@ -1174,23 +1160,11 @@ begin
 end;
 
 procedure TDCLForm.LoadBookmarkMenuINI;
-var
-  MenuList, DialogsParams: TStringList;
 begin
-  If FileExists(IncludeTrailingPathDelimiter(AppConfigDir)+'BookMark.ini') Then
-  begin
-    MenuList:=TStringList.Create;
-    MenuList.LoadFromFile(IncludeTrailingPathDelimiter(AppConfigDir)+'BookMark.ini'{$IFNDEF FPC}, TEncoding.UTF8{$ENDIF});
-    DialogsParams:=CopyStrings('['+DialogName+']', '[END '+DialogName+']', MenuList);
-    CreateBookMarkMenuUni(DialogsParams);
-    MenuList.Free;
-    DialogsParams.Free;
-  end;
 end;
 
 procedure TDCLForm.LoadBookmarkMenuBase;
 begin
-  CreateBookMarkMenuUni(ReadBaseINI(itBookmarkMenu));
 end;
 
 procedure TDCLForm.CreateBookMarkMenuUni(MenuList: TStringList);
@@ -1230,18 +1204,14 @@ end;
 
 procedure TDCLForm.DeleteAllBookmarks(Sender: TObject);
 begin
-  If ShowErrorMessage(10, GetDCLMessageString(msDeleteAllBookmarksQ))=1 Then
-    GridIndex.DeleteAllBookmarks;
 end;
 
 procedure TDCLForm.DeleteAllFormPos;
 begin
-  DeleteFormPos(True);
 end;
 
 procedure TDCLForm.SaveFieldsSettings(Sender: TObject);
 begin
-  SaveFormPos;
 end;
 
 procedure TDCLForm.AddEvents(EventType: TEventsEnum; EventsSet: String);
@@ -1324,23 +1294,6 @@ begin
       inc(GPT.CurrentRunningScrString);
 
 
-      If PosEx('HostForm;', ScrStr)=1 Then
-      begin
-        CreateGUID(guid);
-        Namespace:=GUIDToString(guid);
-      end;
-
-
-      If PosEx('Orientation=', ScrStr)=1 Then
-      begin
-        TranslateVal(ScrStr, True);
-        tmpSQL:=LowerCase(FindParam('Orientation=', ScrStr));
-        If tmpSQL='horizontal' Then
-          GridIndex.FOrientation:=oHorizontal;
-        If tmpSQL='vertical' Then
-          GridIndex.FOrientation:=oVertical;
-      end;
-
       If PosEx('AutoRefresh;', ScrStr)=1 Then
       begin
         TranslateVal(ScrStr, True);
@@ -1368,23 +1321,6 @@ begin
         end;
       end;
 
-      If PosEx('SetUserAccessRaight=', ScrStr)=1 Then
-      begin
-        If FDCLLogOn.AccessLevel>=ulLevel3 Then
-        begin
-          TranslateVal(ScrStr, True);
-          tmpSQL:=FindParam('SetUserAccessRaight=', ScrStr);
-
-          Case GetStringDataType(tmpSQL) of
-          idDigit:
-          UserLevelLocal:=TranslateDigitToUserLevel
-            (StrToIntEx(FindParam('SetUserAccessRaight=', ScrStr)));
-          idUserLevel:
-          UserLevelLocal:=TranslateDigitToUserLevel(FindParam('SetUserAccessRaight=', ScrStr));
-          end;
-        end;
-      end;
-
 
       If PosEx('QueryKeyField=', ScrStr)=1 Then
       begin
@@ -1393,11 +1329,6 @@ begin
         GridIndex.KeyMarks.TitleField:=FindParam('TitleField=', ScrStr);
         If GridIndex.KeyMarks.TitleField='' Then
           GridIndex.KeyMarks.TitleField:=GridIndex.KeyMarks.KeyField;
-      end;
-
-      If PosEx('ReOpen;', ScrStr)=1 Then
-      begin
-        RefreshForm;
       end;
 
       If PosEx('ExitNoSave=', ScrStr)=1 Then
@@ -1443,12 +1374,6 @@ begin
         GPT.GetValueSeparator:=FindParam('SetValueSeparator=', ScrStr);
       end;
 
-      If PosEx('NoCloseable=', ScrStr)=1 Then
-      begin
-        TmpStr:=FindParam('NoCloseable=', ScrStr);
-        NoCloseable:=Trim(TmpStr)='1';
-      end;
-
       If PosEx('CloseQuery=', ScrStr)=1 Then
       begin
         CloseQueryText:=FindParam('CloseQuery=', ScrStr);
@@ -1469,13 +1394,6 @@ begin
         // FillDatasetUpdateSQL(FGrids[GridIndex].FQuery, {$IFDEF UPDATESQLDB}FGrids[GridIndex].UpdateSQL,{$ENDIF} ScrStr, FGrids[GridIndex].FUserLevelLocal, FGrids[GridIndex]);
       end;
 
-      If PosEx('FindQuery=', ScrStr)=1 Then
-      begin
-        TranslateVal(ScrStr, False);
-        tmpSQL:=FindParam('FindQuery=', ScrStr);
-        GridIndex.SetSQLToStore(tmpSQL, qtFind, ulUndefined);
-      end;
-
 
 
       If PosEx('GetFieldValue=', ScrStr)=1 Then
@@ -1488,42 +1406,11 @@ begin
         ExecCommand(ScrStr);
       end;
 
-      If PosEx('Orientation=', ScrStr)=1 Then
-      begin
-        If Assigned(FPages) Then
-        begin
-          TranslateVal(ScrStr, True);
-          If LowerCase(FindParam('Orientation=', ScrStr))=LowerCase('top') Then
-            FPages.TabPosition:=tpTop;
-          If LowerCase(FindParam('Orientation=', ScrStr))=LowerCase('left') Then
-            FPages.TabPosition:=tpLeft;
-          If LowerCase(FindParam('Orientation=', ScrStr))=LowerCase('bottom') Then
-            FPages.TabPosition:=tpBottom;
-          If LowerCase(FindParam('Orientation=', ScrStr))=LowerCase('right') Then
-            FPages.TabPosition:=tpRight;
-        end;
-      end;
 
       If PosEx('Caption=', ScrStr)=1 Then
       begin
         If GPT.MainFormCaption<>'' then
           FForm.Caption:=FForm.Caption+' \'+Trim(GPT.MainFormCaption)+'\';
-      end;
-
-
-      If PosEx('CurrentTablePart=', ScrStr)=1 Then
-      begin
-        tmpSQL:=Trim(FindParam('CurrentTablePart=', ScrStr));
-        If GridIndex.TablePartsCount>1 then
-        Begin
-          If tmpSQL='-1' then
-            v1:=GridIndex.TablePartsCount-1
-          Else
-            v1:=StrToIntEx(tmpSQL)-1;
-
-          If (v1>=0) and (v1<GridIndex.TablePartsCount) then
-            GridIndex.FTablePartsPages.ActivePageIndex:=v1;
-        End;
       end;
 
       If PosEx('ApplicationTitle=', ScrStr)=1 Then
@@ -1692,26 +1579,11 @@ begin
 end;
 
 procedure TDCLForm.RefreshForm;
-var
-  i: TDCLGrid;
 begin
-  For i in FGrids do
-  begin
-    i.ReFreshQuery;
-  end;
 end;
 
 procedure TDCLForm.CloseDatasets;
-var
-  i, j: TDCLGrid;
 begin
-  For i in FGrids do
-  begin
-    For j in i.FTableParts do
-      j.Close;
-
-    i.Close;
-  end;
 end;
 
 function TDCLForm.GetNamespace: String;
@@ -1723,15 +1595,7 @@ begin
 end;
 
 procedure TDCLForm.ResumeDatasets;
-var
-  i, j: TDCLGrid;
 begin
-  For i in FGrids do
-  begin
-    i.Open;
-    For j in i.FTableParts do
-      j.Open;
-  end;
 end;
 
 procedure TDCLForm.RePlaseParams(var Params: String);
@@ -1765,16 +1629,6 @@ end;
 
 procedure TDCLForm.SetStatusWidth(StatusNum, Width: Integer);
 begin
-  If StatusNum<0 Then
-    StatusNum:=DBStatus.Panels.Count-1;
-  If StatusNum>DBStatus.Panels.Count Then
-    StatusNum:=DBStatus.Panels.Count-1;
-  If Assigned(DBStatus) Then
-    If DBStatus.Panels.Count>StatusNum Then
-    begin
-      If Width>5 Then
-        DBStatus.Panels[StatusNum].Width:=Width;
-    end;
 end;
 
 procedure TDCLForm.SetTabIndex(Index: Integer);
@@ -5306,8 +5160,6 @@ end;
 
 procedure TDCLGrid.OnDelete(Data: TDataSet);
 begin
-  ExecEvents(evtDelete);
-
   SetDataStatus(dssChanged);
 end;
 
@@ -5389,28 +5241,7 @@ begin
 end;
 
 procedure TDCLGrid.ScrollDB(Data: TDataSet);
-var
-  TmpStr: String;
-  DrpoBox: TDropBox;
-  Check: TDCLCheckBox;
-  Edit: TDCLEdit;
-  DateBox: TDCLDateBox;
-  Roll: TRollBar;
-  ContextList: TContextList;
 begin
-  If (FromForm='')or(Pos('_Closed_', FromForm)=1) Then
-  begin
-    FDCLForm:=nil;
-    Exit;
-  end;
-  If Not Assigned(FDCLForm) Then
-    Exit;
-  If Not Assigned(FQuery) Then //FQueryGlob
-    Exit;
-  If Not FQuery.Active Then
-    Exit;
-
-  ExecEvents(evtScroll);
 
   FDCLForm.SetRecNo;
 
@@ -5537,47 +5368,6 @@ var
   end;
 
 begin
-  If FUserLevelLocal<ulWrite Then
-  begin
-    AddNotAllowedOperation(dsoInsert);
-    AddNotAllowedOperation(dsoDelete);
-    AddNotAllowedOperation(dsoEdit);
-  end;
-
-  If Not FShowed Then
-  begin
-    If FDisplayMode in TDataGrid Then
-    begin
-
-      If Not GPT.DisableColors Then
-      begin
-        FGrid.DefaultDrawing:=True;
-        FGrid.OnDrawColumnCell:=GridDrawDataCell;
-      end;
-
-      PopupGridMenu:=TPopupMenu.Create(FGrid);
-
-      SetPopupMenuItems(True);
-
-      FGrid.PopupMenu:=PopupGridMenu;
-    end;
-
-    If FDisplayMode in TDataFields Then
-    begin
-      PopupGridMenu:=TPopupMenu.Create(FieldPanel);
-
-      SetPopupMenuItems(False);
-
-      FieldPanel.PopupMenu:=PopupGridMenu;
-    end;
-
-    If ToolButtonsCount=0 Then
-      FreeAndNil(ToolButtonPanel);
-  end;
-  SetReadOnly(FReadOnly);
-  SetMultiselect(FMultiSelect);
-
-  FShowed:=True;
 end;
 
 procedure TDCLGrid.SortDB(Column: TColumn);
@@ -5606,7 +5396,6 @@ end;
 
 procedure TDCLGrid.AddEvent(Event: TDCLEvent);
 begin
-  Events.Add(Event);
 end;
 
 { TDCLCommandButton }

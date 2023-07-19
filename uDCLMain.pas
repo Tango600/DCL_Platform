@@ -68,7 +68,7 @@ begin
   Result:=not LocalQuery.IsEmpty;
   LocalQuery.Close;
 
-  if (GPT.DCLUserName<>'') and (GPT.EnterPass<>'') then
+  if Result and (GPT.DCLUserName<>'') and (GPT.EnterPass<>'') then
   begin
     LocalQuery.SQL.Text:='select * from '+UsersTable+' where lower('+UserNameField+')=lower(:UN)';
     LocalQuery.Prepare;
