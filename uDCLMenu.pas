@@ -150,7 +150,7 @@ begin
     FormBar.Name:='FormBar';
     FormBar.ShowCaptions:=True;
     FormBar.Height:=FormPanelHeight;
-    FormBar.ButtonHeight:=FormPanelButtonHeight;
+    //FormBar.ButtonHeight:=FormPanelButtonHeight;
     FormBar.ButtonWidth:=FormPanelButtonWidth;
     FormBar.Show;
   end;

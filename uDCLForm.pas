@@ -58,9 +58,6 @@ type
     procedure AddSplitter;
 
     procedure ResetFieldsSettings(Sender: TObject);
-    procedure ResetAllFieldsSettings(Sender: TObject);
-    procedure DeleteAllBookmarks(Sender: TObject);
-    procedure SaveFieldsSettings(Sender: TObject);
     procedure CloseDialogCommand(Sender: TObject);
 
     procedure TranslateVal(var Params: String; CheckParams: Boolean);
@@ -263,22 +260,11 @@ end;
 
 procedure TDCLForm.ResetFieldsSettings(Sender: TObject);
 begin
-
-end;
-
-procedure TDCLForm.ResetAllFieldsSettings(Sender: TObject);
-begin
-
-end;
-
-procedure TDCLForm.DeleteAllBookmarks(Sender: TObject);
-begin
-
-end;
-
-procedure TDCLForm.SaveFieldsSettings(Sender: TObject);
-begin
-
+  If ShowErrorMessage(10, GetDCLMessageString(msResetFieldsSettingsQ))=1 Then
+  begin
+    if Assigned(FCurrentGrid) then
+      FCurrentGrid.ResetFieldsSettings;
+  end;
 end;
 
 procedure TDCLForm.CloseDialogCommand(Sender: TObject);
@@ -446,11 +432,8 @@ begin
 
   AddMainItem(InitCap(GetDCLMessageString(msSettings)), nil);
   AddSubItem(GetDCLMessageString(msResetFieldsSettings), ptNone, ResetFieldsSettings);
-  AddSubItem(GetDCLMessageString(msResetAllFieldsSettings), ptNone, ResetAllFieldsSettings);
-  AddSubItem(GetDCLMessageString(msDeleteAllBookmarks), ptNone, DeleteAllBookmarks);
-
-  AddSplitter;
-  AddSubItem(GetDCLMessageString(msSaveFieldsSettings), ptNone, SaveFieldsSettings);
+  //AddSubItem(GetDCLMessageString(msResetAllFieldsSettings), ptNone, ResetAllFieldsSettings);
+  //AddSubItem(GetDCLMessageString(msDeleteAllBookmarks), ptNone, DeleteAllBookmarks);
 
   AddSplitter;
   AddCloseFormItem;

@@ -243,6 +243,8 @@ type
     procedure GetDBGridFieldsPos(var Settings: TStringList);
     function LoadDBGridFieldsPos: TList<TGridFieldSetting>;
 
+    procedure ResetFieldsSettings;
+
     property Query: TDCLQuery read FQuery;
     property Data: TDataSource read FData;
     property Edits: TList<TDCLEdit> read GetEdits;
@@ -4344,6 +4346,20 @@ begin
       end;
 
       FreeAndNil(FieldsPos);
+    end;
+  end;
+end;
+
+procedure TDCLGrid.ResetFieldsSettings;
+var
+  DCLField: TDCLField;
+begin
+  if Assigned(FDBGrid) then
+  begin
+    FDBGrid.Columns.Clear;
+    for DCLField in FDCLFields do
+    begin
+      AddColumn(DCLField);
     end;
   end;
 end;
