@@ -483,16 +483,24 @@ end;
 
 procedure TDCLGrid.AfterEdit(Data: TDataSet);
 begin
+  If FUserLevel<ulWrite Then
+    Data.Cancel;
+
   UpdateAllControls;
 end;
 
 procedure TDCLGrid.AfterPost(Data: TDataSet);
 begin
+  ExecEvents(evtAfterPost);
+  ReFreshData;
+  FormsNotifier.NotifyForms(fnaRefresh);
   UpdateAllControls;
+  //SetDataStatus(dssSaved);
 end;
 
 procedure TDCLGrid.AfterCancel(Data: TDataSet);
 begin
+  //SetDataStatus(dssSaved);
   ExecEvents(evtCancel);
 end;
 
@@ -3246,6 +3254,28 @@ var
   FieldsPos: TStringList;
   ConfigPath, Seed: String;
 begin
+  If Assigned(FQuery) Then
+  begin
+    If FQuery.Active and (FQuery.State in dsEditModes) Then
+      If ShowErrorMessage(Ord(mbtConfirmation),
+        GetDCLMessageString(msSaveEditingsQ))=1 Then
+      begin
+        try
+          FQuery.Post;
+        Except
+          //
+        end;
+      end
+      Else
+      begin
+        try
+          FQuery.Cancel;
+        Except
+          //
+        end;
+      end;
+  end;
+
   if not GPT.DisableFieldsList then
   if (Style=gsGrid) and Assigned(FDBGrid) then
   begin

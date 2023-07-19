@@ -40,9 +40,9 @@ type
     function TranslateRepParams(ParamName: String): String;
   public
     constructor Create(const NameSpace: String; DBConnector: TDCLDBConnector; Query: TDCLDialogQuery;
-      DCLGrid: TDCLGrid; Variables: TVariables; Scrypt: TStringList; ParamsSetID: Integer; Mode: TNewQueryMode);
+      DCLGrid: TDCLGrid; Variables: TVariables; Scrypt: TStringList; ParamsSetID: Integer);
 
-    procedure InitReport;
+    procedure InitReport(Mode: TNewQueryMode);
 
     procedure PrintReport;
 
@@ -329,7 +329,7 @@ end;
 
 constructor TDCLTextReport.Create(const NameSpace: String;
   DBConnector: TDCLDBConnector; Query: TDCLDialogQuery; DCLGrid: TDCLGrid;
-  Variables: TVariables; Scrypt: TStringList; ParamsSetID: Integer; Mode: TNewQueryMode);
+  Variables: TVariables; Scrypt: TStringList; ParamsSetID: Integer);
 begin
   FNameSpace:=NameSpace;
   FDBConnector:=DBConnector;
@@ -337,12 +337,11 @@ begin
   FDCLGrid:=DCLGrid;
   FScrypt:=Scrypt;
   FParamsSetID:=ParamsSetID;
-  FMode:=Mode;
   FVariables:=Variables;
   FVarsToControls:=TList<String>.Create;
 end;
 
-procedure TDCLTextReport.InitReport;
+procedure TDCLTextReport.InitReport(Mode: TNewQueryMode);
 var
   RepParamsSet: TDCLDialogQuery;
   NewNew, GrabFormYes: Boolean;
@@ -385,6 +384,7 @@ begin
   InitSkrypts:=TStringList.Create;
   EndSkrypts:=TStringList.Create;
 
+  FMode:=Mode;
   FDialogRes:=mrOk;
   GrabFormYes:=False;
 

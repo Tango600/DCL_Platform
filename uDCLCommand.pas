@@ -32,9 +32,10 @@ type
     procedure ExecSQLCommand(SQLCommand: String);
 
     function GetRaights: TUserLevelsType;
+    procedure RunTextReport(ScrLine: String; Query: TDCLDialogQuery; Grid: TDCLGrid);
   public
     constructor Create(DBConnector: TDCLDBConnector; NameSpace: String; Forms: TList<TForm>;
-      DCLForm: TForm; DCLGrid: TDCLGrid; Variables: TVariables);
+      DCLForm: TForm; DCLGrid: TDCLGrid; Variables: TVariables); overload;
 
     function RunCommandScript(CommandName: String): Boolean;
     procedure RunCommand(Command: String);
@@ -57,7 +58,8 @@ implementation
 
 uses
   uSheetOfficeReportSelector, uTextOfficeReportSelector, uDCLGlobalVariables,
-  uRunProgram, uDCLMessages, uDCLMultiLang, uSQLUtils, uSystemUtils, uDCLMain;
+  uRunProgram, uDCLMessages, uDCLMultiLang, uSQLUtils, uSystemUtils, uDCLMain,
+  uDCLTextReport;
 
 { TDCLCommand }
 
@@ -495,10 +497,100 @@ begin
   Result:=FUserLevelLocal;
 end;
 
+procedure TDCLCommand.RunTextReport(ScrLine: String; Query: TDCLDialogQuery; Grid: TDCLGrid);
+var
+  tmpDCL: TStringList;
+  tmpS, tmpS1, tmpS2, tmpS3: String;
+  v1, v2, RepIdParams, RecCount: Integer;
+  DCLQuery: TDCLSimlyQuery;
+  TextReport: TDCLTextReport;
+begin
+  tmpDCL:=TStringList.Create;
+  DCLQuery:=TDCLSimlyQuery.Create(Self);
+  FDBConnector.SetConnector(DCLQuery);
+
+  RepIdParams:=0;
+  tmpS:=FindParam('FromFile=', ScrLine);
+  If tmpS='' Then
+  begin
+    tmpS1:=FindParam('ReportName=', ScrLine);
+    TranslateVals(tmpS1, Query);
+    DCLQuery.Close;
+    DCLQuery.SQL.Text:='select Count(*) from '+DCLTable+' where '+GPT.UpperString+
+      DCLNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+tmpS1+
+      GPT.StringTypeChar+GPT.UpperStringEnd;
+    DCLQuery.Open;
+    RecCount:=DCLQuery.Fields[0].AsInteger;
+    If RecCount=1 Then
+    begin
+      DCLQuery.Close;
+      DCLQuery.SQL.Text:='select * from '+DCLTable+' where '+GPT.UpperString+
+        DCLNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+tmpS1+
+        GPT.StringTypeChar+GPT.UpperStringEnd;
+      DCLQuery.Open;
+      tmpDCL.Text:=DCLQuery.FieldByName(ScriptField).AsString;
+      RepIdParams:=DCLQuery.FieldByName(IdentifyField).AsInteger;
+      DCLQuery.Close;
+    end;
+  end
+  Else
+  begin
+    If Not IsFullPAth(tmpS) Then
+      tmpS:=IncludeTrailingPathDelimiter(AppConfigDir)+tmpS;
+    If FileExists(tmpS) Then
+      tmpDCL.LoadFromFile(tmpS);
+  end;
+  tmpS1:=FindParam('QueryMode=', ScrLine);
+  v1:=0;
+  If LowerCase(tmpS1)='bkmode' Then
+    v1:=1;
+  If LowerCase(tmpS1)='main' Then
+    v1:=0;
+  If LowerCase(tmpS1)='isolate' Then
+    v1:=2;
+
+  TextReport:=TDCLTextReport.Create(FNameSpace, FDBConnector, Query, Grid, FVariables, tmpDCL, RepIdParams);
+
+  Case v1 of
+  0:
+    If Assigned(FDCLForm) Then
+      TextReport.InitReport(nqmFromGrid);
+  1:
+    If Assigned(FDCLForm) Then
+      TextReport.InitReport(nqmNew);
+  2:
+    TextReport.InitReport(nqmNew);
+  end;
+
+  If Assigned(TextReport) then
+  begin
+    tmpS:=Trim(FindParam('FileName=', ScrLine));
+    TranslateVals(tmpS, Query);
+
+    v1:=StrToIntEx(Trim(FindParam('ViewMode=', ScrLine)));
+    TextReport.OpenReport(tmpS, TReportViewMode(v1));
+    tmpS:=TextReport.SaveReport(tmpS);
+
+    tmpS1:=FindParam('NoPrint=', ScrLine);
+    TranslateVals(tmpS1, Query);
+    If TReportViewMode(v1-1)=rvmMultitRecordReport Then
+      tmpS1:='1';
+    If tmpS1<>'1' Then
+      If FindParam('Viewer=', ScrLine)<>'' Then
+        Run('"'+FindParam('Viewer=', ScrLine)+'"', tmpS1, False)
+      Else
+        Run('"'+GPT.Viewer+'"', tmpS1, False);
+
+    TextReport.CloseReport('Report.txt');
+  end;
+  FreeAndNil(tmpDCL);
+  FreeAndNil(DCLQuery);
+end;
+
 procedure TDCLCommand.RunCommand(Command: String);
 var
   tmpS, tmpS1, tmpS2, tmpS3: String;
-  v1, v2: Integer;
+  v1, v2, RepIdParams: Integer;
   Wait: Boolean;
   tmpDCLForm: TDCLForm;
   SheetReportSelector: TSheetOfficeReportSelector;
@@ -517,6 +609,11 @@ begin
   if IsLexem('Exit;', Command) then
   begin
     Application.MainForm.Close;
+  end;
+
+  If IsLexem('Report=', Command) then
+  begin
+    RunTextReport(Command, FDCLGrid.Query, FDCLGrid);
   end;
 
   if IsLexem('Message=', Command) then

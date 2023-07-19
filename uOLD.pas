@@ -1783,11 +1783,6 @@ begin
               FDCLLogOn.About(nil);
             end;
 
-            If PosEx('Lock;', ScrStr)=1 Then
-            begin
-              FDCLLogOn.Lock;
-            end;
-
             If PosEx('GetScreen=', ScrStr)=1 Then
             begin
               tmpStr1:=FindParam('Qlty=', ScrStr);
@@ -2084,49 +2079,7 @@ begin
             end;
 
 
-            If PosEx('Query=', ScrStr)=1 Then
-            begin
-              If Assigned(FDCLForm) Then
-              begin
-                FDCLLogOn.SetDBName(DCLQuery);
-                TmpStr:=FindParam('Query=', ScrStr);
-                FDCLForm.CurrentGridIndex.SetSQLToStore(TmpStr, qtMain, ulUndefined);
-                If Not IsReturningQuery(TmpStr) Then
-                begin
-                  DCLQuery.Close;
-                  DCLQuery.SQL.Text:=TmpStr;
-                  If GetRaightsByContext(InContext)>ulWrite Then
-                    DCLQuery.ExecSQL;
-                end
-                Else
-                  try
-                    FDCLForm.CurrentQuery.SQL.Text:=TmpStr;
-                    FDCLForm.CurrentQuery.Open;
-                  Except
-                    ShowErrorMessage( - 1100);
-                  end;
-              end;
-            end;
 
-            If PosEx('GlobQuery=', ScrStr)=1 Then
-            begin
-              If Assigned(FDCLForm) Then
-              begin
-                FDCLForm.CurrentQuery.DisableControls;
-
-                TmpStr:=FindParam('GlobQuery=', ScrStr);
-                FDCLForm.CurrentGridIndex.SetSQLToStore(TmpStr, qtMain, ulUndefined);
-                TranslateValContext(TmpStr);
-                FDCLForm.CurrentGridIndex.Close;
-                FDCLForm.CurrentGridIndex.SetSQL(TmpStr);
-                try
-                  FDCLForm.CurrentGridIndex.Open;
-                Except
-                  ShowErrorMessage( - 1113, 'SQL='+TmpStr);
-                end;
-                FDCLForm.CurrentQuery.EnableControls;
-              end;
-            end;
 
             If PosEx('TablePartQuery=', ScrStr)=1 Then
             begin
@@ -2150,92 +2103,7 @@ begin
               end;
             end;
 
-            If PosEx('Report=', ScrStr)=1 Then
-            begin
-              tmpDCL:=TStringList.Create;
-              RepIdParams:=0;
-              RepTable:=FindParam('FromTable=', ScrStr);
-              If RepTable='' Then
-                RepTable:=GPT.DCLTable;
-              tmp1:=FindParam('FromFile=', ScrStr);
-              If tmp1='' Then
-              begin
-                tmp2:=FindParam('ReportName=', ScrStr);
-                TranslateVals(tmp2, FDCLForm.CurrentQuery);
-                DCLQuery.Close;
-                DCLQuery.SQL.Text:='select Count(*) from '+RepTable+' where '+GPT.UpperString+
-                  GPT.DCLNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+tmp2+
-                  GPT.StringTypeChar+GPT.UpperStringEnd;
-                DCLQuery.Open;
-                RecCount:=DCLQuery.Fields[0].AsInteger;
-                If RecCount=1 Then
-                begin
-                  DCLQuery.Close;
-                  DCLQuery.SQL.Text:='select * from '+RepTable+' where '+GPT.UpperString+
-                    GPT.DCLNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+tmp2+
-                    GPT.StringTypeChar+GPT.UpperStringEnd;
-                  DCLQuery.Open;
-                  tmpDCL.Text:=DCLQuery.FieldByName(GPT.DCLTextField).AsString;
-                  RepIdParams:=DCLQuery.FieldByName(GPT.IdentifyField).AsInteger;
-                  DCLQuery.Close;
-                end;
-              end
-              Else
-              begin
-                If Not IsFullPAth(tmp1) Then
-                  tmp1:=IncludeTrailingPathDelimiter(AppConfigDir)+tmp1;
-                If FileExists(tmp1) Then
-                  tmpDCL.LoadFromFile(tmp1);
-              end;
-              tmp2:=FindParam('QueryMode=', ScrStr);
-              v1:=0;
-              If LowerCase(tmp2)='bkmode' Then
-                v1:=1;
-              If LowerCase(tmp2)='main' Then
-                v1:=0;
-              If LowerCase(tmp2)='isolate' Then
-                v1:=2;
-              Case v1 of
-              0:
-                If Assigned(FDCLForm) Then
-                  TextReport:=TDCLTextReport.InitReport(_Namespace, FDCLLogOn,
-                    FDCLForm.CurrentGridIndex, tmpDCL, RepIdParams, nqmFromGrid);
-              1:
-                If Assigned(FDCLForm) Then
-                  TextReport:=TDCLTextReport.InitReport(_Namespace, FDCLLogOn,
-                    FDCLForm.CurrentGridIndex, tmpDCL, RepIdParams, nqmNew);
-              2:
-                TextReport:=TDCLTextReport.InitReport(_Namespace, FDCLLogOn, nil, tmpDCL, RepIdParams, nqmNew);
-              end;
 
-              If Assigned(TextReport) then
-              begin
-                If TextReport.DialogRes=mrOk Then
-                begin
-                  tmp1:=Trim(FindParam('FileName=', ScrStr));
-                  TranslateVals(tmp1, FDCLForm.CurrentQuery);
-                  If FindParam('ToDos=', ScrStr)='1' Then
-                    TextReport.InConsoleCodePage:=True;
-
-                  v1:=StrToIntEx(Trim(FindParam('ViewMode=', ScrStr)));
-                  TextReport.OpenReport(tmp1, TReportViewMode(v1));
-                  tmp1:=TextReport.SaveReport(tmp1);
-
-                  tmp2:=FindParam('NoPrint=', ScrStr);
-                  TranslateVals(tmp2, FDCLForm.CurrentQuery);
-                  If TReportViewMode(v1-1)=rvmMultitRecordReport Then
-                    tmp2:='1';
-                  If tmp2<>'1' Then
-                    If FindParam('Viewer=', ScrStr)<>'' Then
-                      ExecApp('"'+FindParam('Viewer=', ScrStr)+'" "'+tmp1+'"', '')
-                    Else
-                      ExecApp('"'+GPT.Viewer+'" "'+tmp1+'"', '');
-                end;
-
-                TextReport.CloseReport('Report.txt');
-              end;
-              FreeAndNil(tmpDCL);
-            end;
 
 
 
@@ -2987,231 +2855,11 @@ end;
 { TDCLLogOn }
 
 procedure TDCLLogOn.About(Sender: TObject);
-Const
-  FormWidth=445;
-  FormHeight=300;
-  PanelLeft=8;
-var
-  AboutForm: TForm;
-  DCLImage: TImage;
-  AboutPanel: TPanel;
-  AboutLabel: TLabel;
-  OkButton: TButton;
-  DBStringMemo: TMemo;
-  DBString: String;
 begin
-  AboutForm:=TForm.Create(nil);
-  With AboutForm do
-  begin
-    BorderStyle:=bsDialog;
-    Caption:='?...';
-    ClientHeight:=FormHeight;
-    ClientWidth:=FormWidth;
-    Position:=poScreenCenter;
-  end;
-
-  AboutPanel:=TPanel.Create(AboutForm);
-  AboutPanel.Parent:=AboutForm;
-  With AboutPanel do
-  begin
-    Left:=PanelLeft;
-    Top:=8;
-    Width:=FormWidth-PanelLeft*2;
-    Height:=FormHeight-PanelLeft*2;
-    BevelInner:=bvRaised;
-    BevelOuter:=bvLowered;
-    ParentColor:=True;
-    TabOrder:=0;
-  end;
-
-  DCLImage:=TImage.Create(AboutPanel);
-  DCLImage.Parent:=AboutPanel;
-  DCLImage.Top:=10;
-  DCLImage.Left:=8;
-  DCLImage.Height:=64;
-  DCLImage.Width:=64;
-  DCLImage.Stretch:=True;
-
-  DCLImage.Picture.Bitmap:=DrawBMPButton('Logo');
-
-  DCLImage.Transparent:=True;
-
-  AboutLabel:=TLabel.Create(AboutPanel);
-  AboutLabel.Parent:=AboutPanel;
-  With AboutLabel do
-  begin
-    Left:=80;
-    Top:=8;
-    Width:=150;
-    Height:=13;
-    Caption:=GetDCLMessageString(msTheProduct)+' : DCL Run ('+DBEngineType+')';
-  end;
-
-  AboutLabel:=TLabel.Create(AboutPanel);
-  AboutLabel.Parent:=AboutPanel;
-  With AboutLabel do
-  begin
-    Left:=80;
-    Top:=45;
-    Width:=44;
-    Height:=13;
-    Caption:=GetDCLMessageString(msProducer)+':';
-  end;
-
-  AboutLabel:=TLabel.Create(AboutPanel);
-  AboutLabel.Parent:=AboutPanel;
-  With AboutLabel do
-  begin
-    Left:=80+90;
-    Top:=45;
-    Width:=135;
-    Height:=15;
-    Caption:='Unreal Software (C) 2002-'+IntToStr(YearOf(Now));
-    Font.Color:=clWindowText;
-    Font.Height:= - 12;
-    Font.Style:=[fsBold, fsItalic];
-    ParentFont:=False;
-  end;
-
-  AboutLabel:=TLabel.Create(AboutPanel);
-  AboutLabel.Parent:=AboutPanel;
-  With AboutLabel do
-  begin
-    Left:=80;
-    Top:=25;
-    Width:=62;
-    Height:=13;
-    Caption:=GetDCLMessageString(msVersion)+' DCL : '+Version+', '+
-        GetDCLMessageString(msStatus)+' : '+ReliseStatues[ReleaseStatus]+'.'
-{$IFDEF IBX}+' IBX v.'{$IFNDEF FPC}+FloatToStr(IBX_Version){$ENDIF}{$ENDIF}
-{$IFDEF ZEOS}+' ZEOS v.'+FDBLogOn.Version{$ENDIF}
-{$IFDEF ADO}+' ADO.db v.'+FDBLogOn.Version{$ENDIF}
-{$IFDEF SQLdbFamily}+' SQLdb v.'+AboutForm.LCLVersion{$ENDIF};
-  end;
-
-  AboutLabel:=TLabel.Create(AboutPanel);
-  AboutLabel.Parent:=AboutPanel;
-  With AboutLabel do
-  begin
-    Left:=80;
-    Top:=65;
-    Width:=62;
-    Height:=13;
-    Caption:=GetDCLMessageString(msUser)+'/ '+GetDCLMessageString(msRole)+' : '+
-      GPT.DCLLongUserName+' ('+IntToStr(Ord(FAccessLevel))+') / '+GPT.LongRoleName+' ('+
-      IntToStr(RoleRaightsLevel)+')';
-  end;
-
-{$IFDEF SERVERDB}
-  DBString:=GPT.ServerName+':'+GPT.DBPath;
-{$ENDIF}
-{$IFDEF ADO}
-  DBString:=GPT.ConnectionString;
-{$ENDIF}
-{$IFDEF ZEOS}
-  DBString:='('+GPT.DBType+') '+DBString;
-{$ENDIF}
-  DBStringMemo:=TMemo.Create(AboutPanel);
-  DBStringMemo.Parent:=AboutPanel;
-  With DBStringMemo do
-  begin
-    ReadOnly:=True;
-    Color:=AboutPanel.Color;
-    //BorderStyle:=bsNone;
-    Left:=8;
-    Top:=95;
-    Width:=FormWidth-PanelLeft*4;
-    Height:=42;
-    Text:=GetDCLMessageString(msDataBase)+' : '+DBString;
-    Font.Color:=clWindowText;
-    Font.Height:= - 12;
-    //Font.Style:=[fsBold, fsItalic];
-    ParentFont:=False;
-  end;
-
-  DBStringMemo:=TMemo.Create(AboutPanel);
-  DBStringMemo.Parent:=AboutPanel;
-  With DBStringMemo do
-  begin
-    ReadOnly:=True;
-    Color:=AboutPanel.Color;
-    //BorderStyle:=bsNone;
-    Left:=8;
-    Top:=95+42+8;
-    Width:=FormWidth-PanelLeft*4;
-    Height:=70;
-    Text:=GetDCLMessageString(msConfiguration)+' : '+GetConfigInfo+
-      ' /'+GetDCLMessageString(msVersion)+' : '+GetConfigVersion;
-    Font.Color:=clWindowText;
-    Font.Height:= - 12;
-    //Font.Style:=[fsBold, fsItalic];
-    ParentFont:=False;
-  end;
-
-  AboutLabel:=TLabel.Create(AboutPanel);
-  AboutLabel.Parent:=AboutPanel;
-  With AboutLabel do
-  begin
-    Left:=8;
-    Top:=222;
-    Width:=62;
-    Caption:=GetDCLMessageString(msInformationAbout)+' '+
-        GetDCLMessageString(msBuildOf)+': '+GetDCLMessageString(msOS)+': '+TargetOS+'. CPU: '+
-      TargetCPU+'.'{$IFDEF FPC}+' fpc: '+fpcVersion+'. LCL version: '+AboutForm.LCLVersion+'.'
-{$IFDEF UNIX}+' '+GetDCLMessageString(msLang)+': '+SysUtils.GetEnvironmentVariable
-      ('LANG')+'.'{$ENDIF}
-{$ENDIF};
-  end;
-
-  If GPT.DebugOn Then
-  begin
-    AboutLabel:=TLabel.Create(AboutPanel);
-    AboutLabel.Parent:=AboutPanel;
-    With AboutLabel do
-    begin
-      Left:=8;
-      Top:=245;
-      Width:=62;
-      Caption:=GetDCLMessageString(msDebugMode)+': '+GetOnOffMode(GPT.DebugOn);
-    end;
-  end;
-
-  OkButton:=TButton.Create(AboutForm);
-  OkButton.Parent:=AboutForm;
-  With OkButton do
-  begin
-    Left:=(FormWidth div 2)-(75 div 2);
-    Top:=FormHeight-PanelLeft*2-30;
-    Width:=75;
-    Height:=25;
-    Caption:='OK';
-    default:=True;
-    Cancel:=True;
-    ModalResult:=1;
-    TabOrder:=0;
-  end;
-  AboutForm.ShowModal;
-  FreeAndNil(AboutForm);
 end;
 
 function TDCLLogOn.AddVirtualScript(Scr: RVirtualScript):Integer;
-var
-  l, f:Integer;
 begin
-  f:=FindVirtualScript(Scr.ScriptName);
-  If f=-1 then
-  Begin
-    l:=Length(VirtualScripts);
-    SetLength(VirtualScripts, l+1);
-  End
-  Else
-    l:=f;
-
-  VirtualScripts[l].ScriptName:=Scr.ScriptName;
-  VirtualScripts[l].ScrCommand:=Scr.ScrCommand;
-  VirtualScripts[l].ScrText:=Scr.ScrText;
-
-  Result:=l;
 end;
 
 function TDCLLogOn.CheckPass(UserName, EnterPass, Password: String): Boolean;
@@ -3219,27 +2867,7 @@ begin
 end;
 
 procedure TDCLLogOn.CloseAllForms;
-var
-  i:Integer;
 begin
-  FBusyMode:=True;
-  i:=FForms.Count;
-  while FForms.Count<>0 do
-  begin
-    If Assigned(Forms[i-1]) then
-    Begin
-      Try
-        Forms[i-1].Destroy;
-      Except
-        //
-      End;
-    End
-    Else
-      FForms.Delete(i-1);
-    i:=FForms.Count;
-  end;
-  FBusyMode:=False;
-  while IsBusy do Application.HandleMessage;
 end;
 
 procedure TDCLLogOn.CloseForm(Form: TDCLForm);
@@ -3252,12 +2880,6 @@ end;
 
 destructor TDCLLogOn.Destroy;
 begin
-  CloseAllForms;
-  while IsBusy do Application.HandleMessage;
-
-  KillerDog.Enabled:=False;
-  FreeAndNil(KillerDog);
-  Disconnect;
 end;
 
 function TDCLLogOn.ConnectDB: Integer;
@@ -3291,17 +2913,7 @@ begin
 end;
 
 procedure TDCLLogOn.ReconnectDB;
-var
-  i: Integer;
 begin
-  For i:=1 to FormsCount do
-    TDCLForm(FForms[i-1]).CloseDatasets;
-
-  FDBLogOn.Connected:=False;
-  FDBLogOn.Connected:=True;
-
-  For i:=1 to FormsCount do
-    TDCLForm(FForms[i-1]).ResumeDatasets;
 end;
 
 procedure TDCLLogOn.ExecShellCommand(ShellCommandText: String);
@@ -3358,57 +2970,11 @@ begin
 end;
 
 procedure TDCLLogOn.ExtractScriptFile(FileName: String);
-var
-  Scr: TStringList;
-  tmpMem: TMemoryStream;
-  Key, SecKey, User: String;
-  p: Integer;
 begin
-  If FileExists(FileName) Then
-  begin
-    tmpMem:=TMemoryStream.Create;
-    tmpMem.LoadFromFile(FileName);
-    Scr:=DecodeScriptData(tmpMem);
-    tmpMem.Clear;
-
-    If Scr.Count>1 Then
-    begin
-      User:='';
-      p:=Pos('=', Scr[0]);
-      If p<>0 Then
-      begin
-        User:=Copy(Scr[0], 2, p-2);
-        Key:=Copy(Scr[0], p+1, 32);
-      end
-      Else
-        Key:=Copy(Scr[0], 2, 32);
-      Scr.Delete(0);
-      Scr.SaveToStream(tmpMem);
-      tmpMem.Position:=0;
-      SecKey:=GetSecKeyData(tmpMem, User);
-      If SecKey=Key Then
-      begin
-        Scr.SaveToFile(ChangeFileExt(FileName, TextScriptFileExt));
-      end;
-    end;
-    FreeAndNil(Scr);
-    FreeAndNil(tmpMem);
-  end;
 end;
 
 function TDCLLogOn.FindVirtualScript(ScriptName: String): Integer;
-var
-  i:Integer;
 begin
-  Result:=-1;
-  For i:=1 to Length(VirtualScripts) do
-  Begin
-    If AnsiLowerCase(VirtualScripts[i-1].ScriptName)=AnsiLowerCase(ScriptName) then
-    Begin
-      Result:=i-1;
-      Break;
-    End;
-  End;
 end;
 
 function TDCLLogOn.GetBaseUID: String;
@@ -3417,7 +2983,6 @@ end;
 
 function TDCLLogOn.GetBusyMode: Boolean;
 begin
-  Result:=FBusyMode;
 end;
 
 function TDCLLogOn.GetConfigInfo: String;
@@ -3474,239 +3039,27 @@ begin
 end;
 
 function TDCLLogOn.GetSecKeyData(Data: TMemoryStream; UserName: String): String;
-var
-  DataMD5, PassMD5: String;
-  i, tmp1: Byte;
-  Pass: String;
-  ShadowQuery: TDCLDialogQuery;
 begin
-  Result:='';
-  If Assigned(Data) Then
-    If Data.Size>0 Then
-    begin
-      Data.Position:=0;
-      DataMD5:=MD5Stream(Data);
-      If UserName='' Then
-        Pass:=GPT.DCLUserName+GPT.DCLUserPass
-      Else
-      begin
-        ShadowQuery:=TDCLDialogQuery.Create(Application);
-        SetDBName(ShadowQuery);
-        ShadowQuery.SQL.Text:='select '+UserPassField+' from '+UsersTable+' where '+UserNameField+
-          '='+GPT.StringTypeChar+UserName+GPT.StringTypeChar;
-        ShadowQuery.Open;
-        ShadowQuery.Last;
-        ShadowQuery.First;
-        Pass:=UserName;
-        If ShadowQuery.RecordCount=1 Then
-          Pass:=Pass+TrimRight(ShadowQuery.Fields[0].AsString);
-        ShadowQuery.Close;
-        FreeAndNil(ShadowQuery);
-      end;
-      PassMD5:=MD5String(Pass);
-
-      i:=0;
-      While i<32 do
-      begin
-        tmp1:=HexToInt(DataMD5[i]+DataMD5[i+1]) Mod HexToInt(PassMD5[i]+PassMD5[i+1]);
-        Inc(i, 2);
-        Result:=Result+IntToHex(tmp1, 2);
-      end;
-    end;
 end;
 
 function TDCLLogOn.GetVirtualScript(ScriptName: String): RVirtualScript;
-var
-  i:Integer;
 begin
-  RVirtualScriptsClear(Result);
-  i:=FindVirtualScript(ScriptName);
-  If i<>-1 then
-  Begin
-    Result.ScrCommand:='';
-    Result.ScriptName:=VirtualScripts[i].ScriptName;
-    Result.ScrText:=VirtualScripts[i].ScrText;
-  End;
 end;
 
 function TDCLLogOn.GetVirtualScriptNum(Index: Integer): RVirtualScript;
 begin
-  If (Index>=0) and (Index<Length(VirtualScripts)) then
-  Begin
-    Result.ScrCommand:='';
-    Result.ScriptName:=VirtualScripts[Index].ScriptName;
-    Result.ScrText:=VirtualScripts[Index].ScrText;
-  End;
 end;
 
 procedure TDCLLogOn.SignScriptFile(FileName, UserName: String);
-var
-  Scr: TStringList;
-  SecKey: String;
-  tmpMem: TMemoryStream;
 begin
-  If FileExists(FileName) Then
-  begin
-    Scr:=TStringList.Create;
-    Scr.LoadFromFile(FileName{$IFNDEF FPC}, TEncoding.UTF8{$ENDIF});
-    tmpMem:=TMemoryStream.Create;
-    Scr.SaveToStream(tmpMem);
-    tmpMem.Position:=0;
-    SecKey:=GetSecKeyData(tmpMem, UserName);
-
-    If UserName='' Then
-      Scr.Insert(0, '['+SecKey+']')
-    Else
-      Scr.Insert(0, '['+UserName+'='+SecKey+']');
-
-    tmpMem:=EncodeScriptData(Scr);
-    tmpMem.SaveToFile(ChangeFileExt(FileName, SignedScriptExt));
-    FreeAndNil(tmpMem);
-    FreeAndNil(Scr);
-  end;
 end;
 
 procedure TDCLLogOn.ReSignScriptFile(FileName: String);
-var
-  Scr: TStringList;
-  SecKey: String;
-  tmpMem: TMemoryStream;
 begin
-  If FileExists(FileName) Then
-  begin
-    tmpMem:=TMemoryStream.Create;
-    tmpMem.LoadFromFile(FileName);
-    Scr:=DecodeScriptData(tmpMem);
-    tmpMem.Clear;
-    If Length(Scr.Text)>10 then
-    Begin
-      If (Pos('[', Scr[0])<>Pos(']', Scr[0])) and (Pos('[', Scr[0])>0) then
-        Scr.Delete(0);
-
-      Scr.SaveToStream(tmpMem);
-      tmpMem.Position:=0;
-      SecKey:=GetSecKeyData(tmpMem, GPT.DCLUserName);
-
-      Scr.Insert(0, '['+GPT.DCLUserName+'='+SecKey+']');
-
-      tmpMem:=EncodeScriptData(Scr);
-      tmpMem.SaveToFile(FileName);
-    End;
-    FreeAndNil(tmpMem);
-  end;
 end;
 
 procedure TDCLLogOn.RunSkriptFromFile(FileName: String);
-var
-  Scr, Scr2: TStringList;
-  tmpMem: TMemoryStream;
-  Key, SecKey, User, Ver, VirtScrName: String;
-  p, vsi, vtmp: Integer;
-  Command: TDCLCommand;
-  Form: TDCLForm;
-  VRS:RVirtualScript;
-
-procedure MainParse(Scr:TStringList);
-Begin
-  If Scr.Count>0 then
-  If CompareString(Scr[0], '[FORM]') Then
-  begin
-    Scr.Delete(0);
-    Form:=CreateForm(VirtScrName, nil, nil, nil, nil, nil, False,
-      chmNone, nil, Scr);
-  end
-  Else
-  begin
-    If CompareString(Scr[0], '[COMMAND]') Then
-      Scr.Delete(0);
-    Command:=TDCLCommand.Create(nil, Self);
-    Command.ExecCommand(Scr.Text, nil);
-    FreeAndNil(Command);
-  end;
-End;
-
-Function FindNextSkriptSection:TStringList;
-var
-  i, p, p1, j:Integer;
-Begin
-  Result:=TStringList.Create;
-  For i:=1 to Scr.Count do
-  Begin
-    If (PosEx('[ScriptName=', Scr[i-1])<>0) and (Pos(']', Scr[i-1])=Length(Scr[i-1])) then
-    Begin
-      VirtScrName:=FindParam('ScriptName=', Scr[i-1]);
-      VirtScrName:=Copy(VirtScrName, 1, Length(VirtScrName)-1);
-      p:=i;
-      For p1:=p to Scr.Count do
-      Begin
-        If (Scr[p1]='[END SCRIPT]') or (p1+1>=Scr.Count) then
-        Begin
-          For j:=p to p1 do
-          begin
-            Result.Append(Scr[p]);
-            Scr.Delete(p);
-          end;
-          Scr.Delete(p-1);
-          exit;
-        End;
-      End;
-    End;
-  End;
-End;
-
 begin
-  If FileExists(FileName) Then
-  begin
-    tmpMem:=TMemoryStream.Create;
-    tmpMem.LoadFromFile(FileName);
-    Ver:=GetScriptVersion(tmpMem);
-    Scr:=DecodeScriptData(tmpMem);
-    tmpMem.Clear;
-
-    If Scr.Count>1 Then
-    begin
-      User:='';
-      p:=Pos('=', Scr[0]);
-      If p<>0 Then
-      begin
-        User:=Copy(Scr[0], 2, p-2);
-        Key:=Copy(Scr[0], p+1, 32);
-      end
-      Else
-        Key:=Copy(Scr[0], 2, 32);
-      Scr.Delete(0);
-      Scr.SaveToStream(tmpMem);
-      tmpMem.Position:=0;
-      SecKey:=GetSecKeyData(tmpMem, User);
-      If SecKey=Key Then
-      begin
-        If Ver='1.2' then
-        Begin
-          VirtScrName:=ChangeFileExt(ExtractFileName(FileName), '');
-          MainParse(Scr);
-        End;
-        If Ver='1.3' then
-        Begin
-          vsi:=-1;
-          Scr2:=FindNextSkriptSection;
-          while Scr2.Count<>0 do
-          Begin
-            VRS.ScriptName:=VirtScrName;
-            VRS.ScrCommand:='';
-            VRS.ScrText:=Scr2.Text;
-            vtmp:=AddVirtualScript(VRS);
-            If vsi=-1 then
-              vsi:=vtmp;
-            Scr2:=FindNextSkriptSection;
-          End;
-          Scr2.Text:=GetVirtualScriptNum(vsi).ScrText;
-          MainParse(Scr2);
-        End;
-      end;
-    end;
-    FreeAndNil(Scr);
-    FreeAndNil(tmpMem);
-  end;
 end;
 
 procedure TDCLLogOn.GetTableNames(var List: TStrings);
@@ -3802,63 +3155,8 @@ begin
   end;
 end;
 
-
 procedure TDCLLogOn.NotifyForms(Action: TFormsNotifyAction);
-var
-  j: Integer;
-  Form: TDCLForm;
 begin
-  For Form in Forms do
-  begin
-    If Assigned(Form) Then
-    begin
-      Case Action of
-      fnaRefresh:
-      Form.RefreshForm;
-      fnaClose:
-      Form.CloseDialog;
-      fnaSetMDI:
-      Form.FForm.Parent:=MainForm;
-      fnaResetMDI:
-      Form.FForm.Parent:=nil;
-      fnaHide:
-      Form.FForm.Hide;
-      fnaShow:
-      Form.FForm.Show;
-      fnaStopAutoRefresh:
-      begin
-        For j:=1 to Form.TablesCount do
-          If Assigned(Form.Tables[j-1].RefreshTimer) Then
-            Form.Tables[j-1].RefreshTimer.Enabled:=False;
-      end;
-      fnaStartAutoRefresh:
-      begin
-        For j:=1 to Form.TablesCount do
-          If Assigned(Form.Tables[j-1]) Then
-            If Assigned(Form.Tables[j-1].RefreshTimer) Then
-              Form.Tables[j-1].RefreshTimer.Enabled:=True;
-      end;
-      fnaPauseAutoRefresh:
-      begin
-        For j:=1 to Form.TablesCount do
-          If Assigned(Form.Tables[j-1]) Then
-            If Assigned(Form.Tables[j-1].RefreshTimer) Then
-              If Form.Tables[j-1].RefreshTimer.Enabled Then
-                Form.Tables[j-1].LastStateTimer:=Form.Tables[j-1]
-                  .RefreshTimer.Enabled;
-      end;
-      fnaResumeAutoRefresh:
-      begin
-        For j:=1 to Form.TablesCount do
-          If Assigned(Form.Tables[j-1]) Then
-            If Assigned(Form.Tables[j-1].RefreshTimer) Then
-              If Not Form.Tables[j-1].RefreshTimer.Enabled Then
-                Form.Tables[j-1].RefreshTimer.Enabled:=
-                  Form.Tables[j-1].LastStateTimer;
-      end;
-      end;
-    end;
-  end;
 end;
 
 function TDCLLogOn.ReadConfig(ConfigName, UserID: String): String;
@@ -4351,21 +3649,11 @@ begin
 end;
 
 procedure TDCLMainMenu.LockMenu;
-var
-  ItemCounter: Integer;
 begin
-  If Assigned(FMainForm) Then
-    For ItemCounter:=0 to FMainMenu.Items.Count-1 do
-      FMainMenu.Items[ItemCounter].Enabled:=False;
 end;
 
 procedure TDCLMainMenu.UnLockMenu;
-var
-  ItemCounter: Integer;
 begin
-  If Assigned(FMainForm) Then
-    For ItemCounter:=0 to FMainMenu.Items.Count-1 do
-      FMainMenu.Items[ItemCounter].Enabled:=True;
 end;
 
 { TDCLGrid }
@@ -4437,25 +3725,7 @@ begin
 end;
 
 procedure TDCLGrid.AddDBFilter(Filter: TDBFilter);
-var
-  i: Integer;
-  Key: Word;
-  S: String;
-  Item: TComboFilterItem;
 begin
-
-  Case Filter.FilterType of
-  ftContextFilter:
-  begin
-    If Filter.KeyValue<>'' Then
-    begin
-      FDCLLogOn.RePlaseVariables(GetNamespace, Filter.KeyValue);
-      Filter.Edit.Text:=Filter.KeyValue;
-      Key:=13;
-      OnContextFilter(Filter.Edit, Key, []);
-    end;
-  end;
-  end;
 end;
 
 procedure TDCLGrid.AddDropBox(Field: TDCLField);
@@ -4531,12 +3801,7 @@ begin
 end;
 
 procedure TDCLGrid.AfterCancel(Data: TDataSet);
-var
-  v1, v2: Integer;
 begin
-
-  SetDataStatus(dssSaved);
-
 end;
 
 procedure TDCLGrid.AfterClose(Data: TDataSet);
@@ -4545,22 +3810,7 @@ begin
 end;
 
 procedure TDCLGrid.AfterEdit(Data: TDataSet);
-var
-  v1, v2: Integer;
 begin
-  If FUserLevelLocal<ulWrite Then
-    Data.Cancel;
-
-  For v1:=1 to FDCLLogOn.FormsCount do
-  begin
-    If Assigned(FDCLLogOn.Forms[v1-1]) Then
-      If Assigned(FDCLLogOn.Forms[v1-1].ParentForm) Then
-      begin
-        If FDCLLogOn.Forms[v1-1].ParentForm=FDCLForm Then
-          For v2:=1 to FDCLLogOn.Forms[v1-1].TablesCount do
-            FDCLLogOn.Forms[v1-1].Tables[v2-1].ScrollDB(Data);
-      end;
-  end;
 end;
 
 procedure TDCLGrid.AfterInsert(Data: TDataSet);
@@ -4568,27 +3818,11 @@ begin
 end;
 
 procedure TDCLGrid.AfterOpen(Data: TDataSet);
-var
-  tmpSQL: String;
-  v1, v2: Integer;
 begin
-  If Assigned(FDCLLogOn) Then
-  begin
-    Screen.Cursor:=crDefault;
-
-
-  end;
 end;
 
 procedure TDCLGrid.AfterPost(Data: TDataSet);
-var
-  v1, v2: Integer;
 begin
-  SaveDB;
-  ExecEvents(evtAfterPost);
-
-  ReFreshQuery;
-  FDCLLogOn.NotifyForms(fnaRefresh);
 end;
 
 procedure TDCLGrid.AfterRefresh(Data: TDataSet);
@@ -4772,11 +4006,7 @@ begin
 end;
 
 procedure TDCLGrid.DeleteAllBookmarks;
-var
-  i: Integer;
 begin
-  For i:=1 to Length(KeyMarks.KeyBookMarks) do
-    DeleteMenuBookMark(i-1);
 end;
 
 procedure TDCLGrid.CreatePartColumns;
@@ -4841,105 +4071,19 @@ begin
 end;
 
 procedure TDCLGrid.PosToBookMark(Sender: TObject);
-var
-  v1: Word;
 begin
-  v1:=(Sender as TComponent).Tag;
-  If KeyState(VK_CONTROL) Then
-    DeleteMenuBookMark(v1)
-  Else
-    FQuery.Locate(KeyMarks.KeyBookMarks[v1].KeyField, KeyMarks.KeyBookMarks[v1].KeyValue,
-      [loCaseInsensitive]);
 end;
 
 function TDCLGrid.FindRaightQuery(): String;
-var
-  v1: Integer;
 begin
-  Result:='';
-  If Length(QuerysStore)>0 Then
-    For v1:=Length(QuerysStore) downto 1 do
-    begin
-      If QuerysStore[v1-1].QuryType=qtMain Then
-      begin
-        Result:=QuerysStore[v1-1].QueryStr;
-        break;
-      end;
-    end;
 end;
 
 destructor TDCLGrid.Destroy;
 begin
-  try
-    If Assigned(FQuery) Then
-    begin
-      If BaseChanged and not FDCLForm.ExitNoSave Then
-        If FQuery.Active and (FQuery.State in dsEditModes) Then
-          If ShowErrorMessage(Ord(mbtConfirmation),
-            GetDCLMessageString(msSaveEditingsQ))=1 Then
-          begin
-            try
-              FQuery.Post;
-            Except
-              //
-            end;
-          end
-          Else
-          begin
-            try
-              FQuery.Cancel;
-            Except
-              //
-            end;
-          end;
-    end;
-    BaseChanged:=False;
-    if Assigned(FDCLLogOn) then
-      if Assigned(FDCLLogOn.SQLMon) then
-        if Assigned(FQueryGlob) then
-        begin
-          FDCLLogOn.SQLMon.DelTrace(FQueryGlob);
-          FreeAndNil(FQueryGlob);
-        end;
-  Except
-    //
-  end;
-  inherited Destroy;
 end;
 
 procedure TDCLGrid.RefreshBookMarkMenu;
-var
-  v2, v3, i: Integer;
 begin
-  If Assigned(PopupGridMenu.FindComponent('PosToBookMark')) Then
-  begin
-    While (PopupGridMenu.FindComponent('PosToBookMark') as TMenuItem).ComponentCount<>0 do
-      (PopupGridMenu.FindComponent('PosToBookMark') as TMenuItem).Components[0].Free;
-  end;
-
-  If Not PosBookCreated Then
-  begin
-    If Not Assigned(PopupGridMenu.FindComponent('PosToBookMark')) Then
-      AddPopupMenuItem(GetDCLMessageString(msGotoBookmark)+'...',
-        'PosToBookMark', nil, '', 0, '');
-    PosBookCreated:=True;
-  end;
-
-  v3:=Length(KeyMarks.KeyBookMarks);
-  If v3>0 Then
-  begin
-    For i:=1 to v3 do
-    begin
-      If KeyMarks.KeyBookMarks[i-1].KeyValue<>'' Then
-      begin
-        v2:=PopupGridMenu.Items.IndexOf(PopupGridMenu.FindComponent('PosToBookMark') as TMenuItem);
-
-        If Not Assigned(PopupGridMenu.FindComponent('PosToBookMark'+IntToStr(i-1))) Then
-          AddSubPopupItem(KeyMarks.KeyBookMarks[i-1].Title, 'PosBookMark'+IntToStr(i-1),
-            PosToBookMark, v2, i-1);
-      end;
-    end;
-  end;
 end;
 
 function TDCLGrid.GetColumns: TDBGridColumns;
@@ -4955,15 +4099,7 @@ begin
 end;
 
 function TDCLGrid.GetFieldDataType(FieldName: String): TFieldType;
-var
-  tmpFieldName: String;
 begin
-  tmpFieldName:=FieldName;
-  If Pos('.', FieldName)<>0 Then
-  begin
-    tmpFieldName:=Copy(FieldName, Pos('.', FieldName)+1, Length(FieldName));
-  end;
-  Result:=Query.FieldByName(tmpFieldName).DataType;
 end;
 
 function TDCLGrid.GetFingQuery: String;
@@ -5237,7 +4373,6 @@ end;
 
 procedure TDCLGrid.SaveDB;
 begin
-  SetDataStatus(dssSaved);
 end;
 
 procedure TDCLGrid.ScrollDB(Data: TDataSet);

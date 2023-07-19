@@ -37,7 +37,7 @@ Const
 implementation
 
 uses
-  fAbout;
+  fAbout, IniFiles, uDCLGlobalVariables, uDCLMeasurements;
 
 {$R *.lfm}
 
@@ -56,8 +56,28 @@ end;
 {$ENDIF}
 
 procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+var
+  ConfigPath, SectionName: String;
+  Settings: TIniFile;
 begin
+  if GPT.DialogsSettings and (Self.WindowState=wsNormal) then
+  begin
+    ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim;
+    if not DirectoryExists(ConfigPath) then
+      ForceDirectories(ConfigPath);
 
+    SectionName:='Position';
+    if Self.FormStyle=fsMDIForm then
+      SectionName:=SectionName+'MDI';
+
+    Settings:=TIniFile.Create(ConfigPath+'MainForm.ini', TEncoding.UTF8);
+    Settings.WriteInteger(SectionName, 'Top', Self.Top);
+    Settings.WriteInteger(SectionName, 'Left', Self.Left);
+    Settings.WriteInteger(SectionName, 'Height', Self.Height+AddHeight);
+    Settings.WriteInteger(SectionName, 'Width', Self.Width);
+
+    FreeAndNil(Settings);
+  end;
 end;
 
 function FindCommandStrParam(Str: String): String;
@@ -110,7 +130,30 @@ begin
 end;
 
 procedure TMainForm.FormShow(Sender: TObject);
+var
+  ConfigPath, SectionName: String;
+  Settings: TIniFile;
 begin
+  if GPT.DialogsSettings then
+  begin
+    ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim;
+    if DirectoryExists(ConfigPath) and FileExists(ConfigPath+'MainForm.ini') then
+    begin
+      Settings:=TIniFile.Create(ConfigPath+'MainForm.ini', TEncoding.UTF8);
+
+      SectionName:='Position';
+      if Self.FormStyle=fsMDIForm then
+        SectionName:=SectionName+'MDI';
+
+      Self.Top:=Settings.ReadInteger(SectionName, 'Top', Self.Top);
+      Self.Left:=Settings.ReadInteger(SectionName, 'Left', Self.Left);
+      Self.Height:=Settings.ReadInteger(SectionName, 'Height', Self.Height+AddHeight);
+      Self.Width:=Settings.ReadInteger(SectionName, 'Width', Self.Width);
+
+      FreeAndNil(Settings);
+    end;
+  end;
+
   {$IFDEF MSWINDOWS}
   AppendMenu(GetSystemMenu(Handle, False), MF_SEPARATOR, 0, '');
   AppendMenu(GetSystemMenu(Handle, False), MF_STRING, AboutMenuItem,

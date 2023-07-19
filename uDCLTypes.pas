@@ -14,16 +14,14 @@ Uses
 {$IFDEF ADO}
   ADODB, ADOConst, ADOInt,
 {$ENDIF}
-{$IFDEF FPC}
-  {$IFDEF IBX}
-    IBDatabase, IBTable, IBCustomDataSet, IBSQL, IBQuery,
-    IBUpdateSQL, uIBUpdateSQLW,
-  {$ENDIF}
-{$ELSE}
-  {$IFDEF IBX}
-    IBX.IBDatabase, IBX.IBTable, IBX.IBCustomDataSet, IBX.IBSQL, IBX.IBQuery,
-    IBX.IBVisualConst, IBX.IBXConst, IBX.IBUpdateSQL,
-    uIBUpdateSQLW,
+{$IFDEF IBX}
+  {$IFDEF FPC}
+  IBDatabase, IBTable, IBCustomDataSet, IBSQL, IBQuery,
+  IBUpdateSQL, uIBUpdateSQLW,
+  {$ELSE}
+  IBX.IBDatabase, IBX.IBTable, IBX.IBCustomDataSet, IBX.IBSQL, IBX.IBQuery,
+  IBX.IBVisualConst, IBX.IBXConst, IBX.IBUpdateSQL,
+  uIBUpdateSQLW,
   {$ENDIF}
 {$ENDIF}
 {$IFDEF ZEOS}
