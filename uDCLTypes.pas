@@ -28,7 +28,7 @@ Uses
   ZConnection, ZDataset, ZSqlUpdate,
 {$ENDIF}
 {$IFDEF SQLdbFamily}
-  IBConnection, sqldb,
+  IBConnection, sqldb, DB,
 {$ENDIF}
   Forms;
 
@@ -43,18 +43,21 @@ type
   TDCLDialogQuery=TADOQuery;
   TDCLSimlyQuery=TADOQuery;
   TDBConnector=TADOConnection;
+  TDatabaseObject=TADOConnection;
   TCommandQuery=TADOCommand;
 {$ENDIF}
 {$IFDEF IBX}
   TDCLDialogQuery=TIBQuery;
   TDCLSimlyQuery=TIBQuery;
   TDBConnector=TIBDatabase;
+  TDatabaseObject=TIBDatabase;
   TCommandQuery=TIBQuery;
   TTransaction=TIBTransaction;
   TUpdateObj=TIBUpdateSQLW;
 {$ENDIF}
 {$IFDEF ZEOS}
   TDBConnector=TZConnection;
+  TDatabaseObject=TZConnection;
   TDCLSimlyQuery=TZQuery;
   TDCLDialogQuery=TZQuery;
   TUpdateObj=TZUpdateSQL;
@@ -68,8 +71,10 @@ type
   TUpdateObj=TSQLQuery;
 {$IFDEF SQLdbIB}
   TDBConnector=TIBConnection;
+  TDatabaseObject=TDatabase;
 {$ENDIF}
 {$IFDEF SQLdb}
+  TDatabaseObject=TDataBase;
   TDBConnector=TSQLConnector;
 {$ENDIF}
 {$ENDIF}

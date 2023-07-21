@@ -679,6 +679,9 @@ begin
 
   If IsLexem('ExecQuery=', Command) then
   begin
+    if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) and FDCLGrid.Query.Active then
+      if FDCLGrid.Query.State in dsEditModes then
+        FDCLGrid.Query.Cancel;
     tmpS:=FindParam('ExecQuery=', Command);
     ExecSQLCommand(tmpS);
   end;
@@ -820,7 +823,6 @@ begin
         v2:=StrToIntEx(Trim(FindParam('Width=', Command)));
       FDCLForm.SetStatusNum(tmpS, v1-1, v2);
     end;
-
 
     If IsLexem('SetFormCaption=', Command) Then
     begin

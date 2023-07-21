@@ -26,7 +26,7 @@ uses
 {$IFDEF ZEOS}
   //ZConnection, ZDataset, ZSqlUpdate,
 {$ENDIF}
-  DB, uDCLTypes, uDCLData, uDCLConst;
+  DB, uDCLTypes, uDCLData, uDCLConst, uDCLDBConnector;
 
 const
   DisableControlsMode=False;
@@ -45,11 +45,11 @@ type
   TDCLQuery=class(TDCLDialogQuery)
   private
 {$IFDEF UPDATESQLDB}
-    ShadowQuery: TDCLDialogQuery;
+    ShadowQuery: TDCLSimlyQuery;
     {$IFnDEF SELFUPDATESQL}
     FUpdateSQL: TUpdateSQLObj;
     {$ELSE}
-    FUpdateSQL: TDCLDialogQuery;
+    FUpdateSQL: TDCLSimlyQuery;
     {$ENDIF}
     {$IFDEF TRANSACTIONDB}
     ShadowTransaction: TTransaction;
@@ -64,12 +64,13 @@ type
     FFieldsDefsDefined:Boolean;
     FieldsDefs:Array of TField;
     {$ENDIF}
+    FDBConnector: TDBConnector;
 
     {$IFDEF TRANSACTIONDB}
     function CreateTR(RW:TTransactionType):TTransaction;
     {$ENDIF}
 
-    function GetPrimaryKeyField(TableName: string): string;
+    function GetPrimaryKeyField(TableName: String; OneField: Boolean): string;
     function GetMainQueryTable: string;
 
     procedure SetRequiredFields;
@@ -106,8 +107,13 @@ type
 
     Function FindNotAllowedOperation(Value: TNotAllowedOperation): Boolean;
 
+    procedure SetDBConnector(Database: TDBConnector);
+    function GetConnector: TDatabaseObject;
+
+    procedure SetDCLDBConnector(Query: TDCLSimlyQuery);
   public
     constructor Create(DatabaseObj: TDBConnector); overload;
+    constructor Create(AOwner : TComponent); override;
     destructor Destroy; override;
 
     procedure Open; overload;
@@ -124,10 +130,14 @@ type
     procedure DisableControls;
     procedure EnableControls;
 
+    function GetKeyBookmark: TBookmark;
+    procedure GotoKeyBookmark(Bookmark: TBookmark);
+
     property NotAllowOperations: TOperationsTypes read GetNotAllowedOperations write SetNotAllowedOperations;
     property KeyField: String read FKeyField;
     property MainTable: String read FMainTable;
   published
+    property Connector: TDBConnector read FDBConnector write FDBConnector;
     property SQL:{$IFDEF WITH_WIDEDATASET}TWideStrings{$ELSE}TStringList{$ENDIF} read GetSQL write SetSQL;
     property AfterDelete: TDataSetNotifyEvent read GetAfterDeleteEvent write SetAfterDeleteEvent;
     property AfterPost: TDataSetNotifyEvent read GetAfterPostEvent write SetAfterPostEvent;
@@ -136,7 +146,7 @@ type
     property AfterOpen: TDataSetNotifyEvent read GetAfterOpenEvent write SetAfterOpenEvent;
     property BeforePost: TDataSetNotifyEvent read GetBeforePostEvent write SetBeforePostEvent;
     property BeforeInsert: TDataSetNotifyEvent read GetBeforeInsertEvent write SetBeforeInsertEvent;
-    property UpdateSQLDefined:Boolean read FUpdateSQLDefined;
+    property UpdateSQLDefined: Boolean read FUpdateSQLDefined;
   end;
 
 implementation
@@ -360,7 +370,6 @@ begin
   {$IFDEF FPC}
   AllowAutoActivateTransaction:=True;
   AutoCommit:=acCommitRetaining;
-  //AutoTrim:=True;
   {$ENDIF}
 {$ENDIF}
 {$IFDEF SQLdbFamily}
@@ -377,7 +386,7 @@ begin
   inherited BeforePost:=BeforePostData;
   inherited BeforeInsert:=BeforeInsertData;
 {$IFDEF UPDATESQLDB}
-  ShadowQuery:=TDCLDialogQuery.Create(nil);
+  ShadowQuery:=TDCLDialogQuery.Create(Self);
 {$IFDEF TRANSACTIONDB}
   ShadowTransaction:=CreateTR(trtWrite);
   ShadowQuery.Transaction:=Transaction;
@@ -399,10 +408,50 @@ begin
 {$ENDIF}
 end;
 
+constructor TDCLQuery.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  FUpdateSQLDefined:=False;
+{$IFDEF ZEOS}
+  FFieldsDefsDefined:=False;
+{$ENDIF}
+{$IFDEF ADO}
+{$ENDIF}
+{$IFDEF IBX}
+  {$IFDEF FPC}
+  AllowAutoActivateTransaction:=True;
+  AutoCommit:=acCommitRetaining;
+  {$ENDIF}
+{$ENDIF}
+{$IFDEF TRANSACTIONDB}
+  Transaction:=CreateTR(trtWrite);
+{$ENDIF}
+  inherited AfterDelete:=AfterDeleteData;
+  inherited AfterInsert:=AfterInsertData;
+  inherited AfterPost:=AfterPostData;
+  inherited AfterCancel:=AfterCancelData;
+  inherited AfterOpen:=AfterOpenData;
+  inherited BeforePost:=BeforePostData;
+  inherited BeforeInsert:=BeforeInsertData;
+{$IFDEF UPDATESQLDB}
+  ShadowQuery:=TDCLSimlyQuery.Create(Self);
+{$IFDEF TRANSACTIONDB}
+  ShadowTransaction:=CreateTR(trtWrite);
+  ShadowQuery.Transaction:=Transaction;
+{$ENDIF}
+{$IFDEF IBX}
+  {$IFDEF FPC}
+  ShadowQuery.AllowAutoActivateTransaction:=True;
+  ShadowQuery.AutoCommit:=acCommitRetaining;
+  {$ENDIF}
+{$ENDIF}
+{$ENDIF}
+end;
+
 procedure TDCLQuery.FillDatasetUpdateSQL(KeyField, TableName: String;
   ToOpen: Boolean);
 var
-  UpdatesFieldsSet, KeyFieldsSet: String;
+  UpdatesFieldsSet, KeyFieldsSet, TextSQLSel: String;
   updateSQL, insertSQL, deleteSQL, refreshSQL: TStringList;
   v1, v2: Integer;
   KeyFields, UpdateFields: Array of String;
@@ -571,11 +620,12 @@ Begin
         FUpdateSQL.DeleteSQL.Text:=deleteSQL.Text;
 
       // Query.FieldList.Update;
+      TextSQLSel:=SQL.Text;
       {$IFnDEF SQLdbFamily}
       If ToOpen then
       {$ENDIF}
       If not Active Then
-        If SQL.Text<>'' Then
+        If TextSQLSel<>'' Then
           inherited Open;
     End
     Else
@@ -605,6 +655,85 @@ Begin
         Break;
       End;
     End;
+end;
+
+procedure TDCLQuery.SetDBConnector(Database: TDBConnector);
+begin
+  {$IFDEF ADO}
+  Connection:=Database;
+  {$ENDIF}
+  {$IFDEF IBX}
+  Self.DataBase:=Database;
+  {$ENDIF}
+  {$IFDEF ZEOS}
+  Self.DataBase:=Database;
+  {$ENDIF}
+  {$IFDEF SQLdbFamily}
+  Self.DataBase:=Database;
+  {$ENDIF}
+  {$IFDEF TRANSACTIONDB}
+  {$IFDEF SQLdbFamily}
+  Self.Transaction:=Database.Transaction;
+  {$ENDIF}
+  {$IFDEF IBX}
+  Self.Transaction:=Database.DefaultTransaction;
+  {$ENDIF}
+  {$IFDEF IBXLaz}
+  Self.AllowAutoActivateTransaction:=True;
+  {$ENDIF}
+  {$ENDIF}
+end;
+
+function TDCLQuery.GetConnector: TDatabaseObject;
+begin
+  Result:=
+  {$IFDEF ADO}
+  Self.Connection;
+  {$ENDIF}
+  {$IFDEF IBX}
+  Self.DataBase;
+  {$ENDIF}
+  {$IFDEF ZEOS}
+  Self.DataBase;
+  {$ENDIF}
+  {$IFDEF SQLdbFamily}
+  Self.DataBase
+  {$ENDIF}
+  {$IFDEF TRANSACTIONDB}
+  {$IFDEF SQLdbFamily}
+  //Transaction:=Transaction;
+  {$ENDIF}
+  {$IFDEF IBX}
+  //Transaction:=Database.DefaultTransaction;
+  {$ENDIF}
+  {$ENDIF};
+end;
+
+procedure TDCLQuery.SetDCLDBConnector(Query: TDCLSimlyQuery);
+begin
+  {$IFDEF ADO}
+  Query.Connection:=Self.Connection;
+  {$ENDIF}
+  {$IFDEF IBX}
+  Query.DataBase:=Self.DataBase;
+  {$ENDIF}
+  {$IFDEF ZEOS}
+  Query.DataBase:=Self.DataBase;
+  {$ENDIF}
+  {$IFDEF SQLdbFamily}
+  Query.DataBase:=Self.DataBase;
+  {$ENDIF}
+  {$IFDEF TRANSACTIONDB}
+  {$IFDEF SQLdbFamily}
+  Query.Transaction:=Transaction;
+  {$ENDIF}
+  {$IFDEF IBX}
+  Query.Transaction:=Self.Transaction;
+  {$ENDIF}
+  {$IFDEF IBXLaz}
+  Query.AllowAutoActivateTransaction:=True;
+  {$ENDIF}
+  {$ENDIF}
 end;
 
 destructor TDCLQuery.Destroy;
@@ -813,14 +942,17 @@ begin
 end;
 {$ENDIF}
 
-function TDCLQuery.GetPrimaryKeyField(TableName: string): string;
+function TDCLQuery.GetPrimaryKeyField(TableName: String; OneField: Boolean): string;
 begin
   Result:='';
   If GPT.IBAll then
   Begin
 {$IFDEF UPDATESQLDB}{$IFDEF IBALL}
-    If TableName<>'' then
+    If (TableName<>'') and Assigned(ShadowQuery) then
     Begin
+      if not Assigned(ShadowQuery.DataBase) then
+        SetDCLDBConnector(ShadowQuery);
+
       ShadowQuery.Params.Clear;
       ShadowQuery.SQL.Text:='select RDB$FIELD_NAME '+
         'from RDB$RELATION_CONSTRAINTS C, RDB$INDICES I, RDB$INDEX_SEGMENTS S '+
@@ -852,6 +984,8 @@ begin
       while not ShadowQuery.Eof do
       Begin
         Result:=Result+Trim(ShadowQuery.Fields[0].AsString)+',';
+        if OneField then
+          break;
         ShadowQuery.Next;
       End;
       ShadowQuery.Close;
@@ -868,7 +1002,7 @@ begin
   If not FUpdateSQLDefined then
   Begin
     FMainTable:=GetMainQueryTable;
-    FKeyField:=GetPrimaryKeyField(FMainTable);
+    FKeyField:=GetPrimaryKeyField(FMainTable, True);
     FUpdateSQLDefined:=True;
   End;
   FillDatasetUpdateSQL(FKeyField, FMainTable, True);
@@ -896,6 +1030,21 @@ procedure TDCLQuery.EnableControls;
 begin
   if DisableControlsMode then
     inherited EnableControls;
+end;
+
+function TDCLQuery.GetKeyBookmark: TBookmark;
+begin
+  Result:=nil;
+  if FKeyField<>'' then
+  begin
+    if Active then
+      Result:=FieldByName(FKeyField).AsBytes;
+  end;
+end;
+
+procedure TDCLQuery.GotoKeyBookmark(Bookmark: TBookmark);
+begin
+
 end;
 
 procedure TDCLQuery.ExecSQL;
@@ -999,7 +1148,7 @@ begin
     If not FUpdateSQLDefined then
     Begin
       FMainTable:=GetMainQueryTable;
-      FKeyField:=GetPrimaryKeyField(FMainTable);
+      FKeyField:=GetPrimaryKeyField(FMainTable, True);
       FUpdateSQLDefined:=True;
     End;
     SetUpdateSQL(FMainTable, FKeyField);

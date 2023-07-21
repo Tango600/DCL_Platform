@@ -2867,7 +2867,11 @@ begin
     If FQuery.State in dsEditModes Then
       FQuery.Post;
 
+    {$IFnDEF NODSBOOKMARKS}
     FLocalBookmark:=FQuery.Bookmark;
+    {$ELSE}
+    FLocalBookmark:=FQuery.GetKeyBookmark;
+    {$ENDIF}
     For tpc in FTableParts do
     begin
       tpc.Close;
@@ -2887,6 +2891,8 @@ begin
     finally
       FQuery.FreeBookmark(FLocalBookmark);
     end;
+  {$ELSE}
+
   {$ENDIF}
   For tpc in FTableParts do
   begin

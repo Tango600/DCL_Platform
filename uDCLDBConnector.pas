@@ -42,16 +42,16 @@ type
     IBTransaction: TTransaction;
 {$ENDIF}
     ///SQLMon: TDCLSQLMon;
-    FGPT: TGPT;
-
+    function GetDatabaseObject: TDatabaseObject;
   public
-    constructor Create(GPT: TGPT); overload;
+    constructor Create; overload;
 
     procedure SetConnector(Query: TDCLDialogQuery);
     {$IFDEF TRANSACTIONDB}
     function NewTransaction(RW:TTransactionType): TTransaction;
     {$ENDIF}
 
+    property DatabaseObject: TDatabaseObject read GetDatabaseObject;
     property ErrorCode: Integer read FErrorCode;
   end;
 
@@ -63,9 +63,25 @@ uses
 
 { TDCLDBConnector }
 
-constructor TDCLDBConnector.Create(GPT: TGPT);
+function TDCLDBConnector.GetDatabaseObject: TDatabaseObject;
 begin
-  FGPT:=GPT;
+  Result:=
+  {$IFDEF ADO}
+  Self
+  {$ENDIF}
+  {$IFDEF IBX}
+  Self
+  {$ENDIF}
+  {$IFDEF ZEOS}
+  Self
+  {$ENDIF}
+  {$IFDEF SQLdbFamily}
+  Self
+  {$ENDIF}
+end;
+
+constructor TDCLDBConnector.Create;
+begin
   inherited Create(Application);
   Name:='DCL_DBConnector1';
 

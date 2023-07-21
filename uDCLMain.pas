@@ -70,14 +70,17 @@ begin
 
   if Result and (GPT.DCLUserName<>'') and (GPT.EnterPass<>'') then
   begin
-    LocalQuery.SQL.Text:='select * from '+UsersTable+' where lower('+UserNameField+')=lower(:UN)';
+    LocalQuery.SQL.Text:='select * from '+UsersTable+' where lower('+UserNameField+')=lower(:UN) '+
+      'and '+UserAdminField+'>:UL';
     LocalQuery.Prepare;
     LocalQuery.ParamByName('UN').AsString:=GPT.DCLUserName;
+    LocalQuery.ParamByName('UL').AsInteger:=Ord(ulDeny);
     LocalQuery.Open;
     Result:=not ((GPT.EnterPass=LocalQuery.FieldByName(UserPassField).AsString) and not LocalQuery.IsEmpty);
     if not Result then
     begin
       GPT.UserID:=LocalQuery.FieldByName(UserIDField).AsString;
+      GPT.AccessLevel:=TranslateDigitToUserLevel(LocalQuery.FieldByName(UserAdminField).AsInteger);
     end;
     LocalQuery.Close;
   end;
@@ -183,6 +186,8 @@ begin
   FVariables:=TVariables.Create;
   FForms:=TList<TForm>.Create;
 
+  GPT.AccessLevel:=ulExecute;
+
   FormsNotifier:=TDCLFormsNotifier.Create(FForms);
 
   FDCLConfig.GetParamsStructure;
@@ -193,7 +198,7 @@ begin
 
   LoadLangRes(LangName, Path);
 
-  FDBConnector:=TDCLDBConnector.Create(GPT);
+  FDBConnector:=TDCLDBConnector.Create;
   FDCLConfig.DBConnector:=FDBConnector;
 
   LocalQuery:=TDCLDialogQuery.Create(Self);
