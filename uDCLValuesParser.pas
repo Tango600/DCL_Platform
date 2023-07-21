@@ -33,7 +33,7 @@ uses
   uDBUtils, uDCLDBUtils, uDCLGlobalVariables;
 
 const
-  MaxSysVars=50;
+  MaxSysVars=49;
   SysVarsSet: Array [1..MaxSysVars] of String=('_TIME_', '_TIMES_', '_DATE_', '_DATETIME_', // 4
     '_VERSION_', '_ISEMPTY_', '_DCLTABLE_', '_DCLNAMEFIELD_', '_DCLTEXTFIELD_', '_IDENTIFYFIELD_',
     // 10
@@ -41,12 +41,12 @@ const
     // 16
     '_ROLENAME_', '_ROLEID_', '_ROLESTABLE_', '_ROLESMENU_', '_USERPASS_', '_LONGROLENAME_', // 22
     '_FOB_', '_EOB_', '_VALUESEPARATOR_', '_FULLVERSION_', '_APPPATH_', '_CURRENTSTRING_', // 28
-    '_ENGINETYPE_', '_SCRIPTRESULT_', '_DCL_USER_NAME_', '_DCL_USERS_TABLE_', '_USERID_', // 33
+    '_ENGINETYPE_', '_APPNAME_', '_DCL_USER_NAME_', '_DCL_USERS_TABLE_', '_USERID_', // 33
     '_USERNAMEACCESSLEVELS_', '_USERGLOBALACCESSLEVEL_', '_USERACCESSLEVEL_', '_NOTIFYACTIONS_',
     // 37
     '_YESNO_', '_EVALFORMULA_', '_DSSTATE_', '_DSSTATENAME_', '_FULLRAIGHTS_', '_ROLEACCESSLEVEL_',
     // 43
-    '_APPDATAPATH_', '_OS_', '_MAC_', '_USERPROFILE_', '_USERDOC_', '_DCLINI_', '_APPNAME_'); // 50
+    '_APPDATAPATH_', '_OS_', '_MAC_', '_USERPROFILE_', '_USERDOC_', '_DCLINI_'); // 49
 
   ProcCount=27;
   ProcNames: Array [1..ProcCount] Of String=('ConvertOraDates', 'ConvertToOraDates', 'ToFloat', // 3
@@ -321,7 +321,7 @@ begin
         29:
         TmpStr:=DBEngineType;
         30:
-        TmpStr:=EvalResultScript;
+        TmpStr:=ApplicationName;  // '_APPNAME_'
         31:
         TmpStr:=GPT.DCLUserName;
         32:
@@ -362,8 +362,6 @@ begin
         TmpStr:=GetUserDocumentsDir; // '_USERDOC_'
         49:
         TmpStr:=GPT.IniFileName; // _DCLINI_
-        50:
-        TmpStr:=ApplicationName;  // '_APPNAME_'
         end;
 
         VarNameLength:=Length(SysVarsSet[FindSysVarNum]);

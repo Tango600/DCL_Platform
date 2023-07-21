@@ -11,7 +11,6 @@ var
   GPT: TGPT;
   ConnectErrorCode: Byte;
   Path, AppConfigDir, UserProfileDir: string;
-  EvalResultScript: string;
   FormsNotifier: TDCLFormsNotifier;
 
 implementation
