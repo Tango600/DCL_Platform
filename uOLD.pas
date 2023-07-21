@@ -2533,32 +2533,6 @@ begin
               FreeAndNil(tmpDCL);
             end;
 
-            If PosEx('ExecVBS=', ScrStr)=1 Then
-            begin
-              tmpDCL:=TStringList.Create;
-
-              TmpStr:=FindParam('ExecVBS=', ScrStr);
-              DCLQuery.Close;
-              DCLQuery.SQL.Text:='select Count(*) from '+GPT.DCLTable+' where '+GPT.UpperString+
-                GPT.DCLNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+TmpStr+
-                GPT.StringTypeChar+GPT.UpperStringEnd;
-              DCLQuery.Open;
-              RecCount:=DCLQuery.Fields[0].AsInteger;
-              If RecCount=1 Then
-              begin
-                DCLQuery.Close;
-                DCLQuery.SQL.Text:='select '+GPT.DCLTextField+' from '+GPT.DCLTable+' where '+
-                  GPT.UpperString+GPT.DCLNameField+GPT.UpperStringEnd+'='+GPT.UpperString+
-                  GPT.StringTypeChar+TmpStr+GPT.StringTypeChar+GPT.UpperStringEnd;
-                DCLQuery.Open;
-                TmpStr:=DCLQuery.FieldByName(GPT.DCLTextField).AsString;
-                If Assigned(FDCLForm) then
-                  TranslateVals(TmpStr, FDCLForm.CurrentGridIndex.FQuery);
-                ExecVBS(TmpStr);
-              end;
-              FreeAndNil(tmpDCL);
-            end;
-
           end
           Else
           begin
@@ -2917,56 +2891,11 @@ begin
 end;
 
 procedure TDCLLogOn.ExecShellCommand(ShellCommandText: String);
-var
-  Bat: TStringList;
-  sBAT: String;
 begin
-  Bat:=TStringList.Create;
-  Bat.Text:=ShellCommandText;
-  If Bat.Count>0 Then
-  begin
-    If PosEx('script type=ShellCommand', Bat[0])<>0 Then
-      Bat.Delete(0);
-  end;
-  If Bat.Count>0 Then
-  begin
-{$IFDEF UNIX}
-    Bat.Insert(0, '#/bin/sh');
-{$ENDIF}
-    sBAT:=Bat.Text;
-    RePlaseVariables('', sBAT);
-    Bat.Text:=sBAT;
-    Bat.SaveToFile(IncludeTrailingPathDelimiter(AppConfigDir)+'$Batch$.bat');
-{$IFDEF UNIX}
-    fpChmod(IncludeTrailingPathDelimiter(AppConfigDir)+'$Batch$.bat', &777);
-{$ENDIF}
-    ExecAndWait(PChar(IncludeTrailingPathDelimiter(AppConfigDir)+'$Batch$.bat'), SW_SHOWNORMAL, True);
-    If FileExists(IncludeTrailingPathDelimiter(AppConfigDir)+'$Batch$.bat') Then
-      DeleteFile(PChar(IncludeTrailingPathDelimiter(AppConfigDir)+'$Batch$.bat'));
-  end;
-
-  FreeAndNil(Bat);
 end;
 
 procedure TDCLLogOn.ExecVBS(VBSScript: String);
-var
-  VBSText: TStringList;
-  tmpVBSText: String;
 begin
-  VBSText:=TStringList.Create;
-  VBSText.Text:=VBSScript;
-  If VBSText.Count>0 Then
-  begin
-    If PosEx('script type=VBScript', VBSText[0])<>0 Then
-      VBSText.Delete(0);
-  end;
-  If VBSText.Count>0 Then
-  begin
-    tmpVBSText:=VBSText.Text;
-    RePlaseVariables('', tmpVBSText);
-    ExecuteStatement(tmpVBSText);
-  end;
-  FreeAndNil(VBSText);
 end;
 
 procedure TDCLLogOn.ExtractScriptFile(FileName: String);
@@ -3364,48 +3293,7 @@ begin
 end;
 
 procedure TDCLMainMenu.ChoseRunType(Command, DCLText, Name: String; Order: Byte);
-var
-  DCL: TStringList;
 begin
-  if not Assigned(FDCLLogOn) then
-    Exit;
-
-  If FDCLLogOn.RoleOK<>lsLogonOK Then
-    Exit;
-  DCL:=TStringList.Create;
-
-  If (Trim(Command)<>'')and(Order<>0) Then
-    ExecCommand(TrimRight(Command))
-  Else
-  begin
-    DCL.Text:=DCLText;
-    If (DCLText<>'') and (Order<>0) Then
-    Begin
-      If FindParam('script type=', LowerCase(DCL[0]))='command' Then
-        ExecCommand(DCLText)
-      Else
-        If (Trim(Command)<>'') and (Order=1) Then
-          ExecCommand(TrimRight(Command))
-        Else
-          ExecCommand(DCLText);
-
-      If LowerCase(FindParam('script type=', LowerCase(DCL[0])))=LowerCase('ShellCommand') Then
-        FDCLLogOn.ExecShellCommand(DCLText)
-      Else If LowerCase(FindParam('script type=', LowerCase(DCL[0])))=LowerCase('VBScript') Then
-        FDCLLogOn.ExecVBS(DCLText);
-    End
-    Else
-      If Order=0 Then
-      Begin
-        If FindParam('script type=', LowerCase(DCL[0]))='command' Then
-          ExecCommand(DCLText)
-        Else
-          FDCLLogOn.CreateForm(TrimRight(Name), nil, nil, nil, nil, nil, False, chmNone);
-      End
-      Else
-        ExecCommand(DCLText);
-  end;
-  FreeAndNil(DCL);
 end;
 
 procedure TDCLMainMenu.ClickMenu(Sender: TObject);
@@ -3889,105 +3777,11 @@ begin
 end;
 
 procedure TDCLGrid.ContextListChange(Sender: TObject);
-var
-  ComboNum: Integer;
-  Combo: TComboBox;
-  tmpQuery: TDCLDialogQuery;
 begin
-  ComboNum:=(Sender as TComponent).Tag;
-  Combo:=(Sender as TComboBox);
-  If Trim(Combo.Text)<>'' Then
-  begin
-    tmpQuery:=TDCLDialogQuery.Create(nil);
-    tmpQuery.Name:='tmpContextListQ_'+IntToStr(UpTime);
-    FDCLLogOn.SetDBName(tmpQuery);
-
-    If ContextLists[ComboNum].Table<>'' Then
-      tmpQuery.SQL.Text:='select '+ContextLists[ComboNum].KeyField+' from '+ContextLists[ComboNum]
-        .Table+' where '+ContextLists[ComboNum].Field+'='+GPT.StringTypeChar+Combo.Text+
-        GPT.StringTypeChar
-    Else
-    begin
-      If PosEx(' where ', ContextLists[ComboNum].SQL)<>0 Then
-        tmpQuery.SQL.Text:=ContextLists[ComboNum].SQL+' and '+ContextLists[ComboNum].Field+'='+
-          GPT.StringTypeChar+Combo.Text+GPT.StringTypeChar
-      Else
-        tmpQuery.SQL.Text:=ContextLists[ComboNum].SQL+' where '+ContextLists[ComboNum].Field+'='+
-          GPT.StringTypeChar+Combo.Text+GPT.StringTypeChar;
-    end;
-
-    tmpQuery.Open;
-
-    If Not tmpQuery.IsEmpty Then
-    begin
-      if not ContextLists[ComboNum].NoData and FQuery.CanModify then
-      begin
-        If (FQuery.State=dsBrowse) Then
-          FQuery.Edit;
-        FQuery.FieldByName(ContextLists[ComboNum].DataField).AsInteger:=
-          tmpQuery.FieldByName(ContextLists[ComboNum].KeyField).AsInteger;
-      end;
-      if FDCLLogOn.Variables.Exists(GetNamespace, ContextLists[ComboNum].Variable) then
-      begin
-        FDCLLogOn.Variables.Variables[GetNamespace, ContextLists[ComboNum].Variable]:=tmpQuery.FieldByName(ContextLists[ComboNum].KeyField).AsString;
-      end;
-    end;
-    tmpQuery.Close;
-    FreeAndNil(tmpQuery);
-  end;
 end;
 
 procedure TDCLGrid.ContextListKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-var
-  ComboNum: Integer;
-  tmpQuery: TDCLDialogQuery;
-  Combo: TComboBox;
 begin
-  ComboNum:=(Sender as TComponent).Tag;
-  Combo:=(Sender as TComboBox);
-  If (Key=13)and(Shift=[ssCtrl]) Then
-    If Combo.Text<>'' Then
-    begin
-      tmpQuery:=TDCLDialogQuery.Create(nil);
-      tmpQuery.Name:='ContextListKeyDown_'+IntToStr(UpTime);
-      FDCLLogOn.SetDBName(tmpQuery);
-      tmpQuery.SQL.Text:='select '+ContextLists[ComboNum].Field+', '+ContextLists[ComboNum].KeyField
-        +' from '+ContextLists[ComboNum].Table+' where '+GPT.UpperString+ContextLists[ComboNum]
-        .Field+GPT.UpperStringEnd+' like '+GPT.UpperString+GPT.StringTypeChar+'%'+Combo.Text+'%'+
-        GPT.StringTypeChar+') ';
-      tmpQuery.Open;
-      tmpQuery.Last;
-      tmpQuery.First;
-
-      Combo.Items.Clear;
-
-      If tmpQuery.RecordCount=1 Then
-      begin
-        if FieldExists(ContextLists[ComboNum].DataField, FQuery) then
-        begin
-          Combo.Text:=Trim(tmpQuery.FieldByName(ContextLists[ComboNum].Field).AsString);
-          If (FQuery.Active and FQuery.CanModify and (FQuery.State=dsBrowse)) Then
-          begin
-            FQuery.Edit;
-            FQuery.FieldByName(ContextLists[ComboNum].DataField).AsInteger:=
-              tmpQuery.FieldByName(ContextLists[ComboNum].KeyField).AsInteger;
-          end;
-        end;
-      end;
-      While Not tmpQuery.Eof do
-      begin
-        If Trim(tmpQuery.FieldByName(ContextLists[ComboNum].Field).AsString)<>'' Then
-          Combo.Items.Append(Trim(tmpQuery.FieldByName(ContextLists[ComboNum].Field).AsString));
-        tmpQuery.Next;
-      end;
-      tmpQuery.Close;
-      FreeAndNil(tmpQuery);
-
-{$IFDEF MSWINDOWS}
-      If SendMessage(Combo.Handle, CB_GETDROPPEDSTATE, 0, 0)<>1 Then
-        SendMessage(Combo.Handle, CB_SHOWDROPDOWN, 1, 0);
-{$ENDIF}
-    end;
 end;
 
 constructor TDCLGrid.Create(var Form: TDCLForm; Parent: TWinControl; SurfType: TDataControlType;
@@ -4394,30 +4188,6 @@ end;
 
 procedure TDCLGrid.SetDataStatus(Status: TDataStatus);
 begin
-  Case Status of
-  dssChanged:
-  begin
-    If Assigned(FDCLForm.ParentForm) Then
-    begin
-      FDCLForm.ParentForm.SetDBStatus(GetDCLMessageString(msModified));
-      BaseChanged:=True;
-    end;
-
-    FDCLForm.SetDBStatus(GetDCLMessageString(msModified));
-    BaseChanged:=True;
-  end;
-  dssSaved:
-  begin
-    If Assigned(FDCLForm.ParentForm) Then
-    begin
-      FDCLForm.ParentForm.SetDBStatus('');
-      BaseChanged:=False;
-    end;
-
-    FDCLForm.SetDBStatus('');
-    BaseChanged:=False;
-  end;
-  end;
 end;
 
 procedure TDCLGrid.SetDisplayMode(DisplayMode: TDataControlType);
@@ -4494,12 +4264,6 @@ var
       end;
     end;
 
-    If (KeyMarks.KeyField<>'')and FieldExists(KeyMarks.KeyField, FQuery) Then
-    begin
-      AddPopupMenuItem('-', 'Separator3', nil, '', 0, '');
-      AddPopupMenuItem(InitCap(GetDCLMessageString(msBookmark)), 'GetBookMark',
-        SetBookMark, 'Ctrl+B', 0, 'BookMark');
-    end;
   end;
 
 begin
@@ -4555,27 +4319,10 @@ end;
 
 procedure TMainFormAction.CloseMainForm(Sender: TObject; var Action: TCloseAction);
 begin
-  If Assigned(DCLMainLogOn) then
-  Begin
-    SaveMainFormPos(DCLMainLogOn, DCLMainLogOn.MainForm, MainFormName);
-
-    EndDCL;
-  End;
 end;
 
 procedure TMainFormAction.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-  CanClose:=False;
-  If (Not GPT.ExitCnf)and(Not DownLoadProcess) Then
-    CanClose:=True;
-  If (GPT.ExitCnf)and(Not DownLoadProcess) Then
-    If ShowErrorMessage(10, GetDCLMessageString(msDoYouWontTerminateApplicationQ))=1 Then
-      CanClose:=True;
-
-  If DownLoadProcess Then
-    If ShowErrorMessage(10, GetDCLMessageString(msDownloadInProgress)+'. '+
-          GetDCLMessageString(msDoYouWontTerminateApplicationQ))=1 Then
-      CanClose:=True;
 end;
 
 { TPrintBase }
@@ -4722,12 +4469,6 @@ end;
 
 procedure EndDCL;
 begin
-  If Assigned(DCLMainLogOn) Then
-  begin
-    DCLMainLogOn.CloseAllForms;
-    DisconnectDB;
-    FreeAndNil(DCLMainLogOn);
-  end;
 
 {$IFDEF ADO}{$IFNDEF EMBEDDED}
   CoUninitialize;

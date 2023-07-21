@@ -432,8 +432,6 @@ begin
 
   AddMainItem(InitCap(GetDCLMessageString(msSettings)), nil);
   AddSubItem(GetDCLMessageString(msResetFieldsSettings), ptNone, ResetFieldsSettings);
-  //AddSubItem(GetDCLMessageString(msResetAllFieldsSettings), ptNone, ResetAllFieldsSettings);
-  //AddSubItem(GetDCLMessageString(msDeleteAllBookmarks), ptNone, DeleteAllBookmarks);
 
   AddSplitter;
   AddCloseFormItem;

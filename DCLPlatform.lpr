@@ -19,7 +19,7 @@ uses
   cNoScrollBarDBGrid, cMediaFieldGroup, uDCLDataStorage, uDCLOfficeTextReport,
   uDCLOfficeSheetReport, uDCLTextReport, uSheetOfficeReportSelector,
   uDCLBaseOfficeReport, uTextOfficeReportSelector, uOfficeReportBaseSelector,
-  uRunProgram, uPrintBase, uDCLFormsNotifier, uWindowsScript,
+  uRunProgram, uPrintBase, uDCLFormsNotifier,
   fChangePasswordForm, fAbout, uDCLQueryUtils
   ;
 
