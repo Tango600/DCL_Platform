@@ -42,7 +42,7 @@ const
 {$IFDEF SQLdb}
   DBEngineType='SQLdb (Universal)';
 {$ENDIF}
-  Version='12.0.0.0';
+  Version='12.0.0.01';
 
   JPEGCompressionQuality=85;
 
@@ -55,8 +55,6 @@ const
 
   DBTypeFirebird='firebird';
   DBTypeInterbase='interbase';
-
-  ScriptControlLanguage='VBScript';
 
   UserLevelsSet='ulDeny,ulReadOnly,ulWrite,ulExecute,ulLevel,ulDeveloper';
 
