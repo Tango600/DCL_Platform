@@ -19,7 +19,7 @@ type
     FVariables: TVariables;
     FDBConnector: TDCLDBConnector;
     FDCLMenu: TDCLMenu;
-    LocalQuery: TDCLDialogQuery;
+    LocalQuery: TDCLSimlyQuery;
     KillerDog: TTimer;
     FBusyMode: Boolean;
 
@@ -201,7 +201,7 @@ begin
   FDBConnector:=TDCLDBConnector.Create;
   FDCLConfig.DBConnector:=FDBConnector;
 
-  LocalQuery:=TDCLDialogQuery.Create(Self);
+  LocalQuery:=TDCLSimlyQuery.Create(Self);
   FDBConnector.SetConnector(LocalQuery);
 
   KillerDog:=TTimer.Create(Self);

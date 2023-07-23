@@ -9,7 +9,6 @@ uses
 
 var
   GPT: TGPT;
-  ConnectErrorCode: Byte;
   Path, AppConfigDir, UserProfileDir: string;
   FormsNotifier: TDCLFormsNotifier;
 

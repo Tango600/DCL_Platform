@@ -4,13 +4,13 @@ unit uDCLDBConnector;
 interface
 
 uses
-  Classes, SysUtils, DB, Forms,
+  Classes, SysUtils, Forms,
   {$IFDEF ADO}
     ActiveX, ADODB, ADOConst, ADOInt,
   {$ENDIF}
   {$IFDEF FPC}
     {$IFDEF IBX}
-      IB, IBDatabase, IBTable, IBCustomDataSet, IBHeader, IBSQL, IBQuery,
+      IB, IBDatabase, IBCustomDataSet,
     {$ENDIF}
   {$ELSE}
     {$IFDEF IBX}
@@ -19,7 +19,7 @@ uses
     {$ENDIF}
   {$ENDIF}
   {$IFDEF ZEOS}
-    ZDbcIntfs, // ZConnection, ZDataset, ZSqlUpdate,
+    ZDbcIntfs,
   {$ENDIF}
   {$IFDEF SQLdbFamily}
     SQLDB, SQLDBLib,
@@ -34,12 +34,15 @@ type
 
   TDCLDBConnector=class(TDBConnector)
   private
-    FErrorCode, ConnectErrorCode: Integer;
-{$IFDEF FPC}{$IFDEF SQLdbFamily}
+    FErrorCode: Integer;
+{$IFDEF SQLdbFamily}
     FSQLDBLibraryLoader: TSQLDBLibraryLoader;
-{$ENDIF}{$ENDIF}
+{$ENDIF}
 {$IFDEF TRANSACTIONDB}
-    IBTransaction: TTransaction;
+    UniversalTransaction: TTransaction;
+{$ENDIF}
+{$IFDEF ZEOS}
+    WriteTransaction: TTransaction;
 {$ENDIF}
     ///SQLMon: TDCLSQLMon;
     function GetDatabaseObject: TDatabaseObject;
@@ -47,9 +50,6 @@ type
     constructor Create; overload;
 
     procedure SetConnector(Query: TDCLDialogQuery);
-    {$IFDEF TRANSACTIONDB}
-    function NewTransaction(RW:TTransactionType): TTransaction;
-    {$ENDIF}
 
     property DatabaseObject: TDatabaseObject read GetDatabaseObject;
     property ErrorCode: Integer read FErrorCode;
@@ -59,7 +59,10 @@ type
 implementation
 
 uses
-  uDCLGlobalVariables;
+  {$IFDEF TRANSACTIONDB}
+  uDCLDBTransaction,
+  {$ENDIF}
+  uDCLGlobalVariables, uStringParams;
 
 { TDCLDBConnector }
 
@@ -99,24 +102,17 @@ begin
         If FDBLogOn.Properties.Count>0 Then
           FDBLogOn.Open;
         Result:=0;
-        ConnectErrorCode:=0;
       Except
         On E: Exception do
         begin
           DebugProc('  ... Fail');
-          ConnectErrorCode:=255;
-          ShowErrorMessage(0, GetDCLMessageString(msConnectDBError)+' 0000 / '+
-                E.Message);
           FErrorCode:=255;
         end;
       end;
     end
     Else
     begin
-      ConnectErrorCode:=255;
-      Result:=255;
-      ShowErrorMessage(0, GetDCLMessageString(msConnectionStringIncorrect)+
-            ' 0100');
+      FErrorCode:=255;
     end;
   {$ENDIF}
   {$IFDEF IBX}
@@ -125,20 +121,20 @@ begin
 
     If Not Assigned(DefaultTransaction) Then
     begin
-      IBTransaction:=TTransaction.Create(nil);
-      IBTransaction.Params.Clear;
-      IBTransaction.Params.Append('nowait');
-      IBTransaction.Params.Append('read_committed');
-      IBTransaction.Params.Append('rec_version');
-      IBTransaction.DefaultAction:=TACommit;
+      UniversalTransaction:=TTransaction.Create(Self);
+      UniversalTransaction.Params.Clear;
+      UniversalTransaction.Params.Append('nowait');
+      UniversalTransaction.Params.Append('read_committed');
+      UniversalTransaction.Params.Append('rec_version');
+      UniversalTransaction.DefaultAction:=TACommit;
       {$IFNDEF FPC}
-      IBTransaction.AllowAutoStart:=True;
+      UniversalTransaction.AllowAutoStart:=True;
       {$ENDIF}
-      IBTransaction.DefaultDataBase:=Self;
-      DefaultTransaction:=IBTransaction;
+      UniversalTransaction.DefaultDataBase:=Self;
+      DefaultTransaction:=UniversalTransaction;
     end
     Else
-      IBTransaction:=DefaultTransaction;
+      UniversalTransaction:=DefaultTransaction;
 
     If Not Connected Then
     begin
@@ -159,7 +155,6 @@ begin
         begin
           DebugProc('  DBPath: '+GPT.DBPath);
           DebugProc('UNC paths not supported.');
-          //ShowErrorMessage(0, 'UNC '+GetDCLMessageString(msPathsNotSupported)+'.');
           Exit;
         end;
 
@@ -195,18 +190,16 @@ begin
           DebugProc('Connected...');
           Open;
 
-          IBTransaction.DefaultAction:=TACommit; // Retaining;
-          IBTransaction.DefaultDataBase:=Self;
-          DefaultTransaction:=IBTransaction;
+          UniversalTransaction.DefaultAction:=TACommit; // Retaining;
+          UniversalTransaction.DefaultDataBase:=Self;
+          DefaultTransaction:=UniversalTransaction;
 
           DebugProc('  ... OK');
-          ConnectErrorCode:=0;
         Except
           On E: Exception do
           begin
             DebugProc('  ... Fail');
-            ConnectErrorCode:=255;
-            //ShowErrorMessage(0, GetDCLMessageString(msConnectDBError)+' 0000 / '+E.Message);
+            FErrorCode:=255;
           end;
         end;
       end;
@@ -217,7 +210,7 @@ begin
   {$IFDEF ZEOS}
     GPT.NewDBUserName:='';
 
-    If Not FDBLogOn.Connected Then
+    If Not Connected Then
     If GPT.DBPath<>'' Then
     begin
       If PosEx(DBTypeFirebird, GPT.DBType)>0 then
@@ -238,18 +231,16 @@ begin
       begin
         DebugProc('  DBPath: '+GPT.DBPath);
         DebugProc('UNC paths not supported.');
-        ShowErrorMessage(0, 'UNC '+GetDCLMessageString(msPathsNotSupported)+'.');
-        Result:=255;
+        FErrorCode:=255;
         Exit;
       end;
 
       GPT.NewDBUserName:='';
-      FDBLogOn.AutoEncodeStrings:=True;
-      FDBLogOn.TransactIsolationLevel:=tiReadCommitted;
-      FDBLogOn.AutoCommit:=True;
-      FDBLogOn.SQLHourGlass:=True;
+      TransactIsolationLevel:=tiReadCommitted;
+      AutoCommit:=True;
+      SQLHourGlass:=True;
 
-      FDBLogOn.Database:=GPT.DBPath;
+      Database:=GPT.DBPath;
       If GPT.ServerName<>'' Then
       begin
         If Pos('/', GPT.ServerName)<>0 Then
@@ -258,7 +249,7 @@ begin
               Length(GPT.ServerName)));
           Delete(GPT.ServerName, Pos('/', GPT.ServerName), Length(GPT.ServerName));
         end;
-        FDBLogOn.HostName:=GPT.ServerName;
+        HostName:=GPT.ServerName;
         If GPT.Port=0 Then
           GPT.Port:=DefaultIBPort;
         DebugProc('  DBPath: '+GPT.ServerName+':'+GPT.DBPath);
@@ -268,26 +259,26 @@ begin
         DebugProc('  DBPath: '+GPT.DBPath);
       end;
 
-      FDBLogOn.User:=GPT.DBUserName;
+      User:=GPT.DBUserName;
       DebugProc('  USER NAME='+GPT.DBUserName);
 
       If GPT.Port<>0 Then
-        FDBLogOn.Port:=GPT.Port;
+        Port:=GPT.Port;
 
       If GPT.DBPassword<>'' Then
       begin
         DebugProc('  Password=******');
-        FDBLogOn.Password:=GPT.DBPassword;
-        FDBLogOn.LoginPrompt:=False;
+        Password:=GPT.DBPassword;
+        LoginPrompt:=False;
       end
       Else
-        FDBLogOn.LoginPrompt:=True;
+        LoginPrompt:=True;
 
-      FDBLogOn.Protocol:=GPT.DBType;
+      Protocol:=GPT.DBType;
       If GPT.LibPath<>'' Then
-        FDBLogOn.LibraryLocation:=GPT.LibPath
+        LibraryLocation:=GPT.LibPath
       Else
-        FDBLogOn.LibraryLocation:=DefaultLibraryLocation;
+        LibraryLocation:=DefaultLibraryLocation;
 
   {$IFDEF FPC}
       GPT.ServerCodePage:=NormalizeEncoding(GPT.ServerCodePage);
@@ -297,21 +288,17 @@ begin
         raise Exception.Create('Server code page not define!');
       end
       Else
-        FDBLogOn.Properties.Append('lc_ctype='+UpperCase(GPT.ServerCodePage));
+        Properties.Append('lc_ctype='+UpperCase(GPT.ServerCodePage));
 
       try
         DebugProc('Connected...');
-        FDBLogOn.Connect;
+        Connect;
         DebugProc('  ... OK');
         FErrorCode:=0;
-        ConnectErrorCode:=0;
       Except
         On E: Exception do
         begin
           DebugProc('  ... Fail');
-          ConnectErrorCode:=255;
-          ShowErrorMessage(0, GetDCLMessageString(msConnectDBError)+' 0000 / '+
-                E.Message);
           FErrorCode:=255;
         end;
       end;
@@ -325,14 +312,14 @@ begin
       GPT.ServerCodePage:='utf8';
 
     GPT.IBAll:=True;
-    IBTransaction:=TTransaction.Create(Self);
-    IBTransaction.Params.Clear;
-    IBTransaction.Params.Append('nowait');
-    IBTransaction.Params.Append('read_committed');
-    IBTransaction.Params.Append('rec_version');
-    IBTransaction.Action:=caCommit;
-    IBTransaction.DataBase:=Self;
-    Transaction:=IBTransaction;
+    UniversalTransaction:=TTransaction.Create(Self);
+    UniversalTransaction.Params.Clear;
+    UniversalTransaction.Params.Append('nowait');
+    UniversalTransaction.Params.Append('read_committed');
+    UniversalTransaction.Params.Append('rec_version');
+    UniversalTransaction.Action:=caCommit;
+    UniversalTransaction.DataBase:=Self;
+    Transaction:=UniversalTransaction;
   // IBTransaction.Action:=TACommitRetaining;
 
     If GPT.LibPath<>'' Then
@@ -383,14 +370,10 @@ begin
           Open;
           DebugProc('  ... OK');
           FErrorCode:=0;
-          ConnectErrorCode:=0;
         Except
           On E: Exception do
           begin
             DebugProc('  ... Fail');
-            ConnectErrorCode:=255;
-            {ShowErrorMessage(0, GetDCLMessageString(msConnectDBError)+' 0000 / '+
-                  E.Message);}
             FErrorCode:=255;
           end;
         end;
@@ -401,7 +384,7 @@ begin
   {$ENDIF}
   {$IFDEF SQLdb}
     DebugProc('Creating Connection...');
-    FDBLogOn.Charset:='UTF8';
+    Charset:='UTF8';
 
     If PosEx(DBTypeFirebird, GPT.DBType)>0 then
     Begin
@@ -413,77 +396,81 @@ begin
       GPT.IBAll:=True;
       GPT.DBType:=DBTypeFirebird;
     End;
-    If Not Assigned(FDBLogOn.Transaction) Then
+    If Not Assigned(Transaction) Then
     Begin
-      IBTransaction:=TTransaction.Create(nil);
-      IBTransaction.Params.Clear;
-      IBTransaction.Params.Append('nowait');
-      IBTransaction.Params.Append('read_committed');
+      UniversalTransaction:=TTransaction.Create(Self);
+      UniversalTransaction.Params.Clear;
+      UniversalTransaction.Params.Append('nowait');
+      UniversalTransaction.Params.Append('read_committed');
       If GPT.IBAll then
-        IBTransaction.Params.Append('rec_version');
-      IBTransaction.Action:=caCommit;
-      IBTransaction.DataBase:=FDBLogOn;
-      FDBLogOn.Transaction:=IBTransaction;
+        UniversalTransaction.Params.Append('rec_version');
+      UniversalTransaction.Action:=caCommit;
+      UniversalTransaction.DataBase:=Self;
+      Transaction:=UniversalTransaction;
     End
     Else
-      IBTransaction:=FDBLogOn.Transaction;
+      UniversalTransaction:=Transaction;
 
-    If Not FDBLogOn.Connected Then
+    If GPT.LibPath<>'' Then
+    begin
+      FSQLDBLibraryLoader:=TSQLDBLibraryLoader.Create(Self);
+      FSQLDBLibraryLoader.ConnectionType:=GPT.DBType;
+      FSQLDBLibraryLoader.LibraryName:=GPT.LibPath;
+      FSQLDBLibraryLoader.Enabled:=True;
+    end;
+
+    If Not Connected Then
     begin
       If GPT.DBPath<>'' Then
       begin
         If Not IsFullPAth(GPT.DBPath) Then
           GPT.DBPath:=ExtractFilePath(Application.ExeName)+GPT.DBPath;
 
-        FDBLogOn.ConnectorType:=GPT.DBType;
+        ConnectorType:=GPT.DBType;
         If GPT.ServerName<>'' Then
         begin
-          FDBLogOn.DatabaseName:=GPT.DBPath;
-          FDBLogOn.HostName:=GPT.ServerName;
+          DatabaseName:=GPT.DBPath;
+          HostName:=GPT.ServerName;
           DebugProc('  DBPath: '+GPT.ServerName+':'+GPT.DBPath);
         end
         Else
         begin
-          FDBLogOn.DatabaseName:=GPT.DBPath;
-          FDBLogOn.HostName:='';
+          DatabaseName:=GPT.DBPath;
+          HostName:='';
           DebugProc('  DBPath: '+GPT.DBPath);
         end;
-        FDBLogOn.UserName:=GPT.DBUserName;
+        UserName:=GPT.DBUserName;
         DebugProc('  USER NAME='+GPT.DBUserName);
         If GPT.DBPassword<>'' Then
         begin
-          FDBLogOn.Password:=GPT.DBPassword;
-          FDBLogOn.LoginPrompt:=False;
+          Password:=GPT.DBPassword;
+          LoginPrompt:=False;
         end
         Else
-          FDBLogOn.LoginPrompt:=True;
+          LoginPrompt:=True;
 
         If GPT.ServerCodePage='' Then
-          FDBLogOn.Charset:='utf8'
+          Charset:='utf8'
         Else
-          FDBLogOn.Charset:=ReplaseCPtoWIN(GPT.ServerCodePage);
+          Charset:=ReplaseCPtoWIN(GPT.ServerCodePage);
 
-        IBTransaction.Database:=FDBLogOn;
+        UniversalTransaction.Database:=Self;
         try
           DebugProc('Connected...');
-          FDBLogOn.Open;
+          Open;
           DebugProc('  ... OK');
-          Result:=0;
-          ConnectErrorCode:=0;
+          FErrorCode:=0;
         Except
           On E: Exception do
           begin
             DebugProc('  ... Fail');
-            ConnectErrorCode:=255;
-            ShowErrorMessage(0, GetDCLMessageString(msConnectDBError)+' 0000 / '+
-                  E.Message);
-            Result:=255;
+            FErrorCode:=255;
           end;
         end;
       end;
     end
     else
-      Result:=0;
+      FErrorCode:=0;
   {$ENDIF}
 end;
 
@@ -496,7 +483,7 @@ begin
   Query.DataBase:=Self;
   {$ENDIF}
   {$IFDEF ZEOS}
-  Query.DataBase:=Self;
+  Query.Connection:=Self;
   {$ENDIF}
   {$IFDEF SQLdbFamily}
   Query.DataBase:=Self;
@@ -511,34 +498,54 @@ begin
   {$IFDEF IBXLaz}
   Query.AllowAutoActivateTransaction:=True;
   {$ENDIF}
+  {$IFDEF ZEOS}
+  Query.Transaction:=TDCLDBTransaction.Create(Self, trtRead);
+  Query.UpdateTransaction:=TDCLDBTransaction.Create(Self, trtWrite);
+  {$ENDIF}
   {$ENDIF}
 end;
 
-{$IFDEF TRANSACTIONDB}
+{$IFDEF TRANSACTIONDB11111}
 function TDCLDBConnector.NewTransaction(RW: TTransactionType): TTransaction;
+var
+  {$IFDEF ZEOS}
+  TrParams: TStrings;
+  {$ENDIF}
+  {$IFDEF SQLdbFamily}
+  TrParams: TStringList;
+  {$ENDIF}
+  {$IFDEF IBX}
+  TrParams: TStrings;
+  {$ENDIF}
 begin
   Result:=TTransaction.Create(Self);
   {$IFDEF IBX}
   Result.DefaultDatabase:=Self;
   Result.DefaultAction:=TACommit;
+  TrParams:=Result.Params;
   {$ENDIF}
   {$IFDEF SQLdbFamily}
   Result.Database:=Self;
   Result.Action:=caCommit;
   {$ENDIF}
-  Result.Params.Clear;
+  {$IFDEF ZEOS}
+  Result.Connection:=Self;
+  TrParams:=Result.Properties;
+  {$ENDIF}
+
+  TrParams.Clear;
   Case RW of
   trtWrite:Begin
-    Result.Params.Append('write');
+    TrParams.Append('write');
   End;
   trtRead:Begin
-    Result.Params.Append('read');
+    TrParams.Append('read');
   End;
   End;
-  Result.Params.Append('nowait');
-  Result.Params.Append('read_committed');
+  TrParams.Append('nowait');
+  TrParams.Append('read_committed');
   If GPT.IBAll then
-    Result.Params.Append('rec_version');
+    TrParams.Append('rec_version');
 end;
 {$ENDIF}
 

@@ -3128,7 +3128,7 @@ begin
         for i:=1 to FStructureList.Count do
         begin
           SF:=FStructureList.Items.Objects[i-1] as TStructureField;
-          if SF.FieldName.Equals(F.FieldName, True) then
+          if SF.FieldName.ToLower.Equals(F.FieldName.ToLower) then
           begin
             if FStructureList.Checked[i-1] and not IsGridColumnExists(F.FieldName) then
             begin
@@ -3140,7 +3140,7 @@ begin
               begin
                 for c:=1 to FDBGrid.Columns.Count do
                 begin
-                  if FDBGrid.Columns[c-1].FieldName.Equals(F.FieldName, True) then
+                  if FDBGrid.Columns[c-1].FieldName.ToLower.Equals(F.FieldName.ToLower) then
                   begin
                     FDBGrid.Columns[c-1].Free;
                     break;
@@ -3166,7 +3166,7 @@ begin
   Result:=False;
   for i:=1 to FDBGrid.Columns.Count do
   begin
-    if FDBGrid.Columns[i-1].FieldName.Equals(FieldName, True) then
+    if FDBGrid.Columns[i-1].FieldName.ToLower.Equals(FieldName.ToLower) then
     begin
       Result:=True;
       break;

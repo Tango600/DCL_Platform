@@ -1,6 +1,5 @@
 unit uDBUtils;
-
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 
@@ -105,7 +104,11 @@ var
 begin
   Result:=False;
   Tables:=TStringList.Create;
+  {$IFDEF ZEOS}
+  DBConnector.GetTableNames('', Tables);
+  {$ELSE}
   DBConnector.GetTableNames(Tables);
+  {$ENDIF}
   for t in Tables do
   begin
     If UpperCase(t)=UpperCase(TableName) then

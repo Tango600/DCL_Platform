@@ -59,7 +59,7 @@ implementation
 uses
   uSheetOfficeReportSelector, uTextOfficeReportSelector, uDCLGlobalVariables,
   uRunProgram, uDCLMessages, uDCLMultiLang, uSQLUtils, uSystemUtils, uDCLMain,
-  uDCLTextReport;
+  uDCLTextReport, uDCLDBTransaction;
 
 { TDCLCommand }
 
@@ -346,8 +346,8 @@ begin
       FDBConnector.SetConnector(DCLQuery);
 
       {$IFDEF TRANSACTIONDB}
-      tmp_Transaction:=FDBConnector.NewTransaction(trtWrite);
-      DCLQuery.Transaction:=tmp_Transaction;
+      tmp_Transaction:=TDCLDBTransaction.Create(FDBConnector, trtWrite);
+      //DCLQuery.Transaction:=tmp_Transaction;
       tmp_Transaction.StartTransaction;
       {$ENDIF}
 
@@ -450,13 +450,13 @@ begin
     {$IFDEF ADO}
     ADOCommand.CommandType:=cmdText;
     ADOCommand.CommandText:=SQLCommand;
-    ADOCommand.Connection:=FDCLLogOn.FDBLogOn;
+    ADOCommand.Connection:=FDBConnector;
     {$ELSE}
     ADOCommand.SQL.Text:=SQLCommand;
     FDBConnector.SetConnector(TDCLDialogQuery(ADOCommand));
     {$ENDIF}
     {$IFDEF TRANSACTIONDB}
-    tmp_Transaction:=FDBConnector.NewTransaction(trtWrite);
+    tmp_Transaction:=TDCLDBTransaction.Create(FDBConnector, trtWrite);
     ADOCommand.Transaction:=tmp_Transaction;
     tmp_Transaction.StartTransaction;
     {$ENDIF}

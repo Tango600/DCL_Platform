@@ -5,13 +5,13 @@ interface
 
 uses
   SysUtils, Classes, uStringParams,
-  Dialogs, StrUtils,
+  Dialogs, StrUtils, Generics.Collections,
 {$IFDEF ADO}
   WideStrings, ADODB, ADOConst, ADOInt,
 {$ENDIF}
 {$IFDEF FPC}
   {$IFDEF IBX}
-  IB, IBDatabase, IBTable, IBCustomDataSet, IBSQL, IBQuery,
+  IB, IBDatabase, IBCustomDataSet, IBQuery,
   uIBUpdateSQLW,
   {$ENDIF}
 {$ELSE}
@@ -26,7 +26,7 @@ uses
 {$IFDEF ZEOS}
   //ZConnection, ZDataset, ZSqlUpdate,
 {$ENDIF}
-  DB, uDCLTypes, uDCLData, uDCLConst, uDCLDBConnector;
+  DB, uDCLTypes, uDCLData, uDCLConst;
 
 const
   DisableControlsMode=False;
@@ -35,7 +35,7 @@ const
 type
   TUpdateKind=(ukAll, ukKeys);
   TOperationsTypes=Array of TNotAllowedOperation;
-  {$IFDEF UPDATESQLDB}
+  {$IFnDEF SELFUPDATESQL}
   TUpdateSQLObj=TUpdateObj;
   {$ELSE}
   TUpdateSQLObj=TDCLDialogQuery;
@@ -44,7 +44,6 @@ type
   { TDCLQuery }
   TDCLQuery=class(TDCLDialogQuery)
   private
-{$IFDEF UPDATESQLDB}
     ShadowQuery: TDCLSimlyQuery;
     {$IFnDEF SELFUPDATESQL}
     FUpdateSQL: TUpdateSQLObj;
@@ -54,8 +53,8 @@ type
     {$IFDEF TRANSACTIONDB}
     ShadowTransaction: TTransaction;
     {$ENDIF}
-{$ENDIF}
-    FMainTable, FKeyField: string;
+
+    FMainTable, FKeyField, FKeyFields: string;
     FAfterPost, FAfterCancel, FAfterOpen, FBeforePost, FBeforeInsert, FAfterDelete,
       FAfterInsert: TDataSetNotifyEvent;
     FNotAllowOperations: TOperationsTypes;
@@ -65,10 +64,6 @@ type
     FieldsDefs:Array of TField;
     {$ENDIF}
     FDBConnector: TDBConnector;
-
-    {$IFDEF TRANSACTIONDB}
-    function CreateTR(RW:TTransactionType):TTransaction;
-    {$ENDIF}
 
     function GetPrimaryKeyField(TableName: String; OneField: Boolean): string;
     function GetMainQueryTable: string;
@@ -111,6 +106,7 @@ type
     function GetConnector: TDatabaseObject;
 
     procedure SetDCLDBConnector(Query: TDCLSimlyQuery);
+    function GetConnector(Query: TDCLSimlyQuery): TDatabaseObject; overload;
   public
     constructor Create(DatabaseObj: TDBConnector); overload;
     constructor Create(AOwner : TComponent); override;
@@ -152,7 +148,7 @@ type
 implementation
 
 uses
-  uDCLGlobalVariables;
+  uDCLDBTransaction, uDCLGlobalVariables, Variants;
 
 { TDCLQuery }
 
@@ -376,7 +372,7 @@ begin
   Database:=DatabaseObj;
 {$ENDIF}
 {$IFDEF TRANSACTIONDB}
-  Transaction:=CreateTR(trtWrite);
+  Transaction:=TDCLDBTransaction.Create(GetConnector, trtWrite);
 {$ENDIF}
   inherited AfterDelete:=AfterDeleteData;
   inherited AfterInsert:=AfterInsertData;
@@ -385,10 +381,10 @@ begin
   inherited AfterOpen:=AfterOpenData;
   inherited BeforePost:=BeforePostData;
   inherited BeforeInsert:=BeforeInsertData;
-{$IFDEF UPDATESQLDB}
+
   ShadowQuery:=TDCLDialogQuery.Create(Self);
 {$IFDEF TRANSACTIONDB}
-  ShadowTransaction:=CreateTR(trtWrite);
+  ShadowTransaction:=TDCLDBTransaction.Create(GetConnector, trtWrite);
   ShadowQuery.Transaction:=Transaction;
 {$ENDIF}
 {$IFDEF ZEOS}
@@ -404,7 +400,6 @@ begin
 {$ENDIF}
 {$IFDEF SQLdbFamily}
   ShadowQuery.Database:=DatabaseObj;
-{$ENDIF}
 {$ENDIF}
 end;
 
@@ -424,7 +419,7 @@ begin
   {$ENDIF}
 {$ENDIF}
 {$IFDEF TRANSACTIONDB}
-  Transaction:=CreateTR(trtWrite);
+  Transaction:=TDCLDBTransaction.Create(GetConnector, trtWrite);
 {$ENDIF}
   inherited AfterDelete:=AfterDeleteData;
   inherited AfterInsert:=AfterInsertData;
@@ -433,10 +428,10 @@ begin
   inherited AfterOpen:=AfterOpenData;
   inherited BeforePost:=BeforePostData;
   inherited BeforeInsert:=BeforeInsertData;
-{$IFDEF UPDATESQLDB}
+
   ShadowQuery:=TDCLSimlyQuery.Create(Self);
 {$IFDEF TRANSACTIONDB}
-  ShadowTransaction:=CreateTR(trtWrite);
+  ShadowTransaction:=TDCLDBTransaction.Create(GetConnector, trtWrite);
   ShadowQuery.Transaction:=Transaction;
 {$ENDIF}
 {$IFDEF IBX}
@@ -445,16 +440,15 @@ begin
   ShadowQuery.AutoCommit:=acCommitRetaining;
   {$ENDIF}
 {$ENDIF}
-{$ENDIF}
 end;
 
 procedure TDCLQuery.FillDatasetUpdateSQL(KeyField, TableName: String;
   ToOpen: Boolean);
 var
-  UpdatesFieldsSet, KeyFieldsSet, TextSQLSel: String;
-  updateSQL, insertSQL, deleteSQL, refreshSQL: TStringList;
+  UpdatesFieldsSet, KeyFieldsSet, TextSQLSel, FieldN: String;
+  lUpdateSQL, lInsertSQL, lDeleteSQL, lRefreshSQL: String;
   v1, v2: Integer;
-  KeyFields, UpdateFields: Array of String;
+  KeyFields, UpdateFields: TList<String>;
   UpdateKind:TUpdateKind;
 Begin
   If TableName<>'' Then
@@ -468,7 +462,7 @@ Begin
     If Active Then
       Properties['Unique Table'].Value:=TableName;
 {$ENDIF}
-{$IFDEF UPDATESQLDB}
+
     If KeyField<>'' then
     Begin
       FKeyField:=KeyField;
@@ -495,20 +489,22 @@ Begin
       UpdateObject:=FUpdateSQL;
       {$ENDIF}
 
-      updateSQL:=TStringList.Create;
-      insertSQL:=TStringList.Create;
-      deleteSQL:=TStringList.Create;
-      refreshSQL:=TStringList.Create;
+      lUpdateSQL:='';
+      lInsertSQL:='';
+      lDeleteSQL:='';
+      lRefreshSQL:='';
 
       ShadowQuery.SQL.Text:='select * from '+TableName+' where 1=0';
       ShadowQuery.Open;
 
+      KeyFields:=TList<String>.Create;
+      UpdateFields:=TList<String>.Create;
+
       If KeyField='' then
       Begin
         UpdateKind:=ukAll;
-        SetLength(KeyFields, ShadowQuery.FieldCount);
         For v1:=1 to ShadowQuery.FieldCount do
-          KeyFields[v1-1]:=LowerCase(ShadowQuery.Fields[v1-1].FieldName);
+          KeyFields.Add(LowerCase(ShadowQuery.Fields[v1-1].FieldName));
       End
       Else
       Begin
@@ -516,111 +512,111 @@ Begin
         UpdateKind:=ukKeys;
         If v1>1 then
         Begin
-          SetLength(KeyFields, v1);
           For v2:=1 to v1 do
           Begin
-            KeyFields[v2-1]:=LowerCase(GetParam(KeyField, v2));
+            KeyFields.Add(LowerCase(GetParam(KeyField, v2)));
           End;
         End
         Else
         Begin
-          SetLength(KeyFields, 1);
-          KeyFields[0]:=LowerCase(KeyField);
+          KeyFields.Add(LowerCase(KeyField));
         end;
       End;
 
-      SetLength(UpdateFields, ShadowQuery.FieldCount);
       For v1:=1 to ShadowQuery.FieldCount do
-        UpdateFields[v1-1]:=LowerCase(ShadowQuery.Fields[v1-1].FieldName);
+        UpdateFields.Add(LowerCase(ShadowQuery.Fields[v1-1].FieldName));
 
       ShadowQuery.Close;
 
       UpdatesFieldsSet:='';
-      For v1:=1 to Length(UpdateFields) do
+      For FieldN in UpdateFields do
         If UpdateKind=ukKeys then
         Begin
-          If not MatchStr(UpdateFields[v1-1], KeyFields) then
-            UpdatesFieldsSet:=UpdatesFieldsSet+UpdateFields[v1-1]+'=:'+UpdateFields[v1-1]+',';
+          if not KeyFields.Contains(FieldN) then
+          //If not MatchStr(FieldN, KeyFields) then
+            UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+'=:'+FieldN+',';
         End
         Else
-          UpdatesFieldsSet:=UpdatesFieldsSet+UpdateFields[v1-1]+'=:'+UpdateFields[v1-1]+',';
+          UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+'=:'+FieldN+',';
 
       If UpdatesFieldsSet<>'' then
         System.Delete(UpdatesFieldsSet, Length(UpdatesFieldsSet), 1);
 
       KeyFieldsSet:='';
-      For v1:=1 to Length(KeyFields) do
-        KeyFieldsSet:=KeyFieldsSet+KeyFields[v1-1]+'=:OLD_'+KeyFields[v1-1]+' and ';
+      For FieldN in KeyFields do
+        KeyFieldsSet:=KeyFieldsSet+FieldN+'=:OLD_'+FieldN+' and ';
       If KeyFieldsSet<>'' then
         System.Delete(KeyFieldsSet, Length(KeyFieldsSet)-4, 4);
 
       If not FindNotAllowedOperation(dsoEdit) then
-        updateSQL.Text:='update '+TableName+' set '+UpdatesFieldsSet+' where '+
+        lUpdateSQL:='update '+TableName+' set '+UpdatesFieldsSet+' where '+
           KeyFieldsSet;
 
       UpdatesFieldsSet:='';
-      For v1:=1 To Length(UpdateFields) Do
+      For FieldN in UpdateFields Do
         If UpdateKind=ukKeys then
         begin
-          If not MatchStr(UpdateFields[v1-1], KeyFields) then
-            UpdatesFieldsSet:=UpdatesFieldsSet+UpdateFields[v1-1]+',';
+          if not KeyFields.Contains(FieldN) then
+          //If not MatchStr(UpdateFields[v1-1], KeyFields) then
+            UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+',';
         End
         Else
-          UpdatesFieldsSet:=UpdatesFieldsSet+UpdateFields[v1-1]+',';
+          UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+',';
 
       If UpdatesFieldsSet<>'' then
         System.Delete(UpdatesFieldsSet, Length(UpdatesFieldsSet), 1);
 
       KeyFieldsSet:='';
-      For v1:=1 To Length(UpdateFields) Do
+      For FieldN in UpdateFields Do
       If UpdateKind=ukKeys then
         begin
-          If not MatchStr(UpdateFields[v1-1], KeyFields) then
-            KeyFieldsSet:=KeyFieldsSet+':'+UpdateFields[v1-1]+',';
+          if not KeyFields.Contains(FieldN) then
+          //If not MatchStr(UpdateFields[v1-1], KeyFields) then
+            KeyFieldsSet:=KeyFieldsSet+':'+FieldN+',';
         End
         Else
-          KeyFieldsSet:=KeyFieldsSet+':'+UpdateFields[v1-1]+',';
+          KeyFieldsSet:=KeyFieldsSet+':'+FieldN+',';
 
       If KeyFieldsSet<>'' then
         System.Delete(KeyFieldsSet, Length(KeyFieldsSet), 1);
 
       If not FindNotAllowedOperation(dsoInsert) then
-        insertSQL.Text:='insert into '+TableName+'('+UpdatesFieldsSet+') values('+
+        lInsertSQL:='insert into '+TableName+'('+UpdatesFieldsSet+') values('+
           KeyFieldsSet+')';
 
       KeyFieldsSet:='';
-      For v1:=1 To Length(KeyFields) Do
-          KeyFieldsSet:=KeyFieldsSet+KeyFields[v1-1]+'=:OLD_'+KeyFields[v1-1]+' and ';
+      For FieldN in KeyFields do
+          KeyFieldsSet:=KeyFieldsSet+FieldN+'=:OLD_'+FieldN+' and ';
 
       If KeyFieldsSet<>'' then
         System.Delete(KeyFieldsSet, Length(KeyFieldsSet)-4, 4);
 
       If not FindNotAllowedOperation(dsoDelete) then
-        deleteSQL.Text:='delete from '+TableName+' where '+KeyFieldsSet;
+        lDeleteSQL:='delete from '+TableName+' where '+KeyFieldsSet;
 
       {$IFDEF REFRESHSQLDB}
       KeyFieldsSet:='';
-      For v1:=1 To Length(KeyFields) Do
-        KeyFieldsSet:=KeyFieldsSet+KeyFields[v1-1]+'=:'+KeyFields[v1-1]+' and ';
+      For FieldN in KeyFields do
+        KeyFieldsSet:=KeyFieldsSet+FieldN+'=:'+FieldN+' and ';
       If KeyFieldsSet<>'' then
         System.Delete(KeyFieldsSet, Length(KeyFieldsSet)-4, 5);
 
-      refreshSQL.Text:='select * from '+TableName+' where '+KeyFieldsSet;
-      if FUpdateSQL.RefreshSQL.Text<>refreshSQL.Text then
-        FUpdateSQL.RefreshSQL.Text:=refreshSQL.Text;
+      lRefreshSQL:='select * from '+TableName+' where '+KeyFieldsSet;
+      if FUpdateSQL.RefreshSQL.Text<>lRefreshSQL then
+        FUpdateSQL.RefreshSQL.Text:=lRefreshSQL;
       {$ENDIF}
 
-      if FUpdateSQL.{$IFNDEF SQLdbFamily}ModifySQL{$ELSE}UpdateSQL{$ENDIF}.Text<>updateSQL.Text then
-        FUpdateSQL.{$IFNDEF SQLdbFamily}ModifySQL{$ELSE}UpdateSQL{$ENDIF}.Text:=updateSQL.Text;
+      if FUpdateSQL.{$IFNDEF SQLdbFamily}ModifySQL{$ELSE}UpdateSQL{$ENDIF}.Text<>lUpdateSQL then
+        FUpdateSQL.{$IFNDEF SQLdbFamily}ModifySQL{$ELSE}UpdateSQL{$ENDIF}.Text:=lUpdateSQL;
 
-      if FUpdateSQL.InsertSQL.Text<>insertSQL.Text then
-        FUpdateSQL.InsertSQL.Text:=insertSQL.Text;
+      if FUpdateSQL.InsertSQL.Text<>lInsertSQL then
+        FUpdateSQL.InsertSQL.Text:=lInsertSQL;
 
-      if FUpdateSQL.DeleteSQL.Text<>deleteSQL.Text then
-        FUpdateSQL.DeleteSQL.Text:=deleteSQL.Text;
+      if FUpdateSQL.DeleteSQL.Text<>lDeleteSQL then
+        FUpdateSQL.DeleteSQL.Text:=lDeleteSQL;
 
       // Query.FieldList.Update;
-      TextSQLSel:=SQL.Text;
+      TextSQLSel:=inherited SQL.Text;
       {$IFnDEF SQLdbFamily}
       If ToOpen then
       {$ENDIF}
@@ -635,7 +631,6 @@ Begin
         If SQL.Text<>'' Then
           inherited Open;
     End;
-{$ENDIF}
   end;
 End;
 
@@ -666,7 +661,7 @@ begin
   Self.DataBase:=Database;
   {$ENDIF}
   {$IFDEF ZEOS}
-  Self.DataBase:=Database;
+  Self.Connector:=Database;
   {$ENDIF}
   {$IFDEF SQLdbFamily}
   Self.DataBase:=Database;
@@ -688,24 +683,16 @@ function TDCLQuery.GetConnector: TDatabaseObject;
 begin
   Result:=
   {$IFDEF ADO}
-  Self.Connection;
+  Self.Connection
   {$ENDIF}
   {$IFDEF IBX}
-  Self.DataBase;
+  Self.DataBase
   {$ENDIF}
   {$IFDEF ZEOS}
-  Self.DataBase;
+  Self.Connector
   {$ENDIF}
   {$IFDEF SQLdbFamily}
   Self.DataBase
-  {$ENDIF}
-  {$IFDEF TRANSACTIONDB}
-  {$IFDEF SQLdbFamily}
-  //Transaction:=Transaction;
-  {$ENDIF}
-  {$IFDEF IBX}
-  //Transaction:=Database.DefaultTransaction;
-  {$ENDIF}
   {$ENDIF};
 end;
 
@@ -718,7 +705,7 @@ begin
   Query.DataBase:=Self.DataBase;
   {$ENDIF}
   {$IFDEF ZEOS}
-  Query.DataBase:=Self.DataBase;
+  Query.Connection:=Self.Connection;
   {$ENDIF}
   {$IFDEF SQLdbFamily}
   Query.DataBase:=Self.DataBase;
@@ -733,7 +720,27 @@ begin
   {$IFDEF IBXLaz}
   Query.AllowAutoActivateTransaction:=True;
   {$ENDIF}
+  {$IFDEF ZEOS}
+  Query.Transaction:=Self.Transaction;
   {$ENDIF}
+  {$ENDIF}
+end;
+
+function TDCLQuery.GetConnector(Query: TDCLSimlyQuery): TDatabaseObject; overload;
+begin
+  Result:=
+  {$IFDEF ADO}
+  Query.Connection
+  {$ENDIF}
+  {$IFDEF IBX}
+  Query.DataBase
+  {$ENDIF}
+  {$IFDEF ZEOS}
+  Query.Connection
+  {$ENDIF}
+  {$IFDEF SQLdbFamily}
+  Query.DataBase
+  {$ENDIF};
 end;
 
 destructor TDCLQuery.Destroy;
@@ -748,7 +755,6 @@ begin
 
   Cancel;
   Close;
-{$IFDEF UPDATESQLDB}
 {$IFDEF TRANSACTIONDB}
   If Assigned(ShadowTransaction) then
     FreeAndNil(ShadowTransaction);
@@ -757,11 +763,9 @@ begin
   If Assigned(FUpdateSQL) then
     FreeAndNil(FUpdateSQL);
 {$ENDIF}
-{$ENDIF}
-{$IFDEF UPDATESQLDB}
   If Assigned(ShadowQuery) then
     FreeAndNil(ShadowQuery);
-{$ENDIF}
+
   inherited Destroy;
 end;
 
@@ -914,43 +918,15 @@ begin
   Result:={$IFDEF WITH_WIDEDATASET}TWideStrings{$ELSE}TStringList{$ENDIF}(inherited SQL);
 end;
 
-{$IFDEF TRANSACTIONDB}
-function TDCLQuery.CreateTR(RW:TTransactionType): TTransaction;
-begin
-  Result:=TTransaction.Create(Self);
-  {$IFDEF IBX}
-  Result.DefaultDatabase:=Database;
-  Result.DefaultAction:=TACommit;
-  {$ENDIF}
-  {$IFDEF SQLdbFamily}
-  Result.Database:=Database;
-  Result.Action:=caCommit;
-  {$ENDIF}
-  Result.Params.Clear;
-  Case RW of
-  trtWrite:Begin
-    Result.Params.Append('write');
-  End;
-  trtRead:Begin
-    Result.Params.Append('read');
-  End;
-  End;
-  Result.Params.Append('nowait');
-  Result.Params.Append('read_committed');
-  If GPT.IBAll then
-    Result.Params.Append('rec_version');
-end;
-{$ENDIF}
-
 function TDCLQuery.GetPrimaryKeyField(TableName: String; OneField: Boolean): string;
 begin
   Result:='';
   If GPT.IBAll then
   Begin
-{$IFDEF UPDATESQLDB}{$IFDEF IBALL}
+{$IFDEF IBALL}
     If (TableName<>'') and Assigned(ShadowQuery) then
     Begin
-      if not Assigned(ShadowQuery.DataBase) then
+      if not Assigned(GetConnector(ShadowQuery)) then
         SetDCLDBConnector(ShadowQuery);
 
       ShadowQuery.Params.Clear;
@@ -992,7 +968,7 @@ begin
       If Result<>'' then
         Result:=Copy(Result, 1, Length(Result)-1);
     End;
-{$ENDIF}{$ENDIF}
+{$ENDIF}
   End;
 end;
 
@@ -1043,8 +1019,14 @@ begin
 end;
 
 procedure TDCLQuery.GotoKeyBookmark(Bookmark: TBookmark);
+var
+  KValues: Variant;
 begin
-
+  if Active and (FKeyField<>'') then
+  begin
+    KValues:=FieldByName(FKeyField).AsBytes;
+    Locate(FKeyField, KValues, [loCaseInsensitive]);
+  end;
 end;
 
 procedure TDCLQuery.ExecSQL;
@@ -1080,7 +1062,6 @@ begin
     Connection.Commit;
 {$ENDIF}
 {$ENDIF}
-{$IFDEF UPDATESQLDB}
 {$IFDEF TRANSACTIONDB}
 {$IFDEF SELFUPDATESQL}
   If Transaction.Active then
@@ -1092,7 +1073,6 @@ begin
 {$ENDIF}
   If ShadowTransaction.Active then
     ShadowTransaction.Commit;
-{$ENDIF}
 {$ENDIF}
 {$ENDIF}
 end;
@@ -1144,7 +1124,6 @@ begin
   if FNotAllowOperations<>Value then
   begin
     FNotAllowOperations:=Value;
-    {$IFDEF UPDATESQLDB}
     If not FUpdateSQLDefined then
     Begin
       FMainTable:=GetMainQueryTable;
@@ -1153,7 +1132,6 @@ begin
     End;
     SetUpdateSQL(FMainTable, FKeyField);
   //  FillDatasetUpdateSQL(FKeyField, FMainTable, True);
-    {$ENDIF}
   end;
 end;
 

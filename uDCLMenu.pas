@@ -17,7 +17,7 @@ type
     FMainMenu: TMainMenu;
     FMainForm: TForm;
     FDBConnector: TDBConnector;
-    LocalQuery: TDCLDialogQuery;
+    LocalQuery: TDCLSimlyQuery;
     FormBar: TToolBar;
     findItemFlg: TMenuItem;
     FOpenDialogMethod: TOpenDialogMethod;
@@ -130,7 +130,7 @@ begin
   FMainForm:=MainForm;
   FDBConnector:=DBConnector;
 
-  LocalQuery:=TDCLDialogQuery.Create(Self);
+  LocalQuery:=TDCLSimlyQuery.Create(Self);
   DBConnector.SetConnector(LocalQuery);
 
   FMainMenu:=TMainMenu.Create(FMainForm);

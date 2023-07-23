@@ -33,8 +33,8 @@ const
 {$IFDEF ZEOS}
   DBEngineType='ZEOS (Universal)';
   DefaultIBPort=3050;
-  DefaultDBType='firebird-3.0';
-  DefaultDBTInterBaseType='interbase-6';
+  DefaultDBType='firebird';
+  DefaultDBTInterBaseType='interbase';
 {$ENDIF}
 {$IFDEF SQLdbIB}
   DBEngineType='SQLdb IB';
@@ -216,7 +216,7 @@ Type
   TSheetFillStrategy=(sfsInsert, sfsReplace);
   TFieldParsingMode=(fpmNone, fpmCaption, fpmField);
 
-  TTransactionType=(trtWrite, trtRead);
+  TTransactionType=(trtWrite, trtRead, trtUniversal);
 
 const
   ReleaseStatus=rsAlpha;

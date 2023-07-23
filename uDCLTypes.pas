@@ -25,7 +25,7 @@ Uses
   {$ENDIF}
 {$ENDIF}
 {$IFDEF ZEOS}
-  ZConnection, ZDataset, ZSqlUpdate,
+  ZConnection, ZDataset, ZSqlUpdate, ZAbstractConnection,
 {$ENDIF}
 {$IFDEF SQLdbFamily}
   IBConnection, sqldb, DB,
@@ -57,9 +57,10 @@ type
 {$ENDIF}
 {$IFDEF ZEOS}
   TDBConnector=TZConnection;
-  TDatabaseObject=TZConnection;
+  TDatabaseObject=TZAbstractConnection;
   TDCLSimlyQuery=TZQuery;
   TDCLDialogQuery=TZQuery;
+  TTransaction=TZTransaction;
   TUpdateObj=TZUpdateSQL;
   TCommandQuery=TZReadOnlyQuery;
 {$ENDIF}

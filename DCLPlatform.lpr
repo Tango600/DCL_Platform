@@ -19,8 +19,8 @@ uses
   cNoScrollBarDBGrid, cMediaFieldGroup, uDCLDataStorage, uDCLOfficeTextReport,
   uDCLOfficeSheetReport, uDCLTextReport, uSheetOfficeReportSelector,
   uDCLBaseOfficeReport, uTextOfficeReportSelector, uOfficeReportBaseSelector,
-  uRunProgram, uPrintBase, uDCLFormsNotifier,
-  fChangePasswordForm, fAbout, uDCLQueryUtils
+  uRunProgram, uPrintBase, uDCLFormsNotifier, fChangePasswordForm, fAbout,
+  uDCLQueryUtils, uDCLDBTransaction
   ;
 
 {$R *.res}

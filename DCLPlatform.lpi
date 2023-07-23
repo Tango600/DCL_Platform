@@ -26,6 +26,9 @@
     </RunParams>
     <RequiredPackages>
       <Item>
+        <PackageName Value="lr_zeosdb"/>
+      </Item>
+      <Item>
         <PackageName Value="ibnongui"/>
       </Item>
       <Item>
@@ -183,6 +186,10 @@
       </Unit>
       <Unit>
         <Filename Value="uDCLQueryUtils.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="uDCLDBTransaction.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
     </Units>
