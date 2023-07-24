@@ -59,7 +59,10 @@ implementation
 uses
   uSheetOfficeReportSelector, uTextOfficeReportSelector, uDCLGlobalVariables,
   uRunProgram, uDCLMessages, uDCLMultiLang, uSQLUtils, uSystemUtils, uDCLMain,
-  uDCLTextReport, uDCLDBTransaction;
+  {$IFDEF TRANSACTIONDB}
+  uDCLDBTransaction,
+  {$ENDIF}
+  uDCLTextReport;
 
 { TDCLCommand }
 

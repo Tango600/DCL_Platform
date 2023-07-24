@@ -40,9 +40,9 @@ type
 {$ENDIF}
 {$IFDEF TRANSACTIONDB}
     UniversalTransaction: TTransaction;
-{$ENDIF}
 {$IFDEF ZEOS}
     WriteTransaction: TTransaction;
+{$ENDIF}
 {$ENDIF}
     ///SQLMon: TDCLSQLMon;
     function GetDatabaseObject: TDatabaseObject;
@@ -504,50 +504,6 @@ begin
   {$ENDIF}
   {$ENDIF}
 end;
-
-{$IFDEF TRANSACTIONDB11111}
-function TDCLDBConnector.NewTransaction(RW: TTransactionType): TTransaction;
-var
-  {$IFDEF ZEOS}
-  TrParams: TStrings;
-  {$ENDIF}
-  {$IFDEF SQLdbFamily}
-  TrParams: TStringList;
-  {$ENDIF}
-  {$IFDEF IBX}
-  TrParams: TStrings;
-  {$ENDIF}
-begin
-  Result:=TTransaction.Create(Self);
-  {$IFDEF IBX}
-  Result.DefaultDatabase:=Self;
-  Result.DefaultAction:=TACommit;
-  TrParams:=Result.Params;
-  {$ENDIF}
-  {$IFDEF SQLdbFamily}
-  Result.Database:=Self;
-  Result.Action:=caCommit;
-  {$ENDIF}
-  {$IFDEF ZEOS}
-  Result.Connection:=Self;
-  TrParams:=Result.Properties;
-  {$ENDIF}
-
-  TrParams.Clear;
-  Case RW of
-  trtWrite:Begin
-    TrParams.Append('write');
-  End;
-  trtRead:Begin
-    TrParams.Append('read');
-  End;
-  End;
-  TrParams.Append('nowait');
-  TrParams.Append('read_committed');
-  If GPT.IBAll then
-    TrParams.Append('rec_version');
-end;
-{$ENDIF}
 
 end.
 

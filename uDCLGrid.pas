@@ -1329,7 +1329,8 @@ begin
   SetQueryEvents(FQuery);
 
   FData.DataSet:=FQuery;
-  FQuery.DataSource:=Data;
+  if Assigned(Data) then
+    FQuery.DataSource:=Data;
 end;
 
 procedure TDCLGrid.ClickCommandButton(Sender: TObject);

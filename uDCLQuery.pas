@@ -148,7 +148,10 @@ type
 implementation
 
 uses
-  uDCLDBTransaction, uDCLGlobalVariables, Variants;
+  {$IFDEF TRANSACTIONDB}
+  uDCLDBTransaction,
+  {$ENDIF}
+  uDCLGlobalVariables, Variants;
 
 { TDCLQuery }
 

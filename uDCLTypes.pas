@@ -60,7 +60,9 @@ type
   TDatabaseObject=TZAbstractConnection;
   TDCLSimlyQuery=TZQuery;
   TDCLDialogQuery=TZQuery;
+  {$IFDEF TRANSACTIONDB}
   TTransaction=TZTransaction;
+  {$ENDIF}
   TUpdateObj=TZUpdateSQL;
   TCommandQuery=TZReadOnlyQuery;
 {$ENDIF}
