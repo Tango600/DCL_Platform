@@ -3972,7 +3972,7 @@ begin
 
   if FDataReadOnly then
   begin
-    {$IFDEF SQLdbFamily}
+    {$IFDEF READONLYPROPERTY}
     FQuery.ReadOnly:=True;
     {$ELSE}
     AddNotAllowedOperation(dsoInsert);

@@ -7,6 +7,9 @@ uses
 {$IFDEF IBX}
   IBVersion,
 {$ENDIF}
+{$IFDEF ZEOS}
+  ZClasses,
+{$ENDIF}
 {$IFnDEF FPC}
   Vcl.DBCtrls
 {$ELSE}
@@ -25,16 +28,18 @@ const
 {$ENDIF}
 {$IFDEF IBX}
   {$IFDEF IBXLaz}
-  DBEngineType='IBX for Lazarus '+IBX_VERSION;
+  DBEngineType='IBX for Lazarus ';
   {$ELSE}
-  DBEngineType='IBX'+IBX_VERSION;
+  DBEngineType='IBX';
   {$ENDIF}
+  AccessLibVersion=IBX_VERSION;
 {$ENDIF}
 {$IFDEF ZEOS}
   DBEngineType='ZEOS (Universal)';
   DefaultIBPort=3050;
   DefaultDBType='firebird';
   DefaultDBTInterBaseType='interbase';
+  AccessLibVersion=ZEOS_VERSION;
 {$ENDIF}
 {$IFDEF SQLdbIB}
   DBEngineType='SQLdb IB';
@@ -42,6 +47,10 @@ const
 {$IFDEF SQLdb}
   DBEngineType='SQLdb (Universal)';
 {$ENDIF}
+{$IFDEF SQLdbFamily}
+  AccessLibVersion=LCLVersion;
+{$ENDIF}
+
   Version='12.0.0.01';
 
   JPEGCompressionQuality=85;
