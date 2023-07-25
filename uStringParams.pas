@@ -36,7 +36,7 @@ Function TextToString(Text: String): String;
 function TrimChars(CharsSet, S:string):String;
 
 Function DoublingApostrof(const S: String):String;
-Function CompareString(S1, S2: String): Boolean;
+Function DCLCompareString(S1, S2: String): Boolean;
 
 implementation
 
@@ -53,7 +53,7 @@ Begin
 End;
 {$ENDIF}
 
-Function CompareString(S1, S2: String): Boolean;
+Function DCLCompareString(S1, S2: String): Boolean;
 Begin
   Result:=LowerCase(S1)=LowerCase(S2);
 End;

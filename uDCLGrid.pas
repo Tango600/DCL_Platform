@@ -6,7 +6,7 @@ interface
 uses
   Classes, SysUtils, Controls, Forms, DB, Generics.Collections, ToolWin,
   ComCtrls, StdCtrls, Buttons, ExtCtrls, Graphics, DBCtrls, DBGrids, Grids,
-  DBExtCtrls, CheckLst,
+  DBExtCtrls, CheckLst, Menus, ClipBrd,
   uDCLData, uDCLTypes, uDCLConst, uDCLVariables, uStringParams,
   uDCLDBConnector, uDCLQuery, uDCLMeasurements, uDBUtils, uDCLMultiLang,
   uDCLCommandButton, uDCLVerticalFieldLayoutManger, uDCLField, uDCLMessages,
@@ -74,6 +74,7 @@ type
     FEvents: TList<TDCLEvent>;
     FNotAllowedOperations: TList<TNotAllowedOperation>;
     FStructureList: TCheckListBox;
+    PopupGridMenu: TPopupMenu;
 
     //FButtonLayout: TDCLButtonLayoutManger<TDCLCommandButton>;
     FFieldLayout: TDCLVerticalFieldLayoutManger<TDCLField>;
@@ -215,6 +216,15 @@ type
 
     procedure Structure(Sender: TObject);
     function IsGridColumnExists(FieldName: String): Boolean;
+
+    procedure AddPopupItem(Caption: String; Action: TPopupMenuAction; AChortCutKey: String; PictType: TPicturesTypes);
+    procedure AddPopupSeparator;
+    procedure OnPopupMenuClick(Sender: TObject);
+
+    procedure Undo;
+    procedure PCopy;
+    procedure Cut;
+    procedure Paste;
   public
     constructor Create(NameSpace: String; Forms: TList<TForm>; Form: TForm; ParentControl: TWinControl; Variables: TVariables; SurfType: TDataControlType;
       DBConnector: TDCLDBConnector; Query: TDCLQuery; Data: TDataSource); overload;
@@ -277,6 +287,12 @@ type
 implementation
 
 uses
+  {$IFDEF MSWINDOWS}
+  Windows,
+  {$ENDIF}
+  {$IFDEF FPC}
+  LCLProc,
+  {$ENDIF}
   uDCLCommand, uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, uDCLForm,
   uPrintBase, uDCLGlobalVariables, uDCLMD5;
 
@@ -1230,7 +1246,7 @@ begin
         end
         else
         begin
-          If not CompareString(FQuery.FieldByName(Field.FieldName).AsString, ItemName) and FQuery.CanModify Then
+          If not DCLCompareString(FQuery.FieldByName(Field.FieldName).AsString, ItemName) and FQuery.CanModify Then
           begin
             If not (FQuery.State in dsEditModes) Then
               FQuery.Edit;
@@ -1991,7 +2007,7 @@ begin
       for f in FDCLFields do
       begin
         if Assigned(f.DCLEditComponent) and (f.DCLEditComponent.Control=(Sender as TEdit)) and
-          CompareString(f.DCLEditComponent.Control.Name, DCLLookup.LookupData.ModifyEdit) then
+          DCLCompareString(f.DCLEditComponent.Control.Name, DCLLookup.LookupData.ModifyEdit) then
         begin
           ModifyEdit:=f;
           break;
@@ -3175,6 +3191,78 @@ begin
   end;
 end;
 
+procedure TDCLGrid.AddPopupItem(Caption: String; Action: TPopupMenuAction;
+  AChortCutKey: String; PictType: TPicturesTypes);
+var
+  ItemMenu: TMenuItem;
+begin
+  ItemMenu:=TMenuItem.Create(PopupGridMenu);
+  ItemMenu.Tag:=Ord(Action);
+  ItemMenu.Caption:=Caption;
+  ItemMenu.ShortCut:=TextToShortCut(AChortCutKey);
+  ItemMenu.OnClick:=OnPopupMenuClick;
+
+  ItemMenu.Bitmap.Assign(DrawBMPButton(PictType));
+  ItemMenu.Bitmap.TransparentColor:=clWhite;
+  ItemMenu.Bitmap.TransparentMode:=tmAuto;
+
+  PopupGridMenu.Items.Add(ItemMenu);
+end;
+
+procedure TDCLGrid.AddPopupSeparator;
+var
+  ItemMenu: TMenuItem;
+begin
+  ItemMenu:=TMenuItem.Create(PopupGridMenu);
+  ItemMenu.Caption:='-';
+  PopupGridMenu.Items.Add(ItemMenu);
+end;
+
+procedure TDCLGrid.OnPopupMenuClick(Sender: TObject);
+var
+  t: Integer;
+begin
+  t:=(Sender as TComponent).Tag;
+  case TPopupMenuAction(t) of
+    pmaCopy: PCopy;
+    pmaCut: Cut;
+    pmaPaste: Paste;
+    pmaUndo: Undo;
+
+  end;
+end;
+
+procedure TDCLGrid.Undo;
+begin
+  if Assigned(FDBGrid) and Assigned(FData) and
+    Assigned(FData.DataSet) then
+      FData.DataSet.Cancel;
+{$IFDEF MSWINDOWS}
+  SendMessage(GetFocus, WM_UNDO, 0, 0);
+{$ENDIF}
+end;
+
+procedure TDCLGrid.PCopy;
+begin
+  if Assigned(FDBGrid) then
+    Clipboard.AsText:=FDBGrid.SelectedField.AsString;
+end;
+
+procedure TDCLGrid.Cut;
+begin
+  if Assigned(FDBGrid) then
+  begin
+    Clipboard.AsText:=FDBGrid.SelectedField.AsString;
+    FDBGrid.SelectedField.Clear;
+  end;
+end;
+
+procedure TDCLGrid.Paste;
+begin
+  if Assigned(FDBGrid) then
+    FDBGrid.SelectedField.AsString:=Clipboard.AsText;
+end;
+
 constructor TDCLGrid.Create(NameSpace: String; Forms: TList<TForm>; Form: TForm; ParentControl: TWinControl; Variables: TVariables; SurfType: TDataControlType;
   DBConnector: TDCLDBConnector; Query: TDCLQuery; Data: TDataSource);
 var
@@ -3845,20 +3933,15 @@ begin
       AddNotAllowedOperation(dsoEdit);
   end;
 
-
-
   If IsLexem('Events=', ScrStr) then
   begin
     ParseEvents(ScrStr);
   end;
 
-
   if IsLexem('[Fields]', ScrStr) then
   begin
     FReadFieldsMode:=True;
   end;
-
-
 end;
 
 procedure TDCLGrid.Prepeare;
@@ -3972,6 +4055,7 @@ begin
 
   if FDataReadOnly then
   begin
+    FReadOnly:=True;
     {$IFDEF READONLYPROPERTY}
     FQuery.ReadOnly:=True;
     {$ELSE}
@@ -4081,6 +4165,27 @@ begin
       FDBGrid.OnDblClick:=GridDblClick;
       FDBGrid.OnTitleClick:=GridColumnClick;
       FDBGrid.TitleImageList:=FImages;
+
+      PopupGridMenu:=TPopupMenu.Create(FDBGrid);
+      PopupGridMenu.Parent:=FDBGrid;
+      FDBGrid.PopupMenu:=PopupGridMenu;
+
+      AddPopupItem(GetDCLMessageString(msFindCurrCell), pmaFindCurrCell, 'Alt+F', ptNone);
+      AddPopupItem(GetDCLMessageString(msClearAllFind), pmaClearFind, 'Alt+C', ptNone);
+
+      AddPopupSeparator;
+
+      AddPopupItem(GetDCLMessageString(msCopy), pmaCopy, 'Ctrl+C', ptCopy);
+
+      if not FReadOnly then
+      begin
+        AddPopupItem(GetDCLMessageString(msCut), pmaCut, 'Ctrl+X', ptCut);
+        AddPopupItem(GetDCLMessageString(msPast), pmaPaste, 'Ctrl+V', ptPaste);
+
+        AddPopupSeparator;
+
+        AddPopupItem(GetDCLMessageString(msCancel), pmaUndo, 'Ctrl+U', ptUndo);
+      end;
 
       if FDataControlType=dctLookupGrid then
       begin

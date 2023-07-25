@@ -211,10 +211,14 @@ begin
 
   ReadBaseID;
 
+  GPT.OfficeFormat:=ofMSO;
+  GPT.OfficeDocumentFormat:=odfMSO2007;
+
   GPT.TimeFormat:=DefaultTimeFormat;
   GPT.DateFormat:=DefaultDateFormat;
   GPT.DateSeparator:=DefaultDateSeparator;
   GPT.TimeSeparator:=DefaultTimeSeparator;
+  GPT.TimeStampFormat:=GPT.DateFormat+' '+GPT.TimeFormat;
 {$IFDEF MSWINDOWS}
   SysUtils.GetFormatSettings;
 {$ENDIF}

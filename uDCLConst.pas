@@ -13,7 +13,7 @@ uses
 {$IFnDEF FPC}
   Vcl.DBCtrls
 {$ELSE}
-  DBCtrls, DBGrids
+  DBCtrls, DBGrids, LazVersion
 {$ENDIF};
 
 const
@@ -48,7 +48,7 @@ const
   DBEngineType='SQLdb (Universal)';
 {$ENDIF}
 {$IFDEF SQLdbFamily}
-  AccessLibVersion=LCLVersion;
+  AccessLibVersion=laz_version;
 {$ENDIF}
 
   Version='12.0.0.01';
@@ -224,6 +224,7 @@ Type
   TFieldFormat=(fftNone, fftDigit, fftDate, fftTime, fftDateTime, fftTrim, fftFloat);
   TSheetFillStrategy=(sfsInsert, sfsReplace);
   TFieldParsingMode=(fpmNone, fpmCaption, fpmField);
+  TPopupMenuAction=(pmaNone, pmaCopy, pmaCut, pmaPaste, pmaUndo, pmaFindCurrCell, pmaClearFind);
 
   TTransactionType=(trtWrite, trtRead, trtUniversal);
 

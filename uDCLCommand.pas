@@ -350,7 +350,7 @@ begin
 
       {$IFDEF TRANSACTIONDB}
       tmp_Transaction:=TDCLDBTransaction.Create(FDBConnector, trtWrite);
-      //DCLQuery.Transaction:=tmp_Transaction;
+      DCLQuery.Transaction:=tmp_Transaction;
       tmp_Transaction.StartTransaction;
       {$ENDIF}
 
@@ -1295,7 +1295,7 @@ begin
       begin
         For Edit in lDCLForm.CurrentGrid.Edits do
         begin
-          If CompareString(ReturnValue.KeyEditName, Edit.Control.Name) Then
+          If DCLCompareString(ReturnValue.KeyEditName, Edit.Control.Name) Then
           begin
             (Edit.Control as TEdit).Text:=ReturnValueItem.Key;
             break;
@@ -1307,7 +1307,7 @@ begin
       begin
         For Edit in lDCLForm.CurrentGrid.Edits do
         begin
-          If CompareString(ReturnValue.ValueEditName, Edit.Control.Name) Then
+          If DCLCompareString(ReturnValue.ValueEditName, Edit.Control.Name) Then
           begin
             (Edit.Control as TEdit).Text:=ReturnValueItem.Value;
             break;

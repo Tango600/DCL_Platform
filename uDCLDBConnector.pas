@@ -87,6 +87,7 @@ constructor TDCLDBConnector.Create;
 begin
   inherited Create(Application);
   Name:='DCL_DBConnector1';
+  FErrorCode:=0;
 
   {$IFDEF ADO}
     If Length(GPT.ConnectionString)>20 Then
@@ -101,7 +102,6 @@ begin
       try
         If FDBLogOn.Properties.Count>0 Then
           FDBLogOn.Open;
-        Result:=0;
       Except
         On E: Exception do
         begin
@@ -203,9 +203,7 @@ begin
           end;
         end;
       end;
-    end
-    Else
-      FErrorCode:=0;
+    end;
   {$ENDIF}
   {$IFDEF ZEOS}
     GPT.NewDBUserName:='';
@@ -369,7 +367,6 @@ begin
           DebugProc('Connected...');
           Open;
           DebugProc('  ... OK');
-          FErrorCode:=0;
         Except
           On E: Exception do
           begin
@@ -378,9 +375,7 @@ begin
           end;
         end;
       end;
-    end
-    else
-      FErrorCode:=0;
+    end;
   {$ENDIF}
   {$IFDEF SQLdb}
     DebugProc('Creating Connection...');
@@ -459,7 +454,6 @@ begin
           DebugProc('Connected...');
           Open;
           DebugProc('  ... OK');
-          FErrorCode:=0;
         Except
           On E: Exception do
           begin
@@ -468,9 +462,7 @@ begin
           end;
         end;
       end;
-    end
-    else
-      FErrorCode:=0;
+    end;
   {$ENDIF}
 end;
 

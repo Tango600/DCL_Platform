@@ -331,23 +331,23 @@ End;
 
 Function TranslateDigitToUserLevel(Level: String): TUserLevelsType; overload;
 Begin
-  If CompareString(Level, 'ulDeny') Then
+  If DCLCompareString(Level, 'ulDeny') Then
     Result:=ulDeny
-  Else If CompareString(Level, 'ulReadOnly') Then
+  Else If DCLCompareString(Level, 'ulReadOnly') Then
     Result:=ulReadOnly
-  Else If CompareString(Level, 'ulWrite') Then
+  Else If DCLCompareString(Level, 'ulWrite') Then
     Result:=ulWrite
-  Else If CompareString(Level, 'ulExecute') Then
+  Else If DCLCompareString(Level, 'ulExecute') Then
     Result:=ulExecute
-  Else If CompareString(Level, 'ulLevel1') Then
+  Else If DCLCompareString(Level, 'ulLevel1') Then
     Result:=ulLevel1
-  Else If CompareString(Level, 'ulLevel2') Then
+  Else If DCLCompareString(Level, 'ulLevel2') Then
     Result:=ulLevel2
-  Else If CompareString(Level, 'ulLevel3') Then
+  Else If DCLCompareString(Level, 'ulLevel3') Then
     Result:=ulLevel3
-  Else If CompareString(Level, 'ulLevel4') Then
+  Else If DCLCompareString(Level, 'ulLevel4') Then
     Result:=ulLevel4
-  Else If CompareString(Level, 'ulDeveloper') Then
+  Else If DCLCompareString(Level, 'ulDeveloper') Then
     Result:=ulDeveloper
   Else
 {$IFDEF DEVELOPERMODE}
