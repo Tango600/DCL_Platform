@@ -17,7 +17,7 @@ Uses
 {$IFDEF IBX}
   {$IFDEF FPC}
   IBDatabase, IBTable, IBCustomDataSet, IBSQL, IBQuery,
-  IBUpdateSQL, uIBUpdateSQLW,
+  IBUpdateSQL, //uIBUpdateSQLW,
   {$ELSE}
   IBX.IBDatabase, IBX.IBTable, IBX.IBCustomDataSet, IBX.IBSQL, IBX.IBQuery,
   IBX.IBVisualConst, IBX.IBXConst, IBX.IBUpdateSQL,
@@ -53,7 +53,7 @@ type
   TDatabaseObject=TIBDatabase;
   TCommandQuery=TIBQuery;
   TTransaction=TIBTransaction;
-  TUpdateObj=TIBUpdateSQLW;
+  TUpdateObj=TIBUpdateSQL;
 {$ENDIF}
 {$IFDEF ZEOS}
   TDBConnector=TZConnection;

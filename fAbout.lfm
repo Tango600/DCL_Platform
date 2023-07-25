@@ -124,7 +124,7 @@ object AboutForm: TAboutForm
       ParentFont = False
     end
     object lbVersion: TLabel
-      Left = 280
+      Left = 290
       Height = 15
       Top = 8
       Width = 51
@@ -142,11 +142,45 @@ object AboutForm: TAboutForm
       ParentFont = False
     end
     object lbDBLibVersion: TLabel
-      Left = 280
+      Left = 290
       Height = 15
       Top = 30
       Width = 84
       Caption = 'lbDBLibVersion'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object lbCompillerName: TLabel
+      Left = 16
+      Height = 15
+      Top = 200
+      Width = 96
+      Caption = 'lbCompillerName'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object lbBuildType: TLabel
+      Left = 208
+      Height = 15
+      Top = 200
+      Width = 64
+      Caption = 'lbBuildType'
+      Font.Style = [fsBold]
+      ParentFont = False
+    end
+    object Label1: TLabel
+      Left = 120
+      Height = 15
+      Top = 64
+      Width = 71
+      Caption = 'Дата сборки:'
+    end
+    object lbBuildDate: TLabel
+      Left = 208
+      Height = 15
+      Top = 64
+      Width = 65
+      Caption = 'lbBuildDate'
       Font.Style = [fsBold]
       ParentFont = False
     end

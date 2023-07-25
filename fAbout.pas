@@ -14,6 +14,10 @@ type
     Button1: TButton;
     GroupBox1: TGroupBox;
     Image1: TImage;
+    Label1: TLabel;
+    lbBuildDate: TLabel;
+    lbBuildType: TLabel;
+    lbCompillerName: TLabel;
     lbDBLibVersion: TLabel;
     lbDBLib: TLabel;
     lbProduct: TLabel;
@@ -52,6 +56,10 @@ begin
   lbVersion.Caption:=Version;
   lbDBLib.Caption:=DBEngineType;
   lbDBLibVersion.Caption:=AccessLibVersion;
+
+  lbCompillerName.Caption:=InternalAppNameSuffix+' '+fpcVersion;
+  lbBuildType.Caption:=TargetOS+'_'+TargetCPU;
+  lbBuildDate.Caption:=AppBuildDate;
 end;
 
 end.

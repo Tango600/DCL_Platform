@@ -5,14 +5,13 @@ interface
 
 uses
   SysUtils, Classes, uStringParams,
-  Dialogs, StrUtils, Generics.Collections,
+  Dialogs, Generics.Collections,
 {$IFDEF ADO}
   WideStrings, ADODB, ADOConst, ADOInt,
 {$ENDIF}
 {$IFDEF FPC}
   {$IFDEF IBX}
-  IB, IBDatabase, IBCustomDataSet, IBQuery,
-  uIBUpdateSQLW,
+  IB, IBDatabase, IBCustomDataSet, IBQuery, uIBUpdateSQLW,
   {$ENDIF}
 {$ELSE}
   {$IFDEF IBX}
@@ -35,21 +34,12 @@ const
 type
   TUpdateKind=(ukAll, ukKeys);
   TOperationsTypes=Array of TNotAllowedOperation;
-  {$IFnDEF SELFUPDATESQL}
-  TUpdateSQLObj=TUpdateObj;
-  {$ELSE}
-  TUpdateSQLObj=TDCLDialogQuery;
-  {$ENDIF}
 
   { TDCLQuery }
   TDCLQuery=class(TDCLDialogQuery)
   private
     ShadowQuery: TDCLSimlyQuery;
-    {$IFnDEF SELFUPDATESQL}
-    FUpdateSQL: TUpdateSQLObj;
-    {$ELSE}
-    FUpdateSQL: TDCLSimlyQuery;
-    {$ENDIF}
+    FUpdateSQL: TUpdateObj;
     {$IFDEF TRANSACTIONDB}
     ShadowTransaction: TTransaction;
     {$ENDIF}
@@ -451,8 +441,8 @@ var
   UpdatesFieldsSet, KeyFieldsSet, TextSQLSel, FieldN: String;
   lUpdateSQL, lInsertSQL, lDeleteSQL, lRefreshSQL: String;
   v1, v2: Integer;
+  DBField: TField;
   KeyFields, UpdateFields: TList<String>;
-  UpdateKind:TUpdateKind;
 Begin
   If TableName<>'' Then
   Begin
@@ -475,13 +465,15 @@ Begin
       If not Assigned(FUpdateSQL) then
       Begin
         {$IFnDEF SELFUPDATESQL}
-        FUpdateSQL:=TUpdateSQLObj.Create(Self);
+        FUpdateSQL:=TUpdateObj.Create(Self);
         {$IFDEF ZEOS}
         FUpdateSQL.UseSequenceFieldForRefreshSQL:=False;
         {$ENDIF}
         {$IFDEF TRANSACTIONDB}
         {$IFDEF IBX}
+        {$IFDEF DOUBLTRANSACTION}
         FUpdateSQL.UpdateTransaction:=ShadowTransaction;
+        {$ENDIF}
         {$ENDIF}
         {$ENDIF}
         {$ELSE}
@@ -503,53 +495,40 @@ Begin
       KeyFields:=TList<String>.Create;
       UpdateFields:=TList<String>.Create;
 
-      If KeyField='' then
+      v1:=ParamsCount(KeyField);
+      If v1>1 then
       Begin
-        UpdateKind:=ukAll;
-        For v1:=1 to ShadowQuery.FieldCount do
-          KeyFields.Add(LowerCase(ShadowQuery.Fields[v1-1].FieldName));
+        For v2:=1 to v1 do
+        Begin
+          KeyFields.Add(UpperCase(GetParam(KeyField, v2)));
+        End;
       End
       Else
       Begin
-        v1:=ParamsCount(KeyField);
-        UpdateKind:=ukKeys;
-        If v1>1 then
-        Begin
-          For v2:=1 to v1 do
-          Begin
-            KeyFields.Add(LowerCase(GetParam(KeyField, v2)));
-          End;
-        End
-        Else
-        Begin
-          KeyFields.Add(LowerCase(KeyField));
-        end;
-      End;
+        KeyFields.Add(UpperCase(KeyField));
+      end;
 
-      For v1:=1 to ShadowQuery.FieldCount do
-        UpdateFields.Add(LowerCase(ShadowQuery.Fields[v1-1].FieldName));
+      For DBField in ShadowQuery.Fields do
+        UpdateFields.Add(UpperCase(DBField.FieldName));
 
       ShadowQuery.Close;
 
       UpdatesFieldsSet:='';
       For FieldN in UpdateFields do
-        If UpdateKind=ukKeys then
-        Begin
-          if not KeyFields.Contains(FieldN) then
-          //If not MatchStr(FieldN, KeyFields) then
-            UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+'=:'+FieldN+',';
-        End
-        Else
-          UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+'=:'+FieldN+',';
+      Begin
+        if not KeyFields.Contains(FieldN) then
+          UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+'=:'+FieldN+', ';
+      End;
 
       If UpdatesFieldsSet<>'' then
-        System.Delete(UpdatesFieldsSet, Length(UpdatesFieldsSet), 1);
+        System.Delete(UpdatesFieldsSet, Length(UpdatesFieldsSet)-1, 2);
 
       KeyFieldsSet:='';
       For FieldN in KeyFields do
         KeyFieldsSet:=KeyFieldsSet+FieldN+'=:OLD_'+FieldN+' and ';
+
       If KeyFieldsSet<>'' then
-        System.Delete(KeyFieldsSet, Length(KeyFieldsSet)-4, 4);
+        System.Delete(KeyFieldsSet, Length(KeyFieldsSet)-4, 5);
 
       If not FindNotAllowedOperation(dsoEdit) then
         lUpdateSQL:='update '+TableName+' set '+UpdatesFieldsSet+' where '+
@@ -557,31 +536,23 @@ Begin
 
       UpdatesFieldsSet:='';
       For FieldN in UpdateFields Do
-        If UpdateKind=ukKeys then
-        begin
-          if not KeyFields.Contains(FieldN) then
-          //If not MatchStr(UpdateFields[v1-1], KeyFields) then
-            UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+',';
-        End
-        Else
-          UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+',';
+      begin
+        if not KeyFields.Contains(FieldN) then
+          UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+', ';
+      end;
 
       If UpdatesFieldsSet<>'' then
-        System.Delete(UpdatesFieldsSet, Length(UpdatesFieldsSet), 1);
+        System.Delete(UpdatesFieldsSet, Length(UpdatesFieldsSet)-1, 2);
 
       KeyFieldsSet:='';
       For FieldN in UpdateFields Do
-      If UpdateKind=ukKeys then
-        begin
-          if not KeyFields.Contains(FieldN) then
-          //If not MatchStr(UpdateFields[v1-1], KeyFields) then
-            KeyFieldsSet:=KeyFieldsSet+':'+FieldN+',';
-        End
-        Else
-          KeyFieldsSet:=KeyFieldsSet+':'+FieldN+',';
+      begin
+        if not KeyFields.Contains(FieldN) then
+          KeyFieldsSet:=KeyFieldsSet+':'+FieldN+', ';
+      end;
 
       If KeyFieldsSet<>'' then
-        System.Delete(KeyFieldsSet, Length(KeyFieldsSet), 1);
+        System.Delete(KeyFieldsSet, Length(KeyFieldsSet)-1, 2);
 
       If not FindNotAllowedOperation(dsoInsert) then
         lInsertSQL:='insert into '+TableName+'('+UpdatesFieldsSet+') values('+
@@ -592,7 +563,7 @@ Begin
           KeyFieldsSet:=KeyFieldsSet+FieldN+'=:OLD_'+FieldN+' and ';
 
       If KeyFieldsSet<>'' then
-        System.Delete(KeyFieldsSet, Length(KeyFieldsSet)-4, 4);
+        System.Delete(KeyFieldsSet, Length(KeyFieldsSet)-4, 5);
 
       If not FindNotAllowedOperation(dsoDelete) then
         lDeleteSQL:='delete from '+TableName+' where '+KeyFieldsSet;
@@ -624,7 +595,7 @@ Begin
       If ToOpen then
       {$ENDIF}
       If not Active Then
-        If TextSQLSel<>'' Then
+        If TextSQLSel.Trim<>'' Then
           inherited Open;
     End
     Else
