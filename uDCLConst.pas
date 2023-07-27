@@ -51,8 +51,6 @@ const
   AccessLibVersion=laz_version;
 {$ENDIF}
 
-  Version='12.0.0.01';
-
   JPEGCompressionQuality=85;
 
   ShowFormPanel=True;

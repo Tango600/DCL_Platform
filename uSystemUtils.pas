@@ -5,8 +5,7 @@ interface
 
 uses
 {$IFDEF MSWINDOWS}
-  Windows, ShellApi, Variants, ShlObj,
-  ActiveX, ComObj,
+  Windows, Variants, ShlObj, ComObj,
 {$ENDIF}
 {$IFDEF FPC}
   LConvEncoding,

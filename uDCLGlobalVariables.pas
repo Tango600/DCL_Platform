@@ -4,7 +4,7 @@ unit uDCLGlobalVariables;
 interface
 
 uses
-  uDCLData, uDCLFormsNotifier;
+  uDCLGlobalConfigTable, uDCLFormsNotifier;
 
 var
   GPT: TGPT;

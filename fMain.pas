@@ -37,7 +37,7 @@ Const
 implementation
 
 uses
-  fAbout, IniFiles, uDCLGlobalVariables, uDCLMeasurements;
+  fAbout, IniFiles, uDCLGlobalVariables, uDCLMeasurements, uDCLVersion;
 
 {$R *.lfm}
 
@@ -157,7 +157,7 @@ begin
   {$IFDEF MSWINDOWS}
   AppendMenu(GetSystemMenu(Handle, False), MF_SEPARATOR, 0, '');
   AppendMenu(GetSystemMenu(Handle, False), MF_STRING, AboutMenuItem,
-    Pchar(UTF8ToWinCP('DCL '+GetDCLMessageString(msVersion)+' : '+uDCLConst.Version)));
+    Pchar(UTF8ToWinCP('DCL '+GetDCLMessageString(msVersion)+' : '+Version)));
   AppendMenu(GetSystemMenu(Handle, False), MF_STRING, LockMenuItem, PChar(UTF8ToWinCP(GetDCLMessageString(msLock)+'...')));
   {$ENDIF}
 end;

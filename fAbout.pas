@@ -37,7 +37,7 @@ var
 implementation
 
 uses
-  uDCLConst;
+  uDCLConst, uDCLVersion;
 
 {$R *.lfm}
 
@@ -53,7 +53,7 @@ end;
 
 procedure TAboutForm.FormCreate(Sender: TObject);
 begin
-  lbVersion.Caption:=Version;
+  lbVersion.Caption:=DCLVersion;
   lbDBLib.Caption:=DBEngineType;
   lbDBLibVersion.Caption:=AccessLibVersion;
 

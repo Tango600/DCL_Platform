@@ -503,8 +503,8 @@ end;
 procedure TDCLCommand.RunTextReport(ScrLine: String; Query: TDCLDialogQuery; Grid: TDCLGrid);
 var
   tmpDCL: TStringList;
-  tmpS, tmpS1, tmpS2, tmpS3: String;
-  v1, v2, RepIdParams, RecCount: Integer;
+  tmpS, tmpS1: String;
+  v1, RepIdParams, RecCount: Integer;
   DCLQuery: TDCLSimlyQuery;
   TextReport: TDCLTextReport;
 begin
@@ -593,7 +593,7 @@ end;
 procedure TDCLCommand.RunCommand(Command: String);
 var
   tmpS, tmpS1, tmpS2, tmpS3: String;
-  v1, v2, RepIdParams: Integer;
+  v1, v2: Integer;
   Wait: Boolean;
   tmpDCLForm: TDCLForm;
   SheetReportSelector: TSheetOfficeReportSelector;

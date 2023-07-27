@@ -131,8 +131,7 @@ procedure TDCLDataStorage.SetData(DataName: String; FindType: TFindType;
   Stream: TMemoryStream; Compress: Boolean);
 var
   BS: TMemoryStream;
-  tmpSQL, tmpSQL1, insSQL, valuesSQL, S, Value: String;
-  i: Integer;
+  tmpSQL, insSQL, valuesSQL: String;
   Signature: Cardinal;
 begin
   If Stream.Size>0 Then
@@ -173,7 +172,6 @@ begin
     end;
     If DCLQuery.IsEmpty Then
     begin
-      tmpSQL1:=tmpSQL;
       If FindType<>ftSQL Then
         DCLQuery.Close;
       Case FindType of

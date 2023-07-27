@@ -44,7 +44,7 @@ type
     ShadowTransaction: TTransaction;
     {$ENDIF}
 
-    FMainTable, FKeyField, FKeyFields: string;
+    FMainTable, FKeyField: string;
     FAfterPost, FAfterCancel, FAfterOpen, FBeforePost, FBeforeInsert, FAfterDelete,
       FAfterInsert: TDataSetNotifyEvent;
     FNotAllowOperations: TOperationsTypes;

@@ -4,7 +4,7 @@ unit uDCLValuesParser;
 interface
 
 uses
-  Classes, SysUtils, StrUtils, DateUtils,
+  Classes, SysUtils, DateUtils,
   uDCLConst, uDCLData, uDCLTypes, uDCLVariables, uStringParams, SumProps,
   uDCLMD5;
 
@@ -30,7 +30,7 @@ implementation
 
 uses
   uDCLDBStructure, uDCLUtils, uSystemUtils, uDateTimeHelper, uDCLMultiLang,
-  uDBUtils, uDCLDBUtils, uDCLGlobalVariables;
+  uDBUtils, uDCLDBUtils, uDCLGlobalVariables, uDCLVersion;
 
 const
   MaxSysVars=49;
@@ -249,7 +249,7 @@ begin
         4:
         TmpStr:=TimeStampToStr(Now);
         5:
-        TmpStr:=Version;
+        TmpStr:=DCLVersion;
         6:
         begin
           if Assigned(Query) then
@@ -313,7 +313,7 @@ begin
         25:
         TmpStr:=GPT.GetValueSeparator;
         26:
-        TmpStr:=Version;
+        TmpStr:=DCLVersion;
         27:
         TmpStr:=ExcludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0)));
         28:
