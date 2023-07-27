@@ -96,12 +96,13 @@ begin
         GPT.IBAll:=True;
 
       GPT.NewConnectionString:='';
-      FDBLogOn.ConnectionString:=GPT.ConnectionString;
-      FDBLogOn.LoginPrompt:=False;
+      ConnectionString:=GPT.ConnectionString;
+      LoginPrompt:=False;
 
       try
-        If FDBLogOn.Properties.Count>0 Then
-          FDBLogOn.Open;
+        If Properties.Count>0 Then
+          Open;
+        KeepConnection:=True;
       Except
         On E: Exception do
         begin

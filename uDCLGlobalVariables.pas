@@ -4,7 +4,6 @@ unit uDCLGlobalVariables;
 interface
 
 uses
-  Classes, SysUtils,
   uDCLData, uDCLFormsNotifier;
 
 var

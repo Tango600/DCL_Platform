@@ -240,10 +240,7 @@ Begin
         End;
         If PosEx('OneCopy=', Params[i])=1 Then
         Begin
-          If Trim(FindParam('OneCopy=', Params[i]))='1' Then
-            GPT.OneCopy:=True
-          Else
-            GPT.OneCopy:=False;
+          GPT.OneCopy:=Trim(FindParam('OneCopy=', Params[i]))='1';
         End;
 
         If PosEx('DisableIniPasword=1', Params[i])=1 Then

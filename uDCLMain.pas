@@ -4,6 +4,9 @@ unit uDCLMain;
 interface
 
 uses
+  {$IFDEF MSWINDOWS}
+  Windows,
+  {$ENDIF}
   Classes, SysUtils, Generics.Collections, Forms, ExtCtrls,
   uDCLTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLData, uDCLMenu,
   uDCLFormsNotifier, uDCLConst;
@@ -55,7 +58,7 @@ implementation
 
 uses
   uDCLConfig, uDCLCommand, uDCLDBStructure, uDCLMultiLang,
-  uDCLGlobalVariables, uDCLUtils;
+  uDCLGlobalVariables, uDCLUtils, uDCLMessages;
 
 { TDCLMain }
 
@@ -188,8 +191,6 @@ begin
 
   GPT.AccessLevel:=ulExecute;
 
-  FormsNotifier:=TDCLFormsNotifier.Create(FForms);
-
   FDCLConfig.GetParamsStructure;
 
   Path:=ExtractFilePath(Application.ExeName);
@@ -197,6 +198,20 @@ begin
   InitLangEnv;
 
   LoadLangRes(LangName, Path);
+
+  {$IFDEF MSWINDOWS}
+  If GPT.OneCopy Then
+  begin
+    CreateMutex(nil, True, MemFileName);
+    If GetLastError=ERROR_ALREADY_EXISTS Then
+    begin
+      ShowErrorMessage(1, GetDCLMessageString(msAppRunning));
+      Halt;
+    end;
+  end;
+  {$ENDIF}
+
+  FormsNotifier:=TDCLFormsNotifier.Create(FForms);
 
   FDBConnector:=TDCLDBConnector.Create;
   FDCLConfig.DBConnector:=FDBConnector;

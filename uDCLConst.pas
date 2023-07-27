@@ -225,6 +225,7 @@ Type
   TSheetFillStrategy=(sfsInsert, sfsReplace);
   TFieldParsingMode=(fpmNone, fpmCaption, fpmField);
   TPopupMenuAction=(pmaNone, pmaCopy, pmaCut, pmaPaste, pmaUndo, pmaFindCurrCell, pmaClearFind);
+  TSortOrder=(soNone, soAsc, soDesc);
 
   TTransactionType=(trtWrite, trtRead, trtUniversal);
 

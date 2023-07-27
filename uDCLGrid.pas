@@ -22,6 +22,11 @@ type
     FieldName: String;
   end;
 
+  TSortField=class
+    FieldName: String;
+    Order: TSortOrder;
+  end;
+
   { TDCLGrid }
 
   TDCLGrid=class(TWinControl)
@@ -67,7 +72,7 @@ type
     FFilters: TList<TDBFilter>;
     FCalendars: TList<TDCLCalendar>;
     FPicturesIndexes: TDictionary<TPicturesTypes, Integer>;
-    FOrdersFields: TDictionary<String, Integer>;
+    FOrdersFields: TList<TSortField>;
     FOrderByFields, FNotOrderByFields: TStringList;
     FSumQuery: TDCLDialogQuery;
     FSummGrid: TNoScrollBarDBGrid;
@@ -95,6 +100,7 @@ type
 
     procedure ClickNavigator(Sender: TObject; Button: TNavigateBtn);
 
+    procedure SetDataStatus(Status: TDataStatus);
     procedure UpdateAllControls;
     // DataEvents
     procedure AfterInsert(Data: TDataSet);
@@ -300,8 +306,7 @@ uses
 
 constructor TLookupTable.Create(NameSpace: String; Forms: TList<TForm>;
   Form: TForm; Parent: TWinControl; Variables: TVariables;
-  DBConnector: TDCLDBConnector; Query: TDCLQuery;
-  Data: TDataSource);
+  DBConnector: TDCLDBConnector; Query: TDCLQuery; Data: TDataSource);
 begin
   inherited Create(Parent);
   Self.Parent:=Parent;
@@ -399,6 +404,11 @@ begin
     ReFreshData;
 end;
 
+procedure TDCLGrid.SetDataStatus(Status: TDataStatus);
+begin
+
+end;
+
 procedure TDCLGrid.UpdateAllControls;
 var
   Edit: TDCLField;
@@ -474,7 +484,7 @@ begin
 
     ExecEvents(evtInsert);
 
-    //SetDataStatus(dssChanged);
+    SetDataStatus(dssChanged);
   end;
 
   UpdateAllControls;
@@ -513,12 +523,12 @@ begin
   ReFreshData;
   FormsNotifier.NotifyForms(fnaRefresh);
   UpdateAllControls;
-  //SetDataStatus(dssSaved);
+  SetDataStatus(dssSaved);
 end;
 
 procedure TDCLGrid.AfterCancel(Data: TDataSet);
 begin
-  //SetDataStatus(dssSaved);
+  SetDataStatus(dssSaved);
   ExecEvents(evtCancel);
 end;
 
@@ -682,6 +692,71 @@ procedure TDCLGrid.GridColumnClick(Column: TColumn);
 var
   SortIt: Boolean;
   tmpSQL, OrderBy, FieldName: String;
+  i: Integer;
+
+  function GetField(FieldName: String): TSortField;
+  var
+    FF: TSortField;
+  begin
+    Result:=nil;
+    for FF in FOrdersFields do
+    begin
+      if LowerCase(FF.FieldName)=LowerCase(FieldName) then
+      begin
+        Result:=FF;
+        break;
+      end;
+    end;
+  end;
+
+  procedure RemoveField(FieldName: String);
+  begin
+    FOrdersFields.Remove(GetField(FieldName));
+  end;
+
+  function ContainsField(FieldName: String): Boolean;
+  begin
+    Result:=Assigned(GetField(FieldName));
+  end;
+
+  procedure TurnOrder(var Column: TColumn);
+  var
+    SortOrder: TSortOrder;
+    FF: TSortField;
+  begin
+    FF:=GetField(Column.FieldName);
+    if Assigned(FF) then
+    begin
+      SortOrder:=FF.Order;
+      if SortOrder=soDesc then
+      begin
+        Column.Title.ImageIndex:=FPicturesIndexes[ptUpArrow];
+        FF.Order:=soAsc;
+      end
+      else
+      begin
+        Column.Title.ImageIndex:=FPicturesIndexes[ptDownArrow];
+        FF.Order:=soDesc;
+      end;
+    end;
+  end;
+
+  procedure AddField(var Column: TColumn);
+  var
+    FF: TSortField;
+  begin
+    FF:=GetField(Column.FieldName);
+    if not Assigned(FF) then
+    begin
+      Column.Title.ImageIndex:=FPicturesIndexes[ptUpArrow];
+
+      FF:=TSortField.Create;
+      FF.FieldName:=LowerCase(Column.FieldName);
+      FF.Order:=soAsc;
+      FOrdersFields.Add(FF);
+    end;
+  end;
+
 begin
   SortIt:=True;
   If FOrderByFields.Count>0 Then
@@ -707,39 +782,40 @@ begin
 
   If SortIt Then
   begin
-    If KeyState(VK_SHIFT) Then
+    If KeyState(VK_SHIFT) then
     begin
+      //Снять
       Column.Title.ImageIndex:=-1;
-      if FOrdersFields.ContainsKey(LowerCase(Column.FieldName)) then
-      begin
-        FOrdersFields.Remove(LowerCase(Column.FieldName));
-      end;
+      RemoveField(Column.FieldName);
     end
     else
     begin
-      If KeyState(VK_CONTROL) Then
+      If KeyState(VK_CONTROL) then
       begin
-        Column.Title.ImageIndex:=FPicturesIndexes[ptUpArrow];
-        if not FOrdersFields.ContainsKey(LowerCase(Column.FieldName)) then
+        //Добавить
+        if not ContainsField(Column.FieldName) then
         begin
-          FOrdersFields.Add(LowerCase(Column.FieldName), -1);
-        end
-        else
-        begin
-          FOrdersFields[LowerCase(Column.FieldName)]:=-1;
+          AddField(Column);
         end;
       end
       else
       begin
-        if not FOrdersFields.ContainsKey(LowerCase(Column.FieldName)) then
+        //Если не отсортировано, сбросить всё
+        if not ContainsField(Column.FieldName) then
         begin
-          FOrdersFields.Add(LowerCase(Column.FieldName), 1);
+          FOrdersFields.Clear;
+          for i:=0 to FDBGrid.Columns.Count-1 do
+          begin
+            FDBGrid.Columns[i].Title.ImageIndex:=-1;
+          end;
+
+          AddField(Column);
         end
         else
         begin
-          FOrdersFields[LowerCase(Column.FieldName)]:=1;
+          //иначе, обратить
+          TurnOrder(Column);
         end;
-        Column.Title.ImageIndex:=FPicturesIndexes[ptDownArrow];
       end;
     end;
 
@@ -756,7 +832,7 @@ end;
 function TDCLGrid.SortDB(var SQL: String): String;
 var
   OrderBy: String;
-  OrderField: TPair<String, Integer>;
+  OrderField: TSortField;
   Parser: TSQLParser;
 begin
   Result:='';
@@ -768,8 +844,12 @@ begin
     OrderBy:='';
     for OrderField in FOrdersFields do
     begin
-      OrderBy:=OrderBy+OrderField.Key;
-      if OrderField.Value<0 then
+      if OrderField.Order=soNone then
+        Continue;
+
+      OrderBy:=OrderBy+OrderField.FieldName;
+
+      if OrderField.Order=soDesc then
         OrderBy:=OrderBy+' desc';
 
       OrderBy:=OrderBy+', '
@@ -787,11 +867,26 @@ procedure TDCLGrid.ReDrawColumns;
 var
   Column: TColumn;
   i: Integer;
+
+  function ContainsField(FieldName: String): Boolean;
+  var
+    FF: TSortField;
+  begin
+    Result:=False;
+    for FF in FOrdersFields do
+    begin
+      if LowerCase(FF.FieldName)=LowerCase(FieldName) then
+      begin
+        Result:=True;
+        break;
+      end;
+    end;
+  end;
 begin
   for i:=1 to FDBGrid.Columns.Count do
   begin
     Column:=FDBGrid.Columns[i-1];
-    if FOrdersFields.ContainsKey(LowerCase(Column.FieldName)) then
+    if ContainsField(Column.FieldName) then
     begin
       Column.Title.Font.Style:=[fsBold];
     end
@@ -842,7 +937,6 @@ begin
   begin
     FToolsPanel:=TPanel.Create(FMainPanel);
     FToolsPanel.Parent:=FMainPanel;
-    //FToolsPanel.OnResize:=OnToolPanelResize;
   end;
   FToolsPanel.Align:=alTop;
 end;
@@ -1052,7 +1146,6 @@ begin
     begin
       AddDropBox(FCurrentField, FCurrentField.FirstFieldsLine);
     end;
-
 
     FDCLFields.Add(FCurrentField);
   end;
@@ -1900,9 +1993,7 @@ begin
 
   DBLookupControl:=TDBLookupComboBox.Create(FFieldsPanel);
   DBLookupControl.Parent:=FFieldsPanel;
-  {$IFnDEF FPC}
   DBLookupControl.DropDownRows:=20;
-  {$ENDIF}
 
   DBLookupControl.ShowHint:=True;
   DBLookupControl.Hint:=Field.Hint;
@@ -2828,7 +2919,7 @@ begin
   LookupTable.DCLGrid.DependField:=FindParam('DependField=', Scr);
   LookupTable.DCLGrid.NoDataField:=Field.NoDataField;
 
-  //LookupTable.DCLGrid.MasterValueVariableName:=FindParam('VariableName=', Scr);
+  LookupTable.DCLGrid.MasterValueVariableName:=FindParam('VariableName=', Scr);
 
   if not Field.NoDataField then
   If FQuery.Active then
@@ -2909,7 +3000,8 @@ begin
       FQuery.FreeBookmark(FLocalBookmark);
     end;
   {$ELSE}
-
+  If Assigned(FLocalBookmark) Then
+    FQuery.GotoKeyBookmark(FLocalBookmark);
   {$ENDIF}
   For tpc in FTableParts do
   begin
@@ -3316,7 +3408,7 @@ begin
 
   FOrderByFields:=TStringList.Create;
   FNotOrderByFields:=TStringList.Create;
-  FordersFields:=TDictionary<String, Integer>.Create;
+  FordersFields:=TList<TSortField>.Create;
 
   FFieldParsingMode:=fpmNone;
   FDataControlType:=SurfType;
