@@ -9,9 +9,6 @@ uses
 {$ENDIF}
 {$IFDEF FPC}
   LConvEncoding,
-{$IFDEF UNIX}
-  cwstring,
-{$ENDIF}
 {$ENDIF}
 {$IFDEF FPC}
   InterfaceBase, LCLType,
@@ -173,11 +170,6 @@ End;
 Procedure Exec(Const FileName, Directory: String);
 Begin
   ExecuteApp(FileName);
-End;
-
-Procedure OpenDir(Dir: string);
-Begin
-  ExecuteApp('xdg-open '+Dir);
 End;
 
 {$ENDIF}

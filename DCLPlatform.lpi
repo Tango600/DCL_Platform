@@ -26,12 +26,6 @@
     </RunParams>
     <RequiredPackages>
       <Item>
-        <PackageName Value="lr_zeosdb"/>
-      </Item>
-      <Item>
-        <PackageName Value="ibnongui"/>
-      </Item>
-      <Item>
         <PackageName Value="LCL"/>
       </Item>
     </RequiredPackages>
@@ -124,27 +118,7 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="uDCLOfficeTextReport.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
         <Filename Value="uDCLTextReport.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
-        <Filename Value="uSheetOfficeReportSelector.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
-        <Filename Value="uDCLBaseOfficeReport.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
-        <Filename Value="uTextOfficeReportSelector.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
-        <Filename Value="uOfficeReportBaseSelector.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>

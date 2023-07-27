@@ -57,7 +57,10 @@ type
 implementation
 
 uses
-  uSheetOfficeReportSelector, uTextOfficeReportSelector, uDCLGlobalVariables,
+{$IFDEF MSWINDOWS}
+  uSheetOfficeReportSelector, uTextOfficeReportSelector,
+{$ENDIF}
+  uDCLGlobalVariables,
   uRunProgram, uDCLMessages, uDCLMultiLang, uSQLUtils, uSystemUtils, uDCLMain,
   {$IFDEF TRANSACTIONDB}
   uDCLDBTransaction,
@@ -596,8 +599,10 @@ var
   v1, v2: Integer;
   Wait: Boolean;
   tmpDCLForm: TDCLForm;
+  {$IFDEF MSWINDOWS}
   SheetReportSelector: TSheetOfficeReportSelector;
   TextOfficeReportSelector: TTextOfficeReportSelector;
+  {$ENDIF}
   Parser: TDCLValuseParser;
   DCLEdit: TDCLEdit;
 begin
@@ -738,6 +743,7 @@ begin
     OpenDir(tmpS);
   end;
 
+  {$IFDEF MSWINDOWS}
   If IsLexem('ReportOfficeSheet=', Command) then
   begin
     Parser:=TDCLValuseParser.Create(FNameSpace, FVariables);
@@ -761,6 +767,7 @@ begin
     TextOfficeReportSelector.Run;
     FreeAndNil(Parser);
   end;
+  {$ENDIF}
 
   If Assigned(FDCLForm) Then
   begin

@@ -105,7 +105,7 @@ var
   S: String;
   T: TextFile;
 begin
-  Caption:='DCL Run v.'+Version;
+  Caption:='DCL Run v.'+DCLVersion;
 
   MDI:=False;
   if FileExists('interface.ini') then

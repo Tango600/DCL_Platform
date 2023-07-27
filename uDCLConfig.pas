@@ -5,7 +5,10 @@ interface
 
 uses
   Classes, SysUtils, Forms,
-  uDCLData, uDCLTypes, uDCLConst, uDCLUtils, uStringParams, uDCLOfficeUtils;
+{$IFDEF MSWINDOWS}
+  uDCLOfficeUtils,
+{$ENDIF}
+  uDCLData, uDCLTypes, uDCLConst, uDCLUtils, uStringParams;
 
 type
 
@@ -303,6 +306,7 @@ Begin
           GPT.TimeFormat:=Trim(FindParam('TimeSeparator=', Params[i]));
         End;
 
+        {$IFDEF MSWINDOWS}
         If PosEx('OfficeType=', Params[i])=1 Then
         Begin
           GPT.OfficeFormat:=ConvertOfficeType(Trim(FindParam('OfficeType=', Params[i])));
@@ -312,6 +316,7 @@ Begin
         Begin
           GPT.OfficeDocumentFormat:=GetDocumentType(Trim(FindParam('OfficeDocumentFormat=', Params[i])));
         End;
+        {$ENDIF}
 
         If PosEx('UserLocalProfile=', Params[i])=1 Then
         Begin

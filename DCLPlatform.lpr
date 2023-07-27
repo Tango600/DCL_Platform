@@ -13,12 +13,10 @@ uses
   uDCLTypes, uDCLConst, uDCLMain, uDCLForm, uDCLCommand, uDCLGrid,
   uDCLVariables, uDCLDBConnector, uDCLConfig, uStringParams, uDCLDebug,
   uDCLMenu, uDBUtils, fDCLLoginForm, uSystemUtils, uSQLUtils, uDCLDBStructure,
-  uDCLMultiLang, uDCLValuesParser, uDCLOfficeUtils, uDCLOLE, uDCLMeasurements,
+  uDCLMultiLang, uDCLValuesParser, uDCLMeasurements,
   uDCLCommandButton, uDCLMD5, uDCLBaseLayoutManger, uDCLButtonLayoutManger,
   uDCLVerticalFieldLayoutManger, uDCLField, uDCLImages, uSQLParser,
-  cNoScrollBarDBGrid, cMediaFieldGroup, uDCLDataStorage, uDCLOfficeTextReport,
-  uDCLOfficeSheetReport, uDCLTextReport, uSheetOfficeReportSelector,
-  uDCLBaseOfficeReport, uTextOfficeReportSelector, uOfficeReportBaseSelector,
+  cNoScrollBarDBGrid, cMediaFieldGroup, uDCLDataStorage, uDCLTextReport,
   uRunProgram, uPrintBase, uDCLFormsNotifier, fChangePasswordForm, fAbout,
   uDCLQueryUtils, uDCLVersion, uDCLGlobalConfigTable;
 

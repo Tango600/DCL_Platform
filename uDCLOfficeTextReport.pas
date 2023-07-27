@@ -25,7 +25,10 @@ implementation
 
 uses
   DB,
-  uSystemUtils, uDCLUtils, uDCLOfficeUtils, uDCLMessages, uDCLGlobalVariables,
+  {$IFDEF MSWINDOWS}
+    uDCLOfficeUtils,
+  {$ENDIF}
+  uSystemUtils, uDCLUtils, uDCLMessages, uDCLGlobalVariables,
   uStringParams, uDBUtils, uRunProgram, SumProps;
 
 { TDCLOfficeTextReport }
