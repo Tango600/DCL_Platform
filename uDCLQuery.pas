@@ -983,22 +983,41 @@ begin
 end;
 
 function TDCLQuery.GetKeyBookmark: TBookmark;
+var
+  S: String;
+  MS: TMemoryStream;
 begin
   Result:=nil;
   if FKeyField<>'' then
   begin
     if Active then
-      Result:=FieldByName(FKeyField).AsBytes;
+    begin
+      S:=FieldByName(FKeyField).AsString;
+      MS:=TMemoryStream.Create;
+      MS.Write(S[1], S.Length);
+      SetLength(Result, S.Length);
+      MS.Position:=0;
+      MS.Read(Result[0], S.Length);
+    end;
   end;
 end;
 
 procedure TDCLQuery.GotoKeyBookmark(Bookmark: TBookmark);
 var
   KValues: Variant;
+  MS: TMemoryStream;
+  S: String;
 begin
   if Active and (FKeyField<>'') then
   begin
-    KValues:=FieldByName(FKeyField).AsBytes;
+    S:='';
+    SetLength(S, Length(Bookmark));
+    MS:=TMemoryStream.Create;
+    MS.Write(Bookmark[0], Length(Bookmark));
+    MS.Position:=0;
+    MS.Read(S[1], Length(Bookmark));
+
+    KValues:=S;
     Locate(FKeyField, KValues, [loCaseInsensitive]);
   end;
 end;
