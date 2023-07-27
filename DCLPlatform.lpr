@@ -124,6 +124,7 @@ begin
   RequireDerivedFormResource:=False;
   Application.Scaled:=True;
   Application.Initialize;
+  Application.Title:='DCL Platform '+DCLVersion;
 
   DCL:=TDCLMain.Create;
   if DCL.IsNeedLogin or KeyState(vk_Shift) then
