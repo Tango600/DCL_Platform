@@ -683,7 +683,7 @@ end;
 
 procedure TDCLForm.SaveFormPos;
 var
-  ConfigPath: String;
+  ConfigPath, Section: String;
   Settings: TIniFile;
 begin
   if GPT.DialogsSettings and (Self.WindowState=wsNormal) then
@@ -692,11 +692,15 @@ begin
     if not DirectoryExists(ConfigPath) then
       ForceDirectories(ConfigPath);
 
+    Section:='Position';
+    if Self.FormStyle=fsMDIForm then
+      Section:=Section+'MDI';
+
     Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
-    Settings.WriteInteger('Position', 'Top', Self.Top);
-    Settings.WriteInteger('Position', 'Left', Self.Left);
-    Settings.WriteInteger('Position', 'Height', Self.Height);
-    Settings.WriteInteger('Position', 'Width', Self.Width);
+    Settings.WriteInteger(Section, 'Top', Self.Top);
+    Settings.WriteInteger(Section, 'Left', Self.Left);
+    Settings.WriteInteger(Section, 'Height', Self.Height);
+    Settings.WriteInteger(Section, 'Width', Self.Width);
 
     FreeAndNil(Settings);
   end;
