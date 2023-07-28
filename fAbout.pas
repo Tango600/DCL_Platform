@@ -11,10 +11,15 @@ type
   { TAboutForm }
 
   TAboutForm = class(TForm)
-    Button1: TButton;
+    ButtonOK: TButton;
     GroupBox1: TGroupBox;
-    Image1: TImage;
+    ImageLogo: TImage;
     Label1: TLabel;
+    Label2: TLabel;
+    Label3: TLabel;
+    Label4: TLabel;
+    Label5: TLabel;
+    Label6: TLabel;
     lbBuildDate: TLabel;
     lbBuildType: TLabel;
     lbCompillerName: TLabel;
@@ -25,7 +30,9 @@ type
     lbVersion: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
+    procedure ImageLogoClick(Sender: TObject);
   private
+    LogoClickCount: Integer;
 
   public
 
@@ -45,9 +52,23 @@ uses
 
 procedure TAboutForm.FormResize(Sender: TObject);
 begin
-  if Assigned(Button1) then
+  if Assigned(ButtonOK) then
   begin
-    Button1.Left:=(Width-Button1.Width) div 2;
+    ButtonOK.Left:=(Width-ButtonOK.Width) div 2;
+  end;
+end;
+
+procedure TAboutForm.ImageLogoClick(Sender: TObject);
+begin
+  Inc(LogoClickCount);
+
+  if LogoClickCount>=4 then
+  begin
+    ImageLogo.Hint:='Осталось совсем немного до перехода!';
+    ImageLogo.ShowHint:=True;
+
+    ButtonOK.Hint:='Скоро всё будет хорошо!';
+    ButtonOK.ShowHint:=True;
   end;
 end;
 
