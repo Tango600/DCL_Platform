@@ -321,7 +321,7 @@ begin
         29:
         TmpStr:=DBEngineType;
         30:
-        TmpStr:=ApplicationName;  // '_APPNAME_'
+        TmpStr:=ExtractFileName(ParamStr(0));  // '_APPNAME_'
         31:
         TmpStr:=GPT.DCLUserName;
         32:

@@ -80,7 +80,10 @@ begin
     FParser.RePlaceProc(S, Factor, FDCLGrid.Query);
   end
   else
+  begin
     FParser.RePlaseVariables(FNameSpace, S, nil);
+    FParser.RePlaceProc(S, Factor, nil);
+  end;
 end;
 
 procedure TDCLCommand.TranslateVals(var S: String; Query: TDCLDialogQuery); overload;
@@ -119,6 +122,8 @@ var
   LineNum: Integer;
 
   procedure Run(IfFlag, Skeep: Boolean);
+  const
+    WhiteSpace=[' ',#9,#10,#13];
   var
     IfResult, Flg, Skp: Boolean;
     posI, posI2: Integer;
@@ -164,11 +169,22 @@ var
           Continue;
         end;
 
+        Line:=TrimLeft(Line);
+
         posI:=Pos('(', Line);
         posI2:=Pos(')', Line);
 
         if (posI=0) and (posI2=0) then
+        begin
+          posI:=1;
+          While (posI<=Length(Line)) and not charinset(Line[posI], WhiteSpace) do
+            Inc(posI);
+
+          While (posI<=Length(Line)) and charinset(Line[posI], WhiteSpace) do
+            Inc(posI);
+
           IfCondition:=Copy(Line, posI, Length(Line)-8).Trim
+        end
         else
           IfCondition:=Copy(Line, posI+1, Pos(')', Line)-posI-1).Trim;
 
