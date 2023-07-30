@@ -9,8 +9,9 @@ uses
   DBExtCtrls, CheckLst, Menus, ClipBrd,
   uDCLData, uDCLTypes, uDCLConst, uDCLVariables, uStringParams,
   uDCLDBConnector, uDCLQuery, uDCLMeasurements, uDBUtils, uDCLMultiLang,
-  uDCLCommandButton, uDCLVerticalFieldLayoutManger, uDCLField, uDCLMessages,
-  uDCLImages, cNoScrollBarDBGrid, cMediaFieldGroup;
+  uDCLCommandButton, uDCLField, uDCLMessages, uDCLImages, cNoScrollBarDBGrid,
+  cMediaFieldGroup, uDCLBaseLayoutManger, uDCLButtonLayoutManger,
+  uDCLVerticalFieldLayoutManger, uDCLHorizontalFieldLayoutManger;
 
 type
   TGridFieldSetting=class
@@ -81,8 +82,8 @@ type
     FStructureList: TCheckListBox;
     PopupGridMenu: TPopupMenu;
 
-    //FButtonLayout: TDCLButtonLayoutManger<TDCLCommandButton>;
-    FFieldLayout: TDCLVerticalFieldLayoutManger<TDCLField>;
+    FButtonLayout: TDCLButtonLayoutManger<TDCLCommandButton>;
+    FFieldLayout: TDCLBaseLayoutManger<TDCLField>;
 
     FUserLevel: TUserLevelsType;
 
@@ -3320,7 +3321,15 @@ begin
     pmaCut: Cut;
     pmaPaste: Paste;
     pmaUndo: Undo;
-
+    pmaClearFind: begin
+      if Assigned(FindGrid) then
+      begin
+        for t:=1 to FindGrid.ColCount-1 do
+        begin
+          FindGrid.Cells[t, FindGrid.RowCount-1]:='';
+        end;
+      end;
+    end;
   end;
 end;
 
@@ -4116,8 +4125,8 @@ begin
       FButtonFlowPanel.AutoSize:=True;
       FButtonFlowPanel.Constraints.MaxHeight:=((ButtonHeight+ButtonsInterval)*3)+ButtonsTop;
 
-      //FButtonLayout:=TDCLButtonLayoutManger<TDCLCommandButton>.Create(FButtonPanel, FButtons);
-      //FButtonLayout.InitMeasurements;
+      FButtonLayout:=TDCLButtonLayoutManger<TDCLCommandButton>.Create(FButtonPanel, FButtons);
+      FButtonLayout.InitMeasurements;
     end;
     if FDataControlType=dctMainGrid then
       FButtonPanel.Align:=alBottom
@@ -4161,7 +4170,10 @@ begin
   begin
     FFieldsPanel.Align:=alClient;
 
-    FFieldLayout:=TDCLVerticalFieldLayoutManger<TDCLField>.Create(FFieldsPanel, FDCLFields);
+    case FGridStyle of
+    gsFields: FFieldLayout:=TDCLVerticalFieldLayoutManger<TDCLField>.Create(FFieldsPanel, FDCLFields);
+    gsFieldsHorizontal: FFieldLayout:=TDCLHorizontalFieldLayoutManger<TDCLField>.Create(FFieldsPanel, FDCLFields);
+    end;
     FFieldLayout.InitMeasurements;
 
     for DCLField in FDCLFields do
@@ -4192,7 +4204,6 @@ begin
               AddDBEdit(DCLField);
             end;
             ftInteger: begin
-
               AddDBEdit(DCLField);
             end;
             ftBoolean: begin
@@ -4210,19 +4221,22 @@ begin
   begin
     if not Assigned(FDBGrid) then
     begin
-      if FToolButtonsCount>0 then
+      if FDCLFields.Count>1 then
       begin
-        FToolBarSplitter:=TToolButton.Create(FToolBar);
-        FToolBarSplitter.Parent:=FToolBar;
-        FToolBarSplitter.Style:=tbsSeparator;
-        FToolBarSplitter.Width:=ToolBarButtonSpliterWidth;
-      end;
+        if FToolButtonsCount>0 then
+        begin
+          FToolBarSplitter:=TToolButton.Create(FToolBar);
+          FToolBarSplitter.Parent:=FToolBar;
+          FToolBarSplitter.Style:=tbsSeparator;
+          FToolBarSplitter.Width:=ToolBarButtonSpliterWidth;
+        end;
 
-      FToolBarButtonStruct:=TToolButton.Create(FToolBar);
-      FToolBarButtonStruct.Parent:=FToolBar;
-      FToolBarButtonStruct.ImageIndex:=FPicturesIndexes[ptStructure];
-      FToolBarButtonStruct.OnClick:=Structure;
-      Inc(FToolButtonsCount);
+        FToolBarButtonStruct:=TToolButton.Create(FToolBar);
+        FToolBarButtonStruct.Parent:=FToolBar;
+        FToolBarButtonStruct.ImageIndex:=FPicturesIndexes[ptStructure];
+        FToolBarButtonStruct.OnClick:=Structure;
+        Inc(FToolButtonsCount);
+      end;
 
       if Assigned(FQuery) then
       begin

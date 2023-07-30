@@ -289,7 +289,7 @@ end;
 
 procedure TDCLForm.FormShow(Sender: TObject);
 var
-  ConfigPath: String;
+  ConfigPath, Section: String;
   Settings: TIniFile;
 begin
   if GPT.DialogsSettings then
@@ -297,11 +297,15 @@ begin
     ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim;
     if DirectoryExists(ConfigPath) and FileExists(ConfigPath+'Settings.ini') then
     begin
+      Section:='Position';
+      if Self.FormStyle=fsMDIChild then
+        Section:=Section+'MDI';
+
       Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
-      Self.Top:=Settings.ReadInteger('Position', 'Top', Self.Top);
-      Self.Left:=Settings.ReadInteger('Position', 'Left', Self.Left);
-      Self.Height:=Settings.ReadInteger('Position', 'Height', Self.Height);
-      Self.Width:=Settings.ReadInteger('Position', 'Width', Self.Width);
+      Self.Top:=Settings.ReadInteger(Section, 'Top', Self.Top);
+      Self.Left:=Settings.ReadInteger(Section, 'Left', Self.Left);
+      Self.Height:=Settings.ReadInteger(Section, 'Height', Self.Height);
+      Self.Width:=Settings.ReadInteger(Section, 'Width', Self.Width);
 
       FreeAndNil(Settings);
     end;
@@ -693,7 +697,7 @@ begin
       ForceDirectories(ConfigPath);
 
     Section:='Position';
-    if Self.FormStyle=fsMDIForm then
+    if Self.FormStyle=fsMDIChild then
       Section:=Section+'MDI';
 
     Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);

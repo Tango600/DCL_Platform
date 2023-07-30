@@ -1,5 +1,4 @@
 unit uDCLVersion;
-{$mode Delphi}
 
 interface
 

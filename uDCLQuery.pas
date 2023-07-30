@@ -998,6 +998,7 @@ begin
       SetLength(Result, S.Length);
       MS.Position:=0;
       MS.Read(Result[0], S.Length);
+      FreeAndNil(MS);
     end;
   end;
 end;
@@ -1016,7 +1017,7 @@ begin
     MS.Write(Bookmark[0], Length(Bookmark));
     MS.Position:=0;
     MS.Read(S[1], Length(Bookmark));
-
+    FreeAndNil(MS);
     KValues:=S;
     Locate(FKeyField, KValues, [loCaseInsensitive]);
   end;

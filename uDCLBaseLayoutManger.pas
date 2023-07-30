@@ -23,7 +23,8 @@ type
 
     procedure ProcessControls;
     procedure ProcessControlFromList(Control: T); virtual; abstract;
-    procedure ProcessPostNextControl; virtual; abstract;
+    procedure ProcessBeforeNextControl; virtual;
+    procedure ProcessPostNextControl; virtual;
   public
     constructor Create(Parent: TWinControl; Controls: TList<T>);
 
@@ -53,10 +54,19 @@ begin
   begin
     for C in FControls do
     begin
+      ProcessBeforeNextControl;
       ProcessControlFromList(C);
       ProcessPostNextControl;
     end;
   end;
+end;
+
+procedure TDCLBaseLayoutManger<T>.ProcessBeforeNextControl;
+begin
+end;
+
+procedure TDCLBaseLayoutManger<T>.ProcessPostNextControl;
+begin
 end;
 
 constructor TDCLBaseLayoutManger<T>.Create(Parent: TWinControl; Controls: TList<T>);

@@ -16,7 +16,7 @@ type
 
   protected
     procedure ProcessControlFromList(Control: T); override;
-    procedure ProcessPostNextControl; override;
+    procedure ProcessBeforeNextControl; override;
   public
     procedure InitMeasurements; override;
 
@@ -49,7 +49,7 @@ begin
   end;
 end;
 
-procedure TDCLButtonLayoutManger<T>.ProcessPostNextControl;
+procedure TDCLButtonLayoutManger<T>.ProcessBeforeNextControl;
 var
   h: Integer;
 begin
@@ -59,7 +59,7 @@ begin
     Inc(FTop, FStepTop*FTopDirect);
   end;
 
-  h:=FTop+ButtonHeight+ButtonsTop*2;
+  h:=FTop+ButtonHeight+ButtonsTop;
   FParent.Height:=h;
 end;
 

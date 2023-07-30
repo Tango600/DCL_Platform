@@ -8,13 +8,16 @@ uses
   uDCLBaseLayoutManger, uDCLMeasurements, uDCLConst, uDCLField, uDCLData;
 
 type
+
+  { TDCLVerticalFieldLayoutManger }
+
   TDCLVerticalFieldLayoutManger<T>=class(TDCLBaseLayoutManger<T>)
   private
     FMaxColWidth, FMaxLabelWidth, FCurrWidth, FCurrHeight, FLabelHeight: Integer;
 
   protected
     procedure ProcessControlFromList(Control: T); override;
-    procedure ProcessPostNextControl; override;
+    procedure ProcessBeforeNextControl; override;
   public
     procedure InitMeasurements; override;
   end;
@@ -75,14 +78,13 @@ begin
     Control.DCLEditComponent.Control.Top:=FTop;
     Control.DCLEditComponent.Control.Left:=FLeft;
 
-    Inc(FTop, FCurrHeight);
-    Inc(FTop, LabelTopInterval);
+    Inc(FTop, FCurrHeight+LabelTopInterval);
   end;
 end;
 
-procedure TDCLVerticalFieldLayoutManger<T>.ProcessPostNextControl;
+procedure TDCLVerticalFieldLayoutManger<T>.ProcessBeforeNextControl;
 begin
-  if FParent.Height<FTop+ButtonsTop+FLabelHeight+FLabelHeight then
+  if FParent.Height<FTop+ButtonsTop+FLabelHeight then
   begin
     if FMaxColWidth>FMaxLabelWidth then
       Inc(FLeft, FMaxColWidth+FieldsStepLeft)

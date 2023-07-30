@@ -28,7 +28,7 @@ const
 {$ENDIF}
 {$IFDEF IBX}
   {$IFDEF IBXLaz}
-  DBEngineType='IBX for Lazarus ';
+  DBEngineType='IBX for Lazarus';
   {$ELSE}
   DBEngineType='IBX';
   {$ENDIF}
@@ -58,14 +58,12 @@ const
 
   TextScriptFileExt='.dst';
   SignedScriptExt='.dcs';
-  SignMethodVer='1.2';
+  SignMethodVer='1.3';
 
   DBTypeFirebird='firebird';
   DBTypeInterbase='interbase';
 
   UserLevelsSet='ulDeny,ulReadOnly,ulWrite,ulExecute,ulLevel,ulDeveloper';
-
-  SW_SHOWNORMAL=1;
 
 {$IFDEF FPC}
   InternalAppNameSuffix='FPC';
@@ -79,7 +77,7 @@ const
 {$IFDEF DELPHI}
   InternalAppNameSuffix='Delphi';
 {$IFDEF MSWINDOWS}
-  LineEnding=#13#10;
+  //LineEnding=#13#10;
 {$ENDIF}
 {$IFDEF WIN32}
   TargetCPU='i386';
@@ -177,7 +175,6 @@ const
   ToolCommandsCount=3;
   ToolButtonsCmd: Array [1..ToolCommandsCount] Of String=('structure', 'print', 'find');
 
-  KeyMarksItems=3;
   TransParams=True;
 
   ScrDataBlockWidth=80;
