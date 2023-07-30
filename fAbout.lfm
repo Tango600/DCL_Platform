@@ -1,26 +1,25 @@
 object AboutForm: TAboutForm
   Left = 471
-  Height = 370
+  Height = 296
   Top = 290
-  Width = 501
+  Width = 401
   BorderStyle = bsDialog
   Caption = 'О ...'
-  ClientHeight = 370
-  ClientWidth = 501
-  DesignTimePPI = 120
+  ClientHeight = 296
+  ClientWidth = 401
   OnCreate = FormCreate
   OnResize = FormResize
   Position = poScreenCenter
   LCLVersion = '2.3.0.0'
   object GroupBox1: TGroupBox
-    Left = 6
-    Height = 358
-    Top = 6
-    Width = 489
+    Left = 5
+    Height = 286
+    Top = 5
+    Width = 391
     Align = alClient
-    BorderSpacing.Around = 6
-    ClientHeight = 333
-    ClientWidth = 485
+    BorderSpacing.Around = 5
+    ClientHeight = 266
+    ClientWidth = 387
     TabOrder = 0
     object ButtonOK: TButton
       AnchorSideLeft.Control = GroupBox1
@@ -28,24 +27,25 @@ object AboutForm: TAboutForm
       AnchorSideRight.Side = asrBottom
       AnchorSideBottom.Control = GroupBox1
       AnchorSideBottom.Side = asrBottom
-      Left = 100
-      Height = 31
-      Top = 287
-      Width = 94
+      Left = 72
+      Height = 25
+      Top = 229
+      Width = 75
       Anchors = [akBottom]
-      BorderSpacing.Left = 125
-      BorderSpacing.Right = 125
-      BorderSpacing.Bottom = 15
+      BorderSpacing.Left = 100
+      BorderSpacing.Right = 100
+      BorderSpacing.Bottom = 12
       Cancel = True
       Caption = 'Close'
       ModalResult = 11
       TabOrder = 0
     end
     object ImageLogo: TImage
-      Left = 20
+      Left = 10
       Height = 90
       Top = 10
       Width = 90
+      AutoSize = True
       OnClick = ImageLogoClick
       Picture.Data = {
         1754506F727461626C654E6574776F726B47726170686963F306000089504E47
@@ -106,119 +106,121 @@ object AboutForm: TAboutForm
         D127654509C34BF1DB2D48BAD4C99106DA32548DE4C0C1B58C7F010DAC50E30E
         7C6D3C0000000049454E44AE426082
       }
+      Proportional = True
+      Stretch = True
       Transparent = True
     end
     object lbProduct: TLabel
-      Left = 150
-      Height = 20
-      Top = 10
-      Width = 60
+      Left = 120
+      Height = 15
+      Top = 8
+      Width = 49
       Caption = 'Продукт:'
       ParentFont = False
     end
     object lbProductName: TLabel
-      Left = 225
-      Height = 20
-      Top = 10
-      Width = 94
+      Left = 180
+      Height = 15
+      Top = 8
+      Width = 74
       Caption = 'DCL Platform'
       Font.Style = [fsBold]
       ParentFont = False
     end
     object lbVersion: TLabel
-      Left = 370
-      Height = 20
-      Top = 10
-      Width = 65
+      Left = 290
+      Height = 15
+      Top = 8
+      Width = 51
       Caption = 'lbVersion'
       Font.Style = [fsBold]
       ParentFont = False
     end
     object lbDBLib: TLabel
-      Left = 225
-      Height = 20
-      Top = 40
-      Width = 55
+      Left = 180
+      Height = 15
+      Top = 32
+      Width = 43
       Caption = 'lbDBLib'
       Font.Style = [fsBold]
       ParentFont = False
     end
     object lbDBLibVersion: TLabel
-      Left = 370
-      Height = 20
-      Top = 40
-      Width = 107
+      Left = 290
+      Height = 15
+      Top = 32
+      Width = 84
       Caption = 'lbDBLibVersion'
       Font.Style = [fsBold]
       ParentFont = False
     end
     object lbCompillerName: TLabel
-      Left = 88
-      Height = 20
-      Top = 250
-      Width = 122
+      Left = 70
+      Height = 15
+      Top = 200
+      Width = 96
       Caption = 'lbCompillerName'
       Font.Style = [fsBold]
       ParentFont = False
     end
     object lbBuildType: TLabel
-      Left = 290
-      Height = 20
-      Top = 250
-      Width = 82
+      Left = 232
+      Height = 15
+      Top = 200
+      Width = 64
       Caption = 'lbBuildType'
       Font.Style = [fsBold]
       ParentFont = False
     end
     object Label1: TLabel
-      Left = 150
-      Height = 20
-      Top = 80
-      Width = 93
+      Left = 120
+      Height = 15
+      Top = 64
+      Width = 74
       Caption = 'Дата сборки :'
     end
     object lbBuildDate: TLabel
-      Left = 260
-      Height = 20
-      Top = 80
-      Width = 82
+      Left = 208
+      Height = 15
+      Top = 64
+      Width = 65
       Caption = 'lbBuildDate'
       Font.Style = [fsBold]
       ParentFont = False
     end
     object Label2: TLabel
-      Left = 15
-      Height = 20
-      Top = 250
-      Width = 60
+      Left = 12
+      Height = 15
+      Top = 200
+      Width = 48
       Caption = 'Собран :'
     end
     object Label3: TLabel
-      Left = 250
-      Height = 20
-      Top = 250
-      Width = 27
+      Left = 200
+      Height = 15
+      Top = 200
+      Width = 23
       Caption = 'ОС :'
     end
     object Label4: TLabel
-      Left = 345
-      Height = 20
-      Top = 10
-      Width = 10
+      Left = 276
+      Height = 15
+      Top = 8
+      Width = 9
       Caption = 'v.'
     end
     object Label5: TLabel
-      Left = 345
-      Height = 20
-      Top = 40
-      Width = 14
+      Left = 276
+      Height = 15
+      Top = 32
+      Width = 12
       Caption = 'v :'
     end
     object Label6: TLabel
-      Left = 150
-      Height = 20
-      Top = 40
-      Width = 71
+      Left = 120
+      Height = 15
+      Top = 32
+      Width = 57
       Caption = 'Движ. БД :'
     end
   end

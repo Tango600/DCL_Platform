@@ -169,6 +169,7 @@ begin
   About:=TAboutForm.Create(Self);
 
   About.ShowModal;
+  About.Release;
 end;
 
 end.

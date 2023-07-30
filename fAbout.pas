@@ -64,7 +64,7 @@ begin
 
   if LogoClickCount>=4 then
   begin
-    ImageLogo.Hint:='Осталось совсем немного до перехода!';
+    ImageLogo.Hint:='Скоро всё будет хорошо!';
     ImageLogo.ShowHint:=True;
 
     ButtonOK.Hint:='Скоро всё будет хорошо!';
