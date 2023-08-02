@@ -6,7 +6,7 @@ interface
 uses
   Classes, SysUtils, DateUtils,
   uDCLConst, uDCLData, uDCLTypes, uDCLVariables, uStringParams, SumProps,
-  uDCLMD5;
+  uDCLMD5, uDCLDBConnector;
 
 type
 
@@ -16,6 +16,7 @@ type
   private
     FNameSpace: String;
     FVariables: TVariables;
+    FDBConnector: TDCLDBConnector;
   public
     constructor Create(NameSpace: String; Variables: TVariables); overload;
 
@@ -24,13 +25,15 @@ type
     procedure RePlaceProc(var Params: String; Var Factor: Integer; Query: TDCLDialogQuery);
 
     procedure TranslateVals(var Params: String; Query: TDCLDialogQuery; CheckParams: Boolean);
+
+    procedure SetConnector(DBConnector: TDCLDBConnector);
   end;
 
 implementation
 
 uses
   uDCLDBStructure, uDCLUtils, uSystemUtils, uDateTimeHelper, uDCLMultiLang,
-  uDBUtils, uDCLDBUtils, uDCLGlobalVariables, uDCLVersion;
+  uDBUtils, uDCLDBUtils, uDCLGlobalVariables, uDCLVersion, uDCLConfigTable;
 
 const
   MaxSysVars=49;
@@ -400,7 +403,8 @@ var
   c: Char;
   FunctionParams: Array Of String;
   FunctionParamsCount: Byte;
-  Sign:TSign;
+  Sign: TSign;
+  DCLConfig: TDCLConfigTable;
 Begin
   Inc(Factor);
   StartSearch:=Pos(ProcPrefix, Params);
@@ -624,19 +628,16 @@ Begin
 
         12: // ReadConfig
         Begin
-          {If FunctionParamsCount=1 Then
-            TmpStr:=DCLMainLogOn.ReadConfig(FunctionParams[1], '')
-          Else
-            TmpStr:=DCLMainLogOn.ReadConfig(FunctionParams[1], FunctionParams[2]);}
+          DCLConfig:=TDCLConfigTable.Create(FDBConnector);
+          TmpStr:=DCLConfig.ReadConfig(FunctionParams[1], '');
+          FreeAndNil(DCLConfig);
         End;
 
         13: // WriteConfig
         Begin
-          {If FunctionParamsCount=2 Then
-            DCLMainLogOn.WriteConfig(FunctionParams[1], FunctionParams[2], '')
-          Else
-            DCLMainLogOn.WriteConfig(FunctionParams[1], FunctionParams[2], FunctionParams[3]);}
-
+          DCLConfig:=TDCLConfigTable.Create(FDBConnector);
+          DCLConfig.WriteConfig(FunctionParams[1], FunctionParams[2], '');
+          FreeAndNil(DCLConfig);
           TmpStr:='';
         End;
 
@@ -839,6 +840,11 @@ begin
     RePlaseParams(Params, Query);
   Factor:=0;
   RePlaceProc(Params, Factor, Query);
+end;
+
+procedure TDCLValuseParser.SetConnector(DBConnector: TDCLDBConnector);
+begin
+  FDBConnector:=DBConnector;
 end;
 
 end.

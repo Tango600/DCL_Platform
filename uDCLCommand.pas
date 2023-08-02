@@ -46,9 +46,6 @@ type
       ReturnValueParams: TReturnValueParams; Modal: Boolean;
       RetValueProc: TGetValueProc): TDCLForm;
 
-    function ReadConfig(ConfigName, UserId: String): String;
-    procedure WriteConfig(ConfigName, NewValue, UserId: String);
-
     procedure DialogCommand(ScrStr: String);
 
     procedure RetValue(ReturnValue: TReturnFormValue);
@@ -60,8 +57,8 @@ uses
 {$IFDEF MSWINDOWS}
   uSheetOfficeReportSelector, uTextOfficeReportSelector,
 {$ENDIF}
-  uDCLGlobalVariables,
-  uRunProgram, uDCLMessages, uDCLMultiLang, uSQLUtils, uSystemUtils, uDCLMain,
+  uDCLGlobalVariables, uDCLConfigTable,
+  uRunProgram, uDCLMessages, uDCLMultiLang, uSQLUtils, uSystemUtils,
   {$IFDEF TRANSACTIONDB}
   uDCLDBTransaction,
   {$ENDIF}
@@ -73,6 +70,7 @@ procedure TDCLCommand.TranslateVals(var S: String);
 var
   Factor: Integer;
 begin
+  FParser.SetConnector(FDBConnector);
   if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) then
   begin
     FParser.RePlaseParams(S, FDCLGrid.Query);
@@ -621,6 +619,7 @@ var
   {$ENDIF}
   Parser: TDCLValuseParser;
   DCLEdit: TDCLEdit;
+  DCLConfig: TDCLConfigTable;
 begin
   TranslateVals(Command);
 
@@ -645,8 +644,10 @@ begin
     tmpS:=FindParam('ReadConfig=', Command);
     tmpS2:=FindParam('VariableName=', Command);
 
-    tmpS3:=ReadConfig(tmpS, '');
+    DCLConfig:=TDCLConfigTable.Create(FDBConnector);
+    tmpS3:=DCLConfig.ReadConfig(tmpS, '');
     FVariables.NewVariable(FNameSpace, tmpS2, tmpS3);
+    FreeAndNil(DCLConfig);
   end;
 
   if IsLexem('WriteConfig=', Command) then
@@ -654,7 +655,9 @@ begin
     tmpS:=FindParam('WriteConfig=', Command);
     tmpS2:=FindParam('Value=', Command);
 
-    WriteConfig(tmpS, tmpS2, '');
+    DCLConfig:=TDCLConfigTable.Create(FDBConnector);
+    DCLConfig.WriteConfig(tmpS, tmpS2, '');
+    FreeAndNil(DCLConfig);
   end;
 
   if IsLexem('Message=', Command) then
@@ -1161,75 +1164,6 @@ begin
       end;
     end;
     FreeAndNil(DCL);
-  end;
-end;
-
-function TDCLCommand.ReadConfig(ConfigName, UserId: String): String;
-var
-  ParamsQuery: TDCLSimlyQuery;
-  WhereUser: String;
-begin
-  Result:='';
-  WhereUser:='';
-  If Not GPT.NoParamsTable Then
-  begin
-    If UserID<>'' Then
-      WhereUser:=' and '+GPTUserIDField+'='+UserID;
-
-    ParamsQuery:=TDCLSimlyQuery.Create(Self);
-    FDBConnector.SetConnector(ParamsQuery);
-    ParamsQuery.SQL.Text:='select '+GPTValueField+' from '+GPTTableName+' where '+
-      GPT.UpperString+GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+':ParamName'+
-      GPT.UpperStringEnd+WhereUser;
-    ParamsQuery.ParamByName('ParamName').AsString:=ConfigName;
-    ParamsQuery.Open;
-    Result:=TrimRight(ParamsQuery.Fields[0].AsString);
-    ParamsQuery.Close;
-    FreeAndNil(ParamsQuery);
-  end;
-end;
-
-procedure TDCLCommand.WriteConfig(ConfigName, NewValue, UserId: String);
-var
-  ParamsQuery: TDCLSimlyQuery;
-  WhereUser: String;
-begin
-  WhereUser:='';
-  If Not GPT.NoParamsTable Then
-  begin
-    If UserId<>'' Then
-      WhereUser:=' and '+GPTUserIDField+'='+UserId;
-
-    ParamsQuery:=TDCLSimlyQuery.Create(Self);
-    FDBConnector.SetConnector(ParamsQuery);
-    ParamsQuery.SQL.Text:='select count(*) from '+GPTTableName+' where '+GPT.UpperString+
-      GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+ConfigName+
-      GPT.StringTypeChar+GPT.UpperStringEnd+WhereUser;
-    ParamsQuery.Open;
-    If ParamsQuery.Fields[0].AsInteger>0 Then
-    begin
-      ParamsQuery.Close;
-      ParamsQuery.SQL.Text:='update '+GPTTableName+' set '+GPTValueField+'='+
-        GPT.StringTypeChar+NewValue+GPT.StringTypeChar+' where '+GPT.UpperString+GPTNameField+
-        GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+ConfigName+GPT.StringTypeChar+
-        GPT.UpperStringEnd+WhereUser;
-      ParamsQuery.ExecSQL;
-    end
-    Else
-    begin
-      ParamsQuery.Close;
-      If UserID='' Then
-        ParamsQuery.SQL.Text:='insert into '+GPTTableName+'('+GPTValueField+', '+
-          GPTNameField+') values('+GPT.StringTypeChar+NewValue+GPT.StringTypeChar+', '+
-          GPT.StringTypeChar+ConfigName+GPT.StringTypeChar+')'
-      Else
-        ParamsQuery.SQL.Text:='insert into '+GPTTableName+'('+GPTValueField+', '+
-          GPTNameField+', '+GPTUserIDField+') values('+GPT.StringTypeChar+NewValue+
-          GPT.StringTypeChar+', '+GPT.StringTypeChar+ConfigName+GPT.StringTypeChar+', '+UserID+')';
-
-      ParamsQuery.ExecSQL;
-    end;
-    FreeAndNil(ParamsQuery);
   end;
 end;
 

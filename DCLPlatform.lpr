@@ -18,7 +18,7 @@ uses
   uDCLVerticalFieldLayoutManger, uDCLField, uDCLImages, uSQLParser,
   cNoScrollBarDBGrid, cMediaFieldGroup, uDCLDataStorage, uDCLTextReport,
   uRunProgram, uPrintBase, uDCLFormsNotifier, fChangePasswordForm, fAbout,
-  uDCLQueryUtils, uDCLVersion, uDCLGlobalConfigTable;
+  uDCLQueryUtils, uDCLVersion, uDCLGlobalConfigTable, uDCLConfigTable;
 
 {$R *.res}
 
