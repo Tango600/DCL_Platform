@@ -393,7 +393,7 @@ end;
 procedure TDCLValuseParser.RePlaceProc(var Params: String; var Factor: Integer;
   Query: TDCLDialogQuery);
 var
-  ReplaseProc, Param, TmpStr, TmpStr1, TmpStr2, TmpStr3, SignStr: String;
+  ReplaseProc, Param, TmpStr, TmpStr2, TmpStr3, SignStr: String;
   StartSel, ParamLen, StartSearch, pv1, pv2, pv3, pv4, FindProcNum, Skobki, VarNameLength,
     MaxMatch: Word;
   FindVar: Boolean;
@@ -674,7 +674,7 @@ Begin
                 Inc(pv1);
               end;
 
-              TmpStr1:=Copy(TmpStr, 1, pv1-1);
+              TmpStr:=Copy(TmpStr, 1, pv1-1);
               Delete(TmpStr, 1, pv1-1);
 
               pv1:=1;

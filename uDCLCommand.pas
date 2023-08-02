@@ -640,6 +640,23 @@ begin
     RunTextReport(Command, FDCLGrid.Query, FDCLGrid);
   end;
 
+  if IsLexem('ReadConfig=', Command) then
+  begin
+    tmpS:=FindParam('ReadConfig=', Command);
+    tmpS2:=FindParam('VariableName=', Command);
+
+    tmpS3:=ReadConfig(tmpS, '');
+    FVariables.NewVariable(FNameSpace, tmpS2, tmpS3);
+  end;
+
+  if IsLexem('WriteConfig=', Command) then
+  begin
+    tmpS:=FindParam('WriteConfig=', Command);
+    tmpS2:=FindParam('Value=', Command);
+
+    WriteConfig(tmpS, tmpS2, '');
+  end;
+
   if IsLexem('Message=', Command) then
   begin
     tmpS:=FindParam('message=', Command);
