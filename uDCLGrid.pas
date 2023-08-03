@@ -407,7 +407,16 @@ end;
 
 procedure TDCLGrid.SetDataStatus(Status: TDataStatus);
 begin
-
+  if Status=dssChanged then
+  begin
+    (FForm as TDCLForm).SetDBStatus(GetDCLMessageString(msModified));
+    //BaseChanged:=True;
+  end;
+  if Status=dssSaved then
+  begin
+    (FForm as TDCLForm).SetDBStatus('');
+    //BaseChanged:=False;
+  end;
 end;
 
 procedure TDCLGrid.UpdateAllControls;
@@ -494,6 +503,8 @@ end;
 procedure TDCLGrid.ScrollDB(Data: TDataSet);
 begin
   ExecEvents(evtScroll);
+  if Assigned(FQuery) and FQuery.Active then
+    (FForm as TDCLForm).SetRecordsStatus(FQuery.RecNo, FQuery.RecordCount);
 
   UpdateAllControls;
 end;

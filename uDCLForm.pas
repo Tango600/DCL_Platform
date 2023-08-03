@@ -68,7 +68,6 @@ type
     procedure OnCloseQuery(Sender: TObject; var CanClose: Boolean);
 
     procedure SetRecordsStatus(Str: String);
-    procedure SetDBStatus(Str: String);
 
     procedure ParseEvents(ScrStr: String);
     procedure AddEvent(EventType: TEventsEnum; ScriptName: String);
@@ -81,6 +80,9 @@ type
       ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False); overload;
 
     procedure RefreshForm;
+
+    procedure SetRecordsStatus(RecNo, RecordCount: LongInt); overload;
+    procedure SetDBStatus(Str: String);
 
     procedure SetInfoStatus(Str: String);
     procedure AddInfoStatus(Str: String; Width: Integer);
@@ -363,6 +365,14 @@ end;
 procedure TDCLForm.SetRecordsStatus(Str: String);
 begin
   FStatusBar.Panels[StatusRecords].Text:=Str;
+end;
+
+procedure TDCLForm.SetRecordsStatus(RecNo, RecordCount: LongInt); overload;
+begin
+  if RecordCount>0 then
+    SetRecordsStatus(IntToStr(RecNo)+'/'+IntToStr(RecordCount))
+  else
+    SetRecordsStatus(IntToStr(RecNo));
 end;
 
 constructor TDCLForm.Create(DialogName, NameSpace: String; ParentForm: TDCLForm;
