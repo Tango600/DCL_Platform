@@ -32,6 +32,8 @@ type
 
     procedure WriteBaseID;
     function ReadBaseID: String;
+
+    function TestGlobalParamsTable: Boolean;
   public
     constructor Create; overload;
 
@@ -58,7 +60,7 @@ implementation
 
 uses
   uDCLConfig, uDCLCommand, uDCLDBStructure, uDCLMultiLang,
-  uDCLGlobalVariables, uDCLUtils, uDCLMessages;
+  uDCLGlobalVariables, uDCLUtils, uDCLMessages, uDBUtils;
 
 { TDCLMain }
 
@@ -137,42 +139,54 @@ var
   sGuid:String;
   IsEmpty: Boolean;
 begin
-  LocalQuery.SQL.Text:='select count(*) from '+GPTTableName+' where '+GPT.UpperString+
-    GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+'BaseUID'+
-    GPT.StringTypeChar+GPT.UpperStringEnd;
-  LocalQuery.Open;
-  IsEmpty:=LocalQuery.Fields[0].AsInteger=0;
-  LocalQuery.Close;
-
-  If IsEmpty Then
+  if not GPT.NoParamsTable then
   begin
-    If CreateGUID(guid)=0 then
-    Begin
-      sGuid:=GUIDToString(guid);
-      sGuid:=sGuid.Replace('-', '').Replace('{', '').Replace('}', '');
-      GPT.BaseID:=sGuid;
-      LocalQuery.SQL.Text:='insert into '+GPTTableName+'('+GPTNameField+', '+
-        GPTValueField+') values('+GPT.StringTypeChar+'BaseUID'+GPT.StringTypeChar+', '+
-        GPT.StringTypeChar+sGuid+GPT.StringTypeChar+')';
-      LocalQuery.ExecSQL;
-    End;
+    LocalQuery.SQL.Text:='select count(*) from '+GPTTableName+' where '+GPT.UpperString+
+      GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+'BaseUID'+
+      GPT.StringTypeChar+GPT.UpperStringEnd;
+    LocalQuery.Open;
+    IsEmpty:=LocalQuery.Fields[0].AsInteger=0;
+    LocalQuery.Close;
+
+    If IsEmpty Then
+    begin
+      If CreateGUID(guid)=0 then
+      Begin
+        sGuid:=GUIDToString(guid);
+        sGuid:=sGuid.Replace('-', '').Replace('{', '').Replace('}', '');
+        GPT.BaseID:=sGuid;
+        LocalQuery.SQL.Text:='insert into '+GPTTableName+'('+GPTNameField+', '+
+          GPTValueField+') values('+GPT.StringTypeChar+'BaseUID'+GPT.StringTypeChar+', '+
+          GPT.StringTypeChar+sGuid+GPT.StringTypeChar+')';
+        LocalQuery.ExecSQL;
+      End;
+    end;
   end;
 end;
 
 function TDCLMain.ReadBaseID: String;
 begin
-  LocalQuery.SQL.Text:='select * from '+GPTTableName+' where '+GPT.UpperString+
-    GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+'BaseUID'+
-    GPT.StringTypeChar+GPT.UpperStringEnd;
-  LocalQuery.Open;
-  Result:=LocalQuery.FieldByName(GPTValueField).AsString;
-  LocalQuery.Close;
-  If Result='' then
-  Begin
-    WriteBaseID;
-    Result:=ReadBaseID;
-  End;
-  GPT.BaseID:=Result;
+  Result:='';
+  if not GPT.NoParamsTable then
+  begin
+    LocalQuery.SQL.Text:='select * from '+GPTTableName+' where '+GPT.UpperString+
+      GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+'BaseUID'+
+      GPT.StringTypeChar+GPT.UpperStringEnd;
+    LocalQuery.Open;
+    Result:=LocalQuery.FieldByName(GPTValueField).AsString;
+    LocalQuery.Close;
+    If Result='' then
+    Begin
+      WriteBaseID;
+      Result:=ReadBaseID;
+    End;
+    GPT.BaseID:=Result;
+  end;
+end;
+
+function TDCLMain.TestGlobalParamsTable: Boolean;
+begin
+  Result:=not TableExist(FDBConnector, GPTTableName);
 end;
 
 constructor TDCLMain.Create;
@@ -223,6 +237,8 @@ begin
   KillerDog.Interval:=KillerTimerInterval;
   KillerDog.OnTimer:=KillerForms;
   KillerDog.Enabled:=True;
+
+  GPT.NoParamsTable:=TestGlobalParamsTable;
 
   ReadBaseID;
 
