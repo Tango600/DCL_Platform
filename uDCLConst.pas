@@ -13,7 +13,7 @@ uses
 {$IFnDEF FPC}
   Vcl.DBCtrls
 {$ELSE}
-  DBCtrls, DBGrids, LazVersion
+  DBCtrls, DBGrids, LazVersion, SysUtils
 {$ENDIF};
 
 const
@@ -89,8 +89,7 @@ const
   CR=LineEnding;
 {$IFDEF UNIX}
   CrossDelim='\';
-  PathDelim='/';
-  ConfigDir='/.config/';
+  ConfigDir=PathDelim+'.config'+PathDelim;
   OSType='posix';
 {$ENDIF}
 {$IFNDEF FPC}
@@ -103,19 +102,11 @@ const
 {$ENDIF}
 {$IFDEF MSWINDOWS}
   CrossDelim='/';
-  PathDelim='\';
-  ConfigDir='\';
+  ConfigDir=PathDelim;
   OSType='windows';
 {$ENDIF}
 {$IFDEF FPC}
   GridAlternateColor=$E0DDDD;
-  VK_SHIFT=16;
-  VK_CONTROL=17;
-
-  SW_SHOWNOACTIVATE=4;
-  SW_NORMAL=1;
-  SW_RESTORE=9;
-  SW_SHOW=5;
 {$ENDIF}
   MemFileName='DCL_Run_Unit_'+DBEngineType;
 

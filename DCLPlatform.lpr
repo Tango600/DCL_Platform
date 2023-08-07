@@ -9,7 +9,8 @@ uses
   athreads,
   {$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Classes, Forms, Controls, SysUtils, fMain, uDCLGlobalVariables, uDCLData,
+  Classes, Forms, Controls, SysUtils, fMain, lcltype,
+  uDCLGlobalVariables, uDCLData,
   uDCLTypes, uDCLConst, uDCLMain, uDCLForm, uDCLCommand, uDCLGrid,
   uDCLVariables, uDCLDBConnector, uDCLConfig, uStringParams, uDCLDebug,
   uDCLMenu, uDBUtils, fDCLLoginForm, uSystemUtils, uSQLUtils, uDCLDBStructure,
