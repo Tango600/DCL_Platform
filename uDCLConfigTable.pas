@@ -40,7 +40,7 @@ var
   WhereUser: String;
 begin
   Result:='';
-  if Assigned(FDBConnector) then
+  if Assigned(FDBConnector) and not GPT.NoParamsTable then
   begin
     WhereUser:='';
     If Not GPT.NoParamsTable Then
@@ -68,7 +68,7 @@ var
   WhereUser: String;
 begin
   WhereUser:='';
-  if Assigned(FDBConnector) then
+  if Assigned(FDBConnector) and not GPT.NoParamsTable then
   begin
     If Not GPT.NoParamsTable Then
     begin
