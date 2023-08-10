@@ -246,6 +246,8 @@ var
         end;
 
         Run(IfResult, False);
+
+        IfResult:=True;
         Continue;
       end;
 
@@ -621,17 +623,18 @@ var
   DCLEdit: TDCLEdit;
   DCLConfig: TDCLConfigTable;
 begin
+  if IsLexem('Exit;', Command) then
+  begin
+    Sleep(100);
+    Application.MainForm.Close;
+  end;
+
   TranslateVals(Command);
 
   If IsLexem('ExecCommand=', Command) then
   begin
     tmpS:=FindParam('ExecCommand=', Command);
     RunCommandScript(tmpS);
-  end;
-
-  if IsLexem('Exit;', Command) then
-  begin
-    Application.MainForm.Close;
   end;
 
   If IsLexem('Report=', Command) then
