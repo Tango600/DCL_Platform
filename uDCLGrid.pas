@@ -294,6 +294,7 @@ type
 implementation
 
 uses
+  EditBtn,
   {$IFDEF MSWINDOWS}
   Windows,
   {$ENDIF}
@@ -689,6 +690,7 @@ begin
         if not IsExist then
         begin
           CommandObj.RunCommand(Event.ScriptName);
+          FreeAndNil(CommandObj);
         end;
       end;
     end;
@@ -2355,7 +2357,8 @@ begin
 
   Calendar.Control:=DateTimePicker.Create(FFiltersPanel);
   Calendar.Control.Parent:=FFiltersPanel;
-  Calendar.Control.Width:=CalendarWidth;
+  Calendar.Control.DateOrder:=doDMY;
+  Calendar.Control.DateFormat:=GPT.DateFormat;
 
   Calendar.Control.Top:=FTop;
   Inc(FTop, Calendar.Control.Height+CompenentTopStep);
@@ -2366,7 +2369,7 @@ begin
     FVariables.NewVariable(FNamespace, Calendar.Variable, DateToStr(Calendar.Control.Date));
 
   Calendar.Control.OnChange:=CalendarOnChange;
-  Inc(FFilterLeft, FieldsStepLeft+CalendarWidth);
+  Inc(FFilterLeft, FieldsStepLeft+Calendar.Control.Width);
   AdjustFilterPanel(Ftop);
 
   FCalendars.Add(Calendar);
@@ -2603,6 +2606,8 @@ var
 begin
   DateBox:=DateTimePicker.Create(FFieldsPanel);
   DateBox.Parent:=FFieldsPanel;
+  DateBox.DateOrder:=doDMY;
+  DateBox.DateFormat:=GPT.DateFormat;
 
   If FindParam('ComponentName=', Scr)<>'' Then
     DateBox.Name:=FindParam('ComponentName=', Scr);
@@ -2619,9 +2624,7 @@ begin
   DateBox.Enabled:=Field.Enabled;
 
   If Field.Width>0 Then
-    DateBox.Width:=Field.Width
-  Else
-    DateBox.Width:=DateBoxWidth;
+    DateBox.Width:=Field.Width;
 
   NeedValue:=0;
   If FindParam('_Value=', Scr)<>'' then
@@ -4210,12 +4213,6 @@ begin
             end;
             ftDate, ftDateTime: begin
               AddDBDateEdit(DCLField);
-            end;
-            ftString: begin
-              AddDBEdit(DCLField);
-            end;
-            ftInteger: begin
-              AddDBEdit(DCLField);
             end;
             ftBoolean: begin
               AddDBCheckBox(DCLField, '');

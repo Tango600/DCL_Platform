@@ -5,13 +5,6 @@ interface
 
 const
   EditWidth=230;
-  {$IFDEF FPC}
-  CalendarWidth=95;
-  DateBoxWidth=95;
-  {$ELSE}
-  CalendarWidth=85;
-  DateBoxWidth=85;
-  {$ENDIF}
   DateTimeBoxWidth=110;
   DigitEditWidth=80;
   GetValueEditWidth=181;
