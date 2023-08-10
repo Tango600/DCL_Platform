@@ -329,51 +329,48 @@ begin
       FSQLDBLibraryLoader.Enabled:=True;
     end;
 
-    If Not Connected Then
+    If GPT.DBPath<>'' Then
     begin
-      If GPT.DBPath<>'' Then
+      If Not IsFullPath(GPT.DBPath) Then
+        GPT.DBPath:=ExtractFilePath(Application.ExeName)+GPT.DBPath;
+
+      If GPT.ServerName<>'' Then
       begin
-        If Not IsFullPAth(GPT.DBPath) Then
-          GPT.DBPath:=ExtractFilePath(Application.ExeName)+GPT.DBPath;
+        DatabaseName:=GPT.DBPath;
+        HostName:=GPT.ServerName;
+        DebugProc('  DBPath: '+GPT.ServerName+':'+GPT.DBPath);
+      end
+      Else
+      begin
+        DatabaseName:=GPT.DBPath;
+        HostName:='';
+        DebugProc('  DBPath: '+GPT.DBPath);
+      end;
+      UserName:=GPT.DBUserName;
+      DebugProc('  USER NAME='+GPT.DBUserName);
+      If GPT.DBPassword<>'' Then
+      begin
+        Password:=GPT.DBPassword;
+        LoginPrompt:=False;
+      end
+      Else
+        LoginPrompt:=True;
 
-        If GPT.ServerName<>'' Then
-        begin
-          DatabaseName:=GPT.DBPath;
-          HostName:=GPT.ServerName;
-          DebugProc('  DBPath: '+GPT.ServerName+':'+GPT.DBPath);
-        end
-        Else
-        begin
-          DatabaseName:=GPT.DBPath;
-          HostName:='';
-          DebugProc('  DBPath: '+GPT.DBPath);
-        end;
-        UserName:=GPT.DBUserName;
-        DebugProc('  USER NAME='+GPT.DBUserName);
-        If GPT.DBPassword<>'' Then
-        begin
-          Password:=GPT.DBPassword;
-          LoginPrompt:=False;
-        end
-        Else
-          LoginPrompt:=True;
+      If GPT.ServerCodePage='' Then
+        Charset:='utf8'
+      Else
+        Charset:=ReplaseCPtoWIN(GPT.ServerCodePage);
 
-        If GPT.ServerCodePage='' Then
-          Charset:='utf8'
-        Else
-          Charset:=ReplaseCPtoWIN(GPT.ServerCodePage);
-
-        Dialect:=GPT.SQLDialect;
-        try
-          DebugProc('Connected...');
-          Open;
-          DebugProc('  ... OK');
-        Except
-          On E: Exception do
-          begin
-            DebugProc('  ... Fail');
-            FErrorCode:=255;
-          end;
+      Dialect:=GPT.SQLDialect;
+      try
+        DebugProc('Connected...');
+        Open;
+        DebugProc('  ... OK');
+      Except
+        On E: Exception do
+        begin
+          DebugProc('  ... Fail');
+          FErrorCode:=255;
         end;
       end;
     end;
