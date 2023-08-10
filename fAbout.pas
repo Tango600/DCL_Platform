@@ -33,9 +33,11 @@ type
     procedure ImageLogoClick(Sender: TObject);
   private
     LogoClickCount: Integer;
-
+    FConfigInfo, FConfigVersion: String;
   public
 
+    property ConfigInfo: String read FConfigInfo write FConfigInfo;
+    property ConfigVersion: String read FConfigVersion write FConfigVersion;
   end;
 
 var

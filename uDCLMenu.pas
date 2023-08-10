@@ -22,7 +22,6 @@ type
     findItemFlg: TMenuItem;
     FOpenDialogMethod: TOpenDialogMethod;
 
-
     function GetMenuCommandById(Ident: Integer): String;
 
     procedure FindMenuItem(TagID: Integer; aItems: TMenuItem);

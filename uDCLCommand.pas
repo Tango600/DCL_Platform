@@ -33,6 +33,9 @@ type
 
     function GetRaights: TUserLevelsType;
     procedure RunTextReport(ScrLine: String; Query: TDCLDialogQuery; Grid: TDCLGrid);
+
+    function GetConfigInfo: String;
+    function GetConfigVersion: String;
   public
     constructor Create(DBConnector: TDCLDBConnector; NameSpace: String; Forms: TList<TForm>;
       DCLForm: TForm; DCLGrid: TDCLGrid; Variables: TVariables); overload;
@@ -40,6 +43,8 @@ type
     function RunCommandScript(CommandName: String): Boolean;
     procedure RunCommand(Command: String);
     procedure SelectRunType(Command: String);
+
+    procedure About;
 
     function CreateForm(NameSpace, DialogName: String; NoContext: Boolean;
       ParentForm: TDCLForm; Grid: TDCLGrid;
@@ -57,7 +62,7 @@ uses
 {$IFDEF MSWINDOWS}
   uSheetOfficeReportSelector, uTextOfficeReportSelector,
 {$ENDIF}
-  uDCLGlobalVariables, uDCLConfigTable,
+  fAbout, uDCLGlobalVariables, uDCLConfigTable,
   uRunProgram, uDCLMessages, uDCLMultiLang, uSQLUtils, uSystemUtils,
   {$IFDEF TRANSACTIONDB}
   uDCLDBTransaction,
@@ -609,6 +614,34 @@ begin
   FreeAndNil(DCLQuery);
 end;
 
+function TDCLCommand.GetConfigInfo: String;
+var
+  Q: TDCLDialogQuery;
+begin
+  Q:=TDCLDialogQuery.Create(Self);
+  FDBConnector.SetConnector(Q);
+  Q.SQL.Text:='select '+ScriptField+' from '+DCLTable+' where '+IdentifyField+'=60000';
+  Q.Open;
+  Result:=Q.Fields[0].AsString;
+  Q.Close;
+
+  FreeAndNil(Q);
+end;
+
+function TDCLCommand.GetConfigVersion: String;
+var
+  Q: TDCLDialogQuery;
+begin
+  Q:=TDCLDialogQuery.Create(Self);
+  FDBConnector.SetConnector(Q);
+  Q.SQL.Text:='select '+ScriptField+' from '+DCLTable+' where '+IdentifyField+'=60001';
+  Q.Open;
+  Result:=Q.Fields[0].AsString;
+  Q.Close;
+
+  FreeAndNil(Q);
+end;
+
 procedure TDCLCommand.RunCommand(Command: String);
 var
   tmpS, tmpS1, tmpS2, tmpS3: String;
@@ -619,6 +652,8 @@ var
   SheetReportSelector: TSheetOfficeReportSelector;
   TextOfficeReportSelector: TTextOfficeReportSelector;
   {$ENDIF}
+  OpenDialog: TOpenDialog;
+  SaveDialog: TSaveDialog;
   Parser: TDCLValuseParser;
   DCLEdit: TDCLEdit;
   DCLConfig: TDCLConfigTable;
@@ -629,12 +664,58 @@ begin
     Application.MainForm.Close;
   end;
 
+  If IsLexem('About;', Command) or IsLexem('Version;', Command) Then
+  begin
+    About;
+  end;
+
   TranslateVals(Command);
 
   If IsLexem('ExecCommand=', Command) then
   begin
     tmpS:=FindParam('ExecCommand=', Command);
     RunCommandScript(tmpS);
+  end;
+
+  If IsLexem('ApplicationTitle=', Command) then
+  begin
+    tmpS:=FindParam('ApplicationTitle=', Command);
+    Application.Title:=tmpS;
+  end;
+
+  If IsLexem('SetMainFormCaption=', Command) then
+  begin
+    tmpS:=FindParam('SetMainFormCaption=', Command);
+    Application.MainForm.Caption:=tmpS;
+  end;
+
+  If IsLexem('OpenFileDialog=', Command) then
+  begin
+    tmpS:=FindParam('OpenFileDialog=', Command);
+    tmpS1:=FindParam('Ext=', Command);
+    OpenDialog:=TOpenDialog.Create(nil);
+    If tmpS1<>'' Then
+      OpenDialog.DefaultExt:=tmpS1;
+    If OpenDialog.Execute Then
+      FVariables.Variables[FNameSpace, tmpS]:=OpenDialog.FileName
+    Else
+      FVariables.Variables[FNameSpace, tmpS]:='';
+    FreeAndNil(OpenDialog);
+  end;
+
+  If IsLexem('SaveFileDialog=', Command) then
+  begin
+    tmpS:=FindParam('SaveFileDialog=', Command);
+    tmpS1:=FindParam('Ext=', Command);
+    SaveDialog:=TSaveDialog.Create(nil);
+    SaveDialog.FileName:=FindParam('FileName=', Command);
+    If tmpS1<>'' Then
+      SaveDialog.DefaultExt:=tmpS1;
+    If SaveDialog.Execute Then
+      FVariables.Variables[FNameSpace, tmpS]:=SaveDialog.FileName
+    Else
+      FVariables.Variables[FNameSpace, tmpS]:='';
+    FreeAndNil(SaveDialog);
   end;
 
   If IsLexem('Report=', Command) then
@@ -1118,6 +1199,18 @@ begin
       RunCommandScript(Command);
     end
   end;
+end;
+
+procedure TDCLCommand.About;
+var
+  About: TAboutForm;
+begin
+  About:=TAboutForm.Create(Self);
+  About.ConfigInfo:=GetConfigInfo;
+  About.ConfigVersion:=GetConfigVersion;
+
+  About.ShowModal;
+  About.Release;
 end;
 
 function TDCLCommand.CreateForm(NameSpace, DialogName: String; NoContext: Boolean;

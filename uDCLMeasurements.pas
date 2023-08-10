@@ -68,8 +68,8 @@ const
   BevelWidth=4;
   ButtonsTop=12;
   ButtonsParagrapDown=11;
-  IncPanelHeight=ButtonHeight+ButtonsParagrapDown;
-  ButtonPanelHeight=ButtonsTop+IncPanelHeight;
+  //IncPanelHeight=ButtonHeight+ButtonsParagrapDown;
+  ButtonPanelHeight=ButtonsTop+ButtonHeight+ButtonsParagrapDown;
   FullButtonWidth=ButtonWidth+ButtonsInterval;
 
   ScrollHeight=20;

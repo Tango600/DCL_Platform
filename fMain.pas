@@ -82,7 +82,7 @@ end;
 
 function FindCommandStrParam(Str: String): String;
 var
-  i: Byte;
+  i: Integer;
 begin
   For i:=1 to ParamCount do
   begin

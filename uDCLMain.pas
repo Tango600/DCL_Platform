@@ -241,6 +241,24 @@ begin
 
   ReadBaseID;
 
+  {$IFDEF IBALL}
+  GPT.IBAll:=True;
+  {$ELSE}
+  GPT.IBAll:=False;
+  {$ENDIF}
+  GPT.DebugMesseges:=False;
+  GPT.OneCopy:=False;
+  GPT.ExitCnf:=False;
+  GPT.UseMessages:=True;
+  GPT.DebugOn:=False;
+  GPT.DialogsSettings:=True;
+  GPT.Port:=0;
+  {$IFDEF ZEOS}
+  GPT.DBType:=DefaultDBType;
+  {$ENDIF}
+  GPT.UserLogging:=False;
+  GPT.UserLoggingHistory:=False;
+
   GPT.OfficeFormat:=ofMSO;
   GPT.OfficeDocumentFormat:=odfMSO2007;
 

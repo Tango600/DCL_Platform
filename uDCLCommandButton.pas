@@ -57,8 +57,11 @@ begin
     if Width>0 then
       FButton.Width:=Width
     else
-      FButton.Width:=ButtonWidth;
-    FButton.Height:=ButtonHeight;
+      if Width=-1 then
+        FButton.AutoSize:=True
+      else
+        FButton.Width:=ButtonWidth;
+
     FButton.Default:=Default;
     FButton.Cancel:=Cancel;
     FButton.OnClick:=OnClick;

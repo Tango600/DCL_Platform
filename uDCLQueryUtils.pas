@@ -4,7 +4,6 @@ unit uDCLQueryUtils;
 interface
 
 uses
-  Classes, SysUtils,
   uDCLDBStructure, uDCLGlobalVariables;
 
 function GetRolesQueryText(Where, UserID: String): String;

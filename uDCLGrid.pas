@@ -3650,11 +3650,13 @@ begin
           ButtonParams.FontStyle:=ButtonParams.FontStyle+[fsUnderLine];
 
         tmpS:=FindParam('Width=', ScrStr);
-        If tmpS<>'' Then
+        If tmpS<>'' then
         begin
           v1:=StrToIntEx(tmpS);
-          If v1>30 Then
-            ButtonParams.Width:=v1;
+          If v1>30 then
+            ButtonParams.Width:=v1
+          else
+            ButtonParams.Width:=-1;
         end
         Else
           ButtonParams.Width:=ButtonWidth;
@@ -4131,7 +4133,7 @@ begin
     begin
       FButtonPanel:=TDCLButtonPanel.Create(Self);
       FButtonPanel.Parent:=Parent;
-      FButtonPanel.Height:=ButtonPanelHeight;
+      //FButtonPanel.Height:=ButtonPanelHeight;
 
       FButtonFlowPanel:=TFlowPanel.Create(FButtonPanel);
       FButtonFlowPanel.Parent:=FButtonPanel;
