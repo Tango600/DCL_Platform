@@ -8,7 +8,7 @@ uses
 {$IFDEF MSWINDOWS}
   uDCLOfficeUtils,
 {$ENDIF}
-  uDCLData, uDCLTypes, uDCLConst, uDCLUtils, uStringParams;
+  uDCLData, uDCLConst, uDCLUtils, uStringParams;
 
 type
 
@@ -16,7 +16,6 @@ type
 
   TDCLConfig=class(TComponent)
   private
-    FConnector: TDBConnector;
     Params: TStringList;
     lPath: String;
 
@@ -27,7 +26,6 @@ type
     procedure GetParamsStructure;
 
     property Path: String read lPath;
-    property DBConnector: TDBConnector read FConnector write FConnector;
   end;
 
 implementation
@@ -42,10 +40,6 @@ begin
   if FileExists(FileName) then
   begin
     Params.LoadFromFile(FileName);
-  end
-  else
-  begin
-
   end;
 end;
 

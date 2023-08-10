@@ -228,7 +228,6 @@ begin
   FormsNotifier:=TDCLFormsNotifier.Create(FForms);
 
   FDBConnector:=TDCLDBConnector.Create;
-  FDCLConfig.DBConnector:=FDBConnector;
 
   LocalQuery:=TDCLSimlyQuery.Create(Self);
   FDBConnector.SetConnector(LocalQuery);
