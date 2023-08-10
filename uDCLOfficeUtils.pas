@@ -346,8 +346,8 @@ End;
 
 Procedure WordInsert(var MsWord: OleVariant; Data, info: Variant;
   _bold, _italic, _StrikeThrough, _Underline: Integer; _Size: Integer; _center: Boolean);
-Var
-  C, What, Which, Count, Name: OleVariant;
+var
+  What, Which, Count, Name: OleVariant;
 Begin
   What:=-1;
   Which:=Unassigned;
@@ -358,7 +358,6 @@ Begin
 {$ELSE}
   MsWord.Selection.Goto(What, Which, Count, Name);
 {$ENDIF}
-  C:=Length(info);
   MsWord.Selection.Font.Bold:=_bold;
   MsWord.Selection.Font.italic:=_italic;
   MsWord.Selection.Font.StrikeThrough:=_StrikeThrough;

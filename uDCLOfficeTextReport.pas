@@ -48,6 +48,7 @@ begin
   Ext:='docx';
   TemplateExt:='dotx';
 
+  LayotCount:=0;
   Hide:=Save and Close;
 
   if FindParam('TemplateName=', ParamStr)<>'' then
@@ -230,6 +231,7 @@ begin
   Ext:='odt';
   TemplateExt:='ott';
   Layot:=TStringList.Create;
+  LayotCount:=0;
 
   if FindParam('TemplateName=', ParamStr)<>'' then
   begin
