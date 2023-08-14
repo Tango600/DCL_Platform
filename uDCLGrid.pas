@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Controls, Forms, DB, Generics.Collections, ToolWin,
-  ComCtrls, StdCtrls, Buttons, ExtCtrls, Graphics, DBCtrls, DBGrids, Grids,
+  ComCtrls, StdCtrls, ExtCtrls, Graphics, DBCtrls, DBGrids, Grids,
   DBExtCtrls, CheckLst, Menus, ClipBrd,
   uDCLData, uDCLTypes, uDCLConst, uDCLVariables, uStringParams,
   uDCLDBConnector, uDCLQuery, uDCLMeasurements, uDBUtils, uDCLMultiLang,

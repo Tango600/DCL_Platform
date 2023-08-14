@@ -5,9 +5,9 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections, Forms, Controls, StdCtrls, DB, Dialogs,
-  uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uDCLForm, uDCLVariables, uIDCLMain,
+  uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uDCLForm, uDCLVariables,
   uDCLUtils, uStringParams, uDCLDBConnector, uDCLDBStructure, uDBUtils,
-  uDCLValuesParser, uDCLFormsNotifier;
+  uDCLValuesParser;
 
 type
 
@@ -22,7 +22,6 @@ type
     FNameSpace: String;
     FVariables: TVariables;
     FParser: TDCLValuseParser;
-    FFormsNotifier: TDCLFormsNotifier;
     FUserLevelLocal: TUserLevelsType;
 
     procedure TranslateVals(var S: String);

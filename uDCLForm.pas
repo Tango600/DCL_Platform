@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, DB, Generics.Collections,
-  Controls, StdCtrls, ComCtrls, Buttons, Graphics, Menus,
+  Controls, StdCtrls, ComCtrls, Graphics, Menus,
   uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uStringParams, uDCLQuery,
   uDCLMeasurements, uDCLDBConnector, uDCLUtils, uDCLVariables, uDCLMultiLang,
   uDCLImages;
