@@ -5,8 +5,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Menus, ComCtrls,
-  uDCLConst, uDCLData, uDCLDBConnector, uDBUtils, uDCLMeasurements, uDCLTypes,
-  uDCLDBStructure;
+  uDCLConst, uDCLDBConnector, uDBUtils, uDCLMeasurements, uDCLTypes,
+  uDCLDBStructure, uIDCLMain;
 
 type
 
@@ -14,13 +14,13 @@ type
 
   TDCLMenu=class(TComponent)
   private
+    FMain: IDCLMain;
     FMainMenu: TMainMenu;
     FMainForm: TForm;
     FDBConnector: TDBConnector;
     LocalQuery: TDCLSimlyQuery;
     FormBar: TToolBar;
     findItemFlg: TMenuItem;
-    FOpenDialogMethod: TOpenDialogMethod;
 
     function GetMenuCommandById(Ident: Integer): String;
 
@@ -30,12 +30,10 @@ type
     procedure AddMainItem(Id: Integer; Capt: String);
     procedure AddSubItem(Id, ParentItemId: Integer; Capt: String);
   public
-    constructor Create(MainForm: TForm; DBConnector: TDCLDBConnector); overload;
+    constructor Create(Main: IDCLMain; MainForm: TForm; DBConnector: TDCLDBConnector); overload;
 
     procedure About;
     procedure CreateAboutItem;
-
-    property OpenDialogMethod: TOpenDialogMethod read FOpenDialogMethod write FOpenDialogMethod;
   end;
 
 implementation
@@ -47,7 +45,7 @@ uses
 
 procedure TDCLMenu.About;
 begin
-
+  FMain.About;
 end;
 
 function TDCLMenu.GetMenuCommandById(Ident: Integer): String;
@@ -86,7 +84,8 @@ begin
   if IdentID>0 then
   begin
     DialogName:=GetMenuCommandById(IdentID);
-    FOpenDialogMethod('', DialogName);
+
+    FMain.OpenDialog('', DialogName);
   end
   else
   begin
@@ -124,8 +123,9 @@ begin
   end;
 end;
 
-constructor TDCLMenu.Create(MainForm: TForm; DBConnector: TDCLDBConnector);
+constructor TDCLMenu.Create(Main: IDCLMain; MainForm: TForm; DBConnector: TDCLDBConnector);
 begin
+  FMain:=Main;
   FMainForm:=MainForm;
   FDBConnector:=DBConnector;
 
@@ -149,7 +149,6 @@ begin
     FormBar.Name:='FormBar';
     FormBar.ShowCaptions:=True;
     FormBar.Height:=FormPanelHeight;
-    //FormBar.ButtonHeight:=FormPanelButtonHeight;
     FormBar.ButtonWidth:=FormPanelButtonWidth;
     FormBar.Show;
   end;

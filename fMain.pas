@@ -8,7 +8,7 @@ uses
   Windows, Messages, LazUTF8,
   {$ENDIF}
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  uDCLConst, uDCLData, uDCLMultiLang;
+  uDCLConst, uDCLData, uDCLMultiLang, uIDCLMain;
 
 type
 
@@ -20,12 +20,14 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
+    FMain: IDCLMain;
+
     procedure ShowAbout;
     {$IFDEF MSWINDOWS}
     procedure WMSysCommand(var message: TWMSysCommand); message WM_SysCommand;
     {$ENDIF}
   public
-
+    property DCLMain: IDCLMain write FMain;
   end;
 
 {$IFDEF MSWINDOWS}
@@ -37,7 +39,7 @@ Const
 implementation
 
 uses
-  fAbout, IniFiles, uDCLGlobalVariables, uDCLMeasurements, uDCLVersion;
+  IniFiles, uDCLGlobalVariables, uDCLMeasurements, uDCLVersion;
 
 {$R *.lfm}
 
@@ -163,13 +165,8 @@ begin
 end;
 
 procedure TMainForm.ShowAbout;
-var
-  About: TAboutForm;
 begin
-  About:=TAboutForm.Create(Self);
-
-  About.ShowModal;
-  About.Release;
+  FMain.About;
 end;
 
 end.

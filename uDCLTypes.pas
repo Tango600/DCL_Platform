@@ -37,8 +37,6 @@ type
   TDCLDBGrid=TDBGrid;
   TDCLDialogButton=TBitBtn;
 
-  TOpenDialogMethod=procedure(ns, s: String) of Object;
-
 {$IFDEF ADO}
   TDCLDialogQuery=TADOQuery;
   TDCLSimlyQuery=TADOQuery;
@@ -97,7 +95,7 @@ type
   TNavButtonsSet=TNavButtonSet;
   {$ENDIF}
   {$IFDEF FPC}
-  DateTimePicker={$IFDEF ZVComponents}TZVDateTimePicker;{$ELSE}TDateEdit;{$ENDIF}
+  DateTimePicker={$IFDEF ZVComponents}TZVDateTimePicker{$ELSE}TDateEdit{$ENDIF};
   TNavButtons=TDBNavButton;
   TNavButtonsSet=TDBNavButtonSet;
   {$ENDIF}

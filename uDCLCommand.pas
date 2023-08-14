@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections, Forms, Controls, StdCtrls, DB, Dialogs,
-  uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uDCLForm, uDCLVariables,
+  uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uDCLForm, uDCLVariables, uIDCLMain,
   uDCLUtils, uStringParams, uDCLDBConnector, uDCLDBStructure, uDBUtils,
   uDCLValuesParser, uDCLFormsNotifier;
 
@@ -33,9 +33,6 @@ type
 
     function GetRaights: TUserLevelsType;
     procedure RunTextReport(ScrLine: String; Query: TDCLDialogQuery; Grid: TDCLGrid);
-
-    function GetConfigInfo: String;
-    function GetConfigVersion: String;
   public
     constructor Create(DBConnector: TDCLDBConnector; NameSpace: String; Forms: TList<TForm>;
       DCLForm: TForm; DCLGrid: TDCLGrid; Variables: TVariables); overload;
@@ -614,34 +611,6 @@ begin
   FreeAndNil(DCLQuery);
 end;
 
-function TDCLCommand.GetConfigInfo: String;
-var
-  Q: TDCLDialogQuery;
-begin
-  Q:=TDCLDialogQuery.Create(Self);
-  FDBConnector.SetConnector(Q);
-  Q.SQL.Text:='select '+ScriptField+' from '+DCLTable+' where '+IdentifyField+'=60000';
-  Q.Open;
-  Result:=Q.Fields[0].AsString;
-  Q.Close;
-
-  FreeAndNil(Q);
-end;
-
-function TDCLCommand.GetConfigVersion: String;
-var
-  Q: TDCLDialogQuery;
-begin
-  Q:=TDCLDialogQuery.Create(Self);
-  FDBConnector.SetConnector(Q);
-  Q.SQL.Text:='select '+ScriptField+' from '+DCLTable+' where '+IdentifyField+'=60001';
-  Q.Open;
-  Result:=Q.Fields[0].AsString;
-  Q.Close;
-
-  FreeAndNil(Q);
-end;
-
 procedure TDCLCommand.RunCommand(Command: String);
 var
   tmpS, tmpS1, tmpS2, tmpS3: String;
@@ -1205,10 +1174,7 @@ procedure TDCLCommand.About;
 var
   About: TAboutForm;
 begin
-  About:=TAboutForm.Create(Self);
-  About.ConfigInfo:=GetConfigInfo;
-  About.ConfigVersion:=GetConfigVersion;
-
+  About:=TAboutForm.Create(Self, FDBConnector);
   About.ShowModal;
   About.Release;
 end;

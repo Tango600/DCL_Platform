@@ -82,19 +82,6 @@ type
     Value, Key: String;
   end;
 
-  TKeyBookMark=class
-    KeyField, KeyValue, Title: String;
-  End;
-
-  { TKeyBookmarks }
-
-  TKeyBookmarks=class
-    KeyField, TitleField: String;
-    KeyBookMarks: TList<TKeyBookMark>;
-
-    constructor Create;
-  end;
-
   TFontStyleRec=Record
     Italic, Bold, Undeline, StrikeThrough: Byte;
     Center:Boolean;
@@ -148,13 +135,6 @@ var
 
 implementation
 
-{ TKeyBookmarks }
-
-constructor TKeyBookmarks.Create;
-begin
-  KeyBookMarks:=TList<TKeyBookMark>.Create;
-end;
-
 { TReturnFormValue }
 
 constructor TReturnFormValue.Create;
@@ -189,5 +169,4 @@ Initialization
   TIntegerTypedFields:=[ftSmallint, ftInteger, ftWord, ftBoolean, ftAutoInc, ftLargeint, ftBytes, ftVarBytes{$IFNDEF FPC}, ftOraInterval{$ENDIF}];
   TFloatTypedFields:=[ftBCD, ftFloat, ftCurrency];
   TDateTimeTypedFields:=[ftDate, ftTime, ftDateTime, ftTimeStamp {$IFNDEF FPC}, ftOraTimeStamp{$ENDIF}];
-
 end.

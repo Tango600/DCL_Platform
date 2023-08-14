@@ -4,7 +4,8 @@ unit fAbout;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls;
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
+  uDCLDBConnector;
 
 type
 
@@ -20,6 +21,8 @@ type
     Label4: TLabel;
     Label5: TLabel;
     Label6: TLabel;
+    lbConfigVersion: TLabel;
+    lbConfigVersionText: TLabel;
     lbBuildDate: TLabel;
     lbBuildType: TLabel;
     lbCompillerName: TLabel;
@@ -28,16 +31,18 @@ type
     lbProduct: TLabel;
     lbProductName: TLabel;
     lbVersion: TLabel;
+    memConfigInfo: TMemo;
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure ImageLogoClick(Sender: TObject);
+
+    constructor Create(Owner: TComponent; DBConnector: TDCLDBConnector); overload;
   private
     LogoClickCount: Integer;
-    FConfigInfo, FConfigVersion: String;
-  public
+    FDBConnector: TDCLDBConnector;
 
-    property ConfigInfo: String read FConfigInfo write FConfigInfo;
-    property ConfigVersion: String read FConfigVersion write FConfigVersion;
+    function GetConfigInfo: String;
+    function GetConfigVersion: String;
   end;
 
 var
@@ -46,7 +51,7 @@ var
 implementation
 
 uses
-  uDCLConst, uDCLVersion;
+  uDCLTypes, uDCLConst, uDCLVersion, uDCLDBStructure;
 
 {$R *.lfm}
 
@@ -71,6 +76,51 @@ begin
 
     ButtonOK.Hint:='Скоро всё будет хорошо!';
     ButtonOK.ShowHint:=True;
+  end;
+end;
+
+constructor TAboutForm.Create(Owner: TComponent; DBConnector: TDCLDBConnector);
+begin
+  inherited Create(Owner);
+  FDBConnector:=DBConnector;
+
+  memConfigInfo.Text:=GetConfigInfo;
+  lbConfigVersion.Caption:=GetConfigVersion;
+end;
+
+function TAboutForm.GetConfigInfo: String;
+var
+  Q: TDCLDialogQuery;
+begin
+  Result:='';
+  if Assigned(FDBConnector) then
+  begin
+    Q:=TDCLDialogQuery.Create(Self);
+    FDBConnector.SetConnector(Q);
+    Q.SQL.Text:='select '+ScriptField+' from '+DCLTable+' where '+IdentifyField+'=60000';
+    Q.Open;
+    Result:=Q.Fields[0].AsString;
+    Q.Close;
+
+    FreeAndNil(Q);
+  end;
+end;
+
+function TAboutForm.GetConfigVersion: String;
+var
+  Q: TDCLDialogQuery;
+begin
+  Result:='1';
+  if Assigned(FDBConnector) then
+  begin
+    Q:=TDCLDialogQuery.Create(Self);
+    FDBConnector.SetConnector(Q);
+    Q.SQL.Text:='select '+ScriptField+' from '+DCLTable+' where '+IdentifyField+'=60001';
+    Q.Open;
+    Result:=Q.Fields[0].AsString;
+    Q.Close;
+
+    FreeAndNil(Q);
   end;
 end;
 

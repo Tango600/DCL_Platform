@@ -8,14 +8,14 @@ uses
   Windows,
   {$ENDIF}
   Classes, SysUtils, Generics.Collections, Forms, ExtCtrls,
-  uDCLTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLData, uDCLMenu,
-  uDCLFormsNotifier, uDCLConst;
+  uDCLTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenu,
+  uIDCLMain, uDCLFormsNotifier, uDCLConst;
 
 type
 
   { TDCLMain }
 
-  TDCLMain=class(TComponent)
+  TDCLMain=class(TInterfacedObject, IDCLMain)
   private
     FMainForm: TForm;
     FForms: TList<TForm>;
@@ -36,6 +36,9 @@ type
     function TestGlobalParamsTable: Boolean;
   public
     constructor Create; overload;
+    destructor Destroy; override;
+
+    function GetVariables: TVariables;
 
     procedure CreateMenu(MainForm: TForm);
 
@@ -43,6 +46,7 @@ type
 
     procedure OpenDialog(NameSpace, DialogName: String);
     procedure RunCommand(CommandName: String);
+    procedure About;
 
     function IsNeedLogin: Boolean;
 
@@ -59,7 +63,7 @@ type
 implementation
 
 uses
-  uDCLConfig, uDCLCommand, uDCLDBStructure, uDCLMultiLang,
+  uDCLConfig, uDCLCommand, uDCLDBStructure, uDCLMultiLang, fAbout,
   uDCLGlobalVariables, uDCLUtils, uDCLMessages, uDBUtils;
 
 { TDCLMain }
@@ -196,7 +200,7 @@ begin
   {$IFDEF ADO}
   CoInitialize(nil);
   {$ENDIF}
-  inherited Create(Application);
+  inherited Create;
 
   InitGetAppConfigDir;
   FDCLConfig:=TDCLConfig.Create;
@@ -229,10 +233,10 @@ begin
 
   FDBConnector:=TDCLDBConnector.Create;
 
-  LocalQuery:=TDCLSimlyQuery.Create(Self);
+  LocalQuery:=TDCLSimlyQuery.Create(nil);
   FDBConnector.SetConnector(LocalQuery);
 
-  KillerDog:=TTimer.Create(Self);
+  KillerDog:=TTimer.Create(nil);
   KillerDog.Interval:=KillerTimerInterval;
   KillerDog.OnTimer:=KillerForms;
   KillerDog.Enabled:=True;
@@ -280,12 +284,25 @@ begin
 {$ENDIF}
 end;
 
+destructor TDCLMain.Destroy;
+begin
+  inherited Destroy;
+  if Assigned(LocalQuery) then
+    FreeAndNil(LocalQuery);
+  if Assigned(FDCLMenu) then
+    FreeAndNil(FDCLMenu);
+end;
+
+function TDCLMain.GetVariables: TVariables;
+begin
+  Result:=FVariables;
+end;
+
 procedure TDCLMain.CreateMenu(MainForm: TForm);
 begin
   FMainForm:=MainForm;
 
-  FDCLMenu:=TDCLMenu.Create(FMainForm, FDBConnector);
-  FDCLMenu.OpenDialogMethod:=OpenDialog;
+  FDCLMenu:=TDCLMenu.Create(Self, FMainForm, FDBConnector);
 end;
 
 function TDCLMain.CreateForm(DialogName: String): TDCLForm;
@@ -315,6 +332,15 @@ var
 begin
   Command:=TDCLCommand.Create(FDBConnector, '', FForms, nil, nil, FVariables);
   Command.RunCommandScript(CommandName);
+end;
+
+procedure TDCLMain.About;
+var
+  About: TAboutForm;
+begin
+  About:=TAboutForm.Create(Application, FDBConnector);
+  About.ShowModal;
+  About.Release;
 end;
 
 end.

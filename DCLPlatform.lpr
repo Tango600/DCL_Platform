@@ -9,17 +9,10 @@ uses
   athreads,
   {$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Classes, Forms, Controls, SysUtils, fMain, lcltype,
-  uDCLGlobalVariables, uDCLData,
-  uDCLTypes, uDCLConst, uDCLMain, uDCLForm, uDCLCommand, uDCLGrid,
-  uDCLVariables, uDCLDBConnector, uDCLConfig, uStringParams, uDCLDebug,
-  uDCLMenu, uDBUtils, fDCLLoginForm, uSystemUtils, uSQLUtils, uDCLDBStructure,
-  uDCLMultiLang, uDCLValuesParser, uDCLMeasurements,
-  uDCLCommandButton, uDCLMD5, uDCLBaseLayoutManger, uDCLButtonLayoutManger,
-  uDCLVerticalFieldLayoutManger, uDCLField, uDCLImages, uSQLParser,
-  cNoScrollBarDBGrid, cMediaFieldGroup, uDCLDataStorage, uDCLTextReport,
-  uRunProgram, uPrintBase, uDCLFormsNotifier, fChangePasswordForm, fAbout,
-  uDCLQueryUtils, uDCLVersion, uDCLGlobalConfigTable, uDCLConfigTable;
+  Classes, Forms, Controls, SysUtils, lcltype,
+  uDCLMain, uSystemUtils, uStringParams,
+  fMain, fDCLLoginForm, fAbout
+  ;
 
 {$R *.res}
 
@@ -27,6 +20,7 @@ var
   MainForm: TMainForm;
   LoginForm: TLoginForm;
   DCL: TDCLMain;
+  TimeToTerm: Boolean;
 
 function FindCommandStrParam(Str: String): String;
 var
@@ -95,6 +89,7 @@ begin
     end;
   end;
 
+  MainForm.DCLMain:=DCL;
   S:=FindScryptFileCall;
   If S<>'' then
     DCL.RunSkriptFromFile(S);
@@ -126,6 +121,7 @@ begin
   Application.Scaled:=True;
   Application.Initialize;
 
+  TimeToTerm:=False;
   DCL:=TDCLMain.Create;
   if DCL.IsNeedLogin or KeyState(vk_Shift) then
   begin
@@ -138,16 +134,20 @@ begin
     end
     else
     begin
-      Application.Terminate;
+      TimeToTerm:=True;
     end;
   end
   else
   begin
     RunInterface;
   end;
-  Application.CreateForm(TAboutForm, AboutForm);
-  Application.Run;
 
-  FreeAndNil(DCL);
+  if not TimeToTerm then
+  begin
+    Application.CreateForm(TAboutForm, AboutForm);
+    Application.Run;
+  end;
+
+  DCL:=nil;
 end.
 
