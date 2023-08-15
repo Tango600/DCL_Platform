@@ -75,7 +75,7 @@ begin
     Settings:=TIniFile.Create(ConfigPath+'MainForm.ini', TEncoding.UTF8);
     Settings.WriteInteger(SectionName, 'Top', Self.Top);
     Settings.WriteInteger(SectionName, 'Left', Self.Left);
-    Settings.WriteInteger(SectionName, 'Height', Self.Height+AddHeight);
+    Settings.WriteInteger(SectionName, 'Height', Self.Height);
     Settings.WriteInteger(SectionName, 'Width', Self.Width);
 
     FreeAndNil(Settings);
@@ -149,7 +149,7 @@ begin
 
       Self.Top:=Settings.ReadInteger(SectionName, 'Top', Self.Top);
       Self.Left:=Settings.ReadInteger(SectionName, 'Left', Self.Left);
-      Self.Height:=Settings.ReadInteger(SectionName, 'Height', Self.Height+AddHeight);
+      Self.Height:=Settings.ReadInteger(SectionName, 'Height', Self.Height);
       Self.Width:=Settings.ReadInteger(SectionName, 'Width', Self.Width);
 
       FreeAndNil(Settings);

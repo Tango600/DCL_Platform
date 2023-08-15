@@ -469,9 +469,9 @@ begin
   FStatusBar:=TStatusBar.Create(Self);
   FStatusBar.SimplePanel:=False;
   FStatusBar.Parent:=Self;
-  FStatusBar.Panels.Insert(0);
-  FStatusBar.Panels.Insert(1);
-  FStatusBar.Panels.Insert(2);
+  FStatusBar.Panels.Add;
+  FStatusBar.Panels.Add;
+  FStatusBar.Panels.Add;
   FStatusBar.Panels[0].Width:=100;
   FStatusBar.Panels[1].Width:=80;
 

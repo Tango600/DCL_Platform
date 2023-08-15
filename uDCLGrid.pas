@@ -299,7 +299,7 @@ uses
   Windows,
   {$ENDIF}
   {$IFDEF FPC}
-  LCLProc,
+  LCLProc, lcltype,
   {$ENDIF}
   uDCLCommand, uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, uDCLForm,
   uPrintBase, uDCLGlobalVariables, uDCLMD5;
