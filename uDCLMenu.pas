@@ -31,6 +31,7 @@ type
     procedure AddSubItem(Id, ParentItemId: Integer; Capt: String);
   public
     constructor Create(Main: IDCLMain; MainForm: TForm; DBConnector: TDCLDBConnector); overload;
+    destructor Destroy; override;
 
     procedure About;
     procedure CreateAboutItem;
@@ -198,6 +199,12 @@ begin
     LocalQuery.Next;
   end;
   LocalQuery.Close;
+end;
+
+destructor TDCLMenu.Destroy;
+begin
+  inherited Destroy;
+  FMain:=nil;
 end;
 
 procedure TDCLMenu.CreateAboutItem;
