@@ -106,10 +106,10 @@ type
     procedure Append;
     procedure Insert;
     procedure Edit;
-    procedure Delete;
+    procedure Delete; override;
     procedure Post; override;
     procedure SetUpdateSQL(TableName, KeyField: String);
-    procedure ExecSQL;
+    procedure ExecSQL; override;
 
     procedure SaveDB;
     procedure CancelDB;
