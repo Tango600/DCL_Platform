@@ -87,6 +87,7 @@ type
     procedure SetInfoStatus(Str: String);
     procedure AddInfoStatus(Str: String; Width: Integer);
     procedure SetStatusNum(Str: String; Num, Width: Integer);
+    procedure DeleteAllStatus;
 
     property CloseAction: TDCLFormCloseAction read FFormCloseStatus write FFormCloseStatus;
     property Grids: TList<TDCLGrid> read FGrids;
@@ -663,6 +664,16 @@ begin
 
     if Width>10 then
       FStatusBar.Panels[Num].Width:=Width;
+  end;
+end;
+
+procedure TDCLForm.DeleteAllStatus;
+begin
+  if FStatusBar.Panels.Count>StatusInfo+1 then
+  begin
+    repeat
+      FStatusBar.Panels.Delete(FStatusBar.Panels.Count-1);
+    until FStatusBar.Panels.Count<=StatusInfo+1;
   end;
 end;
 
