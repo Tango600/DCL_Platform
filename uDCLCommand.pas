@@ -58,7 +58,7 @@ uses
 {$IFDEF MSWINDOWS}
   uSheetOfficeReportSelector, uTextOfficeReportSelector,
 {$ENDIF}
-  fAbout, uDCLGlobalVariables, uDCLConfigTable,
+  fAbout, uDCLGlobalVariables, uDCLConfigTable, uDCLDataStorage,
   uRunProgram, uDCLMessages, uDCLMultiLang, uSQLUtils, uSystemUtils,
   {$IFDEF TRANSACTIONDB}
   uDCLDBTransaction,
@@ -612,9 +612,9 @@ end;
 
 procedure TDCLCommand.RunCommand(Command: String);
 var
-  tmpS, tmpS1, tmpS2, tmpS3: String;
-  v1, v2: Integer;
-  Wait: Boolean;
+  tmpS, tmpS1, tmpS2, tmpS3, tmpS4: String;
+  i, v1, v2: Integer;
+  Wait, Flg1: Boolean;
   tmpDCLForm: TDCLForm;
   {$IFDEF MSWINDOWS}
   SheetReportSelector: TSheetOfficeReportSelector;
@@ -625,6 +625,7 @@ var
   Parser: TDCLValuseParser;
   DCLEdit: TDCLEdit;
   DCLConfig: TDCLConfigTable;
+  DataStorage: TDCLDataStorage;
 begin
   if IsLexem('Exit;', Command) then
   begin
@@ -831,6 +832,74 @@ begin
     OpenDir(tmpS);
   end;
 
+  If IsLexem('GetFromDB=', Command) then
+  begin
+    tmpS:=FindParam('FileName=', Command);
+    tmpS1:=FindParam('GetFromDB=', Command);
+
+    If not IsFullPath(tmpS) then
+      tmpS:=IncludeTrailingPathDelimiter(AppConfigDir)+tmpS;
+    DataStorage:=TDCLDataStorage.Create(FDBConnector);
+    DataStorage.SaveToFile(tmpS, tmpS1, ftByName);
+    FreeAndNil(DataStorage);
+  end;
+
+  If GetRaights=ulWrite then
+  begin
+    If IsLexem('PutToDB=', Command) then
+    begin
+      tmpS:=FindParam('FileName=', Command);
+      tmpS1:=FindParam('PutToDB=', Command);
+      Flg1:=FindParam('Compress=', Command)='1';
+
+      If not IsFullPath(tmpS) then
+        tmpS:=IncludeTrailingPathDelimiter(AppConfigDir)+tmpS;
+      If FileExists(tmpS) then
+      begin
+        DataStorage:=TDCLDataStorage.Create(FDBConnector);
+        DataStorage.StoreFromFile(tmpS, tmpS1, ftByName, Flg1);
+        FreeAndNil(DataStorage);
+      end
+      Else
+        ShowErrorMessage( - 8001, tmpS);
+    end;
+
+    If IsLexem('ClearData=', Command) then
+    begin
+      tmpS:=FindParam('ClearData=', Command);
+      DataStorage:=TDCLDataStorage.Create(FDBConnector);
+      DataStorage.ClearData(tmpS, ftByName);
+      FreeAndNil(DataStorage);
+    end;
+
+    If IsLexem('DeleteData=', Command) then
+    begin
+      tmpS:=FindParam('DeleteData=', Command);
+
+      DataStorage:=TDCLDataStorage.Create(FDBConnector);
+      DataStorage.DeleteData(tmpS, ftByName);
+      FreeAndNil(DataStorage);
+    end;
+
+    If IsLexem('CompressData=', Command) then
+    begin
+      tmpS:=FindParam('CompressData=', Command);
+
+      DataStorage:=TDCLDataStorage.Create(FDBConnector);
+      DataStorage.CompressData(tmpS, ftByName);
+      FreeAndNil(DataStorage);
+    end;
+
+    If IsLexem('DeCompressData=', Command) then
+    begin
+      tmpS:=FindParam('DeCompressData=', Command);
+
+      DataStorage:=TDCLDataStorage.Create(FDBConnector);
+      DataStorage.DeCompressData(tmpS, ftByName);
+      FreeAndNil(DataStorage);
+    end;
+  end;
+
   {$IFDEF MSWINDOWS}
   If IsLexem('ReportOfficeSheet=', Command) then
   begin
@@ -859,6 +928,16 @@ begin
 
   If Assigned(FDCLForm) Then
   begin
+    {$IFNDEF NOONTOP}
+    If IsLexem('OnTop=', Command) then
+    begin
+      if (Trim(FindParam('OnTop=', Command))='1') and (FDCLForm.FormStyle=fsNormal) then
+          FDCLForm.FormStyle:=fsStayOnTop
+      else
+        FDCLForm.FormStyle:=fsNormal;
+    end;
+    {$ENDIF}
+
     If IsLexem('CurrentPage=', Command) then
     begin
       tmpS:=Trim(FindParam('CurrentPage=', Command));
@@ -920,6 +999,11 @@ begin
       If FindParam('Width=', Command)<>'' then
         v2:=StrToIntEx(Trim(FindParam('Width=', Command)));
       FDCLForm.SetStatusNum(tmpS, v1-1, v2);
+    end;
+
+    If IsLexem('DeleteAllStatus;', Command) Then
+    begin
+      FDCLForm.DeleteAllStatus;
     end;
 
     If IsLexem('SetFormCaption=', Command) Then
@@ -997,9 +1081,9 @@ begin
               (DCLEdit.Control as TEdit).Enabled:=False;
             If LowerCase(tmpS2)='select' Then
               (DCLEdit.Control as TEdit).SelectAll;
-            If LowerCase(tmpS2)='settext' Then
+            If LowerCase(tmpS2)='settext' then
             begin
-              If PosEx('_Value=', Command)<>0 Then
+              If PosEx('_Value=', Command)<>0 then
               begin
                 tmpS:=FindParam('_Value=', Command);
                 (DCLEdit.Control as TEdit).Text:=tmpS;
@@ -1041,22 +1125,63 @@ begin
           FDCLGrid.Query.Edit;
       end;
 
-      If IsLexem('Delete;', Command) Then
+      If IsLexem('Delete;', Command) then
       begin
         if FDCLGrid.Query.CanModify then
           FDCLGrid.Query.Delete;
       end;
 
-      If IsLexem('DeleteConf;', Command) Then
+      If IsLexem('DeleteConf;', Command) then
       begin
         if FDCLGrid.Query.CanModify then
-          If ShowErrorMessage(10, GetDCLMessageString(msDeleteRecordQ))=1 Then
+          If ShowErrorMessage(10, GetDCLMessageString(msDeleteRecordQ))=1 then
             FDCLGrid.Query.Delete;
       end;
 
+      If IsLexem('SetFieldValue=', Command) then
+      begin
+        tmpS:=FindParam('SetFieldValue=', Command);
+        tmpS1:=Trim(FindParam('TablePartNum=', Command));
+        Flg1:=FindParam('Post=', Command)='1';
+
+        If tmpS<>'' then
+        begin
+          for i:=1 to ParamsCount(tmpS) do
+          begin
+            tmpS3:=GetParam(tmpS, i);
+            v1:=Pos('=', tmpS3);
+
+            if v1<>0 then
+            begin
+              tmpS4:=tmpS3.Substring(1, v1-1);
+              tmpS2:=tmpS3.Substring(v1+1);
+
+              If tmpS4<>'' then
+              begin
+                v1:=StrToIntEx(tmpS1)-1;
+                If (v1>=0) and (FDCLGrid.TableParts.Count>v1) and Assigned(FDCLGrid.TableParts[v1]) then
+                begin
+                  If not (FDCLGrid.TableParts[v1].Query.State in dsEditModes) then
+                    FDCLGrid.TableParts[v1].Query.Edit;
+                  FDCLGrid.TableParts[v1].Query.FieldByName(tmpS4).AsString:=tmpS;
+
+                  if Flg1 then
+                    FDCLGrid.TableParts[v1].Query.Post;
+                end;
+              end
+              else
+              begin
+                If not (FDCLGrid.Query.State in dsEditModes) then
+                  FDCLGrid.Query.Edit;
+                FDCLGrid.Query.FieldByName(tmpS4).AsString:=tmpS;
+                if Flg1 then
+                  FDCLGrid.TableParts[v1].Query.Post;
+              end;
+            end;
+          end;
+        end;
+      end;
     end;
-
-
   end;
 
 
@@ -1117,20 +1242,6 @@ begin
     end;
 
 
-
-  end;
-
-  if Assigned(FDCLForm) then
-  begin
-    If IsLexem('OnTop=', Command) then
-    begin
-{$IFNDEF NOONTOP}
-      if (Trim(FindParam('OnTop=', Command))='1') and (FDCLForm.FormStyle=fsNormal) then
-          FDCLForm.FormStyle:=fsStayOnTop
-      else
-        FDCLForm.FormStyle:=fsNormal;
-{$ENDIF}
-    end;
 
   end;
 end;
