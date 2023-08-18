@@ -3758,6 +3758,16 @@ begin
     end;
   end;
 
+  If IsLexem('UpdateTable=', ScrStr) then
+  begin
+    TranslateVal(ScrStr, False);
+    tmpS:=FindParam('UpdateTable=', ScrStr);
+    tmpS2:=FindParam('KeyFields=', ScrStr);
+    If Assigned(FQuery) then
+      FQuery.SetUpdateSQL(tmpS, tmpS2);
+  end;
+
+
   if IsLexem('ReadOnly=', ScrStr) then
   begin
     TranslateVal(ScrStr, True);
