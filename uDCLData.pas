@@ -79,7 +79,7 @@ type
 
   TBrushColor=class
     Color: TColor;
-    Value, Key: String;
+    ConditionValue: String;
   end;
 
   TFontStyleRec=Record
@@ -121,6 +121,17 @@ type
     Key, Value:String;
   end;
 
+  { TCondition }
+
+  TCondition=class
+    FieldNameLeft: String;
+    ConditionType: TConditionTypes;
+    Values: TList<String>;
+    ItemCondition: TPairCondition;
+
+    constructor Create;
+  end;
+
   TGetValueProc=procedure(Value: TReturnFormValue) of Object;
 
 var
@@ -157,6 +168,13 @@ begin
   ValueVar:=aValueVar;
   BatchScript:=aBatchScript;
   Multiselect:=aMultiselect;
+end;
+
+{ TCondition }
+
+constructor TCondition.Create;
+begin
+  Values:=TList<String>.Create;
 end;
 
 Initialization

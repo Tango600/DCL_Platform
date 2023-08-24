@@ -194,14 +194,13 @@ Type
   TOfficeFormat=(ofNone, ofMSO, ofOO, ofPossible);
   TOfficeDocumentFormat=(odfNone, odfMSO97, odfMSO2007, odfOO, odfPossible);
   TDocumentType=(dtNone, dtSheet, dtText);
-  TSign=(isND, isEq, isGt, isLe, isGtEq, isLeEq, isNotEq);
+  //TSign=(isND, isEq, isGt, isLe, isGtEq, isLeEq, isNotEq);
   TReportViewMode=(rvmOneRecord, rvmAllDS, rvmGrid, rvmMultitRecordReport, rvmBookmarcks);
   TFieldBoxType=(fbtDBField, fbtDBCheck, fbtOutBox, fbtInputBox, fbtEditBox, fbtSimplyCombo, fbtDBLookup, fbtDBCombo, fbtGrid);
   TGraficFileType=(gftNone, gftBMP, gftJPEG, gftPNG, gftIcon, gftGIF, gftTIFF, gftOther);
   TDataFieldTypeType=(dftDefault, dftMemo, dftGrafic, dftRichText, dftLogic, dftFloat);
   TSpoolType=(stNone, stSpool, stText);
   TGroupType=(gtGrafic, gtMemo, gtRichText);
-  TReportType=(rtWord, rtFast);
   TFindType=(ftByIndex, ftByName, ftSQL);
   TNewQueryMode=(nqmNew, nqmFromGrid);
   TMessageType=(mbtError=0, mbtWarning=1, mbtInformation=9, mbtConfirmation=10);
@@ -212,6 +211,9 @@ Type
   TFieldParsingMode=(fpmNone, fpmCaption, fpmField);
   TPopupMenuAction=(pmaNone, pmaCopy, pmaCut, pmaPaste, pmaUndo, pmaFindCurrCell, pmaClearFind);
   TSortOrder=(soNone, soAsc, soDesc);
+  TConditionTypes=(ctND, ctEq, ctNotEq, ctGt, ctGtEq, ctLe, ctLeEq, ctIn, ctNotIn,
+    ctBt, ctNotBt);
+  TPairCondition=(pcNone, pcAnd, pcOr);
 
   TTransactionType=(trtWrite, trtRead, trtUniversal);
 

@@ -37,7 +37,6 @@ const
   CalendarLeft={$IFDEF ZVComponents}25{$ELSE}15{$ENDIF};
   DateBoxAddWidth={$IFDEF ZVComponents}20{$ELSE}30{$ENDIF};
 {$ELSE}
-  AddHeight=0;
   CalendarLeft=15;
   DateBoxAddWidth=0;
 {$ENDIF}
@@ -74,12 +73,7 @@ const
   FormPanelButtonHeight=FormPanelHeight-5;
   FormPanelButtonWidth=85;
   PanelButtonTextRight=3;
-{$IFDEF UNIX}
-  AddSummGridHeight=20;
-{$ELSE}
-  AddSummGridHeight=0;
-{$ENDIF}
-  SummGridHeight=27+AddSummGridHeight;
+  SummGridHeight=27;
   SumPanelHeight=150;
 
   DefaultFormHeight=MaxAllFieldsHeight+ToolButtonPanelHeight+ButtonPanelHeight;

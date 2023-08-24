@@ -63,7 +63,7 @@ uses
   {$IFDEF TRANSACTIONDB}
   uDCLDBTransaction,
   {$ENDIF}
-  uDCLTextReport;
+  uDCLTextReport, uExpressionParser;
 
 { TDCLCommand }
 
@@ -126,9 +126,7 @@ var
   var
     IfResult, Flg, Skp: Boolean;
     posI, posI2: Integer;
-    c: Char;
-    Sign: TSign;
-    Line, IfCondition, SignStr, Expression1, Expression2: String;
+    Line, IfCondition: String;
   begin
     Flg:=IfFlag;
     Skp:=Skeep;
@@ -187,64 +185,7 @@ var
         else
           IfCondition:=Copy(Line, posI+1, Pos(')', Line)-posI-1).Trim;
 
-        SignStr:='';
-
-        posI:=1;
-        for c in IfCondition do
-        begin
-          if c in ['=', '<', '>'] then
-          begin
-            break;
-          end;
-          Inc(posI);
-        end;
-
-        Expression1:=Copy(IfCondition, 1, PosI-1);
-        Delete(IfCondition, 1, PosI-1);
-
-        posI:=1;
-        for c in IfCondition do
-        begin
-          if not (c in ['=', '<', '>']) then
-          begin
-            break;
-          end;
-          Inc(posI);
-        end;
-
-        SignStr:=Copy(IfCondition, 1, posI-1);
-        Delete(IfCondition, 1, PosI-1);
-
-        Expression2:=IfCondition;
-
-        Sign:=isND;
-        if SignStr='=' then
-          Sign:=isEq
-        else
-        if SignStr='<' then
-          Sign:=isLe
-        else
-        if SignStr='>' then
-          Sign:=isGt
-        else
-        if SignStr='>=' then
-          Sign:=isGtEq
-        else
-        if SignStr='<=' then
-          Sign:=isLeEq
-        else
-        if SignStr='<>' then
-          Sign:=isNotEq;
-
-        case Sign of
-        isEq: IfResult:=LowerCase(Expression1)=LowerCase(Expression2);
-        isNotEq: IfResult:=LowerCase(Expression1)<>LowerCase(Expression2);
-        isLe: IfResult:=LowerCase(Expression1)<LowerCase(Expression2);
-        isGt: IfResult:=LowerCase(Expression1)>LowerCase(Expression2);
-
-        isLeEq: IfResult:=LowerCase(Expression1)<=LowerCase(Expression2);
-        isGtEq: IfResult:=LowerCase(Expression1)>=LowerCase(Expression2);
-        end;
+        IfResult:=ParseLogicalExpression(IfCondition);
 
         Run(IfResult, False);
 

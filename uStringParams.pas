@@ -25,6 +25,7 @@ Function ParamsCount(const ParamsSet: String; SeparateChar: String=DefaultValues
   ParamDelim: String=DefaultParamDelim): Integer;
 Function GetClearParam(const Param: String; ParamDelim: String=DefaultParamDelim): String;
 Function PosEx(const SubStr, S: String): Cardinal;
+function Any(const StrSet, S: String): Boolean;
 Function InitCap(const S: String): String;
 Function TrimSymbols(S: String; TrimS: String): String;
 Function PosSet(SubSet, S: String; SepChar: String=DefaultValuesSeparator;
@@ -343,6 +344,24 @@ end;
 Function PosEx(const SubStr, S: String): Cardinal;
 begin
   Result:=Pos(AnsiLowerCase(SubStr), AnsiLowerCase(S));
+end;
+
+function Any(const StrSet, S: String): Boolean;
+var
+  c: Char;
+begin
+  Result:=False;
+  if Length(StrSet)>0 then
+  begin
+    for c in StrSet do
+    begin
+      if PosEx(c, S)<>0 then
+      begin
+        Result:=True;
+        break;
+      end;
+    end;
+  end;
 end;
 
 Function InitCap(const S: String): String;

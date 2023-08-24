@@ -46,7 +46,7 @@ procedure CommandLineToList(var S: TProcessString; List: TProcessStrings);
 
     Result:=Copy(S, WStart, WEnd-WStart);
 
-    if  (Length(Result) > 0)
+    if (Length(Result) > 0)
       and (Result[1] = Result[Length(Result)]) // if 1st char = last char and..
       and (Result[1] in Literals) then // it's one of the literals, then
         Result:=Copy(Result, 2, Length(Result)-2); //delete the 2 (but not others in it)

@@ -33,7 +33,8 @@ implementation
 
 uses
   uDCLDBStructure, uDCLUtils, uSystemUtils, uDateTimeHelper, uDCLMultiLang,
-  uDBUtils, uDCLDBUtils, uDCLGlobalVariables, uDCLVersion, uDCLConfigTable;
+  uDBUtils, uDCLDBUtils, uDCLGlobalVariables, uDCLVersion, uDCLConfigTable,
+  uExpressionParser;
 
 const
   MaxSysVars=49;
@@ -396,14 +397,12 @@ end;
 procedure TDCLValuseParser.RePlaceProc(var Params: String; var Factor: Integer;
   Query: TDCLDialogQuery);
 var
-  ReplaseProc, Param, TmpStr, TmpStr2, TmpStr3, SignStr: String;
+  ReplaseProc, Param, ResultStr, TmpStr2: String;
   StartSel, ParamLen, StartSearch, pv1, pv2, pv3, pv4, FindProcNum, Skobki, VarNameLength,
     MaxMatch: Word;
   FindVar: Boolean;
-  c: Char;
   FunctionParams: Array Of String;
   FunctionParamsCount: Byte;
-  Sign: TSign;
   DCLConfig: TDCLConfigTable;
 Begin
   Inc(Factor);
@@ -512,14 +511,14 @@ Begin
         // ConvertOraDates
         1:
         Begin
-          TmpStr:=Copy(FunctionParams[1], 9, 2)+'.'+Copy(FunctionParams[1], 6, 2)+'.'+
+          ResultStr:=Copy(FunctionParams[1], 9, 2)+'.'+Copy(FunctionParams[1], 6, 2)+'.'+
             Copy(FunctionParams[1], 1, 4);
         End;
 
         // ConvertToOraDates
         2:
         Begin
-          TmpStr:=Copy(FunctionParams[1], 7, 4)+'-'+Copy(FunctionParams[1], 4, 2)+'-'+
+          ResultStr:=Copy(FunctionParams[1], 7, 4)+'-'+Copy(FunctionParams[1], 4, 2)+'-'+
             Copy(FunctionParams[1], 1, 2)+' 00:00:00';
         End;
 
@@ -528,15 +527,15 @@ Begin
         Begin
           Trim(FunctionParams[1]);
           If Pos('.', FunctionParams[1])=0 Then
-            TmpStr:=FunctionParams[1]+'.00'
+            ResultStr:=FunctionParams[1]+'.00'
           Else
           Begin
-            TmpStr:=Copy(FunctionParams[1], Pos('.', FunctionParams[1])+1,
+            ResultStr:=Copy(FunctionParams[1], Pos('.', FunctionParams[1])+1,
               Length(FunctionParams[1])-Pos('.', FunctionParams[1])+1);
-            If Length(TmpStr)=1 Then
-              TmpStr:=TmpStr+'0'
+            If Length(ResultStr)=1 Then
+              ResultStr:=ResultStr+'0'
             Else
-              TmpStr:=FunctionParams[1];
+              ResultStr:=FunctionParams[1];
           End;
         End;
 
@@ -544,10 +543,10 @@ Begin
         4:
         Begin
           If Pos('.', FunctionParams[1])<>0 Then
-            TmpStr:=Copy(FunctionParams[1], 4, 2)+'/'+Copy(FunctionParams[1], 1, 2)+'/'+
+            ResultStr:=Copy(FunctionParams[1], 4, 2)+'/'+Copy(FunctionParams[1], 1, 2)+'/'+
               Copy(FunctionParams[1], 7, 4)
           Else
-            TmpStr:=FunctionParams[1];
+            ResultStr:=FunctionParams[1];
         End;
 
         // deletenonfilessimb
@@ -563,19 +562,19 @@ Begin
               Delete(FunctionParams[1], ParamLen, 1);
             Dec(ParamLen);
           End;
-          TmpStr:=FunctionParams[1];
+          ResultStr:=FunctionParams[1];
         End;
 
         // GetFileNameToTranslite
         6:
         Begin
-          TmpStr:=GetFileNameToTranslite(FunctionParams[1]);
+          ResultStr:=GetFileNameToTranslite(FunctionParams[1]);
         End;
 
         // ExtractFileName
         7:
         Begin
-          TmpStr:=ExtractFileName(FunctionParams[1]);
+          ResultStr:=ExtractFileName(FunctionParams[1]);
         End;
 
         // SumWrite
@@ -585,7 +584,7 @@ Begin
           If Length(FunctionParams)>2 then
             If FunctionParams[2]<>'' then
               TmpStr2:=FunctionParams[1]+'.'+FunctionParams[2];
-          TmpStr:=MoneyToString(StrToFloatEx(TmpStr2), True, False);
+          ResultStr:=MoneyToString(StrToFloatEx(TmpStr2), True, False);
         End;
 
         // ByIndex
@@ -596,19 +595,19 @@ Begin
           Begin
             TmpStr2:=TmpStr2+FunctionParams[pv3]+',';
           End;
-          TmpStr:=GetParam(TmpStr2, StrToInt(FunctionParams[1]));
+          ResultStr:=GetParam(TmpStr2, StrToInt(FunctionParams[1]));
         End;
 
         // Count
         10:
         Begin
-          TmpStr:=IntToStr(ParamsCount(FunctionParams[1]));
+          ResultStr:=IntToStr(ParamsCount(FunctionParams[1]));
         End;
 
         // IndexOf
         11:
         Begin
-          TmpStr:='';
+          ResultStr:='';
           pv4:=0;
           For pv3:=2 To FunctionParamsCount Do
           Begin
@@ -618,7 +617,7 @@ Begin
               If AnsiLowerCase(FunctionParams[1])
                 =AnsiLowerCase(GetParam(FunctionParams[pv3], pv1)) Then
               Begin
-                TmpStr:=IntToStr(pv1+pv4);
+                ResultStr:=IntToStr(pv1+pv4);
                 Break;
               End;
             End;
@@ -629,7 +628,7 @@ Begin
         12: // ReadConfig
         Begin
           DCLConfig:=TDCLConfigTable.Create(FDBConnector);
-          TmpStr:=DCLConfig.ReadConfig(FunctionParams[1], '');
+          ResultStr:=DCLConfig.ReadConfig(FunctionParams[1], '');
           FreeAndNil(DCLConfig);
         End;
 
@@ -638,7 +637,7 @@ Begin
           DCLConfig:=TDCLConfigTable.Create(FDBConnector);
           DCLConfig.WriteConfig(FunctionParams[1], FunctionParams[2], '');
           FreeAndNil(DCLConfig);
-          TmpStr:='';
+          ResultStr:='';
         End;
 
         14: // NVL
@@ -649,182 +648,90 @@ Begin
             If GetFieldFromParam(FunctionParams[1], Query)<>nil then
             Begin
               If GetFieldFromParam(FunctionParams[1], Query).IsNull then
-                TmpStr:=FunctionParams[2]
+                ResultStr:=FunctionParams[2]
               Else
-                TmpStr:=GetFieldFromParam(FunctionParams[1], Query).AsString;
+                ResultStr:=GetFieldFromParam(FunctionParams[1], Query).AsString;
             End;
         End;
 
         15: // iif
         Begin
-          If FunctionParamsCount=3 Then
+          If FunctionParamsCount=3 then
           Begin
-            pv1:=LastDelimiter('<>=', FunctionParams[1]);
-            If pv1<>0 then
-            Begin
-              TmpStr:=FunctionParams[1];
-              SignStr:='';
-
-              pv1:=1;
-              for c in TmpStr do
-              begin
-                if c in ['=', '<', '>'] then
-                begin
-                  break;
-                end;
-                Inc(pv1);
-              end;
-
-              TmpStr:=Copy(TmpStr, 1, pv1-1);
-              Delete(TmpStr, 1, pv1-1);
-
-              pv1:=1;
-              for c in TmpStr do
-              begin
-                if not (c in ['=', '<', '>']) then
-                begin
-                  break;
-                end;
-                Inc(pv1);
-              end;
-
-              SignStr:=Copy(TmpStr, 1, pv1-1);
-              Delete(TmpStr, 1, pv1-1);
-
-              TmpStr3:=TmpStr;
-
-              Sign:=isND;
-              if SignStr='=' then
-                Sign:=isEq
-              else
-              if SignStr='<' then
-                Sign:=isLe
-              else
-              if SignStr='>' then
-                Sign:=isGt
-              else
-              if SignStr='>=' then
-                Sign:=isGtEq
-              else
-              if SignStr='<=' then
-                Sign:=isLeEq
-              else
-              if SignStr='<>' then
-                Sign:=isNotEq;
-
-              If Sign=isEq then
-              Begin
-                If TmpStr2=TmpStr3 then
-                  TmpStr:=FunctionParams[2]
-                Else
-                  TmpStr:=FunctionParams[3];
-              End
-              Else If Sign=isLe then
-              Begin
-                If TmpStr2>TmpStr3 then
-                  TmpStr:=FunctionParams[2]
-                Else
-                  TmpStr:=FunctionParams[3];
-              End
-              Else If Sign=isGt then
-              Begin
-                If TmpStr2<TmpStr3 then
-                  TmpStr:=FunctionParams[2]
-                Else
-                  TmpStr:=FunctionParams[3];
-              End
-              Else If Sign=isNotEq then
-              Begin
-                If TmpStr2<>TmpStr3 then
-                  TmpStr:=FunctionParams[2]
-                Else
-                  TmpStr:=FunctionParams[3];
-              End
-              Else If Sign=isGtEq then
-              Begin
-                If TmpStr2<=TmpStr3 then
-                  TmpStr:=FunctionParams[2]
-                Else
-                  TmpStr:=FunctionParams[3];
-              End
-              Else If Sign=isLeEq then
-              Begin
-                If TmpStr2>=TmpStr3 then
-                  TmpStr:=FunctionParams[2]
-                Else
-                  TmpStr:=FunctionParams[3];
-              End;
-            End;
+            if ParseLogicalExpression(FunctionParams[1]) then
+              ResultStr:=FunctionParams[2]
+            else
+              ResultStr:=FunctionParams[3];
           End;
         End;
         16: // GetTempFileName
         Begin
-          TmpStr:=GetTempFileName(FunctionParams[1]);
+          ResultStr:=GetTempFileName(FunctionParams[1]);
         End;
         17, 21: // DaysInMonth
         Begin
-          TmpStr:=IntToStr(DaysInAMonth(StrToInt(FunctionParams[2]), StrToInt(FunctionParams[1])));
+          ResultStr:=IntToStr(DaysInAMonth(StrToInt(FunctionParams[2]), StrToInt(FunctionParams[1])));
         End;
         18: // GetMonthName
         Begin
-          tmpStr:=FunctionParams[1];
-          pv1:=StrToIntEx(tmpStr);
+          ResultStr:=FunctionParams[1];
+          pv1:=StrToIntEx(ResultStr);
           If ((pv1>0) and (pv1<13)) then
-            TmpStr:=GetLacalaizedMonthName(pv1);
+            ResultStr:=GetLacalaizedMonthName(pv1);
         End;
         19: // LeadingZero
         Begin
-          TmpStr:=FunctionParams[1];
+          ResultStr:=FunctionParams[1];
           If StrToInt(FunctionParams[2])>0 then
           Begin
-            If Length(TmpStr)<StrToInt(FunctionParams[2]) then
+            If Length(ResultStr)<StrToInt(FunctionParams[2]) then
               For pv1:=1 to StrToInt(FunctionParams[2]) do
-                TmpStr:='0'+TmpStr;
+                ResultStr:='0'+ResultStr;
           End;
         End;
         20: // GetAccessLevelByName
         Begin
-          TmpStr:=IntToStr(Ord(TranslateDigitToUserLevel(FunctionParams[1])));
+          ResultStr:=IntToStr(Ord(TranslateDigitToUserLevel(FunctionParams[1])));
         End;
         22: // MonthByDate
         Begin
-          tmpStr:=FunctionParams[1];
+          ResultStr:=FunctionParams[1];
           try
-            pv1:=MonthOf(StrToDate(tmpStr));
+            pv1:=MonthOf(StrToDate(ResultStr));
             If ((pv1>0) and (pv1<13)) then
-              TmpStr:=GetLacalaizedMonthName(pv1);
+              ResultStr:=GetLacalaizedMonthName(pv1);
           Except
-            TmpStr:='';
+            ResultStr:='';
           End;
         End;
         23:
         Begin
-          TmpStr:=AnsiUpperCase(FunctionParams[1]);
+          ResultStr:=AnsiUpperCase(FunctionParams[1]);
         End;
         24:
         Begin
-          TmpStr:=AnsiLowerCase(FunctionParams[1]);
+          ResultStr:=AnsiLowerCase(FunctionParams[1]);
         End;
         25:Begin
           If FileExists(FunctionParams[1]) then
           Begin
-            TmpStr:=MD5File(FunctionParams[1]);
+            ResultStr:=MD5File(FunctionParams[1]);
           End;
         End;
         26:Begin
-          TmpStr:=MD5String(FunctionParams[1]);
+          ResultStr:=MD5String(FunctionParams[1]);
         End;
         27:Begin // Eval
-          ///TmpStr:=Calculate(FunctionParams[1]);
+          ///ResultStr:=Calculate(FunctionParams[1]);
         End;
         End;
 
       Delete(Params, StartSel, MaxMatch-StartSel);
 //      If Factor=1 then
-      Insert(GetClearParam(TmpStr), Params, StartSel);
-//      Else Insert(TmpStr, CallProc, StartSel);
+      Insert(GetClearParam(ResultStr), Params, StartSel);
+//      Else Insert(ResultStr, CallProc, StartSel);
 
-      Inc(StartSearch, Length(TmpStr)+1);
+      Inc(StartSearch, Length(ResultStr)+1);
     End;
   End;
   Dec(Factor);

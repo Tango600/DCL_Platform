@@ -79,6 +79,7 @@ type
     FSummGrid: TNoScrollBarDBGrid;
     FEvents: TList<TDCLEvent>;
     FNotAllowedOperations: TList<TNotAllowedOperation>;
+    FBrushColors: TList<TBrushColor>;
     FStructureList: TCheckListBox;
     PopupGridMenu: TPopupMenu;
 
@@ -216,6 +217,10 @@ type
     procedure AddNotAllowedOperation(Operation: TNotAllowedOperation);
     function FindNotAllowedOperation(Operation: TNotAllowedOperation): Boolean;
 
+    procedure AddBrushColor(Line: String);
+    procedure GridDrawDataCell(Sender: TObject; Const Rect: TRect; DataCol: Integer;
+      Column: TColumn; State: TGridDrawState);
+
     function GetFieldSetting(var List: TList<TGridFieldSetting>; FieldName: String): TGridFieldSetting;
 
     function CalculateSeed: String;
@@ -302,7 +307,7 @@ uses
   LCLProc, lcltype,
   {$ENDIF}
   uDCLCommand, uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, uDCLForm,
-  uPrintBase, uDCLGlobalVariables, uDCLMD5;
+  uPrintBase, uDCLGlobalVariables, uDCLMD5, uExpressionParser;
 
 { TLookupTable }
 
@@ -3170,6 +3175,79 @@ begin
   end;
 end;
 
+procedure TDCLGrid.AddBrushColor(Line: String);
+var
+  BrushColor: TBrushColor;
+  Color: String;
+begin
+  BrushColor:=TBrushColor.Create;
+  Color:=FindParam('Color=', Line);
+
+  Case GetStringDataType(Color) of
+  idDigit:
+  BrushColor.Color:=StrToIntEx(Color);
+  idHex:
+  BrushColor.Color:=HexToInt(Color);
+  idColor:
+  BrushColor.Color:=StringToColor(Color);
+  end;
+
+  BrushColor.ConditionValue:=FindParam('Condition=', Line);
+
+  FBrushColors.Add(BrushColor);
+end;
+
+procedure TDCLGrid.GridDrawDataCell(Sender: TObject; const Rect: TRect;
+  DataCol: Integer; Column: TColumn; State: TGridDrawState);
+var
+  flg: Boolean;
+  RowTextColor: TColor;
+  Brush, B: TBrushColor;
+  Expressions: TList<TCondition>;
+  CondItem: TCondition;
+begin
+  flg:=False;
+  if Assigned(FQuery) and FQuery.Active and (FBrushColors.Count>0) then
+  begin
+    Brush:=nil;
+    for B in FBrushColors do
+    begin
+      if B.ConditionValue<>'' then
+      begin
+        Expressions:=LogicalParser(B.ConditionValue);
+
+        for CondItem in Expressions do
+        begin
+          if FieldExist(FQuery, CondItem.FieldNameLeft) then
+          begin
+            CondItem.FieldNameLeft:=FQuery.FieldByName(CondItem.FieldNameLeft).AsString;
+          end;
+        end;
+
+        if CalcLogicalExpression(Expressions) then
+        begin
+          flg:=True;
+          Brush:=B;
+          break;
+        end;
+      end;
+    end;
+
+    if flg and Assigned(Brush) then
+    begin
+      RowTextColor:=clWhite;
+      TDBGrid(Sender).Canvas.Brush.Color:=Brush.Color;
+      TDBGrid(Sender).Canvas.Font.Color:=RowTextColor;
+
+      With (Sender as TDBGrid).Canvas do
+      begin
+        FillRect(Rect);
+      end;
+      TDBGrid(Sender).DefaultDrawColumnCell(Rect, DataCol, Column, State);
+    end;
+  end;
+end;
+
 function TDCLGrid.GetFieldSetting(var List: TList<TGridFieldSetting>; FieldName: String): TGridFieldSetting;
 var
   Item: TGridFieldSetting;
@@ -3428,6 +3506,7 @@ begin
   FCalendars:=TList<TDCLCalendar>.Create;
   FEvents:=TList<TDCLEvent>.Create;
   FNotAllowedOperations:=TList<TNotAllowedOperation>.Create;
+  FBrushColors:=TList<TBrushColor>.Create;
 
   FOrderByFields:=TStringList.Create;
   FNotOrderByFields:=TStringList.Create;
@@ -4043,6 +4122,12 @@ begin
     AddCalendar(ScrStr);
   end;
 
+  if IsLexem('Color=', ScrStr) then
+  begin
+    TranslateVal(ScrStr, False);
+    AddBrushColor(ScrStr);
+  end;
+
   If IsLexem('NoButtonsPanel;', ScrStr) then
   begin
     FNoButtonPanel:=True;
@@ -4295,6 +4380,7 @@ begin
       PopupGridMenu:=TPopupMenu.Create(FDBGrid);
       PopupGridMenu.Parent:=FDBGrid;
       FDBGrid.PopupMenu:=PopupGridMenu;
+      FDBGrid.OnDrawColumnCell:=GridDrawDataCell;
 
       AddPopupItem(GetDCLMessageString(msFindCurrCell), pmaFindCurrCell, 'Alt+F', ptNone);
       AddPopupItem(GetDCLMessageString(msClearAllFind), pmaClearFind, 'Alt+C', ptNone);

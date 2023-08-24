@@ -8,8 +8,6 @@ uses
   uDCLTypes, uDCLData;
 
 type
-  TConditionTypes=(ctEq, ctNotEq, ctGt, ctGtEq, ctLe, ctLeEq, ctIn, ctNotIn,
-    ctBt, ctNotBt);
   TOrderTypes=(otAsc, otDesck);
 
   { TSQLParser }
