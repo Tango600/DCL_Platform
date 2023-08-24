@@ -19,8 +19,6 @@ type
     FDBConnector: TDCLDBConnector;
     DCLQuery: TDCLDialogQuery;
     FTableName, FKeyField, FNameField, FDataField: String;
-
-
   public
     constructor Create(DBConnector: TDCLDBConnector); overload;
 
@@ -131,7 +129,7 @@ procedure TDCLDataStorage.SetData(DataName: String; FindType: TFindType;
   Stream: TMemoryStream; Compress: Boolean);
 var
   BS: TMemoryStream;
-  tmpSQL, insSQL, valuesSQL: String;
+  tmpSQL, valuesSQL: String;
   Signature: Cardinal;
 begin
   If Stream.Size>0 Then
@@ -170,10 +168,8 @@ begin
       FErrorCode:=3;
       Exit;
     end;
-    If DCLQuery.IsEmpty Then
+    If DCLQuery.IsEmpty then
     begin
-      If FindType<>ftSQL Then
-        DCLQuery.Close;
       Case FindType of
       ftByName:
       DCLQuery.SQL.Text:='insert into '+FTableName+'('+FNameField+') values('+GPT.StringTypeChar+
@@ -182,21 +178,46 @@ begin
       DCLQuery.SQL.Text:='insert into '+FTableName+'('+FKeyField+') values('+DataName+')';
       ftSQL:
       begin
-
-        tmpSQL:='insert into '+FTableName+'('+insSQL+') values('+valuesSQL+')';
+        valuesSQL:='Data';
+        tmpSQL:='insert into '+FTableName+'('+FKeyField+') values('+valuesSQL+')';
         DCLQuery.SQL.Text:=tmpSQL;
       end;
       end;
       DCLQuery.ExecSQL;
-    end;
-    If Not (DCLQuery.State in dsEditModes) Then
-      DCLQuery.Edit;
-    Stream.Position:=0;
-    TBlobField(DCLQuery.FieldByName(FDataField)).LoadFromStream(Stream);
-    try
-      DCLQuery.Post;
-    finally
+
+      Case FindType of
+      ftByName:
+      tmpSQL:='select * from '+FTableName+' where lower('+FNameField+')='+
+        'lower('+GPT.StringTypeChar+DataName+GPT.StringTypeChar+')';
+      ftByIndex:
+      tmpSQL:='select * from '+FTableName+' where '+FKeyField+'='+DataName;
+      ftSQL:
+      tmpSQL:=DataName;
+      end;
       DCLQuery.Close;
+      {$IFDEF CACHEDDB}
+      DCLQuery.CancelUpdates;
+      {$ENDIF}
+      DCLQuery.SQL.Text:=tmpSQL;
+      try
+        DCLQuery.Open;
+      Except
+        FErrorCode:=3;
+        Exit;
+      end;
+
+      If not DCLQuery.IsEmpty Then
+      begin
+        DCLQuery.Edit;
+        Stream.Position:=0;
+        TBlobField(DCLQuery.FieldByName(FDataField)).LoadFromStream(Stream);
+        try
+          If DCLQuery.State in dsEditModes then
+            DCLQuery.Post;
+        finally
+          DCLQuery.Close;
+        end;
+      end;
     end;
   end;
 end;
