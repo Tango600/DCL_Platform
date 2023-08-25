@@ -208,53 +208,64 @@ begin
   LastResult:=True;
   for CondItem in Conditions do
   begin
-    case CondItem.ConditionType of
-    ctEq: begin
-      LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft=CondItem.Values[0], LastResult);
-    end;
-    ctNotEq: begin
-      LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft<>CondItem.Values[0], LastResult);
-    end;
-    ctGt: begin
-      LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft>CondItem.Values[0], LastResult);
-    end;
-    ctGtEq: begin
-      LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft>=CondItem.Values[0], LastResult);
-    end;
-    ctLe: begin
-      LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft<CondItem.Values[0], LastResult);
-    end;
-    ctLeEq: begin
-      LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft<=CondItem.Values[0], LastResult);
-    end;
-    ctBt, ctNotBt: begin
+    if CondItem.Values.Count>0 then
+    begin
       case CondItem.ConditionType of
-      ctBt: begin
-        if (CondItem.FieldNameLeft<=CondItem.Values[0]) and (CondItem.FieldNameLeft<=CondItem.Values[CondItem.Values.Count-1]) then
-        begin
-          LastResult:=GetPairCondition(CondItem.ItemCondition, True, LastResult);
+      ctEq: begin
+        LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft=CondItem.Values[0], LastResult);
+      end;
+      ctNotEq: begin
+        LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft<>CondItem.Values[0], LastResult);
+      end;
+      ctGt: begin
+        LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft>CondItem.Values[0], LastResult);
+      end;
+      ctGtEq: begin
+        LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft>=CondItem.Values[0], LastResult);
+      end;
+      ctLe: begin
+        LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft<CondItem.Values[0], LastResult);
+      end;
+      ctLeEq: begin
+        LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft<=CondItem.Values[0], LastResult);
+      end;
+      ctBt, ctNotBt: begin
+        case CondItem.ConditionType of
+        ctBt: begin
+          if (CondItem.Values.Count>=2) and (CondItem.FieldNameLeft<=CondItem.Values[0]) and (CondItem.FieldNameLeft<=CondItem.Values[1]) then
+          begin
+            LastResult:=GetPairCondition(CondItem.ItemCondition, True, LastResult);
+          end
+          else
+            LastResult:=GetPairCondition(CondItem.ItemCondition, False, LastResult);
+        end;
+        ctNotBt: begin
+          if (CondItem.Values.Count>=2) and (not ((CondItem.FieldNameLeft<=CondItem.Values[0]) and (CondItem.FieldNameLeft<=CondItem.Values[1]))) then
+          begin
+            LastResult:=GetPairCondition(CondItem.ItemCondition, True, LastResult);
+          end
+          else
+            LastResult:=GetPairCondition(CondItem.ItemCondition, False, LastResult);
+        end;
         end;
       end;
-      ctNotBt: begin
-        if not ((CondItem.FieldNameLeft<=CondItem.Values[0]) and (CondItem.FieldNameLeft<=CondItem.Values[CondItem.Values.Count-1])) then
+      ctNotIn, ctIn: begin
+        LocalResult:=CondItem.ConditionType=ctNotIn;
+        for S in CondItem.Values do
         begin
-          LastResult:=GetPairCondition(CondItem.ItemCondition, True, LastResult);
+          if S=CondItem.FieldNameLeft then
+          begin
+            LocalResult:=CondItem.ConditionType=ctIn;
+            break;
+          end;
         end;
+        LastResult:=GetPairCondition(CondItem.ItemCondition, LocalResult, LastResult);
       end;
       end;
-    end;
-    ctNotIn, ctIn: begin
-      LocalResult:=CondItem.ConditionType=ctNotIn;
-      for S in CondItem.Values do
-      begin
-        if S=CondItem.FieldNameLeft then
-        begin
-          LocalResult:=CondItem.ConditionType=ctIn;
-          break;
-        end;
-      end;
-      LastResult:=GetPairCondition(CondItem.ItemCondition, LocalResult, LastResult);
-    end;
+    end
+    else
+    begin
+      LastResult:=GetPairCondition(CondItem.ItemCondition, False, LastResult);
     end;
   end;
 
