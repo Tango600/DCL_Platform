@@ -2069,12 +2069,15 @@ begin
     TranslateVal(TempStr, False);
     //If (Not FForm.Showing) and (Not NoDataField) Then
       //FForm.Show;
-    DBLookupControl.KeyValue:=TempStr;
-    If (Not NoDataField) and Query.CanModify Then
+    if TempStr<>'' then
     begin
-      If (Not (FQuery.State in dsEditModes))and FQuery.Active and(Not NoDataField) Then
-        Query.Edit;
-      FData.DataSet.FieldByName(Field.FieldName).AsInteger:=StrToIntEx(TempStr);
+      DBLookupControl.KeyValue:=TempStr;
+      If (Not NoDataField) and Query.CanModify Then
+      begin
+        If (Not (FQuery.State in dsEditModes))and FQuery.Active and(Not NoDataField) Then
+          Query.Edit;
+        FData.DataSet.FieldByName(Field.FieldName).AsInteger:=StrToIntEx(TempStr);
+      end;
     end;
   end;
   //LookupOnClick(DBLookupControl);
