@@ -7,13 +7,13 @@ uses
   Classes, SysUtils, Generics.Collections, Forms, Controls, StdCtrls, DB, Dialogs,
   uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uDCLForm, uDCLVariables,
   uDCLUtils, uStringParams, uDCLDBConnector, uDCLDBStructure, uDBUtils,
-  uDCLValuesParser;
+  uDCLValuesParser, uIGetValue;
 
 type
 
   { TDCLCommand }
 
-  TDCLCommand=class(TComponent)
+  TDCLCommand=class(TComponent, IGetValue)
   private
     FDBConnector: TDCLDBConnector;
     FForms: TList<TForm>;
@@ -44,12 +44,11 @@ type
 
     function CreateForm(NameSpace, DialogName: String; NoContext: Boolean;
       ParentForm: TDCLForm; Grid: TDCLGrid;
-      ReturnValueParams: TReturnValueParams; Modal: Boolean;
-      RetValueProc: TGetValueProc): TDCLForm;
+      ReturnValueParams: TReturnValueParams; Modal: Boolean): TDCLForm;
 
     procedure DialogCommand(ScrStr: String);
 
-    procedure RetValue(ReturnValue: TReturnFormValue);
+    procedure GetValueProc(ReturnValue: TReturnFormValue);
   end;
 
 implementation
@@ -1232,7 +1231,7 @@ end;
 
 function TDCLCommand.CreateForm(NameSpace, DialogName: String; NoContext: Boolean;
   ParentForm: TDCLForm; Grid: TDCLGrid; ReturnValueParams: TReturnValueParams;
-  Modal: Boolean; RetValueProc: TGetValueProc): TDCLForm;
+  Modal: Boolean): TDCLForm;
 var
   DCLQuery: TDCLDialogQuery;
   Empty: Boolean;
@@ -1260,10 +1259,10 @@ begin
     begin
       if NoContext then
         lForm:=TDCLForm.Create(DialogName, NameSpace, ParentForm, FVariables, FForms, DCL, FDBConnector,
-          nil, nil, RetValueProc, ReturnValueParams, Modal)
+          nil, nil, Self, ReturnValueParams, Modal)
       else
         lForm:=TDCLForm.Create(DialogName, NameSpace, ParentForm, FVariables, FForms, DCL, FDBConnector,
-          Grid.Query, Grid.Data, RetValueProc, ReturnValueParams, Modal);
+          Grid.Query, Grid.Data, Self, ReturnValueParams, Modal);
 
       if not lForm.Reject then
       begin
@@ -1286,7 +1285,6 @@ var
   ModalOpen, NoContext: Boolean;
   v1, ModalResult: Integer;
   ReturnValueParams: TReturnValueParams;
-  RetValueMethod: TGetValueProc;
   lDCLForm: TDCLForm;
 begin
   DialogName:=FindParam('Dialog=', ScrStr);
@@ -1300,7 +1298,7 @@ begin
       FindParam('KeyModifyField=', ScrStr), FindParam('ValueModifyField=', ScrStr),
       FindParam('KeyVariable=', ScrStr), FindParam('ValueVariable=', ScrStr),
       FindParam('BatchScript=', ScrStr), FindParam('MultiSelect=', ScrStr)='1');
-    RetValueMethod:=RetValue;
+
     ModalOpen:=FindParam('BatchScript=', ScrStr)='1';
   end;
   NoContext:=FindParam('NoContext=', ScrStr)='1';
@@ -1313,12 +1311,12 @@ begin
       v1:=StrToIntEx(TmpStr)-1;
       If Assigned(FDCLForm.CurrentGrid.TableParts[v1]) Then
         lDCLForm:=CreateForm(FNameSpace, DialogName, NoContext, FDCLForm, FDCLGrid,
-          ReturnValueParams, ModalOpen, RetValueMethod);
+          ReturnValueParams, ModalOpen);
     End;
   end
   Else
     lDCLForm:=CreateForm(FNameSpace, DialogName, NoContext, FDCLForm, FDCLGrid,
-      ReturnValueParams, ModalOpen, RetValueMethod);
+      ReturnValueParams, ModalOpen);
 
   If Assigned(lDCLForm) Then
   begin
@@ -1330,14 +1328,14 @@ begin
 
       If (ModalResult=mrOK) and Assigned(lDCLForm.ReturnValue) and (lDCLForm.ReturnValue.Values.Count>0) Then
       begin
-        RetValue(lDCLForm.ReturnValue);
+        GetValueProc(lDCLForm.ReturnValue);
       end;
     end;
     FDCLForm:=lDCLForm;
   end;
 end;
 
-procedure TDCLCommand.RetValue(ReturnValue: TReturnFormValue);
+procedure TDCLCommand.GetValueProc(ReturnValue: TReturnFormValue);
 var
   vc: Integer;
   ReturnValueItem: TGetValueItem;

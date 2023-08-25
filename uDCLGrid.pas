@@ -3080,7 +3080,7 @@ begin
       (FForm as TDCLForm).ReturnValue:=ReturnValue;
 
       if Assigned((FForm as TDCLForm).RetValueMethod) then
-        (FForm as TDCLForm).RetValueMethod(ReturnValue);
+        (FForm as TDCLForm).RetValueMethod.GetValueProc(ReturnValue);
 
       if ReturnValueParams.Modal then
         FForm.ModalResult:=mrOk

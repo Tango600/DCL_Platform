@@ -194,7 +194,6 @@ Type
   TOfficeFormat=(ofNone, ofMSO, ofOO, ofPossible);
   TOfficeDocumentFormat=(odfNone, odfMSO97, odfMSO2007, odfOO, odfPossible);
   TDocumentType=(dtNone, dtSheet, dtText);
-  //TSign=(isND, isEq, isGt, isLe, isGtEq, isLeEq, isNotEq);
   TReportViewMode=(rvmOneRecord, rvmAllDS, rvmGrid, rvmMultitRecordReport, rvmBookmarcks);
   TFieldBoxType=(fbtDBField, fbtDBCheck, fbtOutBox, fbtInputBox, fbtEditBox, fbtSimplyCombo, fbtDBLookup, fbtDBCombo, fbtGrid);
   TGraficFileType=(gftNone, gftBMP, gftJPEG, gftPNG, gftIcon, gftGIF, gftTIFF, gftOther);

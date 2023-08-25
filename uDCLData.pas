@@ -132,12 +132,9 @@ type
     constructor Create;
   end;
 
-  TGetValueProc=procedure(Value: TReturnFormValue) of Object;
-
 var
   TDataGrid: set of TGridStyle;
   TDataFields: set of TGridStyle;
-  //DefaultOrientation: TOrientation;
   TBlobFields: set of TFieldType;
   TIntegerTypedFields: set of TFieldType;
   TStringTypedFields: set of TFieldType;

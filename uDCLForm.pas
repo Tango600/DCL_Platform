@@ -8,7 +8,7 @@ uses
   Controls, StdCtrls, ComCtrls, Graphics, Menus,
   uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uStringParams, uDCLQuery,
   uDCLMeasurements, uDCLDBConnector, uDCLUtils, uDCLVariables, uDCLMultiLang,
-  uDCLImages;
+  uDCLImages, uIGetValue;
 
 type
 
@@ -23,7 +23,7 @@ type
     FVariables: TVariables;
     FForms: TList<TForm>;
     FParentForm: TDCLForm;
-    FRetValueProc: TGetValueProc;
+    FRetValueProc: IGetValue;
     FOPL: TStringList;
     FormBar: TToolBar;
     TB: TFormPanelButton;
@@ -76,8 +76,9 @@ type
   public
     constructor Create(DialogName, NameSpace: String; ParentForm: TDCLForm;
       Variables: TVariables; Forms: TList<TForm>; OPL: TStringList; DBConnector: TDCLDBConnector;
-      Query: TDCLQuery; Data: TDataSource; RetValueProc: TGetValueProc;
+      Query: TDCLQuery; Data: TDataSource; RetValueProc: IGetValue;
       ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False); overload;
+    destructor Destroy; override;
 
     procedure RefreshForm;
 
@@ -96,7 +97,7 @@ type
     property IsSingle: Boolean read FIsSingle;
     property ReturnValue: TReturnFormValue read FReturnValue write FReturnValue;
     property ReturnValueParams: TReturnValueParams read FReturnValueParams write FReturnValueParams;
-    property RetValueMethod: TGetValueProc read FRetValueProc;
+    property RetValueMethod: IGetValue read FRetValueProc;
     property ParentForm: TDCLForm read FParentForm;
     property Reject: Boolean read FReject;
     property RightsLevel: TUserLevelsType read FUserLevel;
@@ -379,7 +380,7 @@ end;
 constructor TDCLForm.Create(DialogName, NameSpace: String; ParentForm: TDCLForm;
   Variables: TVariables; Forms: TList<TForm>; OPL: TStringList;
   DBConnector: TDCLDBConnector; Query: TDCLQuery; Data: TDataSource;
-  RetValueProc: TGetValueProc; ReturnValueParams: TReturnValueParams;
+  RetValueProc: IGetValue; ReturnValueParams: TReturnValueParams;
   Modal: Boolean=False);
 var
   Command: TDCLCommand;
@@ -586,6 +587,12 @@ begin
   begin
     Self.Show;
   end;
+end;
+
+destructor TDCLForm.Destroy;
+begin
+  inherited Destroy;
+  FRetValueProc:=nil;
 end;
 
 procedure TDCLForm.RefreshForm;
