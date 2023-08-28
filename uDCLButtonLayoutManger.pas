@@ -16,7 +16,7 @@ type
 
   protected
     procedure ProcessControlFromList(Control: T); override;
-    procedure ProcessBeforeNextControl; override;
+    procedure ProcessBeforeNextControl(CurrentControl: T); override;
   public
     procedure InitMeasurements; override;
 
@@ -28,38 +28,23 @@ implementation
 
 procedure TDCLButtonLayoutManger<T>.InitMeasurements;
 begin
-  FLeftDirect:=1;
-  FTopDirect:=1;
-
-  FStepTop:=ButtonsInterval+ButtonHeight;
-
   FTop:=ButtonsTop;
-  FLeft:=BeginStepLeft;
 end;
 
 procedure TDCLButtonLayoutManger<T>.ProcessControlFromList(Control: T);
 begin
-  if Assigned(Control.Button) then
-  begin
-    //Control.Button.Top:=FTop;
-    //Control.Button.Left:=FLeft;
-    //Control.Button.Height:=ButtonHeight;
-
-    Inc(FLeft, (Control.Width+ButtonsInterval)*FLeftDirect);
-  end;
 end;
 
-procedure TDCLButtonLayoutManger<T>.ProcessBeforeNextControl;
+procedure TDCLButtonLayoutManger<T>.ProcessBeforeNextControl(CurrentControl: T);
 var
   h: Integer;
 begin
-  if FParent.Width<FLeft+FullButtonWidth+ButtonsInterval then
+  if FParent.Width<FLeft+CurrentControl.Width+ButtonsInterval then
   begin
-    FLeft:=BeginStepLeft;
-    Inc(FTop, FStepTop*FTopDirect);
+    Inc(FTop, (ButtonsInterval+CurrentControl.Button.Height)*FTopDirect);
   end;
 
-  h:=FTop+ButtonHeight+ButtonsTop;
+  h:=FTop+CurrentControl.Button.Height+ButtonsTop;
   FParent.Height:=h;
 end;
 

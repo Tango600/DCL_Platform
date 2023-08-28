@@ -146,7 +146,6 @@ type
     procedure AdjustFilterPanel(Height: Integer);
 
     procedure OnResizeFilterPanel(Sender: TObject);
-    procedure OnResizeButtonFlowPanel(Sender: TObject);
 
     procedure AddDropBox(Field: TDCLField; Scr: String);
     procedure DropListOnSelectItem(Sender: TObject);
@@ -588,7 +587,6 @@ begin
       FindGrid:=TStringGrid.Create(FMainPanel);
       FindGrid.Parent:=FMainPanel;
       FindGrid.Align:=alBottom;
-      FindGrid.DefaultRowHeight:=17;
       FindGrid.DefaultColWidth:=IndicatorWidth;
       FindGrid.OnSelectCell:=FindGridOnSelectCell;
 
@@ -598,14 +596,14 @@ begin
         StrIndex:=0;
         FindGrid.RowCount:=1;
         FindGrid.FixedRows:=0;
-        FindGrid.Height:=45;
+        FindGrid.Height:=FindGrid.RowHeights[0]+AddFindGridPanelHeight;
       end
       else
       begin
         StrIndex:=1;
         FindGrid.RowCount:=2;
         FindGrid.FixedRows:=1;
-        FindGrid.Height:=65;
+        FindGrid.Height:=FindGrid.RowHeights[0]+FindGrid.RowHeights[1]+AddFindGridPanelHeight;
       end;
 
       FindGrid.Options:=[goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect,
@@ -1186,10 +1184,6 @@ begin
     else
       FToolsPanel.Height:=FToolPanelHeight+FFilterPanelHeight;
   end;
-end;
-
-procedure TDCLGrid.OnResizeButtonFlowPanel(Sender: TObject);
-begin
 end;
 
 procedure TDCLGrid.AddDropBox(Field: TDCLField; Scr: String);
@@ -4231,13 +4225,12 @@ begin
     begin
       FButtonPanel:=TDCLButtonPanel.Create(Self);
       FButtonPanel.Parent:=Parent;
-      //FButtonPanel.Height:=ButtonPanelHeight;
+      FButtonPanel.AutoSize:=True;
 
       FButtonFlowPanel:=TFlowPanel.Create(FButtonPanel);
       FButtonFlowPanel.Parent:=FButtonPanel;
       FButtonFlowPanel.Align:=alClient;
       FButtonFlowPanel.AutoSize:=True;
-      FButtonFlowPanel.Constraints.MaxHeight:=((ButtonHeight+ButtonsInterval)*3)+ButtonsTop;
 
       FButtonLayout:=TDCLButtonLayoutManger<TDCLCommandButton>.Create(FButtonPanel, FButtons);
       FButtonLayout.InitMeasurements;
@@ -4247,7 +4240,6 @@ begin
     else
       FButtonPanel.Align:=alTop;
 
-    FButtonFlowPanel.OnResize:=OnResizeButtonFlowPanel;
     if FButtons.Count>0 then
     begin
       for btc in FButtons do

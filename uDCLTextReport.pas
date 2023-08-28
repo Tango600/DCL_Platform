@@ -594,7 +594,7 @@ begin
 
   If GrabFormYes Then
   begin
-    GrabValueForm.ClientHeight:=ElementsTop+BeginStepTop+ButtonPanelHeight;
+    GrabValueForm.ClientHeight:=ElementsTop+BeginStepTop+50;
     BtOk:=TButton.Create(GrabValueForm);
     BtOk.Parent:=GrabValueForm;
     BtOk.Tag:=0;

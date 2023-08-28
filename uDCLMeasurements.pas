@@ -45,11 +45,13 @@ const
   ToolBarButtonSpliterWidth=8;
   ToolButtonsFlat=True;
 
+  AddFindGridPanelHeight=29;
+
   BeginStepLeft=15;
   BeginStepTop=25;
 
   ButtonWidth=90;
-  ButtonHeight=27;
+  //ButtonHeight=27;
 
   LabelTopInterval=4;
   CompenentTopStep=8;
@@ -62,8 +64,6 @@ const
   BevelWidth=4;
   ButtonsTop=12;
   ButtonsParagrapDown=11;
-  //IncPanelHeight=ButtonHeight+ButtonsParagrapDown;
-  ButtonPanelHeight=ButtonsTop+ButtonHeight+ButtonsParagrapDown;
   FullButtonWidth=ButtonWidth+ButtonsInterval;
 
   ScrollHeight=20;
@@ -76,7 +76,7 @@ const
   SummGridHeight=27;
   SumPanelHeight=150;
 
-  DefaultFormHeight=MaxAllFieldsHeight+ToolButtonPanelHeight+ButtonPanelHeight;
+  DefaultFormHeight=MaxAllFieldsHeight+ToolButtonPanelHeight+ButtonsTop+27+ButtonsParagrapDown;
   DefaultFormWidth=MaxAllFieldsWidth+10;
 
   StatusRecords=0;

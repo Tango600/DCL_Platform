@@ -17,7 +17,7 @@ type
 
   protected
     procedure ProcessControlFromList(Control: T); override;
-    procedure ProcessBeforeNextControl; override;
+    procedure ProcessBeforeNextControl(CurrentControl: T); override;
   public
     procedure InitMeasurements; override;
   end;
@@ -86,9 +86,9 @@ begin
   end;
 end;
 
-procedure TDCLHorizontalFieldLayoutManger<T>.ProcessBeforeNextControl;
+procedure TDCLHorizontalFieldLayoutManger<T>.ProcessBeforeNextControl(CurrentControl: T);
 begin
-  if FParent.Width<FLeft+FieldsStepLeft+FCurrWidth then
+  if FParent.Width<FLeft+FieldsStepLeft+CurrentControl.Width then
   begin
     Inc(FTop, FMaxColHeight+LabelTopInterval);
 

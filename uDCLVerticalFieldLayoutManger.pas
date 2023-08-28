@@ -14,10 +14,9 @@ type
   TDCLVerticalFieldLayoutManger<T>=class(TDCLBaseLayoutManger<T>)
   private
     FMaxColWidth, FMaxLabelWidth, FCurrWidth, FCurrHeight, FLabelHeight: Integer;
-
   protected
     procedure ProcessControlFromList(Control: T); override;
-    procedure ProcessBeforeNextControl; override;
+    procedure ProcessBeforeNextControl(CurrentControl: T); override;
   public
     procedure InitMeasurements; override;
   end;
@@ -82,9 +81,15 @@ begin
   end;
 end;
 
-procedure TDCLVerticalFieldLayoutManger<T>.ProcessBeforeNextControl;
+procedure TDCLVerticalFieldLayoutManger<T>.ProcessBeforeNextControl(CurrentControl: T);
 begin
-  if FParent.Height<FTop+ButtonsTop+FLabelHeight then
+  FCurrHeight:=0;
+  if Assigned(CurrentControl.DCLEditComponent) and Assigned(CurrentControl.DCLEditComponent.Control) then
+  begin
+    FCurrHeight:=CurrentControl.DCLEditComponent.Control.Height;
+  end;
+
+  if FParent.Height<FTop+ButtonsTop+FLabelHeight+FCurrHeight+LabelTopInterval then
   begin
     if FMaxColWidth>FMaxLabelWidth then
       Inc(FLeft, FMaxColWidth+FieldsStepLeft)
