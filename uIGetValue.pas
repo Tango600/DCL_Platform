@@ -4,7 +4,7 @@ unit uIGetValue;
 interface
 
 uses
-  Classes, SysUtils, uDCLData;
+  uDCLData;
 
 type
   IGetValue=interface
