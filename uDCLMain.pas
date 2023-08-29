@@ -171,7 +171,7 @@ end;
 function TDCLMain.ReadBaseID: String;
 begin
   Result:='';
-  if not GPT.NoParamsTable then
+  if not GPT.NoParamsTable and FDBConnector.Connected then
   begin
     LocalQuery.SQL.Text:='select * from '+GPTTableName+' where '+GPT.UpperString+
       GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+'BaseUID'+
@@ -190,7 +190,7 @@ end;
 
 function TDCLMain.TestGlobalParamsTable: Boolean;
 begin
-  Result:=not TableExist(FDBConnector, GPTTableName);
+  Result:=FDBConnector.Connected and not TableExist(FDBConnector, GPTTableName);
 end;
 
 constructor TDCLMain.Create;
