@@ -125,6 +125,8 @@ begin
 end;
 
 constructor TDCLMenu.Create(Main: IDCLMain; MainForm: TForm; DBConnector: TDCLDBConnector);
+var
+  S: String;
 begin
   FMain:=Main;
   FMainForm:=MainForm;
@@ -157,7 +159,11 @@ begin
   LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+'=0', GPT.UserID);
   LocalQuery.Open;
   LocalQuery.First;
-  FMainForm.Caption:=LocalQuery.FieldByName(DCLNameField).AsString;
+  S:=LocalQuery.FieldByName(DCLNameField).AsString;
+  if GPT.MainFormCaption<>'' then
+    S:=S+' \'+Trim(GPT.MainFormCaption)+'\';
+
+  FMainForm.Caption:=S;
   LocalQuery.Close;
 
   LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 1 and 1000', GPT.UserID);

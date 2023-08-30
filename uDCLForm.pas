@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, DB, Generics.Collections,
-  Controls, StdCtrls, ComCtrls, Graphics, Menus,
+  Controls, ComCtrls, Graphics, Menus,
   uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uStringParams, uDCLQuery,
   uDCLMeasurements, uDCLDBConnector, uDCLUtils, uDCLVariables, uDCLMultiLang,
   uDCLImages, uIGetValue;
@@ -16,7 +16,7 @@ type
 
   TDCLForm=class(TForm)
   private
-    FReject, FFirstPage, FormCanClose, NoCloseable: Boolean;
+    FReject, FFirstPage, FormCanClose, NoCloseable, FCloseQuery: Boolean;
     FDBConnector: TDCLDBConnector;
     FFormCloseStatus: TDCLFormCloseAction;
     FNameSpace, FDialogName, CloseQueryText: String;
@@ -65,7 +65,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure OnActivateForm(Sender: TObject);
     procedure OnFormClose(Sender: TObject; var CloseAction: TCloseAction);
-    procedure OnCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure OnFormCloseQuery(Sender: TObject; var CanClose: Boolean);
 
     procedure SetRecordsStatus(Str: String);
 
@@ -336,7 +336,7 @@ begin
   FFormCloseStatus:=fcaClose;
 end;
 
-procedure TDCLForm.OnCloseQuery(Sender: TObject; var CanClose: Boolean);
+procedure TDCLForm.OnFormCloseQuery(Sender: TObject; var CanClose: Boolean);
 var
   S:String;
   DlgRes:Integer;
@@ -353,7 +353,7 @@ begin
     Exit;
   End;
 
-  If CloseQuery then
+  If FCloseQuery then
   Begin
     S:=CloseQueryText;
     if S='' then
@@ -396,6 +396,7 @@ begin
   Self.OnActivate:=OnActivateForm;
   Self.OnShow:=FormShow;
   Self.OnClose:=OnFormClose;
+  Self.OnCloseQuery:=OnFormCloseQuery;
   FForms:=Forms;
   FDialogName:=DialogName;
   FDBConnector:=DBConnector;
@@ -404,6 +405,8 @@ begin
   FParentForm:=ParentForm;
   FRetValueProc:=RetValueProc;
   FUserLevel:=GPT.AccessLevel;
+  FCloseQuery:=False;
+  CloseQueryText:='';
 
   FReject:=False;
   For ff in FForms do
@@ -530,11 +533,20 @@ begin
         FPages.ActivePage.Caption:=tmpS;
       end;
 
+      If IsLexem('CloseQuery=', SrcLine) then
+      begin
+        CloseQueryText:=FindParam('CloseQuery=', SrcLine);
+        FCloseQuery:=True;
+      end;
+
       if IsLexem('Caption=', SrcLine) then
       begin
         tmpS:=SrcLine;
         TranslateVal(tmpS, True);
         tmpS1:=FindParam('Caption=', tmpS);
+        if GPT.MainFormCaption<>'' then
+          tmpS1:=tmpS1+' \'+Trim(GPT.MainFormCaption)+'\';
+
         Self.Caption:=tmpS1;
         if Assigned(TB) then
           TB.Caption:=tmpS1;
