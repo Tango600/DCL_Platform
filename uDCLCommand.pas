@@ -425,13 +425,13 @@ begin
     {$ENDIF}
 
     try
-      If Not IsReturningQuery(SQLCommand) Then
+      If not IsReturningQuery(SQLCommand) then
         {$IFDEF ADO}
         ADOCommand.Execute
         {$ELSE}
         ADOCommand.ExecSQL
         {$ENDIF}
-      Else
+      else
         {$IFDEF ADO}
         ADOCommand.Execute;
         {$ELSE}
@@ -784,7 +784,7 @@ begin
     FreeAndNil(DataStorage);
   end;
 
-  If GetRaights=ulWrite then
+  If GetRaights>=ulWrite then
   begin
     If IsLexem('PutToDB=', Command) then
     begin
@@ -837,6 +837,15 @@ begin
       DataStorage:=TDCLDataStorage.Create(FDBConnector);
       DataStorage.DeCompressData(tmpS, ftByName);
       FreeAndNil(DataStorage);
+    end;
+
+    If IsLexem('MD5Data=', Command) then
+    begin
+      tmpS:=FindParam('MD5Data=', Command);
+      tmpS1:=FindParam('VariableName=', Command);
+
+      DataStorage:=TDCLDataStorage.Create(FDBConnector);
+      FVariables.NewVariable(FNamespace, tmpS1, DataStorage.MD5(tmpS, ftByName));
     end;
   end;
 
@@ -961,6 +970,11 @@ begin
       FDCLGrid.ReFreshData;
     end;
 
+    If IsLexem('ReOpen;', Command) then
+    begin
+      FDCLGrid.ReFreshData;
+    end;
+
     if IsLexem('First;', Command) then
     begin
       FDCLGrid.Query.First;
@@ -1036,7 +1050,7 @@ begin
       end;
     end;
 
-    If GetRaights=ulWrite Then
+    If GetRaights>=ulWrite Then
     begin
       if IsLexem('Post;', Command) then
       begin
@@ -1127,7 +1141,7 @@ begin
 
   if Assigned(FDCLGrid) and Assigned(FDCLGrid.CurrentTablePart) and FDCLGrid.CurrentTablePart.Query.Active then
   begin
-    If GetRaights>ulReadOnly Then
+    If GetRaights>=ulWrite Then
     begin
       If IsLexem('Insert_part;', Command) then
       begin

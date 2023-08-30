@@ -8,7 +8,7 @@ uses
   Windows,
   {$ENDIF}
   Classes, SysUtils, Generics.Collections, Forms, ExtCtrls,
-  uDCLTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenu,
+  uDCLTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenu, uDCLNotifier,
   uIDCLMain, uDCLFormsNotifier, uDCLConst;
 
 type
@@ -25,6 +25,7 @@ type
     LocalQuery: TDCLSimlyQuery;
     KillerDog: TTimer;
     FBusyMode: Boolean;
+    FDCLNotifier: TDCLNotifier;
 
     procedure KillerForms(Sender: TObject);
     function GetDialogScript(DialogName: String): String;
@@ -47,6 +48,8 @@ type
     procedure OpenDialog(NameSpace, DialogName: String);
     procedure RunCommand(CommandName: String);
     procedure About;
+
+    procedure Exit;
 
     function IsNeedLogin: Boolean;
 
@@ -90,6 +93,8 @@ begin
     begin
       GPT.UserID:=LocalQuery.FieldByName(UserIDField).AsString;
       GPT.AccessLevel:=TranslateDigitToUserLevel(LocalQuery.FieldByName(UserAdminField).AsInteger);
+      GPT.DCLLongUserName:=LocalQuery.FieldByName(LongUserNameField).AsString;
+      GPT.DCLUserName:=LocalQuery.FieldByName(UserNameField).AsString;
     end;
     LocalQuery.Close;
   end;
@@ -303,6 +308,11 @@ begin
   FMainForm:=MainForm;
 
   FDCLMenu:=TDCLMenu.Create(Self, FMainForm, FDBConnector);
+
+  {$IFNDEF NODCLMESSAGES}
+  If GPT.UseMessages then
+    FDCLNotifier:=TDCLNotifier.Create(FDBConnector, Self);
+  {$ENDIF}
 end;
 
 function TDCLMain.CreateForm(DialogName: String): TDCLForm;
@@ -341,6 +351,11 @@ begin
   About:=TAboutForm.Create(Application, FDBConnector);
   About.ShowModal;
   About.Release;
+end;
+
+procedure TDCLMain.Exit;
+begin
+  Application.MainForm.Close;
 end;
 
 end.

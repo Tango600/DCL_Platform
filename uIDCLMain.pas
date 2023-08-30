@@ -4,7 +4,7 @@ unit uIDCLMain;
 interface
 
 uses
-  Classes, SysUtils, Forms,
+  Forms,
   uDCLForm, uDCLVariables;
 
 type
@@ -18,6 +18,8 @@ type
     procedure OpenDialog(NameSpace, DialogName: String);
     procedure RunCommand(CommandName: String);
     procedure About;
+
+    procedure Exit;
   end;
 
 implementation

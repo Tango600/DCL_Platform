@@ -1,0 +1,39 @@
+object MessageForm: TMessageForm
+  Left = 316
+  Height = 339
+  Top = 154
+  Width = 568
+  BorderStyle = bsDialog
+  Caption = 'MessageForm'
+  ClientHeight = 339
+  ClientWidth = 568
+  DesignTimePPI = 120
+  FormStyle = fsStayOnTop
+  Position = poScreenCenter
+  LCLVersion = '3.99.0.0'
+  object GroupBox1: TGroupBox
+    Left = 0
+    Height = 339
+    Top = 0
+    Width = 568
+    Align = alClient
+    ClientHeight = 314
+    ClientWidth = 564
+    TabOrder = 0
+    object MessageMemo: TMemo
+      AnchorSideRight.Side = asrBottom
+      AnchorSideBottom.Side = asrBottom
+      Left = 5
+      Height = 304
+      Top = 5
+      Width = 554
+      Align = alClient
+      BorderSpacing.Around = 5
+      Lines.Strings = (
+        'MessageMemo'
+      )
+      ReadOnly = True
+      TabOrder = 0
+    end
+  end
+end

@@ -32,8 +32,8 @@ const
   LongRoleNameField='LONGROLENAME';
   RoleMenuItemIDField='MenuItemID';
 
-  UserNameField=DCL_TablePrefix+'USER_NAME';
   UserIDField='UID';
+  UserNameField='DCL_USER_NAME';
   LongUserNameField='DCL_LONG_USER_NAME';
   UserPassField='DCL_USER_PASS';
   DBUSER_NAME_Field='DBUSER_NAME';
@@ -54,6 +54,8 @@ const
   GPTNameField='PARAM_NAME';
   GPTValueField='PARAM_VALUE';
   GPTUserIDField='PARAM_USERID';
+
+  NotifycationsTable=DCL_TablePrefix+'NOTIFYCATIONS';
 
 
 implementation
