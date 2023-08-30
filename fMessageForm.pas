@@ -17,7 +17,6 @@ type
 
   public
     constructor Create(UserName, Message: String); overload;
-
   end;
 
 implementation

@@ -931,7 +931,7 @@ begin
       FDCLForm.AddInfoStatus(tmpS, v1);
     end;
 
-    If IsLexem('SetStatusText=', Command) Then
+    If IsLexem('SetStatusText=', Command) then
     begin
       v1:=0;
       tmpS:=FindParam('Status=', Command);
@@ -950,12 +950,27 @@ begin
       FDCLForm.SetStatusNum(tmpS, v1-1, v2);
     end;
 
-    If IsLexem('DeleteAllStatus;', Command) Then
+    if IsLexem('DeleteStatus=', Command) then
+    begin
+      tmpS:=FindParam('DeleteStatus=', Command);
+      v1:=0;
+      If tmpS<>'' then
+      begin
+        If LowerCase(tmpS)='last' then
+          v1:=-1
+        else
+          v1:=StrToIntEx(Trim(tmpS));
+      end;
+
+      FDCLForm.DeleteStatus(v1);
+    end;
+
+    If IsLexem('DeleteAllStatus;', Command) then
     begin
       FDCLForm.DeleteAllStatus;
     end;
 
-    If IsLexem('SetFormCaption=', Command) Then
+    If IsLexem('SetFormCaption=', Command) then
     begin
       tmpS:=FindParam('SetFormCaption=', Command);
       FDCLForm.Caption:=tmpS;
