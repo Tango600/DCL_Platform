@@ -144,7 +144,6 @@ begin
 
   if not TimeToTerm then
   begin
-    Application.CreateForm(TAboutForm, AboutForm);
     Application.Run;
   end;
 
