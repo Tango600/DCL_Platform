@@ -10,8 +10,8 @@ uses
   uDCLData, uDCLTypes, uDCLConst, uDCLVariables, uStringParams,
   uDCLDBConnector, uDCLQuery, uDCLMeasurements, uDBUtils, uDCLMultiLang,
   uDCLCommandButton, uDCLField, uDCLMessages, uDCLImages, cNoScrollBarDBGrid,
-  cMediaFieldGroup, uDCLBaseLayoutManger, uDCLButtonLayoutManger,
-  uDCLVerticalFieldLayoutManger, uDCLHorizontalFieldLayoutManger;
+  cMediaFieldGroup, uDCLBaseLayoutManger, uDCLHorizontalFieldLayoutManger,
+  uDCLVerticalFieldLayoutManger;
 
 type
   TGridFieldSetting=class
@@ -83,7 +83,6 @@ type
     FStructureList: TCheckListBox;
     PopupGridMenu: TPopupMenu;
 
-    FButtonLayout: TDCLButtonLayoutManger<TDCLCommandButton>;
     FFieldLayout: TDCLBaseLayoutManger<TDCLField>;
 
     FUserLevel: TUserLevelsType;
@@ -4231,9 +4230,6 @@ begin
       FButtonFlowPanel.Parent:=FButtonPanel;
       FButtonFlowPanel.Align:=alClient;
       FButtonFlowPanel.AutoSize:=True;
-
-      FButtonLayout:=TDCLButtonLayoutManger<TDCLCommandButton>.Create(FButtonPanel, FButtons);
-      FButtonLayout.InitMeasurements;
     end;
     if FDataControlType=dctMainGrid then
       FButtonPanel.Align:=alBottom
