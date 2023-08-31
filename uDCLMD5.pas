@@ -1,4 +1,5 @@
 unit uDCLMD5;
+{$I DefineType.pas}
 
 interface
 
@@ -48,4 +49,3 @@ begin
 end;
 
 end.
-

@@ -1,4 +1,4 @@
-unit uDCLForm;
+﻿unit uDCLForm;
 {$I DefineType.pas}
 
 interface
@@ -67,7 +67,7 @@ type
     procedure OnFormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure OnFormCloseQuery(Sender: TObject; var CanClose: Boolean);
 
-    procedure SetRecordsStatus(Str: String);
+    procedure SetRecordsStatus(Str: String); overload;
 
     procedure ParseEvents(ScrStr: String);
     procedure AddEvent(EventType: TEventsEnum; ScriptName: String);
@@ -306,7 +306,7 @@ begin
       if Self.FormStyle=fsMDIChild then
         Section:=Section+'MDI';
 
-      Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
+      Settings:=TIniFile.Create(ConfigPath+'Settings.ini'{$IFDEF FPC}, TEncoding.UTF8{$ENDIF});
       Self.Top:=Settings.ReadInteger(Section, 'Top', Self.Top);
       Self.Left:=Settings.ReadInteger(Section, 'Left', Self.Left);
       Self.Height:=Settings.ReadInteger(Section, 'Height', Self.Height);
@@ -370,7 +370,7 @@ begin
   FStatusBar.Panels[StatusRecords].Text:=Str;
 end;
 
-procedure TDCLForm.SetRecordsStatus(RecNo, RecordCount: LongInt); overload;
+procedure TDCLForm.SetRecordsStatus(RecNo, RecordCount: LongInt);
 begin
   if RecordCount>0 then
     SetRecordsStatus(IntToStr(RecNo)+'/'+IntToStr(RecordCount))
@@ -379,10 +379,9 @@ begin
 end;
 
 constructor TDCLForm.Create(DialogName, NameSpace: String; ParentForm: TDCLForm;
-  Variables: TVariables; Forms: TList<TForm>; OPL: TStringList;
-  DBConnector: TDCLDBConnector; Query: TDCLQuery; Data: TDataSource;
-  RetValueProc: IGetValue; ReturnValueParams: TReturnValueParams;
-  Modal: Boolean=False);
+  Variables: TVariables; Forms: TList<TForm>; OPL: TStringList; DBConnector: TDCLDBConnector;
+  Query: TDCLQuery; Data: TDataSource; RetValueProc: IGetValue;
+  ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False);
 var
   Command: TDCLCommand;
   SrcLine, tmpS, tmpS1: String;
@@ -461,7 +460,9 @@ begin
   begin
     TB:=TFormPanelButton.Create(Self);
     TB.Parent:=FormBar;
+    {$IFDEF FPC}
     TB.AutoSize:=True;
+    {$ENDIF}
     TB.Width:=FormPanelButtonWidth;
     TB.Height:=FormPanelButtonHeight;
     TB.OnClick:=ToolButtonClick;
@@ -754,7 +755,7 @@ begin
     if Self.FormStyle=fsMDIChild then
       Section:=Section+'MDI';
 
-    Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
+    Settings:=TIniFile.Create(ConfigPath+'Settings.ini'{$IFDEF FPC}, TEncoding.UTF8{$ENDIF});
     Settings.WriteInteger(Section, 'Top', Self.Top);
     Settings.WriteInteger(Section, 'Left', Self.Left);
     Settings.WriteInteger(Section, 'Height', Self.Height);

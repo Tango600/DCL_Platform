@@ -1,5 +1,5 @@
 unit uIGetValue;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 
@@ -14,4 +14,3 @@ type
 implementation
 
 end.
-

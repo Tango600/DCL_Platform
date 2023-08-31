@@ -1,5 +1,5 @@
-unit fAbout;
-{$mode Delphi}
+﻿unit fAbout;
+{$I DefineType.pas}
 
 interface
 
@@ -130,9 +130,11 @@ begin
   lbDBLib.Caption:=DBEngineType;
   lbDBLibVersion.Caption:=AccessLibVersion;
 
-  lbCompillerName.Caption:=InternalAppNameSuffix+' '+fpcVersion;
+  lbCompillerName.Caption:=InternalAppNameSuffix{$IFDEF FPC}+' '+fpcVersion{$ENDIF};
   lbBuildType.Caption:=TargetOS+'_'+TargetCPU;
+  {$IFDEF FPC}
   lbBuildDate.Caption:=AppBuildDate;
+  {$ENDIF}
 end;
 
 end.

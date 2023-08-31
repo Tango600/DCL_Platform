@@ -1,5 +1,5 @@
 unit uDCLMessages;
-{$mode Delphi}{$H+}
+{$I DefineType.pas}
 
 interface
 

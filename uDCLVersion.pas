@@ -8,4 +8,3 @@ const
 implementation
 
 end.
-

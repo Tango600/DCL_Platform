@@ -32,6 +32,8 @@ Function PosSet(SubSet, S: String; SepChar: String=DefaultValuesSeparator;
   Delim: String=DefaultParamDelim): Cardinal;
 {$IFNDEF FPC}
 Function ConvertEncoding(Const S, FromEncoding, ToEncoding: String): String;
+function LeftStr(const S: string; Count: integer): string;
+function RightStr(const S: string; Count: integer): string;
 {$ENDIF}
 Function TextToString(Text: String): String;
 function TrimChars(CharsSet, S:string):String;
@@ -52,6 +54,18 @@ Begin
   Else
     Result:=S;
 End;
+
+function LeftStr(const S: string; Count: integer): string;
+begin
+  result := Copy(S, 1, Count);
+end;
+
+function RightStr(const S: string; Count: integer): string;
+begin
+   If Count>Length(S) then
+     Count:=Length(S);
+   result := Copy(S, 1 + Length(S) - Count, Count);
+end;
 {$ENDIF}
 
 Function DCLCompareString(S1, S2: String): Boolean;

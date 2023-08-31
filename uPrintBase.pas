@@ -1,5 +1,5 @@
 unit uPrintBase;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 
@@ -153,7 +153,7 @@ procedure TPrintBase.Save(FileName: String);
 begin
   if Assigned(PrintBox) then
   begin
-    PrintBox.SaveToFile(FileName, TEncoding.UTF8);
+    PrintBox.SaveToFile(FileName{$IFDEF FPC}, TEncoding.UTF8{$ENDIF});
   end;
 end;
 

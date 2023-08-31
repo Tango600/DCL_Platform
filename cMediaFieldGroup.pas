@@ -1,11 +1,11 @@
 unit cMediaFieldGroup;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 
 uses
   Classes, SysUtils, Controls, ComCtrls, StdCtrls, ExtCtrls, DB, DBCtrls,
-  Buttons, Dialogs, ExtDlgs, Graphics,
+  Buttons, Dialogs, ExtDlgs, Graphics, {$IFnDEF FPC}JPEG, {$ENDIF}
   uDCLTypes, uDCLConst, uDCLMeasurements, uDCLData, uDCLField, uLZW, uDCLImages,
   uDCLMultiLang, uDCLMessages, uStringParams, uDCLUtils;
 

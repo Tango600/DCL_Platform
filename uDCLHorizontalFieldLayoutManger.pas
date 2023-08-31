@@ -1,5 +1,5 @@
 unit uDCLHorizontalFieldLayoutManger;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 
@@ -11,10 +11,9 @@ type
 
   { TDCLHorizontalFieldLayoutManger }
 
-  TDCLHorizontalFieldLayoutManger<T>=class(TDCLBaseLayoutManger<T>)
+  TDCLHorizontalFieldLayoutManger<T: TDCLField>=class(TDCLBaseLayoutManger<T>)
   private
     FMaxColHeight, FCurrWidth, FCurrHeight, FLabelHeight: Integer;
-
   protected
     procedure ProcessControlFromList(Control: T); override;
     procedure ProcessBeforeNextControl(CurrentControl: T); override;

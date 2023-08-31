@@ -1,5 +1,5 @@
 unit uDCLVerticalFieldLayoutManger;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 
@@ -11,7 +11,7 @@ type
 
   { TDCLVerticalFieldLayoutManger }
 
-  TDCLVerticalFieldLayoutManger<T>=class(TDCLBaseLayoutManger<T>)
+  TDCLVerticalFieldLayoutManger<T: TDCLField>=class(TDCLBaseLayoutManger<T>)
   private
     FMaxColWidth, FMaxLabelWidth, FCurrWidth, FCurrHeight, FLabelHeight: Integer;
   protected

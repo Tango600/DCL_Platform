@@ -1,5 +1,5 @@
 unit uDCLImages;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 

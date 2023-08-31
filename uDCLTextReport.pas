@@ -1,12 +1,12 @@
 unit uDCLTextReport;
-
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 
 uses
+  {$IFDEF FPC}DBExtCtrls, {$ELSE}Variants, {$ENDIF}
   Classes, SysUtils, Controls, Forms, ComCtrls, StdCtrls, Buttons, ExtCtrls,
-  DBCtrls, DBExtCtrls, DB, Generics.Collections,
+  DBCtrls, DB, Generics.Collections,
   uDCLTypes, uDCLConst, uDCLData, uDCLDBConnector, uDCLGrid, uDCLVariables;
 
 type
@@ -131,7 +131,7 @@ var
 begin
   If FVarsToControls.Count>(Sender as TDBLookupComboBox).Tag Then
   begin
-    If (Sender as TDBLookupComboBox).KeyValue=null Then
+    If (Sender as TDBLookupComboBox).KeyValue={$IFDEF FPC}null{$ELSE}Unassigned{$ENDIF} Then
       Val:=''
     Else
       Val:=(Sender as TDBLookupComboBox).KeyValue;
@@ -830,7 +830,7 @@ begin
     Dec(i);
   end;
 
-  Report.SaveToFile(FileName, TEncoding.UTF8);
+  Report.SaveToFile(FileName{$IFDEF FPC}, TEncoding.UTF8{$ENDIF});
   Result:=FileName;
   FSaved:=True;
 
@@ -864,4 +864,3 @@ begin
 end;
 
 end.
-

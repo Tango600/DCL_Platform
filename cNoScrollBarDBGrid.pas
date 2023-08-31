@@ -1,10 +1,14 @@
 unit cNoScrollBarDBGrid;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 
 uses
-  Classes, SysUtils, DBGrids;
+  Classes, SysUtils,
+{$IFNDEF FPC}
+  StdCtrls,
+{$ENDIF}
+  DBGrids;
 
 type
   TNoScrollBarDBGrid=class(TDBGrid)

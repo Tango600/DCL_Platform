@@ -1,4 +1,5 @@
 unit uDCLOfficeUtils;
+{$I DefineType.pas}
 
 interface
 

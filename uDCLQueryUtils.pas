@@ -1,5 +1,5 @@
 unit uDCLQueryUtils;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 
@@ -36,4 +36,3 @@ begin
 end;
 
 end.
-

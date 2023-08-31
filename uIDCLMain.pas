@@ -1,5 +1,5 @@
 unit uIDCLMain;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 
@@ -25,4 +25,3 @@ type
 implementation
 
 end.
-

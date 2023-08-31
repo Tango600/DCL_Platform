@@ -5,13 +5,15 @@ interface
 
 uses
 {$IFDEF IBX}
+  {$IFDEF IBXLaz}
   IBVersion,
+  {$ENDIF}
 {$ENDIF}
 {$IFDEF ZEOS}
   ZClasses,
 {$ENDIF}
 {$IFnDEF FPC}
-  Vcl.DBCtrls
+  Vcl.DBCtrls, System.SysUtils
 {$ELSE}
   DBCtrls, DBGrids, LazVersion, SysUtils
 {$ENDIF};
@@ -28,11 +30,12 @@ const
 {$ENDIF}
 {$IFDEF IBX}
   {$IFDEF IBXLaz}
+  AccessLibVersion=IBX_VERSION;
   DBEngineType='IBX for Lazarus';
   {$ELSE}
   DBEngineType='IBX';
+  AccessLibVersion='-';
   {$ENDIF}
-  AccessLibVersion=IBX_VERSION;
 {$ENDIF}
 {$IFDEF ZEOS}
   DBEngineType='ZEOS (Universal)';
@@ -86,7 +89,7 @@ const
   TargetCPU='x86-64';
 {$ENDIF}
 {$ENDIF}
-  CR=LineEnding;
+  CR={$IFDEF FPC}LineEnding{$ELSE}sLineBreak{$ENDIF};
 {$IFDEF UNIX}
   CrossDelim='\';
   ConfigDir=PathDelim+'.config'+PathDelim;

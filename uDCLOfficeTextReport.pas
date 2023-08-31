@@ -1,5 +1,5 @@
 unit uDCLOfficeTextReport;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 
@@ -219,8 +219,7 @@ end;
 procedure TDCLOfficeTextReport.Writer(ParamStr: String; Save, Close: Boolean);
 var
   TextPointer, CursorPointer, BookmarksSupplier, BookMark: Variant;
-  BookmarckNum, LayotCount, FontSize, lastBookmarks: Word;
-  DocNum: Cardinal;
+  DocNum, BookmarckNum, LayotCount, FontSize, lastBookmarks: Integer;
   SQLStr, FileName, OutFileName, Ext, TemplateExt, InsStr, BookMarkName, LayotStr, LayotItem: String;
   Layot: TStringList;
   DCLQuery: TDCLDialogQuery;

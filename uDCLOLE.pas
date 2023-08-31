@@ -1,5 +1,5 @@
 unit uDCLOLE;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 

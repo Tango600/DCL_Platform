@@ -1,5 +1,5 @@
 unit uDCLGlobalVariables;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 

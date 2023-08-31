@@ -96,20 +96,20 @@ type
     function GetConnector: TDatabaseObject;
 
     procedure SetDCLDBConnector(Query: TDCLSimlyQuery);
-    function GetConnector(Query: TDCLSimlyQuery): TDatabaseObject; overload;
+    function GetDBConnector(Query: TDCLSimlyQuery): TDatabaseObject;
   public
     constructor Create(DatabaseObj: TDBConnector); overload;
-    constructor Create(AOwner : TComponent); override;
+    constructor Create(AOwner : TComponent); {$IFDEF FPC}override;{$ELSE}overload;{$ENDIF}
     destructor Destroy; override;
 
     procedure Open; overload;
     procedure Append;
     procedure Insert;
     procedure Edit;
-    procedure Delete; override;
+    procedure Delete; {$IFDEF FPC}override;{$ENDIF}
     procedure Post; override;
     procedure SetUpdateSQL(TableName, KeyField: String);
-    procedure ExecSQL; override;
+    procedure ExecSQL; {$IFDEF FPC}override;{$ENDIF}
 
     procedure SaveDB;
     procedure CancelDB;
@@ -700,7 +700,7 @@ begin
   {$ENDIF}
 end;
 
-function TDCLQuery.GetConnector(Query: TDCLSimlyQuery): TDatabaseObject; overload;
+function TDCLQuery.GetDBConnector(Query: TDCLSimlyQuery): TDatabaseObject;
 begin
   Result:=
   {$IFDEF ADO}
@@ -900,7 +900,7 @@ begin
 {$IFDEF IBALL}
     If (TableName<>'') and Assigned(ShadowQuery) then
     Begin
-      if not Assigned(GetConnector(ShadowQuery)) then
+      if not Assigned(GetDBConnector(ShadowQuery)) then
         SetDCLDBConnector(ShadowQuery);
 
       ShadowQuery.Params.Clear;

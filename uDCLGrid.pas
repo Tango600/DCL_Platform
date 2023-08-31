@@ -1,12 +1,18 @@
-unit uDCLGrid;
+﻿unit uDCLGrid;
 {$I DefineType.pas}
 
 interface
 
 uses
+{$IFDEF FPC}
+  DBExtCtrls,
+{$ENDIF}
+{$IFDEF MSWINDOWS}
+  Windows,
+{$ENDIF}
   Classes, SysUtils, Controls, Forms, DB, Generics.Collections, ToolWin,
   ComCtrls, StdCtrls, ExtCtrls, Graphics, DBCtrls, DBGrids, Grids,
-  DBExtCtrls, CheckLst, Menus, ClipBrd,
+  CheckLst, Menus, ClipBrd,
   uDCLData, uDCLTypes, uDCLConst, uDCLVariables, uStringParams,
   uDCLDBConnector, uDCLQuery, uDCLMeasurements, uDBUtils, uDCLMultiLang,
   uDCLCommandButton, uDCLField, uDCLMessages, uDCLImages, cNoScrollBarDBGrid,
@@ -297,11 +303,8 @@ type
 implementation
 
 uses
-  EditBtn,
-  {$IFDEF MSWINDOWS}
-  Windows,
-  {$ENDIF}
   {$IFDEF FPC}
+  EditBtn,
   LCLProc, lcltype,
   {$ENDIF}
   uDCLCommand, uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, uDCLForm,
@@ -1373,11 +1376,11 @@ end;
 
 procedure TDCLGrid.AddDBDateEdit(Field: TDCLField);
 var
-  DateEdit: TDBDateEdit;
+  DateEdit: TDBDate;
 begin
   Field.DCLEditComponent:=TDCLEdit.Create;
 
-  DateEdit:=TDBDateEdit.Create(FFieldsPanel);
+  DateEdit:=TDBDate.Create(FFieldsPanel);
   DateEdit.Parent:=FFieldsPanel;
   if Field.Width>0 then
     DateEdit.Width:=Field.Width;
@@ -3261,13 +3264,13 @@ end;
 
 function TDCLGrid.CalculateSeed: String;
 var
-  Fields: TSortedList<String>;
+  Fields: {$IFDEF FPC}TSortedList<String>{$ELSE}TList<String>{$ENDIF};
   FN: TField;
   S, F, Se: String;
 begin
   Result:='';
 
-  Fields:=TSortedList<String>.Create;
+  Fields:={$IFDEF FPC}TSortedList<String>{$ELSE}TList<String>{$ENDIF}.Create;
   Fields.Duplicates:=dupIgnore;
   if Assigned(FQuery) and FQuery.Active then
   begin
@@ -3575,7 +3578,7 @@ begin
     GetDBGridFieldsPos(FieldsPos);
 
     if FieldsPos.Count>0 then
-      FieldsPos.SaveToFile(ConfigPath+Seed+'.ini', TEncoding.UTF8);
+      FieldsPos.SaveToFile(ConfigPath+Seed+'.ini'{$IFDEF FPC}, TEncoding.UTF8{$ENDIF});
 
     FreeAndNil(FieldsPos);
   end;
@@ -4637,7 +4640,7 @@ begin
     if DirectoryExists(ConfigPath) and FileExists(ConfigPath+S+'.ini') then
     begin
       FieldsPos:=TStringList.Create;
-      FieldsPos.LoadFromFile(ConfigPath+S+'.ini', TEncoding.UTF8);
+      FieldsPos.LoadFromFile(ConfigPath+S+'.ini'{$IFDEF FPC}, TEncoding.UTF8{$ENDIF});
       if FieldsPos.Count>0 then
       begin
         for i:=1 to FieldsPos.Count do

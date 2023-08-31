@@ -1,5 +1,5 @@
 unit uDCLCommandButton;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 

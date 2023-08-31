@@ -1,5 +1,5 @@
 unit uDateTimeHelper;
-{$mode Delphi}{$H+}
+{$I DefineType.pas}
 
 interface
 
@@ -9,8 +9,6 @@ uses
   Function DateToStr_(Date: TDate): String;
   Function TimeToStr_(Time: TDateTime): String;
   Function TimeStampToStr(NowDate: TDateTime): String;
-  Function Date: TDateTime;
-  Function Time: TDateTime;
 
 implementation
 
@@ -39,18 +37,6 @@ Function TimeStampToStr(NowDate: TDateTime): String;
 Begin
   Result:=DateToStr_(NowDate)+' '+TimeToStr_(NowDate);
 End;
-
-{$IFDEF FPC}
-Function Date: TDateTime;
-Begin
-  Result:=Now;
-End;
-
-Function Time: TDateTime;
-Begin
-  Result:=Now;
-End;
-{$ENDIF}
 
 end.
 

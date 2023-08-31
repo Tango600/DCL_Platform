@@ -1,5 +1,5 @@
 unit uDCLFormsNotifier;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 

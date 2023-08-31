@@ -24,7 +24,7 @@ type
     FParser: TDCLValuseParser;
     FUserLevelLocal: TUserLevelsType;
 
-    procedure TranslateVals(var S: String);
+    procedure TranslateVals(var S: String); overload;
     procedure TranslateVals(var S: String; Query: TDCLDialogQuery); overload;
     procedure SetValue(S: String);
 
@@ -84,7 +84,7 @@ begin
   end;
 end;
 
-procedure TDCLCommand.TranslateVals(var S: String; Query: TDCLDialogQuery); overload;
+procedure TDCLCommand.TranslateVals(var S: String; Query: TDCLDialogQuery);
 var
   Factor: Integer;
 begin

@@ -1,5 +1,5 @@
 unit fChangePasswordForm;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 

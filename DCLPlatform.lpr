@@ -8,8 +8,10 @@ uses
   {$IFDEF HASAMIGA}
   athreads,
   {$ENDIF}
-  Interfaces, // this includes the LCL widgetset
-  Classes, Forms, Controls, SysUtils, lcltype,
+  {$IFDEF FPC}
+  Interfaces, lcltype,
+  {$ENDIF}
+  Classes, Forms, Controls, SysUtils,
   uDCLMain, uSystemUtils, uStringParams,
   fMain, fDCLLoginForm, fAbout
   ;

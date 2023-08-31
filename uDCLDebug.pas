@@ -1,6 +1,5 @@
 unit uDCLDebug;
-
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 

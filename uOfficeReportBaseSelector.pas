@@ -1,6 +1,5 @@
 unit uOfficeReportBaseSelector;
-
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 

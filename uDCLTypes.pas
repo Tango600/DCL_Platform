@@ -8,8 +8,7 @@ Uses
 {$IFnDEF FPC}
   Vcl.DBCtrls, Vcl.DBGrids,
 {$ELSE}
-  EditBtn,
-  DBCtrls, DBGrids,
+  EditBtn, DBExtCtrls, DBCtrls, DBGrids,
 {$ENDIF}
 {$IFDEF ADO}
   ADODB, ADOConst, ADOInt,
@@ -91,11 +90,13 @@ type
 
   {$IFNDEF FPC}
   DateTimePicker=TDateTimePicker;
+  TDBDate=TDBEdit;
   TNavButtons=TNavButton;
   TNavButtonsSet=TNavButtonSet;
   {$ENDIF}
   {$IFDEF FPC}
   DateTimePicker={$IFDEF ZVComponents}TZVDateTimePicker{$ELSE}TDateEdit{$ENDIF};
+  TDBDate=TDBDateEdit;
   TNavButtons=TDBNavButton;
   TNavButtonsSet=TDBNavButtonSet;
   {$ENDIF}

@@ -1,5 +1,5 @@
 unit uDCLGlobalConfigTable;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 
@@ -18,8 +18,8 @@ type
     NewConnectionString, DBPath, ServerName, NewDBUserName, DBType, GeneratorName: String;
     SQLDialect: Byte;
     NoParamsTable, NoUsersTable, DisableLogOnWithoutUser, MultiRolesMode: Boolean;
-    DBUserName, DCLUserName, DCLUserPass, EnterPass, LongRoleName, GetValueSeparator, UpperString,
-    UpperStringEnd,
+    DBUserName, DCLUserName, DCLUserPass, EnterPass, LongRoleName, GetValueSeparator,
+    UpperString, UpperStringEnd,
     IniFileName, BaseID, LaunchScrFile, LaunchForm,
     StringTypeChar, ShowRoleField,
     TimeStampFormat, DCLLongUserName, UserID, RoleID,

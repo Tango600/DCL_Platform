@@ -1,5 +1,5 @@
 unit uExpressionParser;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 
