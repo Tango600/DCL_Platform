@@ -5,7 +5,7 @@ interface
 
 uses
   {$IFDEF MSWINDOWS}
-  Windows, Messages, LazUTF8,
+  Windows, Messages, {$IFDEF FPC}LazUTF8, {$ENDIF}
   {$ENDIF}
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls,
   uDCLConst, uDCLData, uDCLMultiLang, uIDCLMain;
@@ -39,7 +39,7 @@ Const
 implementation
 
 uses
-  IniFiles, uDCLGlobalVariables, uDCLMeasurements, uDCLVersion;
+  IniFiles, uDCLGlobalVariables, uDCLVersion;
 
 {$R *.lfm}
 

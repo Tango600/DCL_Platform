@@ -8,7 +8,7 @@ uses
   DBExtCtrls,
 {$ENDIF}
 {$IFDEF MSWINDOWS}
-  Windows,
+  Windows, {$IFnDEF FPC}Winapi.Messages, {$ENDIF}
 {$ENDIF}
   Classes, SysUtils, Controls, Forms, DB, Generics.Collections, ToolWin,
   ComCtrls, StdCtrls, ExtCtrls, Graphics, DBCtrls, DBGrids, Grids,
@@ -3276,9 +3276,12 @@ begin
   begin
     for FN in FQuery.Fields do
     begin
-      S:=OnlyLitters(FN.FieldName);
+      S:=OnlyLitters(FN.FieldName).ToLowerInvariant;
       if S<>'' then
-        Fields.Add(S.ToLowerInvariant);
+      begin
+        if not Fields.Contains(S) then
+          Fields.Add(S);
+      end;
     end;
   end;
   Fields.Sort;
@@ -4366,10 +4369,10 @@ begin
       FDBGrid.DataSource:=FData;
       {$IFDEF FPC}
       FDBGrid.AlternateColor:=GridAlternateColor;
+      FDBGrid.TitleImageList:=FImages;
       {$ENDIF}
       FDBGrid.OnDblClick:=GridDblClick;
       FDBGrid.OnTitleClick:=GridColumnClick;
-      FDBGrid.TitleImageList:=FImages;
 
       PopupGridMenu:=TPopupMenu.Create(FDBGrid);
       PopupGridMenu.Parent:=FDBGrid;

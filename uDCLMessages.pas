@@ -11,7 +11,7 @@ uses
 implementation
 
 uses
-  uDCLData, uDCLMultiLang, uDCLGlobalVariables;
+  uDCLConst, uDCLData, uDCLMultiLang, uDCLGlobalVariables;
 
 Function ShowErrorMessage(ErrorCode: Integer; AddText: String=''): Integer;
 Var
@@ -23,7 +23,7 @@ Begin
   If ErrorCode<0 Then
   Begin
     If GPT.CurrentRunningScrString>0 Then
-      MessageText:=MessageText+' / '+AddText+LineEnding+
+      MessageText:=MessageText+' / '+AddText+CR+
         GetDCLMessageString(msIn)+' '+GetDCLMessageString(msStringNum)+'('+GetDCLMessageString(msVisualCommand)+') : '+
         IntToStr(GPT.CurrentRunningScrString)+'/-1';
 

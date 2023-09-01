@@ -138,7 +138,7 @@ begin
   else
     MessageForm:=TMessageForm.Create('<'+GetDCLMessageString(msToAll)+'>', Text);
 
-  MessageForm.ShowOnTop;
+  MessageForm.Show;
 end;
 
 constructor TDCLNotifier.Create(DCLConnector: TDCLDBConnector; DCLMain: IDCLMain);
