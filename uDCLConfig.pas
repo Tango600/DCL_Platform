@@ -24,6 +24,7 @@ type
     constructor Create; overload;
 
     procedure GetParamsStructure;
+    procedure LoadExternalParams(var ExtParams: TStringList);
 
     property Path: String read lPath;
   end;
@@ -335,6 +336,11 @@ Begin
     End;
   end;
 End;
+
+procedure TDCLConfig.LoadExternalParams(var ExtParams: TStringList);
+begin
+  Params.AddStrings(ExtParams);
+end;
 
 end.
 

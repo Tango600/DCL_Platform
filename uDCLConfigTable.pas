@@ -43,22 +43,19 @@ begin
   if Assigned(FDBConnector) and not GPT.NoParamsTable then
   begin
     WhereUser:='';
-    If Not GPT.NoParamsTable Then
-    begin
-      If UserID<>'' Then
-        WhereUser:=' and '+GPTUserIDField+'='+UserID;
+    If UserID<>'' Then
+      WhereUser:=' and '+GPTUserIDField+'='+UserID;
 
-      ParamsQuery:=TDCLSimlyQuery.Create(nil);
-      FDBConnector.SetConnector(ParamsQuery);
-      ParamsQuery.SQL.Text:='select '+GPTValueField+' from '+GPTTableName+' where '+
-        GPT.UpperString+GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+':ParamName'+
-        GPT.UpperStringEnd+WhereUser;
-      ParamsQuery.ParamByName('ParamName').AsString:=ConfigName;
-      ParamsQuery.Open;
-      Result:=TrimRight(ParamsQuery.Fields[0].AsString);
-      ParamsQuery.Close;
-      FreeAndNil(ParamsQuery);
-    end;
+    ParamsQuery:=TDCLSimlyQuery.Create(nil);
+    FDBConnector.SetConnector(ParamsQuery);
+    ParamsQuery.SQL.Text:='select '+GPTValueField+' from '+GPTTableName+' where '+
+      GPT.UpperString+GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+':ParamName'+
+      GPT.UpperStringEnd+WhereUser;
+    ParamsQuery.ParamByName('ParamName').AsString:=ConfigName;
+    ParamsQuery.Open;
+    Result:=TrimRight(ParamsQuery.Fields[0].AsString);
+    ParamsQuery.Close;
+    FreeAndNil(ParamsQuery);
   end;
 end;
 

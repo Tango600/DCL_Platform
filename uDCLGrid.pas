@@ -94,21 +94,24 @@ type
     FUserLevel: TUserLevelsType;
 
     function FindDCLFieldByName(FieldName: String): TDCLField;
-
     function GetFieldsCount: Integer;
 
     procedure CreateImageList;
 
     procedure OpenQuery(QText: String);
+    procedure SetNewQuery(Data: TDataSource);
 
     procedure TranslateVal(var Params: String; CheckParams: Boolean);
-
-    procedure SetQueryEvents(Query: TDCLQuery);
 
     procedure ClickNavigator(Sender: TObject; Button: TNavigateBtn);
 
     procedure SetDataStatus(Status: TDataStatus);
     procedure UpdateAllControls;
+
+    procedure SetQueryEvents(Query: TDCLQuery);
+    procedure ParseEvents(ScrStr: String);
+    procedure ExecEvents(EventType: TEventsEnum);
+
     // DataEvents
     procedure AfterInsert(Data: TDataSet);
     procedure ScrollDB(Data: TDataSet);
@@ -130,8 +133,6 @@ type
 
     procedure Print(Sender: TObject);
 
-    procedure ExecEvents(EventType: TEventsEnum);
-
     procedure GridDblClick(Sender: TObject);
     procedure GridColumnClick(Column: TColumn);
 
@@ -151,6 +152,7 @@ type
     procedure AdjustFilterPanel(Height: Integer);
 
     procedure OnResizeFilterPanel(Sender: TObject);
+    procedure OnGridResize(Sender: TObject);
 
     procedure AddDropBox(Field: TDCLField; Scr: String);
     procedure DropListOnSelectItem(Sender: TObject);
@@ -161,10 +163,6 @@ type
 
     procedure AddDBEdit(Field: TDCLField);
     procedure DBEditClick(Sender: TObject);
-
-    procedure OnGridResize(Sender: TObject);
-
-    procedure SetNewQuery(Data: TDataSource);
 
     procedure ClickCommandButton(Sender: TObject);
 
@@ -213,8 +211,6 @@ type
     procedure SetMultiSelect(Value: Boolean);
 
     function GetSQLFromStorage: String;
-
-    procedure ParseEvents(ScrStr: String);
 
     procedure ClearNotAllowedOperations;
     procedure ExcludeNotAllowedOperation(Operation: TNotAllowedOperation);
@@ -304,8 +300,7 @@ implementation
 
 uses
   {$IFDEF FPC}
-  EditBtn,
-  LCLProc, lcltype,
+  EditBtn, LCLProc, lcltype,
   {$ENDIF}
   uDCLCommand, uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, uDCLForm,
   uPrintBase, uDCLGlobalVariables, uDCLMD5, uExpressionParser;
@@ -563,7 +558,8 @@ end;
 
 procedure TDCLGrid.BeforePost(Data: TDataSet);
 begin
-
+  ExecEvents(evtBeforePost);
+  UpdateAllControls;
 end;
 
 procedure TDCLGrid.OnDelete(Data: TDataSet);
@@ -3121,6 +3117,12 @@ procedure TDCLGrid.ParseEvents(ScrStr: String);
 var
   S: String;
 begin
+  If PosEx('BeforePost=', ScrStr)<>0 Then
+  begin
+    S:=FindParam('BeforePost=', ScrStr);
+    AddEvent(evtBeforePost, S);
+  end;
+
   If PosEx('AfterPost=', ScrStr)<>0 Then
   begin
     S:=FindParam('AfterPost=', ScrStr);

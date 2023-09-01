@@ -201,11 +201,16 @@ end;
 constructor TDCLMain.Create;
 var
   FDCLConfig: TDCLConfig;
+  Params: TStringList;
 begin
   {$IFDEF ADO}
   CoInitialize(nil);
   {$ENDIF}
   inherited Create;
+  GPT.NoParamsTable:=False;
+
+  Path:=ExtractFilePath(Application.ExeName);
+  SetCurrentDir(Path);
 
   InitGetAppConfigDir;
   FDCLConfig:=TDCLConfig.Create;
@@ -216,8 +221,6 @@ begin
 
   FDCLConfig.GetParamsStructure;
 
-  Path:=ExtractFilePath(Application.ExeName);
-  SetCurrentDir(Path);
   InitLangEnv;
 
   LoadLangRes(LangName, Path);
@@ -234,21 +237,41 @@ begin
   end;
   {$ENDIF}
 
-  FormsNotifier:=TDCLFormsNotifier.Create(FForms);
-
-  FDBConnector:=TDCLDBConnector.Create;
-
-  LocalQuery:=TDCLSimlyQuery.Create(nil);
-  FDBConnector.SetConnector(LocalQuery);
-
   KillerDog:=TTimer.Create(nil);
   KillerDog.Interval:=KillerTimerInterval;
   KillerDog.OnTimer:=KillerForms;
   KillerDog.Enabled:=True;
 
-  GPT.NoParamsTable:=TestGlobalParamsTable;
+  FormsNotifier:=TDCLFormsNotifier.Create(FForms);
 
-  ReadBaseID;
+  FDBConnector:=TDCLDBConnector.Create;
+  if FDBConnector.Connected then
+  begin
+    LocalQuery:=TDCLSimlyQuery.Create(nil);
+    FDBConnector.SetConnector(LocalQuery);
+
+    GPT.NoParamsTable:=TestGlobalParamsTable;
+
+    if not GPT.NoParamsTable then
+    begin
+      LocalQuery.SQL.Text:='select '+GPTNameField+', '+GPTValueField+' from '+GPTTableName;
+      LocalQuery.Open;
+      Params:=TStringList.Create;
+      LocalQuery.First;
+      While Not LocalQuery.Eof do
+      begin
+        Params.Append(LocalQuery.FieldByName(GPTNameField).AsString+'='+
+            LocalQuery.FieldByName(GPTValueField).AsString);
+        LocalQuery.Next;
+      end;
+      LocalQuery.Close;
+      FDCLConfig.LoadExternalParams(Params);
+
+      FDCLConfig.GetParamsStructure;
+
+      ReadBaseID;
+    end;
+  end;
 
   {$IFDEF IBALL}
   GPT.IBAll:=True;
@@ -267,6 +290,11 @@ begin
   {$ENDIF}
   GPT.UserLogging:=False;
   GPT.UserLoggingHistory:=False;
+  {$IFDEF MSWINDOWS}
+  GPT.Viewer:='notepad';
+  {$ELSE}
+  GPT.Viewer:='pluma';
+  {$ENDIF}
 
   GPT.OfficeFormat:=ofMSO;
   GPT.OfficeDocumentFormat:=odfMSO2007;

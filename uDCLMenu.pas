@@ -22,6 +22,8 @@ type
     FormBar: TToolBar;
     findItemFlg: TMenuItem;
 
+    procedure InitActions;
+
     function GetMenuCommandById(Ident: Integer): String;
 
     procedure FindMenuItem(TagID: Integer; aItems: TMenuItem);
@@ -47,6 +49,19 @@ uses
 procedure TDCLMenu.About;
 begin
   FMain.About;
+end;
+
+procedure TDCLMenu.InitActions;
+begin
+  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 40001 and 40100', GPT.UserID);
+  LocalQuery.Open;
+  while not LocalQuery.EOF do
+  begin
+    FMain.RunCommand(LocalQuery.FieldByName(DCLNameField).AsString);
+
+    LocalQuery.Next;
+  end;
+  LocalQuery.Close;
 end;
 
 function TDCLMenu.GetMenuCommandById(Ident: Integer): String;
@@ -155,6 +170,8 @@ begin
     FormBar.ButtonWidth:=FormPanelButtonWidth;
     FormBar.Show;
   end;
+
+  InitActions;
 
   LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+'=0', GPT.UserID);
   LocalQuery.Open;
