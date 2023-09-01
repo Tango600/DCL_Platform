@@ -3129,6 +3129,18 @@ begin
     AddEvent(evtAfterPost, S);
   end;
 
+  If PosEx('AfterInsert=', ScrStr)<>0 Then
+  begin
+    S:=FindParam('AfterInsert=', ScrStr);
+    AddEvent(evtInsert, S);
+  end;
+
+  If PosEx('Delete=', ScrStr)<>0 Then
+  begin
+    S:=FindParam('Delete=', ScrStr);
+    AddEvent(evtDelete, S);
+  end;
+
   If PosEx('Cancel=', ScrStr)<>0 Then
   begin
     S:=FindParam('Cancel=', ScrStr);
