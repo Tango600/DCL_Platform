@@ -749,12 +749,16 @@ var
       SortOrder:=FF.Order;
       if SortOrder=soDesc then
       begin
+        {$IFDEF FPC}
         Column.Title.ImageIndex:=FPicturesIndexes[ptUpArrow];
+        {$ENDIF}
         FF.Order:=soAsc;
       end
       else
       begin
+        {$IFDEF FPC}
         Column.Title.ImageIndex:=FPicturesIndexes[ptDownArrow];
+        {$ENDIF}
         FF.Order:=soDesc;
       end;
     end;
@@ -767,7 +771,9 @@ var
     FF:=GetField(Column.FieldName);
     if not Assigned(FF) then
     begin
+      {$IFDEF FPC}
       Column.Title.ImageIndex:=FPicturesIndexes[ptUpArrow];
+      {$ENDIF}
 
       FF:=TSortField.Create;
       FF.FieldName:=LowerCase(Column.FieldName);
@@ -804,7 +810,9 @@ begin
     If KeyState(VK_SHIFT) then
     begin
       //Снять
+      {$IFDEF FPC}
       Column.Title.ImageIndex:=-1;
+      {$ENDIF}
       RemoveField(Column.FieldName);
     end
     else
@@ -825,7 +833,9 @@ begin
           FOrdersFields.Clear;
           for i:=0 to FDBGrid.Columns.Count-1 do
           begin
+            {$IFDEF FPC}
             FDBGrid.Columns[i].Title.ImageIndex:=-1;
+            {$ENDIF}
           end;
 
           AddField(Column);
@@ -1463,6 +1473,7 @@ var
   DCLCommand, c: TDCLCommandButton;
   guid: TGUID;
   ns: String;
+  i: Integer;
   Bookmark: TBookmark;
 begin
   for c in FButtons do
@@ -1488,8 +1499,9 @@ begin
     begin
       if (FGridStyle in TDataGrid) and FMultiSelectMode then
       begin
-        for Bookmark in FDBGrid.SelectedRows do
+        for i:=1 to FDBGrid.SelectedRows.Count do
         begin
+          Bookmark:=FDBGrid.SelectedRows[i-1];
           FQuery.GoToBookmark(TBookmark(Bookmark));
 
           ns:=FNameSpace;
@@ -2361,8 +2373,10 @@ begin
 
   Calendar.Control:=DateTimePicker.Create(FFiltersPanel);
   Calendar.Control.Parent:=FFiltersPanel;
+  {$IFDEF FPC}
   Calendar.Control.DateOrder:=doDMY;
   Calendar.Control.DateFormat:=GPT.DateFormat;
+  {$ENDIF}
 
   Calendar.Control.Top:=FTop;
   Inc(FTop, Calendar.Control.Height+CompenentTopStep);
@@ -2610,8 +2624,10 @@ var
 begin
   DateBox:=DateTimePicker.Create(FFieldsPanel);
   DateBox.Parent:=FFieldsPanel;
+  {$IFDEF FPC}
   DateBox.DateOrder:=doDMY;
   DateBox.DateFormat:=GPT.DateFormat;
+  {$ENDIF}
 
   If FindParam('ComponentName=', Scr)<>'' Then
     DateBox.Name:=FindParam('ComponentName=', Scr);
@@ -3034,6 +3050,7 @@ var
   ReturnValue: TReturnFormValue;
   ValueItem: TGetValueItem;
   Bookmark: TBookmark;
+  i: Integer;
 begin
   if Assigned((FForm as TDCLForm).ReturnValueParams) then
   begin
@@ -3053,10 +3070,11 @@ begin
       ReturnValue.Multiselect:=ReturnValueParams.Multiselect;
 
       ReturnValue.Values:=TList<TGetValueItem>.Create;
-      if Assigned(FDBGrid) and FMultiSelectMode and FDBGrid.HasMultiSelection then
+      if Assigned(FDBGrid) and FMultiSelectMode and {$IFDEF FPC}FDBGrid.HasMultiSelection{$ELSE}(dgMultiSelect in FDBGrid.Options){$ENDIF} then
       begin
-        for Bookmark in FDBGrid.SelectedRows do
+        for i:=1 to FDBGrid.SelectedRows.Count do
         begin
+          Bookmark:=FDBGrid.SelectedRows[i-1];
           FQuery.GoToBookmark(TBookmark(Bookmark));
           ValueItem:=TGetValueItem.Create;
           ValueItem.Key:=FQuery.FieldByName(ReturnValueParams.KeyField).AsString;
@@ -3271,7 +3289,9 @@ begin
   Result:='';
 
   Fields:={$IFDEF FPC}TSortedList<String>{$ELSE}TList<String>{$ENDIF}.Create;
+  {$IFDEF FPC}
   Fields.Duplicates:=dupIgnore;
+  {$ENDIF}
   if Assigned(FQuery) and FQuery.Active then
   begin
     for FN in FQuery.Fields do

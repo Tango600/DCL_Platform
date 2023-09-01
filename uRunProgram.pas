@@ -1,10 +1,25 @@
 unit uRunProgram;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 
 uses
-  Classes, SysUtils, Process, LCLIntf;
+{$IFDEF FPC}
+  LCLIntf,
+{$ENDIF}
+{$IFnDEF FPC}
+{$IFDEF MSWINDOWS}
+  Windows, ShellApi, ShlObj,
+{$ENDIF}
+{$ENDIF}
+  Classes, Process, SysUtils;
+
+{$IFnDEF FPC}
+type
+  TProcessString=String;
+  TProcessChar=char;
+  TProcessStrings=TStringList;
+{$ENDIF}
 
   procedure Run(Command, Param: String; Wait: Boolean);
   procedure OpenFile(DocumentFileName: String);
@@ -102,9 +117,47 @@ begin
   FreeAndNil(Proc);
 end;
 
+{$IFnDEF FPC}
+procedure ExecApp(const App: String; const CurrDir: String);
+var
+  SI: TStartupInfo;
+  PI: TProcessInformation;
+  CmdLine: String;
+  cd:PChar;
+begin
+  Assert(App <> '');
+  cd:=nil;
+
+  CmdLine := App;
+  UniqueString(CmdLine);
+
+  FillChar(SI, SizeOf(SI), 0);
+  FillChar(PI, SizeOf(PI), 0);
+  SI.cb := SizeOf(SI);
+  SI.dwFlags := STARTF_USESHOWWINDOW;
+  SI.wShowWindow := SW_SHOWNORMAL;
+
+  SetLastError(ERROR_INVALID_PARAMETER);
+  if (CurrDir<>'') and FileExists(CurrDir) then
+  begin
+    cd:=PChar(CurrDir);
+  end;
+
+  {$WARN SYMBOL_PLATFORM OFF}
+  Win32Check(CreateProcess(nil, PChar(CmdLine), nil, nil, False, CREATE_DEFAULT_ERROR_MODE {$IFDEF UNICODE}or CREATE_UNICODE_ENVIRONMENT{$ENDIF}, nil, cd, SI, PI));
+  {$WARN SYMBOL_PLATFORM ON}
+  CloseHandle(PI.hThread);
+  CloseHandle(PI.hProcess);
+end;
+{$ENDIF}
+
 procedure OpenFile(DocumentFileName: String);
 begin
+{$IFDEF FPC}
   OpenDocument(DocumentFileName);
+{$ELSE}
+  ExecApp(DocumentFileName, ExtractFilePath(DocumentFileName));
+{$ENDIF}
 end;
 
 end.
