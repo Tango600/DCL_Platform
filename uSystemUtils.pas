@@ -39,8 +39,6 @@ Function UpTime: Cardinal;
 function GetSpecialPath(CSIDL: Word): string;
 {$ENDIF}
 
-Function BaseToInterface(S: String): String;
-
 implementation
 
 uses
@@ -258,11 +256,6 @@ begin
   end;
 {$ENDIF}
 end;
-
-Function BaseToInterface(S: String): String;
-Begin
-  Result:=ConvertEncoding(S, GPT.ServerCodePage, 'utf8');  // DefaultInterfaceEncoding);
-End;
 
 end.
 
