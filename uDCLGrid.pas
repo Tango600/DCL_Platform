@@ -888,7 +888,8 @@ begin
   end
   else
   begin
-    Result:=Parser.ExcludeOrderBy(SQL);
+    Parser.ExcludeOrderBy(SQL);
+    Result:='';
   end;
 end;
 
