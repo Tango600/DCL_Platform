@@ -227,7 +227,7 @@ begin
   end;
   LocalQuery.Close;
 
-  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 16001 and 19000', GPT.UserID);
+  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 16001 and 18999', GPT.UserID);
   LocalQuery.Open;
   while not LocalQuery.EOF do
   begin

@@ -1755,7 +1755,7 @@ begin
   Edit:=TEdit.Create(FFieldsPanel);
   Edit.Parent:=FFieldsPanel;
 
-  If FindParam('ComponentName=', Scr)<>'' Then
+  If FindParam('ComponentName=', Scr)<>'' then
     Edit.Name:=FindParam('ComponentName=', Scr);
 
   If Field.Hint<>'' Then
@@ -1766,7 +1766,16 @@ begin
 
   Edit.PasswordChar:=Field.PasswordChar;
 
-  Edit.CharCase:=Field.CharCase;
+  If FindParam('CharCase=', Scr)<>'' then
+  begin
+    if FindParam('CharCase=', Scr).ToLower='lowercase' then
+      Field.CharCase:=ecLowerCase
+    else
+      if FindParam('CharCase=', Scr).ToLower='uppercase' then
+        Field.CharCase:=ecUppercase;
+
+    Edit.CharCase:=Field.CharCase;
+  end;
 
   Edit.ReadOnly:=Field.ReadOnly;
   Edit.OnClick:=FieldBoxOnClick;
@@ -1776,7 +1785,7 @@ begin
   Else
     Edit.Width:=EditWidth;
 
-  If FieldBoxType<>fbtOutBox Then
+  If FieldBoxType<>fbtOutBox then
   begin
     S:=FindParam('Format=', Scr);
     if S<>'' then
@@ -4008,7 +4017,7 @@ begin
       FGridStyle:=gsGrid;
   end;
 
-  If IsLexem('MultiSelect=', ScrStr) Then
+  If IsLexem('MultiSelect=', ScrStr) then
   begin
     FMultiSelectMode:=True;
   end;
@@ -4061,11 +4070,11 @@ begin
       FFilter.Between:=FindParam('Between=', ScrStr)='1';
 
       v1:=FilterWidth;
-      If FindParam('Width=', ScrStr)<>'' Then
+      If FindParam('Width=', ScrStr)<>'' then
         v1:=StrToIntEx(Trim(FindParam('Width=', ScrStr)));
       FFilter.Width:=v1;
 
-      If FindParam('VariableName=', ScrStr)<>'' Then
+      If FindParam('VariableName=', ScrStr)<>'' then
       begin
         FFilter.VarName:=FindParam('VariableName=', ScrStr);
         FVariables.NewVariableWithTest(FNamespace, FFilter.VarName);
@@ -4081,7 +4090,7 @@ begin
     end;
   end;
 
-  If IsLexem('ContextFilter=', ScrStr) Then
+  If IsLexem('ContextFilter=', ScrStr) then
   begin
     FFilter:=TDBFilter.Create;
     TranslateVal(ScrStr, True);
@@ -4091,7 +4100,7 @@ begin
     FFilter.Between:=FindParam('Between=', ScrStr)='1';
 
     v1:=FilterWidth;
-    If FindParam('Width=', ScrStr)<>'' Then
+    If FindParam('Width=', ScrStr)<>'' then
       v1:=StrToIntEx(Trim(FindParam('Width=', ScrStr)));
     FFilter.Width:=v1;
 
