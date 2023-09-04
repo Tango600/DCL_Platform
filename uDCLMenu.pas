@@ -23,6 +23,7 @@ type
     findItemFlg: TMenuItem;
 
     procedure InitActions;
+    procedure CloseActions;
 
     function GetMenuCommandById(Ident: Integer): String;
 
@@ -54,6 +55,19 @@ end;
 procedure TDCLMenu.InitActions;
 begin
   LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 40001 and 40100', GPT.UserID);
+  LocalQuery.Open;
+  while not LocalQuery.EOF do
+  begin
+    FMain.RunCommand(LocalQuery.FieldByName(DCLNameField).AsString);
+
+    LocalQuery.Next;
+  end;
+  LocalQuery.Close;
+end;
+
+procedure TDCLMenu.CloseActions;
+begin
+  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 40101 and 40200', GPT.UserID);
   LocalQuery.Open;
   while not LocalQuery.EOF do
   begin
@@ -226,6 +240,7 @@ end;
 
 destructor TDCLMenu.Destroy;
 begin
+  CloseActions;
   inherited Destroy;
   FMain:=nil;
 end;
