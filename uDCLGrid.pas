@@ -166,7 +166,8 @@ type
 
     procedure ClickCommandButton(Sender: TObject);
 
-    function AddTablePart(Title: String; Data: TDataSource; Style: TGridStyle): TDCLGrid;
+    function AddTablePartObject(Title: String; Data: TDataSource; Style: TGridStyle): TDCLGrid;
+    procedure AddTablePart(Line: String);
     procedure ChangePartTabPage(Sender: TObject);
 
     procedure AddContextButton(Field: TDCLField; Scr: String);
@@ -1528,7 +1529,7 @@ begin
   end;
 end;
 
-function TDCLGrid.AddTablePart(Title: String; Data: TDataSource; Style: TGridStyle): TDCLGrid;
+function TDCLGrid.AddTablePartObject(Title: String; Data: TDataSource; Style: TGridStyle): TDCLGrid;
 var
   grid: TDCLGrid;
   pc: Integer;
@@ -1558,6 +1559,105 @@ begin
   grid.Style:=Style;
   FTableParts.Add(grid);
   Result:=grid;
+end;
+
+procedure TDCLGrid.AddTablePart(Line: String);
+var
+  tmpStyle: TGridStyle;
+  tSQL, S, S2, S3, ButtonsSet: String;
+  i, v1, v2, p1, p2: Integer;
+  FFieldColumn: TDCLField;
+begin
+  tSQL:=FindParam('SQL=', Line);
+  if tSQL<>'' then
+  begin
+    TranslateVal(Line, True);
+
+    tmpStyle:=gsGrid;
+    S:=FindParam('Style=', Line);
+    If S='0' Then
+      tmpStyle:=gsFields;
+    If S='1' Then
+      tmpStyle:=gsFieldsHorizontal;
+    If S='2' Then
+      tmpStyle:=gsGrid;
+
+    AddTablePartObject(FindParam('Title=', Line), FData, tmpStyle);
+
+    if (FindParam('UpdateTable=', Line)<>'') and (FindParam('KeyFields=', Line)<>'') then
+      FCurrentTablePart.Query.SetUpdateSQL
+        (FindParam('UpdateTable=', Line), FindParam('KeyFields=', Line));
+
+    FCurrentTablePart.SetSQL(tSQL);
+
+    if FQuery.Active then
+      FCurrentTablePart.Query.open;
+
+    If FindParam('DependField=', Line)<>'' Then
+    begin
+      FCurrentTablePart.DependField:=FindParam('DependField=', Line);
+    end;
+
+    If FindParam('MasterDataField=', Line)<>'' Then
+    begin
+      FCurrentTablePart.MasterDataField:=FindParam('MasterDataField=', Line);
+    end;
+
+    FCurrentTablePart.NoDataField:=FindParam('NoDataField=', Line)='1';
+    If FindParam('VariableName=', Line)<>'' Then
+    begin
+      FCurrentTablePart.MasterValueVariableName:=FindParam('VariableName=', Line);
+    end;
+
+    If FindParam('Navigator=', Line)='1' Then
+    begin
+      FCurrentTablePart.ExecScriptLine('Navigator=1');
+    end;
+
+    ButtonsSet:=FindParam('NavigatorButtons=', Line);
+    If ButtonsSet='' Then
+      ButtonsSet:='NavigatorButtons='+DefaultNavigButtonsSet+';';
+
+    If PosEx('NavigatorButtons=', ButtonsSet)<>0 Then
+    begin
+      FCurrentTablePart.SetNavigatorButtonsSet(FindParam('NavigatorButtons=', ButtonsSet));
+    end;
+
+    S:=Trim(FindParam('ReadOnly=', Line));
+    If StrToIntEx(S)=1 Then
+    begin
+      FCurrentTablePart.ExecScriptLine('ReadOnly=1');
+    end;
+
+    S:=FindParam('Columns=', Line);
+    If S<>'' Then
+    begin
+      v1:=ParamsCount(S);
+      For i:=1 to v1 do
+      begin
+        S2:=GetParam(S, i);
+        p2:=Pos('/', S2);
+        if p2<>0 then
+          S3:=Copy(S2, 1, p2-1)
+        else
+          S3:=S2;
+        v2:=0;
+        p1:=Pos('=', S3);
+        If p1<>0 Then
+        begin
+          v2:=StrToIntEx(CopyCut(S3, p1+1, Length(S3)));
+          Delete(S3, p1, Length(S3));
+        end;
+
+        FFieldColumn:=TDCLField.Create;
+        FFieldColumn.FieldName:=S3;
+        FFieldColumn.Caption:=Copy(S2, p2+1, Length(S2)-1);
+        FFieldColumn.Width:=v2;
+
+        FCurrentTablePart.AddField(FFieldColumn);
+      end;
+    end;
+  end;
 end;
 
 procedure TDCLGrid.ChangePartTabPage(Sender: TObject);
@@ -3664,20 +3764,18 @@ end;
 procedure TDCLGrid.ExecScriptLine(ScrStr: String);
 var
   ButtonParams: TDCLCommandButton;
-  tmpS, tmpS2, tmpS3, tmpSQL: String;
+  tmpS, tmpS2, tmpSQL: String;
   flg: Boolean;
   FFilter: TDBFilter;
   IsDigitType: TIsDigitType;
-  v1, v2, i: Integer;
-  FFieldColumn: TDCLField;
-  tmpStyle: TGridStyle;
+  v1, i: Integer;
   QType: TDCLQueryStore;
 begin
   if (FFieldsCount=-1) and FReadFieldsMode then
   begin
     if ScrStr='*' then
     begin
-
+      //todo: Сделать заполнение всех полей по *
     end
     else
     begin
@@ -3883,7 +3981,6 @@ begin
       FQuery.SetUpdateSQL(tmpS, tmpS2);
   end;
 
-
   if IsLexem('ReadOnly=', ScrStr) then
   begin
     TranslateVal(ScrStr, True);
@@ -3940,90 +4037,7 @@ begin
   if IsLexem('TablePart=', ScrStr) then
   begin
     TranslateVal(ScrStr, False);
-    tmpSQL:=FindParam('SQL=', ScrStr);
-    if tmpSQL<>'' then
-    begin
-      TranslateVal(ScrStr, True);
-
-      tmpStyle:=gsGrid;
-      tmpS:=FindParam('Style=', ScrStr);
-      If tmpS='0' Then
-        tmpStyle:=gsFields;
-      If tmpS='1' Then
-        tmpStyle:=gsFieldsHorizontal;
-      If tmpS='2' Then
-        tmpStyle:=gsGrid;
-
-      AddTablePart(FindParam('Title=', ScrStr), FData, tmpStyle);
-
-      if (FindParam('UpdateTable=', ScrStr)<>'') and (FindParam('KeyFields=', ScrStr)<>'') then
-        FCurrentTablePart.Query.SetUpdateSQL
-          (FindParam('UpdateTable=', ScrStr), FindParam('KeyFields=', ScrStr));
-
-      FCurrentTablePart.SetSQL(tmpSQL);
-
-      if FQuery.Active then
-        FCurrentTablePart.Query.open;
-
-      If FindParam('DependField=', ScrStr)<>'' Then
-      begin
-        FCurrentTablePart.DependField:=FindParam('DependField=', ScrStr);
-      end;
-
-      If FindParam('MasterDataField=', ScrStr)<>'' Then
-      begin
-        FCurrentTablePart.MasterDataField:=FindParam('MasterDataField=', ScrStr);
-      end;
-
-      FCurrentTablePart.NoDataField:=FindParam('NoDataField=', ScrStr)='1';
-      If FindParam('VariableName=', ScrStr)<>'' Then
-      begin
-        FCurrentTablePart.MasterValueVariableName:=FindParam('VariableName=', ScrStr);
-      end;
-
-      If FindParam('Navigator=', ScrStr)='1' Then
-      begin
-        FCurrentTablePart.ExecScriptLine('Navigator=1');
-      end;
-
-      If FindParam('NavigatorButtons=', ScrStr)='' Then
-        ScrStr:=ScrStr+';NavigatorButtons='+DefaultNavigButtonsSet+';';
-
-      If PosEx('NavigatorButtons=', ScrStr)<>0 Then
-      begin
-        FCurrentTablePart.SetNavigatorButtonsSet(FindParam('NavigatorButtons=', ScrStr));
-      end;
-
-      tmpS:=Trim(FindParam('ReadOnly=', ScrStr));
-      If StrToIntEx(tmpS)=1 Then
-      begin
-        FCurrentTablePart.ExecScriptLine('ReadOnly=1');
-      end;
-
-      tmpS:=FindParam('Columns=', ScrStr);
-      If tmpS<>'' Then
-      begin
-        v1:=ParamsCount(tmpS);
-        For i:=1 to v1 do
-        begin
-          tmpS2:=GetParam(tmpS, i);
-          tmpS3:=Copy(tmpS2, 1, Pos('/', tmpS2)-1);
-          v2:=0;
-          If Pos('=', tmpS3)<>0 Then
-          begin
-            v2:=StrToIntEx(CopyCut(tmpS3, Pos('=', tmpS3)+1, Length(tmpS3)));
-            Delete(tmpS3, PosEx('=', tmpS3), Length(tmpS3));
-          end;
-
-          FFieldColumn:=TDCLField.Create;
-          FFieldColumn.FieldName:=tmpS3;
-          FFieldColumn.Caption:=Copy(tmpS2, Pos('/', tmpS2)+1, Length(tmpS2)-1);
-          FFieldColumn.Width:=v2;
-
-          FCurrentTablePart.AddField(FFieldColumn);
-        end;
-      end;
-    end;
+    AddTablePart(ScrStr);
   end;
 
   if IsLexem('DBFilter=', ScrStr) then
