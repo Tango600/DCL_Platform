@@ -98,10 +98,6 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="uDCLButtonLayoutManger.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
         <Filename Value="uDCLField.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
