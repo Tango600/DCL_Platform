@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Generics.Collections,
-  uDCLData, uDCLConst, uDCLForm, uDCLGrid;
+  uDCLData, uDCLConst, uDCLForm;
 
 type
 
@@ -14,14 +14,11 @@ type
   TDCLFormsNotifier=class
   private
     FForms: TList<TForm>;
-
   public
     constructor Create(Forms: TList<TForm>); overload;
 
-
     procedure NotifyForms(Action: TFormsNotifyAction);
     procedure NotifyForm(Form: TDCLForm; Action: TFormsNotifyAction);
-
   end;
 
 implementation
@@ -31,7 +28,6 @@ implementation
 constructor TDCLFormsNotifier.Create(Forms: TList<TForm>);
 begin
   FForms:=Forms;
-
 end;
 
 procedure TDCLFormsNotifier.NotifyForms(Action: TFormsNotifyAction);
@@ -48,6 +44,8 @@ procedure TDCLFormsNotifier.NotifyForm(Form: TDCLForm;
   Action: TFormsNotifyAction);
 begin
   case Action of
+  fnaMinimize: Form.WindowState:=wsMinimized;
+  fnaMaximaze: Form.WindowState:=wsMaximized;
   fnaRefresh: Form.RefreshForm;
   fnaClose: Form.Close;
   fnaHide: Form.Hide;
@@ -56,7 +54,6 @@ begin
       Form.Show;
     Form.SetFocus;
     end;
-  //fnaStopAutoRefresh, fnaStartAutoRefresh, fnaPauseAutoRefresh, fnaResumeAutoRefresh
   end;
 end;
 

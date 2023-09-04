@@ -186,9 +186,8 @@ Type
 
   TLogOnStatus=(lsUnInitaliced, lsLogonOK, lsRejected, lsNotNeed);
   TPassStatus=(psNone, psConfirmed, psCanceled);
-  TFormsNotifyAction=(fnaRefresh, fnaClose, fnaMinimize, fnaMaximaze, fnaSetMDI, fnaResetMDI,
-    fnaHide, fnaShow, fnaStopAutoRefresh, fnaStartAutoRefresh, fnaPauseAutoRefresh,
-    fnaResumeAutoRefresh);
+  TFormsNotifyAction=(fnaRefresh, fnaClose, fnaMinimize, fnaMaximaze, fnaSetMDI,
+    fnaResetMDI, fnaHide, fnaShow);
   TIsDigitType=(idString, idDigit, idFloatDigit, idHex, idColor, idDateTime, idUserLevel);
   TDataStatus=(dssChanged, dssSaved);
   TNotifyActionsType=(naDone, naScriptRun, naMessage, naExecAndWait, naExec, naExitToTime);

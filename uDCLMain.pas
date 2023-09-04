@@ -323,6 +323,10 @@ begin
   inherited Destroy;
   if Assigned(FDCLMenu) then
     FreeAndNil(FDCLMenu);
+  if Assigned(FormsNotifier) then
+    FreeAndNil(FormsNotifier);
+  if Assigned(KillerDog) then
+    KillerDog.Enabled:=False;
 end;
 
 function TDCLMain.GetVariables: TVariables;
