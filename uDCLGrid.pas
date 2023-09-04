@@ -109,7 +109,7 @@ type
     procedure UpdateAllControls;
 
     procedure SetQueryEvents(Query: TDCLQuery);
-    procedure ParseEvents(ScrStr: String);
+    procedure ParseEvents(ScrStr: String; Grid: TDCLGrid);
     procedure ExecEvents(EventType: TEventsEnum);
 
     // DataEvents
@@ -3213,56 +3213,59 @@ begin
     Result:=FQueryes[qtMain].QueryStr;
 end;
 
-procedure TDCLGrid.ParseEvents(ScrStr: String);
+procedure TDCLGrid.ParseEvents(ScrStr: String; Grid: TDCLGrid);
 var
   S: String;
 begin
-  If PosEx('BeforePost=', ScrStr)<>0 Then
+  if Assigned(Grid) then
   begin
-    S:=FindParam('BeforePost=', ScrStr);
-    AddEvent(evtBeforePost, S);
-  end;
+    If PosEx('BeforePost=', ScrStr)<>0 then
+    begin
+      S:=FindParam('BeforePost=', ScrStr);
+      Grid.AddEvent(evtBeforePost, S);
+    end;
 
-  If PosEx('AfterPost=', ScrStr)<>0 Then
-  begin
-    S:=FindParam('AfterPost=', ScrStr);
-    AddEvent(evtAfterPost, S);
-  end;
+    If PosEx('AfterPost=', ScrStr)<>0 then
+    begin
+      S:=FindParam('AfterPost=', ScrStr);
+      Grid.AddEvent(evtAfterPost, S);
+    end;
 
-  If PosEx('AfterInsert=', ScrStr)<>0 Then
-  begin
-    S:=FindParam('AfterInsert=', ScrStr);
-    AddEvent(evtInsert, S);
-  end;
+    If PosEx('AfterInsert=', ScrStr)<>0 then
+    begin
+      S:=FindParam('AfterInsert=', ScrStr);
+      Grid.AddEvent(evtInsert, S);
+    end;
 
-  If PosEx('Delete=', ScrStr)<>0 Then
-  begin
-    S:=FindParam('Delete=', ScrStr);
-    AddEvent(evtDelete, S);
-  end;
+    If PosEx('Delete=', ScrStr)<>0 then
+    begin
+      S:=FindParam('Delete=', ScrStr);
+      Grid.AddEvent(evtDelete, S);
+    end;
 
-  If PosEx('Cancel=', ScrStr)<>0 Then
-  begin
-    S:=FindParam('Cancel=', ScrStr);
-    AddEvent(evtCancel, S);
-  end;
+    If PosEx('Cancel=', ScrStr)<>0 then
+    begin
+      S:=FindParam('Cancel=', ScrStr);
+      Grid.AddEvent(evtCancel, S);
+    end;
 
-  If PosEx('Close=', ScrStr)<>0 Then
-  begin
-    S:=FindParam('Close=', ScrStr);
-    AddEvent(evtClose, S);
-  end;
+    If PosEx('Close=', ScrStr)<>0 then
+    begin
+      S:=FindParam('Close=', ScrStr);
+      Grid.AddEvent(evtClose, S);
+    end;
 
-  If PosEx('Scroll=', ScrStr)<>0 Then
-  begin
-    S:=FindParam('Scroll=', ScrStr);
-    AddEvent(evtScroll, S);
-  end;
+    If PosEx('Scroll=', ScrStr)<>0 then
+    begin
+      S:=FindParam('Scroll=', ScrStr);
+      Grid.AddEvent(evtScroll, S);
+    end;
 
-  If PosEx('LineDblClick=', ScrStr)<>0 Then
-  begin
-    S:=FindParam('LineDblClick=', ScrStr);
-    AddEvent(evtLineDblClick, S);
+    If PosEx('LineDblClick=', ScrStr)<>0 then
+    begin
+      S:=FindParam('LineDblClick=', ScrStr);
+      Grid.AddEvent(evtLineDblClick, S);
+    end;
   end;
 end;
 
@@ -4198,7 +4201,12 @@ begin
 
   If IsLexem('Events=', ScrStr) then
   begin
-    ParseEvents(ScrStr);
+    ParseEvents(ScrStr, Self);
+  end;
+
+  If IsLexem('PartEvents=', ScrStr) then
+  begin
+    ParseEvents(ScrStr, Self.CurrentTablePart);
   end;
 
   if IsLexem('[Fields]', ScrStr) then
