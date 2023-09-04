@@ -150,14 +150,14 @@ var
 begin
   if not GPT.NoParamsTable then
   begin
-    LocalQuery.SQL.Text:='select count(*) from '+GPTTableName+' where '+GPT.UpperString+
-      GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+'BaseUID'+
-      GPT.StringTypeChar+GPT.UpperStringEnd;
+    LocalQuery.Params.Clear;
+    LocalQuery.SQL.Text:='select count(*) from '+GPTTableName+' where lower('+GPTNameField+') = lower(:BID)';
+    LocalQuery.ParamByName('BID').AsString:='BaseUID';
     LocalQuery.Open;
     IsEmpty:=LocalQuery.Fields[0].AsInteger=0;
     LocalQuery.Close;
 
-    If IsEmpty Then
+    If IsEmpty then
     begin
       If CreateGUID(guid)=0 then
       Begin
@@ -165,8 +165,10 @@ begin
         sGuid:=sGuid.Replace('-', '').Replace('{', '').Replace('}', '');
         GPT.BaseID:=sGuid;
         LocalQuery.SQL.Text:='insert into '+GPTTableName+'('+GPTNameField+', '+
-          GPTValueField+') values('+GPT.StringTypeChar+'BaseUID'+GPT.StringTypeChar+', '+
-          GPT.StringTypeChar+sGuid+GPT.StringTypeChar+')';
+          GPTValueField+') values(:BID, :BG)';
+        LocalQuery.ParamByName('BID').AsString:='BaseUID';
+        LocalQuery.ParamByName('BG').AsString:=sGuid;
+
         LocalQuery.ExecSQL;
       End;
     end;
@@ -178,9 +180,9 @@ begin
   Result:='';
   if not GPT.NoParamsTable and FDBConnector.Connected then
   begin
-    LocalQuery.SQL.Text:='select * from '+GPTTableName+' where '+GPT.UpperString+
-      GPTNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+'BaseUID'+
-      GPT.StringTypeChar+GPT.UpperStringEnd;
+    LocalQuery.Params.Clear;
+    LocalQuery.SQL.Text:='select * from '+GPTTableName+' where lower('+GPTNameField+') = lower(:BID)';
+    LocalQuery.ParamByName('BID').AsString:='BaseUID';
     LocalQuery.Open;
     Result:=LocalQuery.FieldByName(GPTValueField).AsString;
     LocalQuery.Close;
