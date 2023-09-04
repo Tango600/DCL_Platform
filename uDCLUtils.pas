@@ -594,9 +594,7 @@ begin
   if Quality=0 then
     Quality:=JPEGCompressionQuality;
   Result:=TJpegImage.Create;
-{$IFNDEF FPC}
   Result.ProgressiveEncoding:=True;
-{$ENDIF}
   try
     Result.CompressionQuality:=Quality;
     Result.Assign(BitMap);

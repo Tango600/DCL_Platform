@@ -149,6 +149,6 @@ begin
     Application.Run;
   end;
 
-  DCL:=nil;
+  FreeAndNil(DCL);
 end.
 

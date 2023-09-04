@@ -215,12 +215,11 @@ procedure TDCLForm.AddSubItem(Caption: String; Pict: TPicturesTypes; Action: TNo
 var
   ItemMenu, ToItem: TMenuItem;
 begin
-  ToItem:=FMainItemMenu;  // FindMenuItem(ParentItemId, FMainMenu.Items);
+  ToItem:=FMainItemMenu;
 
   if Assigned(ToItem) then
   begin
     ItemMenu:=TMenuItem.Create(ToItem);
-    //ItemMenu.Tag:=Id;
     ItemMenu.Bitmap:=DrawBMPButton(Pict);
     ItemMenu.Caption:=Caption;
     ItemMenu.OnClick:=Action;
@@ -233,7 +232,7 @@ procedure TDCLForm.AddCloseFormItem;
 var
   ItemMenu, ToItem: TMenuItem;
 begin
-  ToItem:=FMainItemMenu;  // FindMenuItem(ParentItemId, FMainMenu.Items);
+  ToItem:=FMainItemMenu;
 
   if Assigned(ToItem) then
   begin
@@ -241,7 +240,7 @@ begin
     ItemMenu.Caption:=GetDCLMessageString(msClose);
     ItemMenu.OnClick:=CloseDialogCommand;
     ItemMenu.Bitmap:=DrawBMPButton(ptEsc);
-    ItemMenu.ShortCut:=TShortCut(27); //  TextToShortCut('Esc');
+    ItemMenu.ShortCut:=TShortCut(27);  // TextToShortCut('Esc');
 
     ToItem.OnClick:=nil;
     ToItem.Insert(ToItem.Count, ItemMenu);
@@ -252,7 +251,7 @@ procedure TDCLForm.AddSplitter;
 var
   ItemMenu, ToItem: TMenuItem;
 begin
-  ToItem:=FMainItemMenu;  // FindMenuItem(ParentItemId, FMainMenu.Items);
+  ToItem:=FMainItemMenu;
 
   if Assigned(ToItem) then
   begin
@@ -594,7 +593,7 @@ begin
   end;
 
   {$IFNDEF NOONTOP}
-  If OnTop Then  // Мешает отладки
+  If OnTop then  // Мешает отладки
     FormStyle:=fsStayOnTop;
   {$ENDIF}
   if not Assigned(FReturnValueParams) and not Modal then

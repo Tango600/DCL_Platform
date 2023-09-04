@@ -15,7 +15,7 @@ type
 
   { TDCLMain }
 
-  TDCLMain=class(TInterfacedObject, IDCLMain)
+  TDCLMain=class(TComponent, IDCLMain)
   private
     FMainForm: TForm;
     FForms: TList<TForm>;
@@ -206,7 +206,6 @@ begin
   {$IFDEF ADO}
   CoInitialize(nil);
   {$ENDIF}
-  inherited Create;
   GPT.NoParamsTable:=False;
 
   Path:=ExtractFilePath(Application.ExeName);
@@ -237,7 +236,7 @@ begin
   end;
   {$ENDIF}
 
-  KillerDog:=TTimer.Create(nil);
+  KillerDog:=TTimer.Create(Self);
   KillerDog.Interval:=KillerTimerInterval;
   KillerDog.OnTimer:=KillerForms;
   KillerDog.Enabled:=True;
@@ -247,7 +246,7 @@ begin
   FDBConnector:=TDCLDBConnector.Create;
   if FDBConnector.Connected then
   begin
-    LocalQuery:=TDCLSimlyQuery.Create(nil);
+    LocalQuery:=TDCLSimlyQuery.Create(Self);
     FDBConnector.SetConnector(LocalQuery);
 
     GPT.NoParamsTable:=TestGlobalParamsTable;
@@ -320,8 +319,6 @@ end;
 destructor TDCLMain.Destroy;
 begin
   inherited Destroy;
-  if Assigned(LocalQuery) then
-    FreeAndNil(LocalQuery);
   if Assigned(FDCLMenu) then
     FreeAndNil(FDCLMenu);
 end;
