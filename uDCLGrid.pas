@@ -93,6 +93,8 @@ type
 
     FUserLevel: TUserLevelsType;
 
+    procedure ParseButton(ScrLine: String; Grid: TDCLGrid);
+
     function FindDCLFieldByName(FieldName: String): TDCLField;
     function GetFieldsCount: Integer;
 
@@ -196,7 +198,9 @@ type
     procedure AddDateBox(Field: TDCLField; Scr: String);
     procedure OnChangeDateBox(Sender: TObject);
 
-    procedure AddFilter(Filter: TDBFilter);
+    procedure ParseDBFilter(ScrLine: String; Grid: TDCLGrid);
+    procedure ParseContextFilter(ScrLine: String; Grid: TDCLGrid);
+    procedure ParseComboFilter(ScrLine: String; Grid: TDCLGrid);
     procedure OnFilterNotCheckClick(Sender: TObject);
     procedure ExecFilter(Sender: TObject);
     procedure OnContextFilter(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -257,6 +261,7 @@ type
     procedure SetNavigatorButtonsSet(ButtonsExpr: String);
 
     procedure AddButton(Button: TDCLCommandButton);
+    procedure AddFilter(Filter: TDBFilter);
 
     procedure AddEvent(EventType: TEventsEnum; ScriptName: String);
 
@@ -320,6 +325,83 @@ begin
 end;
 
 { TDCLGrid }
+
+procedure TDCLGrid.ParseButton(ScrLine: String; Grid: TDCLGrid);
+var
+  ButtonParams: TDCLCommandButton;
+  flg: Boolean;
+  tmpS: String;
+  v1: Integer;
+  DigitType: TIsDigitType;
+begin
+  If not FindDisableAction(LowerCase(FindParam('action=', ScrLine))) then
+  begin
+    flg:=True;
+    tmpS:=FindParam('AccessLevel=', ScrLine);
+    If tmpS<>'' Then
+    begin
+      flg:=False;
+      DigitType:=GetStringDataType(tmpS);
+      Case DigitType of
+        idDigit: flg:=TranslateDigitToUserLevel(StrToIntEx(FindParam('AccessLevel=', ScrLine)))<=FUserLevel;
+        idString: flg:=TranslateDigitToUserLevel(FindParam('AccessLevel=', ScrLine))<=FUserLevel;
+      end;
+    end;
+
+    If flg Then
+    begin
+      ButtonParams:=TDCLCommandButton.Create(FDBConnector);
+      ButtonParams.Caption:=InitCap(FindParam('label=', ScrLine));
+      If FindParam('_Default=', ScrLine)='1' Then
+        ButtonParams.Default:=True;
+
+      If FindParam('_Cancel=', ScrLine)='1' Then
+        ButtonParams.Cancel:=True;
+
+      If FindParam('Host=', ScrLine)='1' then
+        ButtonParams.Host:=True;
+
+      ButtonParams.Hint:=InitCap(FindParam('hint=', ScrLine));
+
+      tmpS:=FindParam('Action=', ScrLine);
+      If tmpS<>'' Then
+      begin
+        ButtonParams.Command:=tmpS;
+        ButtonParams.Pict:=FindParam('Action=', ScrLine);
+      end
+      Else
+      begin
+        If PosEx('CommandName=', ScrLine)<>0 Then
+          ButtonParams.Command:=FindParam('commandname=', ScrLine);
+
+        ButtonParams.Pict:=FindParam('Pict=', ScrLine);
+      end;
+
+      ButtonParams.ForEach:=FindParam('ForEach=', ScrLine)='1';
+
+      If PosEx('bold', FindParam('FontStyle=', ScrLine))<>0 Then
+        ButtonParams.FontStyle:=ButtonParams.FontStyle+[fsBold];
+      If PosEx('italic', FindParam('FontStyle=', ScrLine))<>0 Then
+        ButtonParams.FontStyle:=ButtonParams.FontStyle+[fsItalic];
+      If PosEx('underline', FindParam('FontStyle=', ScrLine))<>0 Then
+        ButtonParams.FontStyle:=ButtonParams.FontStyle+[fsUnderLine];
+
+      tmpS:=FindParam('Width=', ScrLine);
+      If tmpS<>'' then
+      begin
+        v1:=StrToIntEx(tmpS);
+        If v1>30 then
+          ButtonParams.Width:=v1
+        else
+          ButtonParams.Width:=-1;
+      end
+      Else
+        ButtonParams.Width:=ButtonWidth;
+
+      Grid.AddButton(ButtonParams);
+    end;
+  end;
+end;
 
 function TDCLGrid.FindDCLFieldByName(FieldName: String): TDCLField;
 var
@@ -2870,6 +2952,136 @@ begin
   end;
 end;
 
+procedure TDCLGrid.ParseDBFilter(ScrLine: String; Grid: TDCLGrid);
+var
+  FFilter: TDBFilter;
+  tmpS: String;
+  v1: Integer;
+begin
+  FFilter:=TDBFilter.Create;
+  FFilter.SQL:=FindParam('SQL=', ScrLine);
+  If FFilter.SQL='' Then
+    FFilter.SQL:=FindParam('DBFilterQuery=', ScrLine);
+  If FFilter.SQL<>'' Then
+  begin
+    FFilter.FilterType:=ftDBFilter;
+
+    FFilter.Caption:=FindParam('Label=', ScrLine);
+    FFilter.Field:=FindParam('FilterField=', ScrLine);
+    FFilter.ListField:=FindParam('List=', ScrLine);
+    FFilter.KeyField:=FindParam('Key=', ScrLine);
+    FFilter.Between:=FindParam('Between=', ScrLine)='1';
+
+    v1:=FilterWidth;
+    If FindParam('Width=', ScrLine)<>'' then
+      v1:=StrToIntEx(Trim(FindParam('Width=', ScrLine)));
+    FFilter.Width:=v1;
+
+    If FindParam('VariableName=', ScrLine)<>'' then
+    begin
+      FFilter.VarName:=FindParam('VariableName=', ScrLine);
+      FVariables.NewVariableWithTest(FNamespace, FFilter.VarName);
+    end;
+
+    tmpS:=FindParam('KeyValue=', ScrLine);
+    If tmpS<>'' Then
+    begin
+      FFilter.KeyValue:=tmpS;
+    end;
+
+    Grid.AddFilter(FFilter);
+  end;
+end;
+
+procedure TDCLGrid.ParseContextFilter(ScrLine: String; Grid: TDCLGrid);
+var
+  FFilter: TDBFilter;
+  tmpS: String;
+  v1: Integer;
+begin
+  FFilter:=TDBFilter.Create;
+  FFilter.FilterType:=ftContextFilter;
+  FFilter.Caption:=FindParam('Label=', ScrLine);
+  FFilter.Field:=FindParam('FilterField=', ScrLine);
+  FFilter.Between:=FindParam('Between=', ScrLine)='1';
+
+  v1:=FilterWidth;
+  If FindParam('Width=', ScrLine)<>'' then
+    v1:=StrToIntEx(Trim(FindParam('Width=', ScrLine)));
+  FFilter.Width:=v1;
+
+  If FindParam('VariableName=', ScrLine)<>'' Then
+  begin
+    FFilter.VarName:=FindParam('VariableName=', ScrLine);
+    FVariables.NewVariableWithTest(FNamespace, FFilter.VarName);
+  end;
+
+  If FindParam('MaxLength=', ScrLine)<>'' Then
+  begin
+    FFilter.MaxLength:=StrToIntEx(Trim(FindParam('MaxLength=', ScrLine)));
+  end;
+
+  tmpS:=FindParam('WaitForEnter=', ScrLine);
+  If tmpS='1' Then
+  begin
+    FFilter.WaitForKey:=13;
+  end;
+
+  tmpS:=FindParam('FilterMode=', ScrLine);
+  If tmpS<>'' Then
+  begin
+    If PosEx('Case', tmpS)<>0 Then
+      FFilter.CaseC:=True;
+
+    If PosEx('NotLike', tmpS)<>0 Then
+      FFilter.NotLike:=True;
+
+    If PosEx('Partial', tmpS)<>0 Then
+      FFilter.Partial:=True;
+  end;
+
+  If PosEx('ComponentName=', ScrLine)<>0 Then
+    FFilter.FilterName:=FindParam('ComponentName=', ScrLine);
+
+  FFilter.KeyValue:=FindParam('_Value=', ScrLine);
+
+  Grid.AddFilter(FFilter);
+end;
+
+procedure TDCLGrid.ParseComboFilter(ScrLine: String; Grid: TDCLGrid);
+var
+  FFilter: TDBFilter;
+  tmpS: String;
+  v1: Integer;
+begin
+  FFilter:=TDBFilter.Create;
+  FFilter.FilterType:=ftComboFilter;
+
+  FFilter.Caption:=FindParam('Label=', ScrLine);
+  FFilter.Field:=FindParam('FilterField=', ScrLine);
+  FFilter.ListField:=FindParam('List=', ScrLine);
+  FFilter.Between:=FindParam('Between=', ScrLine)='1';
+
+  v1:=FilterWidth;
+  If FindParam('Width=', ScrLine)<>'' then
+    v1:=StrToIntEx(Trim(FindParam('Width=', ScrLine)));
+  FFilter.Width:=v1;
+
+  If FindParam('VariableName=', ScrLine)<>'' then
+  begin
+    FFilter.VarName:=FindParam('VariableName=', ScrLine);
+    FVariables.NewVariableWithTest(FNamespace, FFilter.VarName);
+  end;
+
+  tmpS:=FindParam('KeyValue=', ScrLine);
+  If tmpS<>'' then
+  begin
+    FFilter.KeyValue:=tmpS;
+  end;
+
+  AddFilter(FFilter);
+end;
+
 procedure TDCLGrid.OnFilterNotCheckClick(Sender: TObject);
 var
   f, Filter: TDBFilter;
@@ -3775,12 +3987,8 @@ end;
 
 procedure TDCLGrid.ExecScriptLine(ScrStr: String);
 var
-  ButtonParams: TDCLCommandButton;
   tmpS, tmpS2, tmpSQL: String;
-  flg: Boolean;
-  FFilter: TDBFilter;
-  IsDigitType: TIsDigitType;
-  v1, i: Integer;
+  i: Integer;
   QType: TDCLQueryStore;
 begin
   if (FFieldsCount=-1) and FReadFieldsMode then
@@ -3822,148 +4030,13 @@ begin
   if IsLexem('CommandButton=', ScrStr) then
   begin
     TranslateVal(ScrStr, True);
-
-    If Not FindDisableAction(LowerCase(FindParam('action=', ScrStr))) Then
-    begin
-      flg:=True;
-      tmpS:=FindParam('AccessLevel=', ScrStr);
-      If tmpS<>'' Then
-      begin
-        flg:=False;
-        IsDigitType:=GetStringDataType(tmpS);
-        Case IsDigitType of
-          idDigit: flg:=TranslateDigitToUserLevel(StrToIntEx(FindParam('AccessLevel=', ScrStr)))<=FUserLevel;
-          idString: flg:=TranslateDigitToUserLevel(FindParam('AccessLevel=', ScrStr))<=FUserLevel;
-        end;
-      end;
-
-      If flg Then
-      begin
-        ButtonParams:=TDCLCommandButton.Create(FDBConnector);
-        ButtonParams.Caption:=InitCap(FindParam('label=', ScrStr));
-        If FindParam('_Default=', ScrStr)='1' Then
-          ButtonParams.Default:=True;
-
-        If FindParam('_Cancel=', ScrStr)='1' Then
-          ButtonParams.Cancel:=True;
-
-        If FindParam('Host=', ScrStr)='1' then
-          ButtonParams.Host:=True;
-
-        ButtonParams.Hint:=InitCap(FindParam('hint=', ScrStr));
-
-        tmpS:=FindParam('Action=', ScrStr);
-        If tmpS<>'' Then
-        begin
-          ButtonParams.Command:=tmpS;
-          ButtonParams.Pict:=FindParam('Action=', ScrStr);
-        end
-        Else
-        begin
-          If PosEx('CommandName=', ScrStr)<>0 Then
-            ButtonParams.Command:=FindParam('commandname=', ScrStr);
-
-          ButtonParams.Pict:=FindParam('Pict=', ScrStr);
-        end;
-
-        ButtonParams.ForEach:=FindParam('ForEach=', ScrStr)='1';
-
-        If PosEx('bold', FindParam('FontStyle=', ScrStr))<>0 Then
-          ButtonParams.FontStyle:=ButtonParams.FontStyle+[fsBold];
-        If PosEx('italic', FindParam('FontStyle=', ScrStr))<>0 Then
-          ButtonParams.FontStyle:=ButtonParams.FontStyle+[fsItalic];
-        If PosEx('underline', FindParam('FontStyle=', ScrStr))<>0 Then
-          ButtonParams.FontStyle:=ButtonParams.FontStyle+[fsUnderLine];
-
-        tmpS:=FindParam('Width=', ScrStr);
-        If tmpS<>'' then
-        begin
-          v1:=StrToIntEx(tmpS);
-          If v1>30 then
-            ButtonParams.Width:=v1
-          else
-            ButtonParams.Width:=-1;
-        end
-        Else
-          ButtonParams.Width:=ButtonWidth;
-
-        FNoButtonPanel:=False;
-        FButtons.Add(ButtonParams);
-      end;
-    end;
+    ParseButton(ScrStr, Self);
   end;
 
   if IsLexem('TablePartToolButton=', ScrStr) then
   begin
     TranslateVal(ScrStr, True);
-
-    If Not FindDisableAction(FindParam('action=', ScrStr)) Then
-    begin
-      flg:=True;
-      tmpS:=FindParam('AccessLevel=', ScrStr);
-      If tmpS<>'' Then
-      begin
-        flg:=False;
-        IsDigitType:=GetStringDataType(tmpS);
-        Case IsDigitType of
-        idDigit:
-          If TranslateDigitToUserLevel(StrToIntEx(FindParam('AccessLevel=', ScrStr)))<=FUserLevel Then
-            flg:=True;
-        idString:
-          If TranslateDigitToUserLevel(FindParam('AccessLevel=', ScrStr))<=FUserLevel Then
-            flg:=True;
-        end;
-      end;
-
-      If flg Then
-      begin
-        ButtonParams:=TDCLCommandButton.Create(FDBConnector);
-        ButtonParams.Caption:=InitCap(FindParam('label=', ScrStr));
-        If FindParam('_Default=', ScrStr)='1' Then
-          ButtonParams.Default:=True;
-
-        If FindParam('_Cancel=', ScrStr)='1' Then
-          ButtonParams.Cancel:=True;
-
-        If FindParam('Host=', ScrStr)='1' then
-          ButtonParams.Host:=True;
-
-        ButtonParams.Hint:=InitCap(FindParam('hint=', ScrStr));
-
-        tmpS:=FindParam('Action=', ScrStr);
-        If tmpS<>'' Then
-        begin
-          ButtonParams.Command:=tmpS;
-          ButtonParams.Pict:=FindParam('action=', ScrStr);
-        end
-        Else
-        begin
-          If PosEx('CommandName=', ScrStr)<>0 Then
-            ButtonParams.Command:=FindParam('commandname=', ScrStr);
-
-          ButtonParams.Pict:=FindParam('Pict=', ScrStr);
-        end;
-
-        If PosEx('bold', FindParam('FontStyle=', ScrStr))<>0 Then
-          ButtonParams.FontStyle:=ButtonParams.FontStyle+[fsBold];
-        If PosEx('italic', FindParam('FontStyle=', ScrStr))<>0 Then
-          ButtonParams.FontStyle:=ButtonParams.FontStyle+[fsItalic];
-        If PosEx('underline', FindParam('FontStyle=', ScrStr))<>0 Then
-          ButtonParams.FontStyle:=ButtonParams.FontStyle+[fsUnderLine];
-
-        tmpS:=FindParam('Width=', ScrStr);
-        If tmpS<>'' Then
-        begin
-          v1:=StrToIntEx(tmpS);
-          If v1>4 Then
-            ButtonParams.Width:=v1;
-        end
-        Else
-          ButtonParams.Width:=ButtonWidth;
-
-        CurrentTablePart.AddButton(ButtonParams);
-      end;
-    end;
+    ParseButton(ScrStr, CurrentTablePart);
   end;
 
   if IsLexem('Query=', ScrStr) then
@@ -4054,123 +4127,20 @@ begin
 
   if IsLexem('DBFilter=', ScrStr) then
   begin
-    FFilter:=TDBFilter.Create;
     TranslateVal(ScrStr, True);
-    FFilter.SQL:=FindParam('SQL=', ScrStr);
-    If FFilter.SQL='' Then
-      FFilter.SQL:=FindParam('DBFilterQuery=', ScrStr);
-    If FFilter.SQL<>'' Then
-    begin
-      FFilter.FilterType:=ftDBFilter;
-
-      FFilter.Caption:=FindParam('Label=', ScrStr);
-      FFilter.Field:=FindParam('FilterField=', ScrStr);
-      FFilter.ListField:=FindParam('List=', ScrStr);
-      FFilter.KeyField:=FindParam('Key=', ScrStr);
-      FFilter.Between:=FindParam('Between=', ScrStr)='1';
-
-      v1:=FilterWidth;
-      If FindParam('Width=', ScrStr)<>'' then
-        v1:=StrToIntEx(Trim(FindParam('Width=', ScrStr)));
-      FFilter.Width:=v1;
-
-      If FindParam('VariableName=', ScrStr)<>'' then
-      begin
-        FFilter.VarName:=FindParam('VariableName=', ScrStr);
-        FVariables.NewVariableWithTest(FNamespace, FFilter.VarName);
-      end;
-
-      tmpS:=FindParam('KeyValue=', ScrStr);
-      If tmpS<>'' Then
-      begin
-        FFilter.KeyValue:=tmpS;
-      end;
-
-      AddFilter(FFilter);
-    end;
+    ParseDBFilter(ScrStr, Self);
   end;
 
   If IsLexem('ContextFilter=', ScrStr) then
   begin
-    FFilter:=TDBFilter.Create;
     TranslateVal(ScrStr, True);
-    FFilter.FilterType:=ftContextFilter;
-    FFilter.Caption:=FindParam('Label=', ScrStr);
-    FFilter.Field:=FindParam('FilterField=', ScrStr);
-    FFilter.Between:=FindParam('Between=', ScrStr)='1';
-
-    v1:=FilterWidth;
-    If FindParam('Width=', ScrStr)<>'' then
-      v1:=StrToIntEx(Trim(FindParam('Width=', ScrStr)));
-    FFilter.Width:=v1;
-
-    If FindParam('VariableName=', ScrStr)<>'' Then
-    begin
-      FFilter.VarName:=FindParam('VariableName=', ScrStr);
-      FVariables.NewVariableWithTest(FNamespace, FFilter.VarName);
-    end;
-
-    If FindParam('MaxLength=', ScrStr)<>'' Then
-    begin
-      FFilter.MaxLength:=StrToIntEx(Trim(FindParam('MaxLength=', ScrStr)));
-    end;
-
-    tmpS:=FindParam('WaitForEnter=', ScrStr);
-    If tmpS='1' Then
-    begin
-      FFilter.WaitForKey:=13;
-    end;
-
-    tmpS:=FindParam('FilterMode=', ScrStr);
-    If tmpS<>'' Then
-    begin
-      If PosEx('Case', tmpS)<>0 Then
-        FFilter.CaseC:=True;
-
-      If PosEx('NotLike', tmpS)<>0 Then
-        FFilter.NotLike:=True;
-
-      If PosEx('Partial', tmpS)<>0 Then
-        FFilter.Partial:=True;
-    end;
-
-    If PosEx('ComponentName=', ScrStr)<>0 Then
-      FFilter.FilterName:=FindParam('ComponentName=', ScrStr);
-
-    FFilter.KeyValue:=FindParam('_Value=', ScrStr);
-
-    AddFilter(FFilter);
+    ParseContextFilter(ScrStr, Self);
   end;
 
   If IsLexem('ComboFilter=', ScrStr) Then
   begin
-    FFilter:=TDBFilter.Create;
     TranslateVal(ScrStr, True);
-    FFilter.FilterType:=ftComboFilter;
-
-    FFilter.Caption:=FindParam('Label=', ScrStr);
-    FFilter.Field:=FindParam('FilterField=', ScrStr);
-    FFilter.ListField:=FindParam('List=', ScrStr);
-    FFilter.Between:=FindParam('Between=', ScrStr)='1';
-
-    v1:=FilterWidth;
-    If FindParam('Width=', ScrStr)<>'' Then
-      v1:=StrToIntEx(Trim(FindParam('Width=', ScrStr)));
-    FFilter.Width:=v1;
-
-    If FindParam('VariableName=', ScrStr)<>'' Then
-    begin
-      FFilter.VarName:=FindParam('VariableName=', ScrStr);
-      FVariables.NewVariableWithTest(FNamespace, FFilter.VarName);
-    end;
-
-    tmpS:=FindParam('KeyValue=', ScrStr);
-    If tmpS<>'' Then
-    begin
-      FFilter.KeyValue:=tmpS;
-    end;
-
-    AddFilter(FFilter);
+    ParseComboFilter(ScrStr, Self);
   end;
 
   If IsLexem('SummQuery=', ScrStr) Then
@@ -4245,7 +4215,7 @@ begin
     FToolBar.Height:=ToolButtonPanelHeight;
     FToolBar.ButtonHeight:=ToolButtonHeight;
     FToolBar.Flat:=ToolButtonsFlat;
-    FToolBar.EdgeBorders:=[ebLeft, ebTop, ebRight]; //, ebBottom];
+    FToolBar.EdgeBorders:=[ebLeft, ebTop, ebRight];
   end;
 
   if not Assigned(FNavig) then
@@ -4623,7 +4593,10 @@ end;
 procedure TDCLGrid.AddButton(Button: TDCLCommandButton);
 begin
   if Assigned(Button) then
+  begin
     FButtons.Add(Button);
+    FNoButtonPanel:=False;
+  end;
 end;
 
 procedure TDCLGrid.AddEvent(EventType: TEventsEnum; ScriptName: String);
