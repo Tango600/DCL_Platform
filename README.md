@@ -32,7 +32,7 @@
 
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
-![OSX](https://img.shields.io/badge/OSX-999999?style=for-the-badge&logo=bsd&logoColor=black)
+![OSX](https://img.shields.io/badge/OSX-888888?style=for-the-badge&logo=macos&logoColor=black)
 
 
 ##### Примечание
