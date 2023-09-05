@@ -145,23 +145,18 @@ Begin
         If PosEx('DisableFieldsList=', cs)=1 Then
           If Trim(FindParam('DisableFieldsList=', cs))='1' Then
             GPT.DisableFieldsList:=True;
+
         If PosEx('GetValueSeparator=', cs)=1 Then
           GPT.GetValueSeparator:=FindParam('GetValueSeparator=', cs);
 
         If PosEx('MultiRoles=', cs)=1 Then
         Begin
-          If Trim(FindParam('MultiRoles=', cs))='1' Then
-            GPT.MultiRolesMode:=True;
+          GPT.MultiRolesMode:=Trim(FindParam('MultiRoles=', cs))='1';
         End;
 
         If PosEx('Debug=', cs)=1 Then
         Begin
-          If Trim(FindParam('Debug=', cs))='1' Then
-          Begin
-            GPT.DebugOn:=True;
-          End
-          Else
-            GPT.DebugOn:=False;
+          GPT.DebugOn:=Trim(FindParam('Debug=', cs))='1';
         End;
 
         If PosEx('SQLMonitor=1', cs)=1 Then
@@ -171,61 +166,39 @@ Begin
 
         If PosEx('DebugMesseges=', cs)=1 Then
         Begin
-          If Trim(FindParam('DebugMesseges=', cs))='1' Then
-            GPT.DebugMesseges:=True
-          Else
-            GPT.DebugMesseges:=False;
+          GPT.DebugMesseges:=Trim(FindParam('DebugMesseges=', cs))='1';
         End;
 
         If PosEx('HashPass=', cs)=1 Then
         Begin
-          If Trim(FindParam('HashPass=', cs))='1' Then
-          Begin
-            GPT.HashPass:=True;
-          End
-          Else
-          Begin
-            GPT.HashPass:=False;
-          End;
+          GPT.HashPass:=Trim(FindParam('HashPass=', cs))='1';
         End;
 
         If PosEx('UseMessages=', cs)=1 Then
         Begin
-          If Trim(FindParam('UseMessages=', cs))='1' Then
-            GPT.UseMessages:=True
-          Else
-            GPT.UseMessages:=False;
+          GPT.UseMessages:=Trim(FindParam('UseMessages=', cs))='1';
         End;
 
         If PosEx('ConfirmExit=', cs)=1 Then
         Begin
-          If Trim(FindParam('ConfirmExit=', cs))='1' Then
-            GPT.ExitCnf:=True
-          Else
-            GPT.ExitCnf:=False;
+          GPT.ExitCnf:=Trim(FindParam('ConfirmExit=', cs))='1';
         End;
 
         If PosEx('ShowPicture=', cs)=1 Then
         Begin
-          If Trim(FindParam('ShowPicture=', cs))='1' Then
-            GPT.ShowPicture:=True
-          Else
-            GPT.ShowPicture:=False;
+          GPT.ShowPicture:=Trim(FindParam('ShowPicture=', cs))='1';
         End;
+
         If PosEx('DialogsSettings=', cs)=1 Then
         Begin
-          If Trim(FindParam('DialogsSettings=', cs))='1' Then
-            GPT.DialogsSettings:=True
-          Else
-            GPT.DialogsSettings:=False;
+          GPT.DialogsSettings:=Trim(FindParam('DialogsSettings=', cs))='1';
         End;
+
         If PosEx('DisableColors=', cs)=1 Then
         Begin
-          If Trim(FindParam('DisableColors=', cs))='1' Then
-            GPT.DisableColors:=True
-          Else
-            GPT.DisableColors:=False;
+          GPT.DisableColors:=Trim(FindParam('DisableColors=', cs))='1';
         End;
+
         If PosEx('OneCopy=', cs)=1 Then
         Begin
           GPT.OneCopy:=Trim(FindParam('OneCopy=', cs))='1';
