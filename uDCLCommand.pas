@@ -479,17 +479,17 @@ begin
     tmpS1:=FindParam('ReportName=', ScrLine);
     TranslateVals(tmpS1, Query);
     DCLQuery.Close;
-    DCLQuery.SQL.Text:='select Count(*) from '+DCLTable+' where '+GPT.UpperString+
-      DCLNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+tmpS1+
-      GPT.StringTypeChar+GPT.UpperStringEnd;
+    DCLQuery.SQL.Text:='select Count(*) from '+DCLTable+' where lower('+
+      DCLNameField+')=lower(:RepName)';
+    DCLQuery.ParamByName('RepName').AsString:=tmpS1;
     DCLQuery.Open;
     RecCount:=DCLQuery.Fields[0].AsInteger;
+    DCLQuery.Close;
     If RecCount=1 Then
     begin
-      DCLQuery.Close;
-      DCLQuery.SQL.Text:='select * from '+DCLTable+' where '+GPT.UpperString+
-        DCLNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+tmpS1+
-        GPT.StringTypeChar+GPT.UpperStringEnd;
+      DCLQuery.SQL.Text:='select * from '+DCLTable+' where lower('+
+        DCLNameField+')=lower(:RepName)';
+      DCLQuery.ParamByName('RepName').AsString:=tmpS1;
       DCLQuery.Open;
       tmpDCL.Text:=DCLQuery.FieldByName(ScriptField).AsString;
       RepIdParams:=DCLQuery.FieldByName(IdentifyField).AsInteger;
@@ -1209,9 +1209,6 @@ begin
     begin
       FDCLGrid.CurrentTablePart.Query.Last;
     end;
-
-
-
   end;
 end;
 

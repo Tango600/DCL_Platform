@@ -177,20 +177,6 @@ Begin
             GPT.DebugMesseges:=False;
         End;
 
-        If PosEx('UpperBase=', cs)=1 Then
-        Begin
-          If Trim(FindParam('UpperBase=', cs))='1' Then
-          Begin
-            GPT.UpperString:=' upper(';
-            GPT.UpperStringEnd:=') ';
-          End
-          Else
-          Begin
-            GPT.UpperString:=' ';
-            GPT.UpperStringEnd:=' ';
-          End;
-        End;
-
         If PosEx('HashPass=', cs)=1 Then
         Begin
           If Trim(FindParam('HashPass=', cs))='1' Then

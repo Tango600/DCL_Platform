@@ -73,11 +73,15 @@ begin
   DCLQuery.Close;
   Result:=TMemoryStream.Create;
   Case FindType of
-  ftByName:
-  DCLQuery.SQL.Text:='select '+FDataField+' from '+FTableName+' where lower('+FNameField+')='+
-    'lower('+GPT.StringTypeChar+DataName+GPT.StringTypeChar+')';
-  ftByIndex:
-  DCLQuery.SQL.Text:='select '+FDataField+' from '+FTableName+' where '+FKeyField+'='+DataName;
+  ftByName: begin
+    DCLQuery.SQL.Text:='select '+FDataField+' from '+FTableName+' where lower('+FNameField+')='+
+      'lower(:DataName)';
+    DCLQuery.ParamByName('DataName').AsString:=DataName;
+  end;
+  ftByIndex: begin
+    DCLQuery.SQL.Text:='select '+FDataField+' from '+FTableName+' where '+FKeyField+'=:DataName';
+    DCLQuery.ParamByName('DataName').AsString:=DataName;
+  end;
   ftSQL:
   DCLQuery.SQL.Text:=DataName;
   end;
@@ -129,7 +133,6 @@ procedure TDCLDataStorage.SetData(DataName: String; FindType: TFindType;
   Stream: TMemoryStream; Compress: Boolean);
 var
   BS: TMemoryStream;
-  tmpSQL, valuesSQL: String;
   Signature: Cardinal;
 begin
   If Stream.Size>0 Then
@@ -148,76 +151,52 @@ begin
       FreeAndNil(BS);
     end;
 
-    Case FindType of
-    ftByName:
-    tmpSQL:='select * from '+FTableName+' where lower('+FNameField+')='+
-      'lower('+GPT.StringTypeChar+DataName+GPT.StringTypeChar+')';
-    ftByIndex:
-    tmpSQL:='select * from '+FTableName+' where '+FKeyField+'='+DataName;
-    ftSQL:
-    tmpSQL:=DataName;
+    if IsDataExist(DataName, FindType) then
+    begin
+      Case FindType of
+      ftByName: begin
+        DCLQuery.SQL.Text:='update '+FTableName+' set '+FDataField+' = :DATADD '+
+          'where lower('+FNameField+') = lower(:DataName)';
+        DCLQuery.ParamByName('DataName').AsString:=DataName;
+      end;
+      ftByIndex: begin
+        DCLQuery.SQL.Text:='update '+FTableName+' set '+FDataField+' = :DATADD '+
+          'where '+FKeyField+' = :DataName';
+        DCLQuery.ParamByName('DataName').AsString:=DataName;
+      end;
+      ftSQL:
+      begin
+        DCLQuery.SQL.Text:=DataName;
+        DCLQuery.ParamByName('DataName').AsString:='Data';
+      end;
+      end;
+    end
+    else
+    begin
+      Case FindType of
+      ftByName: begin
+        DCLQuery.SQL.Text:='insert into '+FTableName+'('+FNameField+', '+FDataField+') values(:DataName, :DATADD)';
+        DCLQuery.ParamByName('DataName').AsString:=DataName;
+      end;
+      ftByIndex: begin
+        DCLQuery.SQL.Text:='insert into '+FTableName+'('+FKeyField+', '+FDataField+') values(:DataName, :DATADD)';
+        DCLQuery.ParamByName('DataName').AsString:=DataName;
+      end;
+      ftSQL:
+      begin
+        DCLQuery.SQL.Text:=DataName;
+        DCLQuery.ParamByName('DataName').AsString:='Data';
+      end;
+      end;
     end;
-    DCLQuery.Close;
-    {$IFDEF CACHEDDB}
-    DCLQuery.CancelUpdates;
-    {$ENDIF}
-    DCLQuery.SQL.Text:=tmpSQL;
+
+    Stream.Position:=0;
+    DCLQuery.ParamByName('DATADD').LoadFromStream(Stream, ftBlob);
     try
-      DCLQuery.Open;
+      DCLQuery.ExecSQL;
     Except
       FErrorCode:=3;
       Exit;
-    end;
-    If DCLQuery.IsEmpty then
-    begin
-      Case FindType of
-      ftByName:
-      DCLQuery.SQL.Text:='insert into '+FTableName+'('+FNameField+') values('+GPT.StringTypeChar+
-        DataName+GPT.StringTypeChar+')';
-      ftByIndex:
-      DCLQuery.SQL.Text:='insert into '+FTableName+'('+FKeyField+') values('+DataName+')';
-      ftSQL:
-      begin
-        valuesSQL:='Data';
-        tmpSQL:='insert into '+FTableName+'('+FKeyField+') values('+valuesSQL+')';
-        DCLQuery.SQL.Text:=tmpSQL;
-      end;
-      end;
-      DCLQuery.ExecSQL;
-
-      Case FindType of
-      ftByName:
-      tmpSQL:='select * from '+FTableName+' where lower('+FNameField+')='+
-        'lower('+GPT.StringTypeChar+DataName+GPT.StringTypeChar+')';
-      ftByIndex:
-      tmpSQL:='select * from '+FTableName+' where '+FKeyField+'='+DataName;
-      ftSQL:
-      tmpSQL:=DataName;
-      end;
-      DCLQuery.Close;
-      {$IFDEF CACHEDDB}
-      DCLQuery.CancelUpdates;
-      {$ENDIF}
-      DCLQuery.SQL.Text:=tmpSQL;
-      try
-        DCLQuery.Open;
-      Except
-        FErrorCode:=3;
-        Exit;
-      end;
-
-      If not DCLQuery.IsEmpty Then
-      begin
-        DCLQuery.Edit;
-        Stream.Position:=0;
-        TBlobField(DCLQuery.FieldByName(FDataField)).LoadFromStream(Stream);
-        try
-          If DCLQuery.State in dsEditModes then
-            DCLQuery.Post;
-        finally
-          DCLQuery.Close;
-        end;
-      end;
     end;
   end;
 end;
@@ -225,12 +204,16 @@ end;
 procedure TDCLDataStorage.ClearData(DataName: String; FindType: TFindType);
 begin
   Case FindType of
-  ftByName:
-  DCLQuery.SQL.Text:='update '+FTableName+' set '+FDataField+'=null where '+GPT.UpperString+
-    FNameField+GPT.UpperStringEnd+'='+GPT.UpperString+GPT.StringTypeChar+DataName+GPT.StringTypeChar
-    +GPT.UpperStringEnd;
-  ftByIndex:
-  DCLQuery.SQL.Text:='update '+FTableName+' set '+FDataField+'=null where '+FKeyField+'='+DataName;
+  ftByName: begin
+    DCLQuery.SQL.Text:='update '+FTableName+' set '+FDataField+'=null where '+
+      'lower('+FNameField+')=lower(:DataName)';
+    DCLQuery.ParamByName('DataName').AsString:=DataName;
+  end;
+  ftByIndex: begin
+    DCLQuery.SQL.Text:='update '+FTableName+' set '+FDataField+'=null where '+
+      FKeyField+'=:DataName';
+    DCLQuery.ParamByName('DataName').AsString:=DataName;
+  end;
   ftSQL:
   DCLQuery.SQL.Text:=DataName;
   end;
@@ -244,11 +227,16 @@ end;
 procedure TDCLDataStorage.DeleteData(DataName: String; FindType: TFindType);
 begin
   Case FindType of
-  ftByName:
-  DCLQuery.SQL.Text:='delete from '+FTableName+' where lower('+FNameField+
-    ')=lower('+GPT.StringTypeChar+DataName+GPT.StringTypeChar+')';
-  ftByIndex:
-  DCLQuery.SQL.Text:='delete from '+FTableName+' where '+FNameField+'='+DataName;
+  ftByName: begin
+    DCLQuery.SQL.Text:='delete from '+FTableName+
+      ' where lower('+FNameField+')=lower(:DataName)';
+    DCLQuery.ParamByName('DataName').AsString:=DataName;
+  end;
+  ftByIndex: begin
+    DCLQuery.SQL.Text:='delete from '+FTableName+
+      ' where '+FKeyField+'=:DataName';
+    DCLQuery.ParamByName('DataName').AsString:=DataName;
+  end;
   ftSQL:
   DCLQuery.SQL.Text:=DataName;
   end;
@@ -264,11 +252,16 @@ function TDCLDataStorage.IsDataExist(DataName: String; FindType: TFindType
 begin
   Result:=False;
   Case FindType of
-  ftByName:
-  DCLQuery.SQL.Text:='select '+FDataField+' from '+FTableName+' where lower('+FNameField+
-    ')=lower('+GPT.StringTypeChar+DataName+GPT.StringTypeChar+')';
-  ftByIndex:
-  DCLQuery.SQL.Text:='select '+FDataField+' from '+FTableName+' where '+FKeyField+'='+DataName;
+  ftByName: begin
+    DCLQuery.SQL.Text:='select '+FDataField+' from '+FTableName+
+      ' where lower('+FNameField+')=lower(:DataName)';
+    DCLQuery.ParamByName('DataName').AsString:=DataName;
+  end;
+  ftByIndex: begin
+    DCLQuery.SQL.Text:='select '+FDataField+' from '+FTableName+
+      ' where '+FKeyField+'=:DataName';
+    DCLQuery.ParamByName('DataName').AsString:=DataName;
+  end;
   ftSQL:
   DCLQuery.SQL.Text:=DataName;
   end;

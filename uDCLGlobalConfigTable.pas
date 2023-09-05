@@ -19,7 +19,6 @@ type
     SQLDialect: Byte;
     NoParamsTable, NoUsersTable, DisableLogOnWithoutUser, MultiRolesMode: Boolean;
     DBUserName, DCLUserName, DCLUserPass, EnterPass, LongRoleName, GetValueSeparator,
-    UpperString, UpperStringEnd,
     IniFileName, BaseID, LaunchScrFile, LaunchForm,
     StringTypeChar, ShowRoleField,
     TimeStampFormat, DCLLongUserName, UserID, RoleID,
