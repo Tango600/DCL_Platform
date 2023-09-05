@@ -31,19 +31,19 @@ end;
 Function IsReturningQuery(SQQL: String): Boolean;
 Begin
   Result:=False;
-  If PosEx('select', SQQL)<=5 then
+  If PosEx('select', SQQL)=1 then
     If PosEx('from', SQQL)>8 then
       Result:=True;
 
   If not Result then
   Begin
-    If (PosEx('update', SQQL)<=5)and(PosEx('set', SQQL)>10) then
+    If (PosEx('update', SQQL)=1)and(PosEx('set', SQQL)>10) then
       Result:=False
-    Else If (PosEx('delete', SQQL)<=5)and(PosEx('from', SQQL)>7) then
+    Else If (PosEx('delete', SQQL)=1)and(PosEx('from', SQQL)>7) then
       Result:=False
-    Else If (PosEx('insert', SQQL)<=5)and(PosEx('into', SQQL)>7) then
+    Else If (PosEx('insert', SQQL)=1)and(PosEx('into', SQQL)>7) then
       Result:=False
-    Else If (PosEx('execute', SQQL)<=5)and(PosEx('procedure', SQQL)>8) then
+    Else If (PosEx('execute', SQQL)=1)and(PosEx('procedure', SQQL)>8) then
       Result:=False;
   End;
 End;
