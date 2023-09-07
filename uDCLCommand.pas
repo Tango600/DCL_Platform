@@ -554,7 +554,7 @@ procedure TDCLCommand.RunCommand(Command: String);
 var
   tmpS, tmpS1, tmpS2, tmpS3, tmpS4: String;
   i, v1, v2: Integer;
-  Wait, Flg1: Boolean;
+  Wait, Flg1, Flg2: Boolean;
   tmpDCLForm: TDCLForm;
   {$IFDEF MSWINDOWS}
   SheetReportSelector: TSheetOfficeReportSelector;
@@ -774,13 +774,17 @@ begin
 
   If IsLexem('GetFromDB=', Command) then
   begin
+    Flg2:=FindParam('ByID=', Command)='1';
     tmpS:=FindParam('FileName=', Command);
     tmpS1:=FindParam('GetFromDB=', Command);
 
     If not IsFullPath(tmpS) then
       tmpS:=IncludeTrailingPathDelimiter(AppConfigDir)+tmpS;
     DataStorage:=TDCLDataStorage.Create(FDBConnector);
-    DataStorage.SaveToFile(tmpS, tmpS1, ftByName);
+    if Flg2 then
+      DataStorage.SaveToFile(tmpS, tmpS1, ftByIndex)
+    else
+      DataStorage.SaveToFile(tmpS, tmpS1, ftByName);
     FreeAndNil(DataStorage);
   end;
 
@@ -791,13 +795,17 @@ begin
       tmpS:=FindParam('FileName=', Command);
       tmpS1:=FindParam('PutToDB=', Command);
       Flg1:=FindParam('Compress=', Command)='1';
+      Flg2:=FindParam('ByID=', Command)='1';
 
       If not IsFullPath(tmpS) then
         tmpS:=IncludeTrailingPathDelimiter(AppConfigDir)+tmpS;
       If FileExists(tmpS) then
       begin
         DataStorage:=TDCLDataStorage.Create(FDBConnector);
-        DataStorage.StoreFromFile(tmpS, tmpS1, ftByName, Flg1);
+        if Flg2 then
+          DataStorage.StoreFromFile(tmpS, tmpS1, ftByIndex, Flg1)
+        else
+          DataStorage.StoreFromFile(tmpS, tmpS1, ftByName, Flg1);
         FreeAndNil(DataStorage);
       end
       Else
@@ -806,46 +814,66 @@ begin
 
     If IsLexem('ClearData=', Command) then
     begin
+      Flg2:=FindParam('ByID=', Command)='1';
       tmpS:=FindParam('ClearData=', Command);
       DataStorage:=TDCLDataStorage.Create(FDBConnector);
-      DataStorage.ClearData(tmpS, ftByName);
+      if Flg2 then
+        DataStorage.ClearData(tmpS, ftByIndex)
+      else
+        DataStorage.ClearData(tmpS, ftByName);
       FreeAndNil(DataStorage);
     end;
 
     If IsLexem('DeleteData=', Command) then
     begin
       tmpS:=FindParam('DeleteData=', Command);
+      Flg2:=FindParam('ByID=', Command)='1';
 
       DataStorage:=TDCLDataStorage.Create(FDBConnector);
-      DataStorage.DeleteData(tmpS, ftByName);
+      if Flg2 then
+        DataStorage.DeleteData(tmpS, ftByIndex)
+      else
+        DataStorage.DeleteData(tmpS, ftByName);
       FreeAndNil(DataStorage);
     end;
 
     If IsLexem('CompressData=', Command) then
     begin
       tmpS:=FindParam('CompressData=', Command);
+      Flg2:=FindParam('ByID=', Command)='1';
 
       DataStorage:=TDCLDataStorage.Create(FDBConnector);
-      DataStorage.CompressData(tmpS, ftByName);
+      if Flg2 then
+        DataStorage.CompressData(tmpS, ftByIndex)
+      else
+        DataStorage.CompressData(tmpS, ftByName);
       FreeAndNil(DataStorage);
     end;
 
     If IsLexem('DeCompressData=', Command) then
     begin
+      Flg2:=FindParam('ByID=', Command)='1';
       tmpS:=FindParam('DeCompressData=', Command);
 
       DataStorage:=TDCLDataStorage.Create(FDBConnector);
-      DataStorage.DeCompressData(tmpS, ftByName);
+      if Flg2 then
+        DataStorage.DeCompressData(tmpS, ftByIndex)
+      else
+        DataStorage.DeCompressData(tmpS, ftByName);
       FreeAndNil(DataStorage);
     end;
 
     If IsLexem('MD5Data=', Command) then
     begin
+      Flg2:=FindParam('ByID=', Command)='1';
       tmpS:=FindParam('MD5Data=', Command);
       tmpS1:=FindParam('VariableName=', Command);
 
       DataStorage:=TDCLDataStorage.Create(FDBConnector);
-      FVariables.NewVariable(FNamespace, tmpS1, DataStorage.MD5(tmpS, ftByName));
+      if Flg2 then
+        FVariables.NewVariable(FNamespace, tmpS1, DataStorage.MD5(tmpS, ftByIndex))
+      else
+        FVariables.NewVariable(FNamespace, tmpS1, DataStorage.MD5(tmpS, ftByName));
     end;
   end;
 
