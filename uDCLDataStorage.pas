@@ -98,7 +98,7 @@ begin
     try
       MS:=TMemoryStream.Create;
       Result:=TMemoryStream.Create;
-      TBlobField(DCLQuery.FieldByName(FDataField)).SaveToStream(MS);
+      TBlobField(DCLQuery.Fields[0]).SaveToStream(MS);
       If MS.Size>0 Then
       begin
         Marker:=0;
@@ -167,7 +167,6 @@ begin
       ftSQL:
       begin
         DCLQuery.SQL.Text:=DataName;
-        DCLQuery.ParamByName('DataName').AsString:='Data';
       end;
       end;
     end
@@ -185,7 +184,6 @@ begin
       ftSQL:
       begin
         DCLQuery.SQL.Text:=DataName;
-        DCLQuery.ParamByName('DataName').AsString:='Data';
       end;
       end;
     end;
