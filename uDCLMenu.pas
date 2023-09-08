@@ -191,9 +191,6 @@ begin
   LocalQuery.Open;
   LocalQuery.First;
   S:=LocalQuery.FieldByName(DCLNameField).AsString;
-  if GPT.MainFormCaption<>'' then
-    S:=S+' \'+Trim(GPT.MainFormCaption)+'\';
-
   FMainForm.Caption:=S;
   LocalQuery.Close;
 
@@ -236,6 +233,24 @@ begin
     LocalQuery.Next;
   end;
   LocalQuery.Close;
+
+  S:=FMainForm.Caption;
+  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 20051 and 20100', GPT.UserID);
+  LocalQuery.Open;
+  while not LocalQuery.EOF do
+  begin
+    S:=S+TrimRight(LocalQuery.FieldByName(DCLNameField).AsString);
+
+    LocalQuery.Next;
+  end;
+  LocalQuery.Close;
+
+  FMainForm.Caption:=S;
+
+  if GPT.MainFormCaption<>'' then
+    S:=S+' \'+Trim(GPT.MainFormCaption)+'\';
+
+  FMainForm.Caption:=S;
 end;
 
 destructor TDCLMenu.Destroy;
