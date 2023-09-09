@@ -39,7 +39,7 @@ type
   TDCLGrid=class(TWinControl)
   private
     FNameSpace, FDependField, FMasterDataField, FMasterValueVariableName,
-      FSummFieldsSet, FNavigatorExpr, FSeed, FDialogName: String;
+      FSummFieldsSet, FNavigButtonsExpr, FSeed, FDialogName: String;
     FForms: TList<TForm>;
     FForm: TForm;
     FVariables: TVariables;
@@ -62,8 +62,8 @@ type
     FButtons: TList<TDCLCommandButton>;
     FDataControlType: TDataControlType;
     FGridStyle: TGridStyle;
-    FReadFieldsMode, FMultiSelectMode, FReadOnly, FDataReadOnly,
-      FNoDataField, FNoButtonPanel, FindProcess: Boolean;
+    FReadFieldsMode, FMultiSelectMode, FReadOnly, FDataReadOnly, FNavigatorVisible,
+      FFlatNavig, FNoDataField, FNoButtonPanel, FindProcess: Boolean;
     FTableParts, FLookupTables: TList<TDCLGrid>;
     FCurrentTablePart: TDCLGrid;
     FDCLFields: TList<TDCLField>;
@@ -259,6 +259,7 @@ type
 
     procedure SetSQL(SQL: String);
     procedure SetNavigatorButtonsSet(ButtonsExpr: String);
+    procedure ParseNavigatorButtons(ButtonsExpr: String);
 
     procedure AddButton(Button: TDCLCommandButton);
     procedure AddFilter(Filter: TDBFilter);
@@ -1680,33 +1681,33 @@ begin
       FCurrentTablePart.DependField:=FindParam('DependField=', Line);
     end;
 
-    If FindParam('MasterDataField=', Line)<>'' Then
+    If FindParam('MasterDataField=', Line)<>'' then
     begin
       FCurrentTablePart.MasterDataField:=FindParam('MasterDataField=', Line);
     end;
 
     FCurrentTablePart.NoDataField:=FindParam('NoDataField=', Line)='1';
-    If FindParam('VariableName=', Line)<>'' Then
+    If FindParam('VariableName=', Line)<>'' then
     begin
       FCurrentTablePart.MasterValueVariableName:=FindParam('VariableName=', Line);
     end;
 
-    If FindParam('Navigator=', Line)='1' Then
+    If FindParam('Navigator=', Line)='1' then
     begin
       FCurrentTablePart.ExecScriptLine('Navigator=1');
     end;
 
     ButtonsSet:=FindParam('NavigatorButtons=', Line);
-    If ButtonsSet='' Then
+    If ButtonsSet='' then
       ButtonsSet:='NavigatorButtons='+DefaultNavigButtonsSet+';';
 
-    If PosEx('NavigatorButtons=', ButtonsSet)<>0 Then
+    If PosEx('NavigatorButtons=', ButtonsSet)<>0 then
     begin
       FCurrentTablePart.SetNavigatorButtonsSet(FindParam('NavigatorButtons=', ButtonsSet));
     end;
 
     S:=Trim(FindParam('ReadOnly=', Line));
-    If StrToIntEx(S)=1 Then
+    If StrToIntEx(S)=1 then
     begin
       FCurrentTablePart.ExecScriptLine('ReadOnly=1');
     end;
@@ -3268,6 +3269,14 @@ begin
   if TempStr<>'' then
     LookupTable.DCLGrid.Query.Open;
 
+  If PosEx('Navigator=', Scr)<>0 then
+  begin
+    LookupTable.DCLGrid.FNavigatorVisible:=FindParam('Navigator=', Scr)='1';
+    LookupTable.DCLGrid.FFlatNavig:=FindParam('Flat=', Scr)='1';
+
+    LookupTable.DCLGrid.SetNavigatorButtonsSet(FindParam('NavigatorButtons=', Scr));
+  end;
+
   LookupTable.DCLGrid.ReadOnly:=Field.ReadOnly;
   LookupTable.DCLGrid.DependField:=FindParam('DependField=', Scr);
   LookupTable.DCLGrid.NoDataField:=Field.NoDataField;
@@ -3880,6 +3889,8 @@ begin
   FFieldsCount:=-1;
   FReadFieldsMode:=False;
   FNoButtonPanel:=False;
+  FNavigatorVisible:=False;
+  FFlatNavig:=False;
   FGridStyle:=gsGrid;
 
   FMultiSelectMode:=False;
@@ -4116,7 +4127,9 @@ begin
   if IsLexem('Navigator=', ScrStr) then
   begin
     TranslateVal(ScrStr, True);
-    FNavigatorExpr:=ScrStr;
+    FNavigatorVisible:=FindParam('Navigator=', ScrStr)='1';
+    FFlatNavig:=FindParam('Flat=', ScrStr)='1';
+    FNavigButtonsExpr:=FindParam('Buttons=', ScrStr);
   end;
 
   if IsLexem('TablePart=', ScrStr) then
@@ -4220,8 +4233,7 @@ begin
 
   if not Assigned(FNavig) then
   begin
-    tmpS:=FNavigatorExpr;
-    if tmpS<>'0' then
+    if FNavigatorVisible then
     begin
       CreateToolPanel;
 
@@ -4232,14 +4244,9 @@ begin
 
       Inc(FToolPanelHeight, FNavig.Height);
 
-      SetNavigatorButtonsSet(FindParam('buttons=', FNavigatorExpr));
+      ParseNavigatorButtons(FNavigButtonsExpr);
 
-      If FindParam('Flat=', FNavigatorExpr)<>'' Then
-      begin
-        tmpS:=FindParam('Flat=', FNavigatorExpr);
-        If tmpS='1' Then
-          FNavig.Flat:=True;
-      end;
+      FNavig.Flat:=FFlatNavig;
     end;
   end;
   if Assigned(FNavig) then
@@ -4524,6 +4531,11 @@ begin
 end;
 
 procedure TDCLGrid.SetNavigatorButtonsSet(ButtonsExpr: String);
+begin
+  FNavigButtonsExpr:=ButtonsExpr;
+end;
+
+procedure TDCLGrid.ParseNavigatorButtons(ButtonsExpr: String);
 var
   i: Integer;
   AllowEdit, HideNavig: Boolean;
