@@ -16,7 +16,7 @@ type
 
   TDCLForm=class(TForm)
   private
-    FReject, FFirstPage, FormCanClose, NoCloseable, FCloseQuery: Boolean;
+    FReject, FFirstPage, FormCanClose, FCloseQuery: Boolean;
     FDBConnector: TDCLDBConnector;
     FFormCloseStatus: TDCLFormCloseAction;
     FNameSpace, FDialogName, CloseQueryText: String;
@@ -341,18 +341,6 @@ var
   S:String;
   DlgRes:Integer;
 begin
-  If NoCloseable then
-  Begin
-    CanClose:=not NoCloseable;
-    FormCanClose:=CanClose;
-    {$IFDEF MSWINDOWS}
-      //Beep(500, 500);
-    {$ELSE}
-      Beep;
-    {$ENDIF}
-    Exit;
-  End;
-
   If FCloseQuery then
   Begin
     S:=CloseQueryText;
@@ -519,11 +507,6 @@ begin
         if not FFirstPage then
           AddMainPage(Query, Data);
         FFirstPage:=False;
-      end;
-
-      If IsLexem('NoCloseable=', SrcLine) Then
-      begin
-        NoCloseable:=Trim(FindParam('NoCloseable=', SrcLine))='1';
       end;
 
       if IsLexem('Title=', SrcLine) then
