@@ -1513,6 +1513,8 @@ begin
     (Field.DCLEditComponent.Control as TDBEdit).CharCase:=Field.CharCase;
     (Field.DCLEditComponent.Control as TDBEdit).PasswordChar:=Field.PasswordChar;
     (Field.DCLEditComponent.Control as TDBEdit).OnClick:=DBEditClick;
+    (Field.DCLEditComponent.Control as TDBEdit).Enabled:=Field.Enabled;
+
     If Field.PasswordChar<>#0 Then
       Field.DCLEditComponent.Control.Tag:=1;
 
@@ -2264,8 +2266,6 @@ begin
   If TempStr<>'' Then
   begin
     TranslateVal(TempStr, False);
-    //If (Not FForm.Showing) and (Not NoDataField) Then
-      //FForm.Show;
     if TempStr<>'' then
     begin
       DBLookupControl.KeyValue:=TempStr;
