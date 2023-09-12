@@ -28,7 +28,6 @@ uses
   DB, uDCLTypes, uDCLData, uDCLConst;
 
 const
-  DisableControlsMode=False;
   FetchAllData=True;
 
 type
@@ -55,11 +54,12 @@ type
     {$ENDIF}
     FDBConnector: TDBConnector;
 
-    function GetPrimaryKeyField(TableName: String; OneField: Boolean): string;
+    function GetPrimaryKeyField(TableName: String; OneField: Boolean): String;
+    function GetGeneratorName(TableName: String): String;
     function GetMainQueryTable: string;
 
     procedure SetRequiredFields;
-    Procedure FillDatasetUpdateSQL(KeyField, TableName: String; ToOpen: Boolean);
+    Procedure FillDatasetUpdateSQL(KeyField, TableName: String);
 
     procedure AfterInsertData(Data: TDataSet);
     procedure AfterDeleteData(Data: TDataSet);
@@ -113,8 +113,6 @@ type
 
     procedure SaveDB;
     procedure CancelDB;
-    procedure DisableControls;
-    procedure EnableControls;
 
     function GetKeyBookmark: TBookmark;
     procedure GotoKeyBookmark(Bookmark: TBookmark);
@@ -435,10 +433,9 @@ begin
 {$ENDIF}
 end;
 
-procedure TDCLQuery.FillDatasetUpdateSQL(KeyField, TableName: String;
-  ToOpen: Boolean);
+procedure TDCLQuery.FillDatasetUpdateSQL(KeyField, TableName: String);
 var
-  UpdatesFieldsSet, KeyFieldsSet, TextSQLSel, FieldN: String;
+  UpdatesFieldsSet, KeyFieldsSet, FieldN: String;
   lUpdateSQL, lInsertSQL, lDeleteSQL, lRefreshSQL: String;
   v1, v2: Integer;
   DBField: TField;
@@ -459,8 +456,6 @@ Begin
     If KeyField<>'' then
     Begin
       FKeyField:=KeyField;
-      If {$IFnDEF SQLdbFamily}ToOpen and{$ENDIF} Active Then
-        Close;
 
       If not Assigned(FUpdateSQL) then
       Begin
@@ -516,8 +511,7 @@ Begin
       UpdatesFieldsSet:='';
       For FieldN in UpdateFields do
       Begin
-        if not KeyFields.Contains(FieldN) then
-          UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+'=:'+FieldN+', ';
+        UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+'=:'+FieldN+', ';
       End;
 
       If UpdatesFieldsSet<>'' then
@@ -537,8 +531,7 @@ Begin
       UpdatesFieldsSet:='';
       For FieldN in UpdateFields Do
       begin
-        if not KeyFields.Contains(FieldN) then
-          UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+', ';
+        UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+', ';
       end;
 
       If UpdatesFieldsSet<>'' then
@@ -547,8 +540,7 @@ Begin
       KeyFieldsSet:='';
       For FieldN in UpdateFields Do
       begin
-        if not KeyFields.Contains(FieldN) then
-          KeyFieldsSet:=KeyFieldsSet+':'+FieldN+', ';
+        KeyFieldsSet:=KeyFieldsSet+':'+FieldN+', ';
       end;
 
       If KeyFieldsSet<>'' then
@@ -560,7 +552,7 @@ Begin
 
       KeyFieldsSet:='';
       For FieldN in KeyFields do
-          KeyFieldsSet:=KeyFieldsSet+FieldN+'=:OLD_'+FieldN+' and ';
+        KeyFieldsSet:=KeyFieldsSet+FieldN+'=:OLD_'+FieldN+' and ';
 
       If KeyFieldsSet<>'' then
         System.Delete(KeyFieldsSet, Length(KeyFieldsSet)-4, 5);
@@ -588,22 +580,6 @@ Begin
 
       if FUpdateSQL.DeleteSQL.Text<>lDeleteSQL then
         FUpdateSQL.DeleteSQL.Text:=lDeleteSQL;
-
-      // Query.FieldList.Update;
-      TextSQLSel:=inherited SQL.Text;
-      {$IFnDEF SQLdbFamily}
-      If ToOpen then
-      {$ENDIF}
-      If not Active Then
-        If TextSQLSel.Trim<>'' Then
-          inherited Open;
-    End
-    Else
-    Begin
-      If ToOpen then
-      If not Active Then
-        If SQL.Text<>'' Then
-          inherited Open;
     End;
   end;
 End;
@@ -741,12 +717,6 @@ begin
     FreeAndNil(ShadowQuery);
 
   inherited Destroy;
-end;
-
-procedure TDCLQuery.DisableControls;
-begin
-  if DisableControlsMode then
-    inherited DisableControls;
 end;
 
 function TDCLQuery.GetAfterCancelEvent: TDataSetNotifyEvent;
@@ -892,7 +862,7 @@ begin
   Result:={$IFDEF WITH_WIDEDATASET}TWideStrings{$ELSE}TStringList{$ENDIF}(inherited SQL);
 end;
 
-function TDCLQuery.GetPrimaryKeyField(TableName: String; OneField: Boolean): string;
+function TDCLQuery.GetPrimaryKeyField(TableName: String; OneField: Boolean): String;
 begin
   Result:='';
   If GPT.IBAll then
@@ -946,16 +916,97 @@ begin
   End;
 end;
 
-procedure TDCLQuery.Open;
+function TDCLQuery.GetGeneratorName(TableName: String): String;
+var
+  Empty: Boolean;
 begin
-  ///Close;
-  If not FUpdateSQLDefined then
+  Result:='';
+  If GPT.IBAll then
   Begin
+{$IFDEF IBALL}
+    If (TableName<>'') and Assigned(ShadowQuery) then
+    Begin
+      if not Assigned(GetDBConnector(ShadowQuery)) then
+        SetDCLDBConnector(ShadowQuery);
+
+      ShadowQuery.Params.Clear;
+      ShadowQuery.SQL.Text:='select 1 from RDB$DEPENDENCIES dp, RDB$TRIGGERS tr where dp.rdb$dependent_name=tr.rdb$trigger_name and '+
+        'tr.rdb$relation_name=dp.rdb$depended_on_name and dp.rdb$dependent_type=2 and '+
+        'dp.rdb$depended_on_name=upper(:TABLENAME) and dp.rdb$field_name=(select RDB$FIELD_NAME '+
+                'from RDB$RELATION_CONSTRAINTS C, RDB$INDICES I, RDB$INDEX_SEGMENTS S '+
+                'where upper(C.RDB$RELATION_NAME) = upper(:TABLENAME) and '+
+                      'C.RDB$CONSTRAINT_TYPE = ''PRIMARY KEY'' and I.RDB$UNIQUE_FLAG = 1 and '+
+                      '((I.RDB$INDEX_INACTIVE = 0) or (I.RDB$INDEX_INACTIVE is null)) and '+
+                      'C.RDB$RELATION_NAME = I.RDB$RELATION_NAME and '+
+                      'I.RDB$INDEX_NAME = C.RDB$INDEX_NAME and '+
+                      'S.RDB$INDEX_NAME = I.RDB$INDEX_NAME) and '+
+        'dp.rdb$depended_on_type=0 and tr.rdb$system_flag = 0 and tr.rdb$trigger_inactive = 0';
+      ShadowQuery.ParamByName('TABLENAME').AsString:=TableName;
+      ShadowQuery.Open;
+      Empty:=ShadowQuery.IsEmpty;
+      ShadowQuery.Close;
+
+      if Empty then
+      begin
+        ShadowQuery.SQL.Text:='select ff.rdb$generator_name from RDB$RELATION_FIELDS ff where ff.rdb$relation_name = upper(:TABLENAME) and ff.rdb$field_name=(select RDB$FIELD_NAME '+
+          'from RDB$RELATION_CONSTRAINTS C, RDB$INDICES I, RDB$INDEX_SEGMENTS S '+
+          'where upper(C.RDB$RELATION_NAME) = upper(:TABLENAME) and '+
+                'C.RDB$CONSTRAINT_TYPE = ''PRIMARY KEY'' and I.RDB$UNIQUE_FLAG = 1 and '+
+                '((I.RDB$INDEX_INACTIVE = 0) or (I.RDB$INDEX_INACTIVE is null)) and '+
+                'C.RDB$RELATION_NAME = I.RDB$RELATION_NAME and '+
+                'I.RDB$INDEX_NAME = C.RDB$INDEX_NAME and '+
+                'S.RDB$INDEX_NAME = I.RDB$INDEX_NAME) and ff.rdb$generator_name is not null and ff.rdb$identity_type = 1';
+        ShadowQuery.Open;
+        Result:=Trim(ShadowQuery.Fields[0].AsString);
+      end
+      else
+      begin
+        ShadowQuery.SQL.Text:='select ge.rdb$generator_name from RDB$DEPENDENCIES dp, RDB$TRIGGERS tr, rdb$generators ge where dp.rdb$dependent_name=(select tr.rdb$trigger_name from RDB$DEPENDENCIES dp, RDB$TRIGGERS tr where dp.rdb$dependent_name=tr.rdb$trigger_name and '+
+          'tr.rdb$relation_name=dp.rdb$depended_on_name and dp.rdb$dependent_type=2 and '+
+          'dp.rdb$depended_on_name=upper(:TABLENAME) and dp.rdb$field_name=(select RDB$FIELD_NAME '+
+                  'from RDB$RELATION_CONSTRAINTS C, RDB$INDICES I, RDB$INDEX_SEGMENTS S '+
+                  'where upper(C.RDB$RELATION_NAME) = upper(:TABLENAME) and '+
+                        'C.RDB$CONSTRAINT_TYPE = ''PRIMARY KEY'' and I.RDB$UNIQUE_FLAG = 1 and '+
+                        '((I.RDB$INDEX_INACTIVE = 0) or (I.RDB$INDEX_INACTIVE is null)) and '+
+                        'C.RDB$RELATION_NAME = I.RDB$RELATION_NAME and '+
+                        'I.RDB$INDEX_NAME = C.RDB$INDEX_NAME and '+
+                        'S.RDB$INDEX_NAME = I.RDB$INDEX_NAME) and '+
+          'dp.rdb$depended_on_type=0 and tr.rdb$system_flag = 0 and tr.rdb$trigger_inactive = 0) and '+
+          'ge.rdb$generator_name = dp.rdb$depended_on_name and '+
+          'dp.rdb$dependent_name=tr.rdb$trigger_name';
+        ShadowQuery.Open;
+        Result:=Trim(ShadowQuery.Fields[0].AsString);
+      end;
+      ShadowQuery.Close;
+    End;
+{$ENDIF}
+  End;
+end;
+
+procedure TDCLQuery.Open;
+var
+  GenName: String;
+begin
+  inherited Close;
+  If not FUpdateSQLDefined then
+  begin
     FMainTable:=GetMainQueryTable;
     FKeyField:=GetPrimaryKeyField(FMainTable, True);
+
+    {$IFDEF SEQUENCENAME}
+    GenName:=GetGeneratorName(FMainTable);
+    if (GenName<>'') and (FKeyField<>'') then
+    begin
+      Self.Sequence.SequenceName:=GenName;
+      Self.Sequence.FieldName:=FKeyField;
+    end;
+    {$ENDIF}
+
+    FillDatasetUpdateSQL(FKeyField, FMainTable);
     FUpdateSQLDefined:=True;
-  End;
-  FillDatasetUpdateSQL(FKeyField, FMainTable, True);
+  end;
+
+  inherited Open;
 end;
 
 procedure TDCLQuery.Append;
@@ -974,12 +1025,6 @@ procedure TDCLQuery.Edit;
 begin
   If not FindNotAllowedOperation(dsoEdit) then
      inherited Edit;
-end;
-
-procedure TDCLQuery.EnableControls;
-begin
-  if DisableControlsMode then
-    inherited EnableControls;
 end;
 
 function TDCLQuery.GetKeyBookmark: TBookmark;
@@ -1125,7 +1170,6 @@ begin
       FUpdateSQLDefined:=True;
     End;
     SetUpdateSQL(FMainTable, FKeyField);
-  //  FillDatasetUpdateSQL(FKeyField, FMainTable, True);
   end;
 end;
 
@@ -1142,7 +1186,9 @@ end;
 
 procedure TDCLQuery.SetUpdateSQL(TableName, KeyField: String);
 begin
-  FillDatasetUpdateSQL(KeyField, TableName, False);
+  inherited Close;
+  FillDatasetUpdateSQL(KeyField, TableName);
+  inherited Open;
 end;
 
 end.
