@@ -4212,7 +4212,6 @@ var
   DCLField: TDCLField;
   Grid: TDCLGrid;
   btc: TDCLCommandButton;
-  tmpS: String;
   FieldsPos: TList<TGridFieldSetting>;
   FieldPos: TGridFieldSetting;
 begin
