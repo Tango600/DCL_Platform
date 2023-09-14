@@ -1286,51 +1286,6 @@ var
   DropList: TComboBox;
   v1, v2: Integer;
 begin
-  If FQuery.Active and (FGridStyle in TDataGrid) Then
-  begin
-    TmpStr:=FindParam('List=', Scr);
-    {If TmpStr<>'' Then
-    begin
-      //Show;
-      v2:=ParamsCount(TmpStr);
-      For v1:=1 to v2 do
-      begin
-        tmpStr1:=SortParams(TmpStr, v1);
-        If tmpStr1='' Then
-          tmpStr1:='';
-        FGrid.Columns[FGrid.Columns.Count-1].PickList.Append(tmpStr1);
-      end;
-    end;
-
-    tmpSQL1:=FindParam('SQL=', Scr);
-    If tmpSQL1<>'' Then
-    begin
-      ShadowQuery:=TDCLDialogQuery.Create(nil);
-      ShadowQuery.Name:='GroupBoxQ_'+IntToStr(UpTime);
-      FDCLLogOn.SetDBName(ShadowQuery);
-
-      TranslateVal(tmpSQL1);
-      ShadowQuery.SQL.Text:=tmpSQL1;
-      try
-        ShadowQuery.Open;
-
-        While Not ShadowQuery.Eof do
-        begin
-          If Trim(ShadowQuery.Fields[0].AsString)<>'' Then
-            FGrid.Columns[FGrid.Columns.Count-1].PickList.Append
-              (Trim(ShadowQuery.Fields[0].AsString))
-          Else
-            FGrid.Columns[FGrid.Columns.Count-1].PickList.Append(' ');
-          ShadowQuery.Next;
-        end;
-        ShadowQuery.Close;
-        FreeAndNil(ShadowQuery);
-      Except
-        ShowErrorMessage( - 1107, 'SQL='+tmpSQL1);
-      end;
-    end; }
-  end;
-
   If FGridStyle in TDataFields Then
   begin
     DropList:=TComboBox.Create(FFieldsPanel);
