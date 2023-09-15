@@ -1391,15 +1391,12 @@ end;
 
 procedure TDCLCommand.GetValueProc(ReturnValue: TReturnFormValue);
 var
-  vc: Integer;
   ReturnValueItem: TGetValueItem;
   Edit: TDCLEdit;
   lDCLForm: TDCLForm;
 begin
   If Assigned(ReturnValue) and (ReturnValue.Values.Count>0) Then
   begin
-    vc:=ReturnValue.Values.Count;
-
     lDCLForm:=(ReturnValue.DestinationForm as TDCLForm).ParentForm;
 
     for ReturnValueItem in ReturnValue.Values do
@@ -1466,7 +1463,7 @@ begin
         FVariables.Variables[FNamespace, ReturnValue.ValueVar]:=ReturnValueItem.Value;
       end;
 
-      if (vc>1) and (ReturnValue.BatchScript<>'') then
+      if ReturnValue.BatchScript<>'' then
       begin
         RunCommandScript(ReturnValue.BatchScript);
       end;
