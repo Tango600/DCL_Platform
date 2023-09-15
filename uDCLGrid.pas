@@ -1745,6 +1745,11 @@ begin
     ContextButton.Command:=CommandName;
   end;
 
+  if FindParam('ButtonHint=', Scr)<>'' then
+  begin
+    ContextButton.Button.Hint:=FindParam('ButtonHint=', Scr);
+  end;
+
   Field.ContextButtons.Add(ContextButton);
 end;
 
