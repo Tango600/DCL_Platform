@@ -2366,6 +2366,7 @@ begin
 
       Filter.Control:=TDBLookupComboBox.Create(FFiltersPanel);
       Filter.Control.Parent:=FFiltersPanel;
+      (Filter.Control as TDBLookupComboBox).Style:=csDropDownList;
       Filter.Control.Top:=FTop;
       Inc(FTop, Filter.Control.Height+CompenentTopStep);
 
