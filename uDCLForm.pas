@@ -587,8 +587,8 @@ end;
 
 destructor TDCLForm.Destroy;
 begin
-  inherited Destroy;
   FRetValueProc:=nil;
+  inherited Destroy;
 end;
 
 procedure TDCLForm.RefreshForm;
