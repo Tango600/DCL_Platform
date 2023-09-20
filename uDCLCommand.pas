@@ -1003,7 +1003,6 @@ begin
       tmpS:=FindParam('SetFormCaption=', Command);
       FDCLForm.Caption:=tmpS;
     end;
-
   end;
 
   if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) and FDCLGrid.Query.Active then
@@ -1186,6 +1185,11 @@ begin
   begin
     If GetRaights>=ulWrite Then
     begin
+      If IsLexem('Refresh_part;', Command) then
+      begin
+        FDCLGrid.CurrentTablePart.ReFreshData;
+      end;
+    
       If IsLexem('Insert_part;', Command) then
       begin
         FDCLGrid.CurrentTablePart.Query.Insert;
