@@ -367,7 +367,7 @@ begin
       tmpS:=FindParam('Action=', ScrLine);
       If tmpS<>'' Then
       begin
-        ButtonParams.Command:=tmpS;
+        ButtonParams.Command:=tmpS+';';
         ButtonParams.Pict:=FindParam('Action=', ScrLine);
       end
       Else
@@ -1651,16 +1651,17 @@ begin
 
     If FindParam('Navigator=', Line)='1' then
     begin
-      FCurrentTablePart.ExecScriptLine('Navigator=1');
-    end;
+      FCurrentTablePart.FNavigatorVisible:=True;
+      FCurrentTablePart.FFlatNavig:=Self.FFlatNavig;
 
-    ButtonsSet:=FindParam('NavigatorButtons=', Line);
-    If ButtonsSet='' then
-      ButtonsSet:='NavigatorButtons='+DefaultNavigButtonsSet+';';
+      ButtonsSet:=FindParam('NavigatorButtons=', Line);
+      If ButtonsSet='' then
+        ButtonsSet:=DefaultNavigButtonsSet;
 
-    If PosEx('NavigatorButtons=', ButtonsSet)<>0 then
-    begin
-      FCurrentTablePart.SetNavigatorButtonsSet(FindParam('NavigatorButtons=', ButtonsSet));
+      If ButtonsSet<>'' then
+      begin
+        FCurrentTablePart.SetNavigatorButtonsSet(ButtonsSet);
+      end;
     end;
 
     S:=Trim(FindParam('ReadOnly=', Line));
