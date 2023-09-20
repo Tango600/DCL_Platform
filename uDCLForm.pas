@@ -661,12 +661,12 @@ end;
 
 procedure TDCLForm.SetStatusNum(Str: String; Num, Width: Integer);
 begin
-  if (Num>=StatusCustom) and (FStatusBar.Panels.Count>Num) then
+  if (Num>0) and (FStatusBar.Panels.Count>Num) then
   begin
-    FStatusBar.Panels[Num].Text:=Str;
+    FStatusBar.Panels[Num+StatusInfo].Text:=Str;
 
     if Width>10 then
-      FStatusBar.Panels[Num].Width:=Width;
+      FStatusBar.Panels[Num+StatusInfo].Width:=Width;
   end;
 end;
 
@@ -677,9 +677,9 @@ begin
     FStatusBar.Panels.Delete(FStatusBar.Panels.Count-1);
   end
   else
-  if (Num<FStatusBar.Panels.Count) and (Num>StatusInfo+1) then
+  if (Num<FStatusBar.Panels.Count) and (Num>0) then
   begin
-    FStatusBar.Panels.Delete(Num-1);
+    FStatusBar.Panels.Delete(Num+StatusInfo);
   end;
 end;
 
