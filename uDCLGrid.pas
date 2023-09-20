@@ -1305,7 +1305,7 @@ begin
     tmpSQL1:=FindParam('SQL=', Scr);
     If tmpSQL1<>'' Then
     begin
-      ShadowQuery:=TDCLDialogQuery.Create(nil);
+      ShadowQuery:=TDCLDialogQuery.Create(Self);
       ShadowQuery.Name:='DropBoxQ_'+IntToStr(UpTime);
       FDBConnector.SetConnector(ShadowQuery);
 
@@ -2172,6 +2172,7 @@ begin
 
   DBLookupControl:=TDBLookupComboBox.Create(FFieldsPanel);
   DBLookupControl.Parent:=FFieldsPanel;
+  DBLookupControl.Style:=csDropDownList;
   DBLookupControl.DropDownRows:=20;
 
   DBLookupControl.ShowHint:=True;
@@ -2349,9 +2350,9 @@ begin
       Filter.NotLike:=True;
       Filter.FilterString:='';
 
-      Filter.FilterQuery:=TDCLDialogQuery.Create(nil);
+      Filter.FilterQuery:=TDCLDialogQuery.Create(Self);
       FDBConnector.SetConnector(Filter.FilterQuery);
-      Filter.FilterData:=TDataSource.Create(nil);
+      Filter.FilterData:=TDataSource.Create(Self);
       Filter.FilterData.DataSet:=Filter.FilterQuery;
       Filter.FilterQuery.SQL.Text:=Filter.SQL;
 
