@@ -20,14 +20,14 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
-    FMain: IDCLMain;
+    FIMain: IDCLMain;
 
     procedure ShowAbout;
     {$IFDEF MSWINDOWS}
     procedure WMSysCommand(var message: TWMSysCommand); message WM_SysCommand;
     {$ENDIF}
   public
-    property DCLMain: IDCLMain write FMain;
+    property DCLMain: IDCLMain write FIMain;
   end;
 
 {$IFDEF MSWINDOWS}
@@ -166,7 +166,7 @@ end;
 
 procedure TMainForm.ShowAbout;
 begin
-  FMain.About;
+  FIMain.About;
 end;
 
 end.
