@@ -1104,7 +1104,7 @@ begin
 {$IFDEF TRANSACTIONDB}
 {$IFDEF SELFUPDATESQL}
   If Transaction.Active then
-    (Transaction as TTransaction).Commit;
+    (Transaction as TTransaction).CommitRetaining;
 {$ELSE}
   If Assigned(ShadowTransaction) then
 {$IFDEF IBX}
