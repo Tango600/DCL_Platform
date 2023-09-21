@@ -39,6 +39,8 @@ type
     constructor Create; overload;
     destructor Destroy; override;
 
+    procedure CloseAllDialogs;
+
     function GetVariables: TVariables;
 
     procedure CreateMenu(MainForm: TForm);
@@ -320,11 +322,25 @@ end;
 
 destructor TDCLMain.Destroy;
 begin
+  CloseAllDialogs;
   inherited Destroy;
   if Assigned(FDCLMenu) then
     FreeAndNil(FDCLMenu);
   if Assigned(FormsNotifier) then
     FreeAndNil(FormsNotifier);
+end;
+
+procedure TDCLMain.CloseAllDialogs;
+var
+  ff: TForm;
+begin
+  FBusyMode:=True;
+  For ff in FForms do
+  Begin
+    If Assigned(ff) then
+      CloseForm(ff as TDCLForm);
+  End;
+  FBusyMode:=False;
 end;
 
 function TDCLMain.GetVariables: TVariables;

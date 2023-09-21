@@ -62,6 +62,8 @@ var
   ConfigPath, SectionName: String;
   Settings: TIniFile;
 begin
+  FIMain.CloseAllDialogs;
+
   if GPT.DialogsSettings and (Self.WindowState=wsNormal) then
   begin
     ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim;

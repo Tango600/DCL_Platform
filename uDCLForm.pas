@@ -442,22 +442,25 @@ begin
   AddSplitter;
   AddCloseFormItem;
 
-  FormBar:=Application.MainForm.FindComponent('FormBar') as TToolBar;
-  if Assigned(FormBar) then
+  if ShowFormPanel then
   begin
-    TB:=TFormPanelButton.Create(Self);
-    TB.Parent:=FormBar;
-    {$IFDEF FPC}
-    TB.AutoSize:=True;
-    {$ENDIF}
-    TB.Width:=FormPanelButtonWidth;
-    TB.Height:=FormPanelButtonHeight;
-    TB.OnClick:=ToolButtonClick;
-    TB.Constraints.MaxWidth:=110;
-    TB.Tag:=Tag;
-    TB.Margin:=PanelButtonTextRight;
-    TB.Glyph:=DrawBMPButton(ptFormDotNew);
-    TB.Font.Style:=[fsItalic];
+    FormBar:=Application.MainForm.FindComponent('FormBar') as TToolBar;
+    if Assigned(FormBar) then
+    begin
+      TB:=TFormPanelButton.Create(Self);
+      TB.Parent:=FormBar;
+      {$IFDEF FPC}
+      TB.AutoSize:=True;
+      {$ENDIF}
+      TB.Width:=FormPanelButtonWidth;
+      TB.Height:=FormPanelButtonHeight;
+      TB.OnClick:=ToolButtonClick;
+      TB.Constraints.MaxWidth:=110;
+      TB.Tag:=Tag;
+      TB.Margin:=PanelButtonTextRight;
+      TB.Glyph:=DrawBMPButton(ptFormDotNew);
+      TB.Font.Style:=[fsItalic];
+    end;
   end;
 
   FStatusBar:=TStatusBar.Create(Self);
@@ -607,7 +610,7 @@ var
   TB1: TFormPanelButton;
   ff: TForm;
 begin
-  If Assigned(FormBar) Then
+  If ShowFormPanel and Assigned(FormBar) Then
   begin
     if FormBar.ControlCount>0 then
     begin

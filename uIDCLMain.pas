@@ -9,6 +9,7 @@ uses
 
 type
   IDCLMain=interface
+    procedure CloseAllDialogs;
     procedure CreateMenu(MainForm: TForm);
 
     function CreateForm(DialogName: String): TDCLForm;
