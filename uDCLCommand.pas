@@ -1265,7 +1265,7 @@ begin
 
   if Empty then
   begin
-    RunCommand(Command);
+    RunCommand(Command+';');
   end
   else
   begin
