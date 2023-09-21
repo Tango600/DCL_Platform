@@ -184,7 +184,7 @@ var
   Delim, Operation, isNot, upperFunc1, upperFunc2, Prefix, Suffix: String;
 begin
   Result:='';
-  if Filter.FilterString<>'' then
+  if (Filter.FilterString<>'') and (Filter.Field<>'') then
   begin
     Delim:=GetDelimiter(Filter.Field, Query);
     case Filter.FilterType of
@@ -208,7 +208,6 @@ begin
         end;
       end;
       ftContextFilter: begin
-
         isNot:='';
         if Filter.NotFilter then
           isNot:='!';
