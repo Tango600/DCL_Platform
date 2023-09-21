@@ -479,6 +479,7 @@ begin
   Query.AfterPost:=AfterPost;
   Query.AfterCancel:=AfterCancel;
   Query.AfterDelete:=OnDelete;
+  Query.AfterOpen:=AfterOpen;
 
   Query.BeforeScroll:=BeforeScroll;
   Query.BeforePost:=BeforePost;
