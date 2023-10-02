@@ -50,7 +50,7 @@ end;
 
 function FindScryptFileCall: String;
 begin
-  Result:=FindCommandStrParam('ScryptFile=');
+  Result:=FindCommandStrParam('ScriptFile=');
 end;
 
 function FindMainMenu: Boolean;
