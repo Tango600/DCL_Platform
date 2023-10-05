@@ -1353,8 +1353,8 @@ begin
   DialogName:=FindParam('Dialog=', ScrStr);
   ModalOpen:=FindParam('ModalOpen=', ScrStr)='1';
   ReturnValueParams:=nil;
-  //If FindParam('Choose=', ScrStr)='1' Then
-  If FindParam('ChooseMode=', ScrStr)<>'' Then
+  //If FindParam('Choose=', ScrStr)='1' then
+  If FindParam('ChooseMode=', ScrStr)<>'' then
   begin
     ReturnValueParams:=TReturnValueParams.Create(FindParam('KeyField=', ScrStr),
       FindParam('ValueField=', ScrStr), FindParam('KeyEditName=', ScrStr), FindParam('ValueEditName=', ScrStr),
@@ -1374,7 +1374,7 @@ begin
       v1:=StrToIntEx(TmpStr)-1;
       If Assigned(FDCLForm.CurrentGrid.TableParts[v1]) Then
         lDCLForm:=CreateForm(FNameSpace, DialogName, NoContext, FDCLForm,
-        FDCLForm.CurrentGrid.TableParts[v1], ReturnValueParams, ModalOpen);
+          FDCLForm.CurrentGrid.TableParts[v1], ReturnValueParams, ModalOpen);
     End;
   end
   Else
