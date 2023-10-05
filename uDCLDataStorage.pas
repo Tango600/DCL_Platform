@@ -23,7 +23,7 @@ type
     constructor Create(DBConnector: TDCLDBConnector); overload;
 
     function GetData(DataName: String; FindType: TFindType): TMemoryStream;
-    procedure SetData(DataName: String; FindType: TFindType; Stream: TMemoryStream;
+    procedure SetData(DataName: String; FindType: TFindType; Stream: TStream;
       Compress: Boolean);
 
     procedure ClearData(DataName: String; FindType: TFindType);
@@ -66,7 +66,7 @@ end;
 
 function TDCLDataStorage.GetData(DataName: String; FindType: TFindType): TMemoryStream;
 var
-  BS, MS: TMemoryStream;
+  BS, MS: TStream;
   Marker: Cardinal;
 begin
   FErrorCode:=0;
@@ -130,9 +130,9 @@ begin
 end;
 
 procedure TDCLDataStorage.SetData(DataName: String; FindType: TFindType;
-  Stream: TMemoryStream; Compress: Boolean);
+  Stream: TStream; Compress: Boolean);
 var
-  BS: TMemoryStream;
+  BS: TStream;
   Signature: Cardinal;
 begin
   If Stream.Size>0 Then

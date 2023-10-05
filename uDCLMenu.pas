@@ -114,8 +114,7 @@ begin
   if IdentID>0 then
   begin
     DialogName:=GetMenuCommandById(IdentID);
-
-    FMain.OpenDialog('', DialogName);
+    FMain.OpenDialog(DialogName);
   end
   else
   begin

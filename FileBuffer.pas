@@ -9,7 +9,7 @@ uses
   Classes, SysUtils;
 
 Type
-  TByteFile=TMemoryStream;
+  TByteFile=TStream;
 
 Procedure BeginRead;
 Procedure BeginWrite;

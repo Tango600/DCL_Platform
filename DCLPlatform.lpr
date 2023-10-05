@@ -114,7 +114,7 @@ begin
     if FindMainMenu then
       DCL.CreateMenu(MainForm);
 
-    DCL.OpenDialog('', DialogName);
+    DCL.OpenDialog(DialogName);
   end;
 end;
 

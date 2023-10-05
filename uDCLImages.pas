@@ -25,7 +25,7 @@ const
 function GetIcon: TIcon;
 Var
   Marker: Cardinal;
-  MS, BS: TMemoryStream;
+  MS, BS: TStream;
 Begin
   MS:=TMemoryStream.Create;
   MS.Write(DCLRunIcon, Length(DCLRunIcon));
@@ -62,7 +62,7 @@ Const
   BMPPos=0;
 Var
   Marker: Cardinal;
-  MS, BS: TMemoryStream;
+  MS, BS: TStream;
 Begin
   Result:=nil;
   if BMPType=ptNone then
@@ -149,7 +149,8 @@ Begin
       BS:=TMemoryStream.Create;
       DecompressProc(MS, BS);
       BS.Position:=0;
-      MS.Clear;  // .Position:=0;
+      MS.Free;
+      MS:=TMemoryStream.Create;
       MS.CopyFrom(BS, BS.Size);
       FreeAndNil(BS);
     End;

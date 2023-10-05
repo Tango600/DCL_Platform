@@ -45,9 +45,7 @@ type
 
     procedure CreateMenu(MainForm: TForm);
 
-    function CreateForm(DialogName: String): TDCLForm;
-
-    procedure OpenDialog(NameSpace, DialogName: String);
+    procedure OpenDialog(DialogName: String);
     procedure RunCommand(CommandName: String);
     procedure About;
 
@@ -360,25 +358,12 @@ begin
   {$ENDIF}
 end;
 
-function TDCLMain.CreateForm(DialogName: String): TDCLForm;
-begin
-  Result:=nil;
-end;
-
-procedure TDCLMain.OpenDialog(NameSpace, DialogName: String);
+procedure TDCLMain.OpenDialog(DialogName: String);
 var
-  lForm: TDCLForm;
-  t: TStringList;
+  Command: TDCLCommand;
 begin
-  t:=TStringList.Create;
-  t.Text:=GetDialogScript(DialogName);
-  if t.Text<>'' then
-  begin
-    lForm:=TDCLForm.Create(DialogName, NameSpace, nil, FVariables, FForms, t, FDBConnector, nil, nil, nil);
-    if not lForm.Reject then
-      FForms.Add(lForm);
-  end;
-  FreeAndNil(t);
+  Command:=TDCLCommand.Create(FDBConnector, '', FForms, nil, nil, FVariables);
+  Command.OpenDialog('', DialogName);
 end;
 
 procedure TDCLMain.RunCommand(CommandName: String);

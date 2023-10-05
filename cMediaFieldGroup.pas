@@ -55,7 +55,7 @@ procedure TMediaFieldGroup.OnDBImageRead(Sender: TObject; S: TStream;
   var GraphExt: String);
 var
   Signature: Array of Byte;
-  Source, Dest: TMemoryStream;
+  Source, Dest: TStream;
   Marker: Cardinal;
 begin
   SetLength(Signature, 10);

@@ -5,18 +5,16 @@ interface
 
 uses
   Forms,
-  uDCLForm, uDCLVariables;
+  uDCLVariables;
 
 type
   IDCLMain=interface
     procedure CloseAllDialogs;
     procedure CreateMenu(MainForm: TForm);
 
-    function CreateForm(DialogName: String): TDCLForm;
-
     function GetVariables: TVariables;
 
-    procedure OpenDialog(NameSpace, DialogName: String);
+    procedure OpenDialog(DialogName: String);
     procedure RunCommand(CommandName: String);
     procedure About;
 

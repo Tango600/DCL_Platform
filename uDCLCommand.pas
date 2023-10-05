@@ -32,21 +32,21 @@ type
 
     function GetRaights: TUserLevelsType;
     procedure RunTextReport(ScrLine: String; Query: TDCLDialogQuery; Grid: TDCLGrid);
+
+    procedure DialogCommand(ScrStr: String);
+    function CreateForm(NameSpace, DialogName: String; NoContext: Boolean;
+      ParentForm: TDCLForm; Grid: TDCLGrid;
+      ReturnValueParams: TReturnValueParams; Modal: Boolean): TDCLForm;
   public
     constructor Create(DBConnector: TDCLDBConnector; NameSpace: String; Forms: TList<TForm>;
       DCLForm: TForm; DCLGrid: TDCLGrid; Variables: TVariables); overload;
 
+    procedure OpenDialog(NameSpace, DialogName: String);
     function RunCommandScript(CommandName: String): Boolean;
     procedure RunCommand(Command: String);
     procedure SelectRunType(Command: String);
 
     procedure About;
-
-    function CreateForm(NameSpace, DialogName: String; NoContext: Boolean;
-      ParentForm: TDCLForm; Grid: TDCLGrid;
-      ReturnValueParams: TReturnValueParams; Modal: Boolean): TDCLForm;
-
-    procedure DialogCommand(ScrStr: String);
 
     procedure GetValueProc(ReturnValue: TReturnFormValue);
   end;
@@ -109,6 +109,11 @@ begin
   FVariables:=Variables;
 
   FParser:=TDCLValuseParser.Create(FNameSpace, FVariables);
+end;
+
+procedure TDCLCommand.OpenDialog(NameSpace, DialogName: String);
+begin
+  CreateForm(NameSpace, DialogName, True, nil, nil, nil, False);
 end;
 
 function TDCLCommand.RunCommandScript(CommandName: String): Boolean;
@@ -1368,8 +1373,8 @@ begin
     Begin
       v1:=StrToIntEx(TmpStr)-1;
       If Assigned(FDCLForm.CurrentGrid.TableParts[v1]) Then
-        lDCLForm:=CreateForm(FNameSpace, DialogName, NoContext, FDCLForm, FDCLGrid,
-          ReturnValueParams, ModalOpen);
+        lDCLForm:=CreateForm(FNameSpace, DialogName, NoContext, FDCLForm,
+        FDCLForm.CurrentGrid.TableParts[v1], ReturnValueParams, ModalOpen);
     End;
   end
   Else
