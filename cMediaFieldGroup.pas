@@ -6,7 +6,7 @@ interface
 uses
   Classes, SysUtils, Controls, ComCtrls, StdCtrls, ExtCtrls, DB, DBCtrls,
   Buttons, Dialogs, ExtDlgs, Graphics, {$IFnDEF FPC}JPEG, {$ENDIF}
-  uDCLTypes, uDCLConst, uDCLMeasurements, uDCLData, uDCLField, uLZW, uDCLImages,
+  uDCLConst, uDCLMeasurements, uDCLData, uDCLField, uLZW, uDCLImages,
   uDCLMultiLang, uDCLMessages, uStringParams, uDCLUtils;
 
 type
@@ -29,7 +29,6 @@ type
     SavePictureDialog: TSavePictureDialog;
     OpenDialog: TOpenDialog;
     SaveDialog: TSaveDialog;
-
 
     procedure OnDBImageRead(Sender: TObject; S: TStream; var GraphExt: String);
     procedure OnDBImageWrite(Sender: TObject; S: TStream; GraphExt : string);

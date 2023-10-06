@@ -366,7 +366,7 @@ begin
 
   {$IFNDEF NODCLMESSAGES}
   If GPT.UseMessages then
-    FDCLNotifier:=TDCLNotifier.Create(FDBConnector, Self);
+    FDCLNotifier:=TDCLNotifier.Create(Self);
   {$ENDIF}
 end;
 

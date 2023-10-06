@@ -25,7 +25,7 @@ type
     procedure OnTick(Sender: TObject);
     procedure MessageToUser(Text: String);
   public
-    constructor Create(DCLConnector: TDCLDBConnector; DCLMain: IDCLMain); overload;
+    constructor Create(DCLMain: IDCLMain); overload;
   end;
 
 implementation
@@ -141,10 +141,10 @@ begin
   MessageForm.Show;
 end;
 
-constructor TDCLNotifier.Create(DCLConnector: TDCLDBConnector; DCLMain: IDCLMain);
+constructor TDCLNotifier.Create(DCLMain: IDCLMain);
 begin
-  FDCLConnector:=DCLConnector;
   FDCLMain:=DCLMain;
+  FDCLConnector:=FDCLMain.GetDBConnector;
 
   ExitFlag:=False;
   TimeToExit:=0;
