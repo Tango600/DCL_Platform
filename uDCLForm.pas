@@ -6,7 +6,7 @@ interface
 uses
   Classes, SysUtils, Forms, DB, Generics.Collections,
   Controls, ComCtrls, Graphics, Menus,
-  uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uStringParams, uDCLQuery,
+  uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uStringParams, uDCLQuery, uIDCLMain,
   uDCLMeasurements, uDCLDBConnector, uDCLUtils, uDCLVariables, uDCLMultiLang,
   uDCLImages, uIGetValue;
 
@@ -17,6 +17,7 @@ type
   TDCLForm=class(TForm)
   private
     FReject, FFirstPage, FormCanClose, FCloseQuery: Boolean;
+    FIDCLMain: IDCLMain;
     FDBConnector: TDCLDBConnector;
     FFormCloseStatus: TDCLFormCloseAction;
     FNameSpace, FDialogName, CloseQueryText: String;
@@ -74,8 +75,8 @@ type
 
     procedure SaveFormPos;
   public
-    constructor Create(DialogName, NameSpace: String; ParentForm: TDCLForm;
-      Variables: TVariables; Forms: TList<TForm>; OPL: TStringList; DBConnector: TDCLDBConnector;
+    constructor Create(IDCLMain: IDCLMain; DialogName, NameSpace: String; ParentForm: TDCLForm;
+      OPL: TStringList;
       Query: TDCLQuery; Data: TDataSource; RetValueProc: IGetValue;
       ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False); overload;
     destructor Destroy; override;
@@ -192,7 +193,7 @@ function TDCLForm.AddGrid(ParentControl: TWinControl; SurfType: TDataControlType
 var
   grid: TDCLGrid;
 begin
-  grid:=TDCLGrid.Create(FNameSpace, FForms, Self, ParentControl, FVariables, SurfType, FDBConnector, Query, Data);
+  grid:=TDCLGrid.Create(FIDCLMain, FNameSpace, Self, ParentControl, SurfType, Query, Data);
   FGrids.Add(grid);
   Result:=grid;
 end;
@@ -365,8 +366,8 @@ begin
     SetRecordsStatus(IntToStr(RecNo));
 end;
 
-constructor TDCLForm.Create(DialogName, NameSpace: String; ParentForm: TDCLForm;
-  Variables: TVariables; Forms: TList<TForm>; OPL: TStringList; DBConnector: TDCLDBConnector;
+constructor TDCLForm.Create(IDCLMain: IDCLMain; DialogName, NameSpace: String; ParentForm: TDCLForm;
+  OPL: TStringList;
   Query: TDCLQuery; Data: TDataSource; RetValueProc: IGetValue;
   ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False);
 var
@@ -379,14 +380,15 @@ var
   UserLevelLocal: TUserLevelsType;
 begin
   inherited Create(Application);
+  FIDCLMain:=IDCLMain;
   FormCanClose:=True;
   Self.OnActivate:=OnActivateForm;
   Self.OnShow:=FormShow;
   Self.OnClose:=OnFormClose;
   Self.OnCloseQuery:=OnFormCloseQuery;
-  FForms:=Forms;
+  FForms:=FIDCLMain.GetForms;
   FDialogName:=DialogName;
-  FDBConnector:=DBConnector;
+  FDBConnector:=FIDCLMain.GetDBConnector;
   FFirstPage:=True;
   FReturnValueParams:=ReturnValueParams;
   FParentForm:=ParentForm;
@@ -418,7 +420,7 @@ begin
   end;
 
   FNameSpace:=NameSpace;
-  FVariables:=Variables;
+  FVariables:=FIDCLMain.GetVariables;
   FOPL:=OPL;
   FGrids:=TList<TDCLGrid>.Create;
   FEvents:=TList<TDCLEvent>.Create;
@@ -476,7 +478,7 @@ begin
 
   if Assigned(OPL) then
   begin
-    Command:=TDCLCommand.Create(FDBConnector, FNameSpace, FForms, Self, FCurrentGrid, FVariables);
+    Command:=TDCLCommand.Create(FIDCLMain, FNameSpace, Self, FCurrentGrid);
     if Assigned(ReturnValueParams) and ReturnValueParams.Multiselect then
       FCurrentGrid.MultiSelect:=True;
 

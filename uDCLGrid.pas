@@ -13,7 +13,7 @@ uses
   Classes, SysUtils, Controls, Forms, DB, Generics.Collections, ToolWin,
   ComCtrls, StdCtrls, ExtCtrls, Graphics, DBCtrls, DBGrids, Grids,
   CheckLst, Menus, ClipBrd,
-  uDCLData, uDCLTypes, uDCLConst, uDCLVariables, uStringParams,
+  uDCLData, uDCLTypes, uDCLConst, uDCLVariables, uStringParams, uIDCLMain,
   uDCLDBConnector, uDCLQuery, uDCLMeasurements, uDBUtils, uDCLMultiLang,
   uDCLCommandButton, uDCLField, uDCLMessages, uDCLImages, cNoScrollBarDBGrid,
   cMediaFieldGroup, uDCLBaseLayoutManger, uDCLHorizontalFieldLayoutManger,
@@ -38,6 +38,7 @@ type
 
   TDCLGrid=class(TWinControl)
   private
+    FIDCLMain: IDCLMain;
     FNameSpace, FDependField, FMasterDataField, FMasterValueVariableName,
       FSummFieldsSet, FNavigButtonsExpr, FSeed, FDialogName: String;
     FForms: TList<TForm>;
@@ -243,8 +244,8 @@ type
     procedure Cut;
     procedure Paste;
   public
-    constructor Create(NameSpace: String; Forms: TList<TForm>; Form: TForm; ParentControl: TWinControl; Variables: TVariables; SurfType: TDataControlType;
-      DBConnector: TDCLDBConnector; Query: TDCLQuery; Data: TDataSource); overload;
+    constructor Create(IDCLMain: IDCLMain; NameSpace: String; Form: TForm; ParentControl: TWinControl;
+      SurfType: TDataControlType; Query: TDCLQuery; Data: TDataSource); overload;
     destructor Destroy; override;
 
     procedure AddField(Field: TDCLField);
@@ -295,10 +296,11 @@ type
 
   TLookupTable=class(TPanel)
   private
+    FIDCLMain: IDCLMain;
     FGrid: TDCLGrid;
   public
-    constructor Create(NameSpace: String; Forms: TList<TForm>; Form: TForm; Parent: TWinControl; Variables: TVariables;
-      DBConnector: TDCLDBConnector; Query: TDCLQuery; Data: TDataSource); overload;
+    constructor Create(IDCLMain: IDCLMain; NameSpace: String; Form: TForm; Parent: TWinControl;
+      Query: TDCLQuery; Data: TDataSource); overload;
 
     property DCLGrid: TDCLGrid read FGrid;
   end;
@@ -314,15 +316,15 @@ uses
 
 { TLookupTable }
 
-constructor TLookupTable.Create(NameSpace: String; Forms: TList<TForm>;
-  Form: TForm; Parent: TWinControl; Variables: TVariables;
-  DBConnector: TDCLDBConnector; Query: TDCLQuery; Data: TDataSource);
+constructor TLookupTable.Create(IDCLMain: IDCLMain; NameSpace: String;
+  Form: TForm; Parent: TWinControl; Query: TDCLQuery; Data: TDataSource);
 begin
   inherited Create(Parent);
   Self.Parent:=Parent;
+  FIDCLMain:=IDCLMain;
 
-  FGrid:=TDCLGrid.Create(NameSpace, Forms, Form, Self, Variables, dctLookupGrid,
-    DBConnector, Query, Data);
+  FGrid:=TDCLGrid.Create(FIDCLMain, NameSpace, Form, Self, dctLookupGrid,
+    Query, Data);
 end;
 
 { TDCLGrid }
@@ -767,7 +769,7 @@ begin
 
   if IsExist then
   begin
-    CommandObj:=TDCLCommand.Create(FDBConnector, FNameSpace, FForms, FForm, Self, FVariables);
+    CommandObj:=TDCLCommand.Create(FIDCLMain, FNameSpace, FForm, Self);
     for Event in FEvents do
     begin
       if Event.EventType=EventType then
@@ -1550,7 +1552,7 @@ begin
             ns:=GUIDToString(guid);
           end;
 
-          CommandObj:=TDCLCommand.Create(FDBConnector, ns, FForms, FForm, Self, FVariables);
+          CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
           CommandObj.SelectRunType(DCLCommand.Command);
         end;
       end;
@@ -1564,7 +1566,7 @@ begin
         ns:=GUIDToString(guid);
       end;
 
-      CommandObj:=TDCLCommand.Create(FDBConnector, ns, FForms, FForm, Self, FVariables);
+      CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
       CommandObj.SelectRunType(DCLCommand.Command);
     end;
   end;
@@ -1595,7 +1597,7 @@ begin
   Else
     FTablePartsTabs.Caption:=InitCap(Title);
 
-  grid:=TDCLGrid.Create(FNameSpace, FForms, FForm, FTablePartsTabs, FVariables, dctTablePart, FDBConnector, nil, Data);
+  grid:=TDCLGrid.Create(FIDCLMain, FNameSpace, FForm, FTablePartsTabs, dctTablePart, nil, Data);
   FCurrentTablePart:=grid;
   grid.Style:=Style;
   FTableParts.Add(grid);
@@ -1783,7 +1785,7 @@ begin
 
   if Assigned(Button) then
   begin
-    Command:=TDCLCommand.Create(FDBConnector, FNameSpace, FForms, FForm, Self, FVariables);
+    Command:=TDCLCommand.Create(FIDCLMain, FNameSpace, FForm, Self);
     Command.SelectRunType(Button.Command);
   end;
 end;
@@ -3214,8 +3216,8 @@ var
   FFieldColumn: TDCLField;
   LookupTable: TLookupTable;
 begin
-  LookupTable:=TLookupTable.Create(FNameSpace, FForms, FForm, FFieldsPanel, FVariables,
-  FDBConnector, nil, FData);
+  LookupTable:=TLookupTable.Create(FIDCLMain, FNameSpace, FForm, FFieldsPanel,
+  nil, FData);
 
   if Field.Width>0 then
     LookupTable.Width:=Field.Width
@@ -3790,26 +3792,26 @@ begin
     FDBGrid.SelectedField.AsString:=Clipboard.AsText;
 end;
 
-constructor TDCLGrid.Create(NameSpace: String; Forms: TList<TForm>; Form: TForm; ParentControl: TWinControl; Variables: TVariables; SurfType: TDataControlType;
-  DBConnector: TDCLDBConnector; Query: TDCLQuery; Data: TDataSource);
+constructor TDCLGrid.Create(IDCLMain: IDCLMain; NameSpace: String; Form: TForm; ParentControl: TWinControl;
+  SurfType: TDataControlType; Query: TDCLQuery; Data: TDataSource);
 var
   ChooseButton, ButtonClose: TDCLCommandButton;
 begin
   inherited Create(ParentControl);
   Self.Parent:=ParentControl;
-
+  FIDCLMain:=IDCLMain;
   FUserLevel:=(Form as TDCLForm).RightsLevel;
 
   FMainPanel:=TPanel.Create(Self);
   FMainPanel.Parent:=Parent;
 
   FForm:=Form;
-  FForms:=Forms;
+  FForms:=IDCLMain.GetForms;
 
   FDialogName:=(Form as TDCLForm).DialogName;
-  FDBConnector:=DBConnector;
+  FDBConnector:=IDCLMain.GetDBConnector;
   FNameSpace:=NameSpace;
-  FVariables:=Variables;
+  FVariables:=IDCLMain.GetVariables;
 
   FButtons:=TList<TDCLCommandButton>.Create;
 

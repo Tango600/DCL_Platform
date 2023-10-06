@@ -17,7 +17,7 @@ type
     FMain: IDCLMain;
     FMainMenu: TMainMenu;
     FMainForm: TForm;
-    FDBConnector: TDBConnector;
+    FDBConnector: TDCLDBConnector;
     LocalQuery: TDCLSimlyQuery;
     FormBar: TToolBar;
     findItemFlg: TMenuItem;
@@ -33,7 +33,7 @@ type
     procedure AddMainItem(Id: Integer; Capt: String);
     procedure AddSubItem(Id, ParentItemId: Integer; Capt: String);
   public
-    constructor Create(Main: IDCLMain; MainForm: TForm; DBConnector: TDCLDBConnector); overload;
+    constructor Create(Main: IDCLMain; MainForm: TForm); overload;
     destructor Destroy; override;
 
     procedure About;
@@ -152,16 +152,16 @@ begin
   end;
 end;
 
-constructor TDCLMenu.Create(Main: IDCLMain; MainForm: TForm; DBConnector: TDCLDBConnector);
+constructor TDCLMenu.Create(Main: IDCLMain; MainForm: TForm);
 var
   S: String;
 begin
   FMain:=Main;
   FMainForm:=MainForm;
-  FDBConnector:=DBConnector;
+  FDBConnector:=Main.GetDBConnector;
 
   LocalQuery:=TDCLSimlyQuery.Create(Self);
-  DBConnector.SetConnector(LocalQuery);
+  FDBConnector.SetConnector(LocalQuery);
 
   FMainMenu:=TMainMenu.Create(FMainForm);
   {$IFDEF DELPHI}

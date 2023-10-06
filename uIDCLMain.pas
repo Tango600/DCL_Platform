@@ -4,11 +4,13 @@ unit uIDCLMain;
 interface
 
 uses
-  Forms,
-  uDCLVariables;
+  Forms, Generics.Collections,
+  uDCLVariables, uDCLDBConnector;
 
 type
   IDCLMain=interface
+    function GetDBConnector: TDCLDBConnector;
+    function GetForms: TList<TForm>;
     procedure CloseAllDialogs;
     procedure CreateMenu(MainForm: TForm);
 

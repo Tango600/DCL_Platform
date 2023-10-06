@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections, Forms, Controls, StdCtrls, DB, Dialogs,
-  uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uDCLForm, uDCLVariables,
+  uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uDCLForm, uDCLVariables, uIDCLMain,
   uDCLUtils, uStringParams, uDCLDBConnector, uDCLDBStructure, uDBUtils,
   uDCLValuesParser, uIGetValue;
 
@@ -15,6 +15,7 @@ type
 
   TDCLCommand=class(TComponent, IGetValue)
   private
+    FIDCLMain: IDCLMain;
     FDBConnector: TDCLDBConnector;
     FForms: TList<TForm>;
     FDCLForm: TDCLForm;
@@ -38,10 +39,10 @@ type
       ParentForm: TDCLForm; Grid: TDCLGrid;
       ReturnValueParams: TReturnValueParams; Modal: Boolean): TDCLForm;
   public
-    constructor Create(DBConnector: TDCLDBConnector; NameSpace: String; Forms: TList<TForm>;
-      DCLForm: TForm; DCLGrid: TDCLGrid; Variables: TVariables); overload;
+    constructor Create(IDCLMain: IDCLMain; NameSpace: String; DCLForm: TForm;
+      DCLGrid: TDCLGrid); overload;
 
-    procedure OpenDialog(NameSpace, DialogName: String);
+    procedure OpenDialog(DialogName: String);
     function RunCommandScript(CommandName: String): Boolean;
     procedure RunCommand(Command: String);
     procedure SelectRunType(Command: String);
@@ -94,11 +95,12 @@ begin
   FParser.RePlaceProc(S, Factor, Query);
 end;
 
-constructor TDCLCommand.Create(DBConnector: TDCLDBConnector; NameSpace: String; Forms: TList<TForm>;
-  DCLForm: TForm; DCLGrid: TDCLGrid; Variables: TVariables);
+constructor TDCLCommand.Create(IDCLMain: IDCLMain; NameSpace: String;
+  DCLForm: TForm; DCLGrid: TDCLGrid);
 begin
-  FDBConnector:=DBConnector;
-  FForms:=Forms;
+  FIDCLMain:=IDCLMain;
+  FDBConnector:=FIDCLMain.GetDBConnector;
+  FForms:=FIDCLMain.GetForms;
   if Assigned(DCLForm) then
     FDCLForm:=(DCLForm as TDCLForm);
   FDCLGrid:=DCLGrid;
@@ -106,14 +108,14 @@ begin
   if Assigned(DCLGrid) then
     FUserLevelLocal:=DCLGrid.RightsLevel;
   FNameSpace:=NameSpace;
-  FVariables:=Variables;
+  FVariables:=FIDCLMain.GetVariables;
 
   FParser:=TDCLValuseParser.Create(FNameSpace, FVariables);
 end;
 
-procedure TDCLCommand.OpenDialog(NameSpace, DialogName: String);
+procedure TDCLCommand.OpenDialog(DialogName: String);
 begin
-  CreateForm(NameSpace, DialogName, True, nil, nil, nil, False);
+  CreateForm(FNameSpace, DialogName, True, nil, nil, nil, False);
 end;
 
 function TDCLCommand.RunCommandScript(CommandName: String): Boolean;
@@ -584,6 +586,11 @@ begin
   end;
 
   TranslateVals(Command);
+
+  If IsLexem('SetValueSeparator=', Command) then
+  begin
+    GPT.GetValueSeparator:=FindParam('SetValueSeparator=', Command);
+  end;
 
   If IsLexem('ExecCommand=', Command) then
   begin
@@ -1321,10 +1328,10 @@ begin
     if DCL.Count>0 then
     begin
       if NoContext then
-        lForm:=TDCLForm.Create(DialogName, NameSpace, ParentForm, FVariables, FForms, DCL, FDBConnector,
+        lForm:=TDCLForm.Create(FIDCLMain, DialogName, NameSpace, ParentForm, DCL,
           nil, nil, Self, ReturnValueParams, Modal)
       else
-        lForm:=TDCLForm.Create(DialogName, NameSpace, ParentForm, FVariables, FForms, DCL, FDBConnector,
+        lForm:=TDCLForm.Create(FIDCLMain, DialogName, NameSpace, ParentForm, DCL,
           Grid.Query, Grid.Data, Self, ReturnValueParams, Modal);
 
       if not lForm.Reject then

@@ -42,6 +42,8 @@ type
     procedure CloseAllDialogs;
 
     function GetVariables: TVariables;
+    function GetForms: TList<TForm>;
+    function GetDBConnector: TDCLDBConnector;
 
     procedure CreateMenu(MainForm: TForm);
 
@@ -346,11 +348,21 @@ begin
   Result:=FVariables;
 end;
 
+function TDCLMain.GetForms: TList<TForm>;
+begin
+  Result:=FForms;
+end;
+
+function TDCLMain.GetDBConnector: TDCLDBConnector;
+begin
+  Result:=FDBConnector;
+end;
+
 procedure TDCLMain.CreateMenu(MainForm: TForm);
 begin
   FMainForm:=MainForm;
 
-  FDCLMenu:=TDCLMenu.Create(Self, FMainForm, FDBConnector);
+  FDCLMenu:=TDCLMenu.Create(Self, FMainForm);
 
   {$IFNDEF NODCLMESSAGES}
   If GPT.UseMessages then
@@ -362,15 +374,15 @@ procedure TDCLMain.OpenDialog(DialogName: String);
 var
   Command: TDCLCommand;
 begin
-  Command:=TDCLCommand.Create(FDBConnector, '', FForms, nil, nil, FVariables);
-  Command.OpenDialog('', DialogName);
+  Command:=TDCLCommand.Create(Self, '', nil, nil);
+  Command.OpenDialog(DialogName);
 end;
 
 procedure TDCLMain.RunCommand(CommandName: String);
 var
   Command: TDCLCommand;
 begin
-  Command:=TDCLCommand.Create(FDBConnector, '', FForms, nil, nil, FVariables);
+  Command:=TDCLCommand.Create(Self, '', nil, nil);
   Command.RunCommandScript(CommandName);
 end;
 
