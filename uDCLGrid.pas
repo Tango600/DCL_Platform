@@ -1533,7 +1533,7 @@ begin
   begin
     if DCLCommand.CloseButton then
     begin
-      (FForm as TDCLForm).CloseAction:=fcaClose;
+      (FForm as TDCLForm).CloseAction:=fcaInProgress;
     end
     else if DCLCommand.ChoiceButton then
     begin

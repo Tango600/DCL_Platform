@@ -342,6 +342,7 @@ var
   S:String;
   DlgRes:Integer;
 begin
+  FFormCloseStatus:=fcaQuery;
   If FCloseQuery then
   Begin
     S:=CloseQueryText;
@@ -349,8 +350,14 @@ begin
       S:=GetDCLMessageString(msClose);
     DlgRes:=ShowErrorMessage(10, S);
     CanClose:=DlgRes=1;
+    if CanClose then
+      FFormCloseStatus:=fcaClose
+    else
+      FFormCloseStatus:=fcaNone;
     FormCanClose:=CanClose;
-  End;
+  End
+  Else
+    FFormCloseStatus:=fcaClose;
 end;
 
 procedure TDCLForm.SetRecordsStatus(Str: String);

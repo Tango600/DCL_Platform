@@ -733,7 +733,7 @@ begin
     If Assigned(FDCLForm) Then
     Begin
       tmpDCLForm:=FDCLForm.ParentForm;
-      FDCLForm.CloseAction:=fcaClose;
+      FDCLForm.CloseAction:=fcaInProgress;
       FDCLForm:=tmpDCLForm;
     End;
   end;

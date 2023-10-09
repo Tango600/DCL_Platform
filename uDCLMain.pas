@@ -31,7 +31,7 @@ type
     procedure KillerForms(Sender: TObject);
     function GetScriptText(ScriptName: String): TStringList;
     procedure CloseForm(Form: TDCLForm);
-    procedure ReleaseForm(Form: TForm);
+    procedure ReleaseForm(Form: TDCLForm);
 
     procedure WriteBaseID;
     function ReadBaseID: String;
@@ -231,18 +231,35 @@ begin
     begin
       if ff is TDCLForm then
       begin
-        If (ff as TDCLForm).CloseAction=fcaClose then
+        If (ff as TDCLForm).CloseAction=fcaInProgress then
         begin
           CloseForm(ff as TDCLForm);
         end;
         If (ff as TDCLForm).CloseAction=fcaRelease then
         begin
-          ReleaseForm(ff);
+          ReleaseForm(ff as TDCLForm);
         end;
       end;
     end;
   End;
   FBusyMode:=False;
+end;
+
+procedure TDCLMain.CloseForm(Form: TDCLForm);
+begin
+  Form.Close;
+end;
+
+procedure TDCLMain.ReleaseForm(Form: TDCLForm);
+var
+  tmp: TDCLForm;
+begin
+  tmp:=Form.ParentForm;
+  FForms.Remove(Form);
+  Form.Release;
+  FreeAndNil(Form);
+  if Assigned(tmp) then
+    tmp.SetFocus;
 end;
 
 function TDCLMain.GetScriptText(ScriptName: String): TStringList;
@@ -273,23 +290,6 @@ begin
       end;
     end;
   end;
-end;
-
-procedure TDCLMain.CloseForm(Form: TDCLForm);
-var
-  tmp: TDCLForm;
-begin
-  tmp:=Form.ParentForm;
-  Form.Close;
-  if Assigned(tmp) then
-    tmp.SetFocus;
-end;
-
-procedure TDCLMain.ReleaseForm(Form: TForm);
-begin
-  FForms.Remove(Form);
-  Form.Release;
-  FreeAndNil(Form);
 end;
 
 procedure TDCLMain.WriteBaseID;
@@ -483,7 +483,7 @@ begin
   FBusyMode:=True;
   For ff in FForms do
   Begin
-    If Assigned(ff) then
+    If Assigned(ff) and ((ff as TDCLForm).CloseAction=fcaNone) then
       CloseForm(ff as TDCLForm);
   End;
   FBusyMode:=False;
