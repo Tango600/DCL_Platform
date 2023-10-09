@@ -1348,7 +1348,7 @@ begin
 
     Field.UseIndex:=FindParam('UseIndex=', Scr)='1';
 
-    If FQuery.Active Then
+    If (not Field.NoDataField) and FQuery.Active then
     begin
       If FindParam('SetIndexValue=', Scr)='1' Then
       begin
@@ -1385,7 +1385,7 @@ begin
     ItemIndex:=(Sender as TCustomComboBox).ItemIndex;
     ItemName:=(Sender as TCustomComboBox).Items[ItemIndex];
 
-    If FQuery.Active Then
+    If (not Field.NoDataField) and FQuery.Active then
     begin
       if FieldExists(Field.FieldName, FQuery) then
       begin
