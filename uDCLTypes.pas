@@ -4,7 +4,7 @@ unit uDCLTypes;
 interface
 
 Uses
-  Controls, ExtCtrls, StdCtrls, ComCtrls, Buttons,
+  Controls, ExtCtrls, StdCtrls, ComCtrls, Buttons, cMeDateEdit,
 {$IFnDEF FPC}
   Vcl.DBCtrls, Vcl.DBGrids,
 {$ELSE}
@@ -95,7 +95,7 @@ type
   TNavButtonsSet=TNavButtonSet;
   {$ENDIF}
   {$IFDEF FPC}
-  DateTimePicker={$IFDEF ZVComponents}TZVDateTimePicker{$ELSE}TDateEdit{$ENDIF};
+  DateTimePicker={$IFDEF ZVComponents}TZVDateTimePicker{$ELSE}TMyDateEdit{$ENDIF};
   TDBDate=TDBDateEdit;
   TNavButtons=TDBNavButton;
   TNavButtonsSet=TDBNavButtonSet;
