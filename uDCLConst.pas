@@ -66,7 +66,7 @@ const
   DBTypeFirebird='firebird';
   DBTypeInterbase='interbase';
 
-  UserLevelsSet='ulDeny,ulReadOnly,ulWrite,ulExecute,ulLevel,ulDeveloper';
+  UserLevelsSet='Undefined,Deny,ReadOnly,Write,Execute,Level1,Level2,Level3,Level4,Developer';
 
 {$IFDEF FPC}
   InternalAppNameSuffix='FPC';
