@@ -61,7 +61,6 @@ type
 
   TDCLLookup=class
     LookupQuery:TDCLDialogQuery;
-    LookupToVar:String;
     LookupData:TDataSource;
     NoDataField:Boolean;
     ModifyEdit:String;

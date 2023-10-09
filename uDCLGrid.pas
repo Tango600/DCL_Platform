@@ -183,7 +183,6 @@ type
 
     procedure AddLookUp(Field: TDCLField; Scr: String);
     procedure LookupOnClick(Sender: TObject);
-    procedure LookupDBScroll(Data: TDataSet);
 
     procedure AddCalendar(ScrLine: String);
     procedure CalendarOnChange(Sender: TObject);
@@ -2218,7 +2217,7 @@ begin
   If TempStr<>'' Then
   begin
     FVariables.NewVariableWithTest(FNamespace, TempStr);
-    Field.LookupData.LookupToVar:=TempStr;
+    Field.Variable:=TempStr;
   end;
 
   DBLookupControl.KeyField:=FindParam('Key=', Scr);
@@ -2248,8 +2247,6 @@ begin
   end;
   //LookupOnClick(DBLookupControl);
 
-  Field.LookupData.LookupQuery.AfterScroll:=LookupDBScroll;
-
   {$IFDEF FPC}
   DBLookupControl.OnSelect:=LookupOnClick;
   {$ELSE}
@@ -2261,8 +2258,8 @@ end;
 
 procedure TDCLGrid.LookupOnClick(Sender: TObject);
 var
-  KeyFiled, ListField, tmpSQL1: String;
-  f, DCLLookup, ModifyEdit: TDCLField;
+  tmpSQL1: String;
+  f, DCLLookup: TDCLField;
 begin
   DCLLookup:=nil;
   for f in FDCLFields do
@@ -2276,58 +2273,25 @@ begin
 
   if Assigned(DCLLookup) then
   begin
-    If DCLLookup.LookupData.ModifyEdit<>'' Then
+    If DCLLookup.LookupData.ModifyEdit<>'' then
     begin
-      ListField:=(Sender as TDBLookupComboBox).ListField;
-
-      tmpSQL1:=TrimRight(DCLLookup.LookupData.LookupQuery.FieldByName(ListField).AsString);
-
-      ModifyEdit:=nil;
       for f in FDCLFields do
       begin
         if Assigned(f.DCLEditComponent) and (f.DCLEditComponent.Control=(Sender as TEdit)) and
           DCLCompareString(f.DCLEditComponent.Control.Name, DCLLookup.LookupData.ModifyEdit) then
         begin
-          ModifyEdit:=f;
+          tmpSQL1:=(DCLLookup.DCLEditComponent.Control as TDBLookupComboBox).KeyValue;
+          (f.DCLEditComponent.Control as TEdit).Text:=tmpSQL1;
+
           break;
         end;
       end;
-
-      (ModifyEdit.DCLEditComponent.Control as TEdit).Text:=tmpSQL1;
     end;
 
-    if DCLLookup.LookupData.LookupToVar<>'' then
+    if DCLLookup.Variable<>'' then
     begin
-      KeyFiled:=(Sender as TDBLookupComboBox).KeyField;
-
-      FVariables.Variables[FNamespace, DCLLookup.LookupData.LookupToVar]:=
-        TrimRight(DCLLookup.LookupData.LookupQuery.FieldByName(KeyFiled).AsString);
-    end;
-  end;
-end;
-
-procedure TDCLGrid.LookupDBScroll(Data: TDataSet);
-var
-  Look: TDBLookupComboBox;
-  l, DCLLookup: TDCLField;
-begin
-  DCLLookup:=nil;
-  for l in FDCLFields do
-  begin
-    if Assigned(l.LookupData) and (l.LookupData.LookupQuery=Data) then
-    begin
-      DCLLookup:=l;
-      break;
-    end;
-  end;
-
-  if Assigned(DCLLookup) then
-  begin
-    Look:=DCLLookup.DCLEditComponent.Control as TDBLookupComboBox;
-    if not DCLLookup.NoDataField then
-    begin
-      FVariables.Variables[FNamespace, DCLLookup.Variable]:=
-        TrimRight(DCLLookup.LookupData.LookupQuery.FieldByName(Look.KeyField).AsString);
+      tmpSQL1:=(DCLLookup.DCLEditComponent.Control as TDBLookupComboBox).KeyValue;
+      FVariables.Variables[FNamespace, DCLLookup.Variable]:=tmpSQL1;
     end;
   end;
 end;
