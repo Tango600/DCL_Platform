@@ -71,7 +71,6 @@ procedure TDCLCommand.TranslateVals(var S: String);
 var
   Factor: Integer;
 begin
-  FParser.SetConnector(FDBConnector);
   if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) then
   begin
     FParser.RePlaseParams(S, FDCLGrid.Query);
@@ -111,6 +110,7 @@ begin
   FVariables:=FIDCLMain.GetVariables;
 
   FParser:=TDCLValuseParser.Create(FNameSpace, FVariables);
+  FParser.SetConnector(FDBConnector);
 end;
 
 procedure TDCLCommand.OpenDialog(DialogName: String);
