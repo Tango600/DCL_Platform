@@ -4,8 +4,8 @@ unit uIDCLMain;
 interface
 
 uses
-  Forms, Generics.Collections,
-  uDCLVariables, uDCLDBConnector;
+  Forms, Classes, Generics.Collections,
+  uDCLConst, uDCLVariables, uDCLDBConnector;
 
 type
   IDCLMain=interface
@@ -16,11 +16,18 @@ type
 
     function GetVariables: TVariables;
 
+    function GetScriptText(ScriptName: String): TStringList;
     procedure OpenDialog(DialogName: String);
     procedure RunCommand(CommandName: String);
-    procedure About;
 
+    procedure NotifyForms(Action: TFormsNotifyAction);
+    procedure NotifyForm(Form: TForm; Action: TFormsNotifyAction);
+
+    procedure About;
     procedure Exit;
+
+    procedure LoadScriptsFromFile(FileName: String; Run: Boolean);
+    procedure ClearScriptPool;
   end;
 
 implementation

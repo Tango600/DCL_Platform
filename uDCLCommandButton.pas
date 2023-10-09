@@ -17,7 +17,7 @@ type
     FDBConnector: TDCLDBConnector;
   public
     Caption, Hint, Command, Pict: String;
-    ChoiceButton, Default, Cancel, ForEach, Host: Boolean;
+    CloseButton, ChoiceButton, Default, Cancel, ForEach, Host: Boolean;
     FontStyle: TFontStyles;
     Width: Integer;
 

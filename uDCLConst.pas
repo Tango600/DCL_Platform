@@ -206,7 +206,7 @@ Type
   TNewQueryMode=(nqmNew, nqmFromGrid);
   TMessageType=(mbtError=0, mbtWarning=1, mbtInformation=9, mbtConfirmation=10);
   TSimplyFieldType=(sftNotDefine, sftString, sftDigit, sftFloat, sftDateTime, fstBlobMemo);
-  TDCLFormCloseAction=(fcaNone, fcaClose);
+  TDCLFormCloseAction=(fcaNone, fcaClose, fcaRelease);
   TFieldFormat=(fftNone, fftDigit, fftDate, fftTime, fftDateTime, fftTrim, fftFloat);
   TSheetFillStrategy=(sfsInsert, sfsReplace);
   TFieldParsingMode=(fpmNone, fpmCaption, fpmField);

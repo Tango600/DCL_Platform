@@ -7,9 +7,9 @@ uses
   {$IFDEF MSWINDOWS}
   Windows,
   {$ENDIF}
-  Classes, SysUtils, Generics.Collections, Forms, ExtCtrls,
+  Classes, SysUtils, Generics.Collections, Forms, ExtCtrls, LazFileUtils,
   uDCLTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenu, uDCLNotifier,
-  uIDCLMain, uDCLFormsNotifier, uDCLConst;
+  uIDCLMain, uDCLConst, uDCLScriptSigner;
 
 type
 
@@ -26,10 +26,12 @@ type
     KillerDog: TTimer;
     FBusyMode: Boolean;
     FDCLNotifier: TDCLNotifier;
+    FScripts: TList<TDCLScriptItem>;
 
     procedure KillerForms(Sender: TObject);
-    function GetDialogScript(DialogName: String): String;
+    function GetScriptText(ScriptName: String): TStringList;
     procedure CloseForm(Form: TDCLForm);
+    procedure ReleaseForm(Form: TForm);
 
     procedure WriteBaseID;
     function ReadBaseID: String;
@@ -55,9 +57,12 @@ type
 
     function IsNeedLogin: Boolean;
 
-    procedure RunSkriptFromFile(FileName: String);
-
     procedure NotifyForms(Action: TFormsNotifyAction);
+    procedure NotifyForm(Form: TForm; Action: TFormsNotifyAction);
+
+    procedure LoadScriptsFromFile(FileName: String; Run: Boolean);
+    function CheckSigned(Package: TStringList): Boolean;
+    procedure ClearScriptPool;
 
     property DBConnector: TDCLDBConnector read FDBConnector;
     property Variables: TVariables read FVariables;
@@ -102,14 +107,117 @@ begin
   end;
 end;
 
-procedure TDCLMain.RunSkriptFromFile(FileName: String);
+procedure TDCLMain.LoadScriptsFromFile(FileName: String; Run: Boolean);
+var
+  RawPackage: TFileStream;
+  Package: TStringList;
+  PackageName: String;
+  FLoadedScripts: TDictionary<String, TDCLScriptItem>;
+  I: TPair<String, TDCLScriptItem>;
+  RunItem: TDCLScriptItem;
+  Command: TDCLCommand;
+  PackageInfo: TPackageInfo;
+  c: Integer;
 begin
+  if FileExists(FileName) then
+  begin
+    PackageName:=ExtractFileNameOnly(FileName);
+    RawPackage:=TFileStream.Create(FileName, fmOpenRead);
 
+    Package:=DecodePackage(RawPackage);
+    RawPackage.Free;
+    PackageInfo:=TPackageInfo.Create;
+    PackageInfo.PackageName:=PackageName;
+    PackageInfo.PackageHash:=GetPackageSignedHash(Package);
+
+    if CheckSigned(Package) then
+    begin
+      FLoadedScripts:=DisassemblyPackage(Package);
+
+      for I in FLoadedScripts do
+      begin
+        FScripts.Add(I.Value);
+      end;
+
+      if Run then
+      begin
+        c:=FScripts.Count;
+        for RunItem in FScripts do
+        begin
+          if RunItem.RunOnStart or (c=1) then
+          begin
+            Package:=TStringList.Create;
+            Package.LoadFromStream(RunItem.ScriptText);
+
+            if RunItem.RunType=1 then
+            begin
+              Command:=TDCLCommand.Create(Self, '', nil, nil);
+              Command.RunCommandScript(RunItem.ScriptName);
+            end
+            else
+            begin
+              OpenDialog(RunItem.ScriptName);
+            end;
+
+            break;
+          end;
+        end;
+      end;
+    end;
+  end;
+end;
+
+function TDCLMain.CheckSigned(Package: TStringList): Boolean;
+begin
+  Result:=False;
+  LocalQuery.Params.Clear;
+  LocalQuery.SQL.Text:='select * from '+UsersTable+' where '+UserAdminField+'=:UL';
+  LocalQuery.Prepare;
+  LocalQuery.ParamByName('UL').AsInteger:=Ord(ulDeveloper);
+  LocalQuery.Open;
+  LocalQuery.First;
+  while not LocalQuery.EOF do
+  begin
+    if CheckPackage(LocalQuery.FieldByName('DCL_USER_NAME').AsString, LocalQuery.FieldByName('DCL_USER_PASS').AsString, Package) then
+    begin
+      Result:=True;
+      break;
+    end;
+
+    LocalQuery.Next;
+  end;
+  LocalQuery.Close;
+end;
+
+procedure TDCLMain.ClearScriptPool;
+begin
+  FScripts.Clear;
 end;
 
 procedure TDCLMain.NotifyForms(Action: TFormsNotifyAction);
+var
+  F: TForm;
 begin
+  for F in FForms do
+  begin
+    NotifyForm(F as TDCLForm, Action);
+  end;
+end;
 
+procedure TDCLMain.NotifyForm(Form: TForm; Action: TFormsNotifyAction);
+begin
+  case Action of
+  fnaMinimize: Form.WindowState:=wsMinimized;
+  fnaMaximaze: Form.WindowState:=wsMaximized;
+  fnaRefresh: (Form as TDCLForm).RefreshForm;
+  fnaClose: Form.Close;
+  fnaHide: Form.Hide;
+  fnaShow: begin
+    if not Form.Showing then
+      Form.Show;
+    Form.SetFocus;
+    end;
+  end;
 end;
 
 procedure TDCLMain.KillerForms(Sender: TObject);
@@ -120,27 +228,67 @@ begin
   For ff in FForms do
   Begin
     If Assigned(ff) then
-      If (ff as TDCLForm).CloseAction=fcaClose then
-        CloseForm(ff as TDCLForm);
+    begin
+      if ff is TDCLForm then
+      begin
+        If (ff as TDCLForm).CloseAction=fcaClose then
+        begin
+          CloseForm(ff as TDCLForm);
+        end;
+        If (ff as TDCLForm).CloseAction=fcaRelease then
+        begin
+          ReleaseForm(ff);
+        end;
+      end;
+    end;
   End;
   FBusyMode:=False;
 end;
 
-function TDCLMain.GetDialogScript(DialogName: String): String;
+function TDCLMain.GetScriptText(ScriptName: String): TStringList;
+var
+  Empty: Boolean;
+  RunItem: TDCLScriptItem;
 begin
+  Result:=TStringList.Create;
   LocalQuery.Params.Clear;
-  LocalQuery.SQL.Text:='select '+ScriptField+' from '+DCLTable+' where lower('+DCLNameField+') = lower(:NAME)';
-  LocalQuery.ParamByName('NAME').AsString:=DialogName;
+  LocalQuery.SQL.Text:='select '+ScriptField+' from '+DCLTable+' where lower('+DCLNameField+') = lower(:sn)';
+  LocalQuery.ParamByName('sn').AsString:=ScriptName;
   LocalQuery.Open;
-
-  Result:=LocalQuery.Fields[0].AsString;
+  LocalQuery.First;
+  Empty:=LocalQuery.IsEmpty;
+  Result.Text:=LocalQuery.Fields[0].AsString;
   LocalQuery.Close;
+
+  if Empty then
+  begin
+    for RunItem in FScripts do
+    begin
+      if RunItem.ScriptName.ToLower=ScriptName.ToLower then
+      begin
+        Result.Clear;
+        RunItem.ScriptText.Position:=0;
+        Result.LoadFromStream(RunItem.ScriptText);
+        break;
+      end;
+    end;
+  end;
 end;
 
 procedure TDCLMain.CloseForm(Form: TDCLForm);
+var
+  tmp: TDCLForm;
 begin
-  Form.Release;
+  tmp:=Form.ParentForm;
+  Form.Close;
+  if Assigned(tmp) then
+    tmp.SetFocus;
+end;
+
+procedure TDCLMain.ReleaseForm(Form: TForm);
+begin
   FForms.Remove(Form);
+  Form.Release;
   FreeAndNil(Form);
 end;
 
@@ -245,8 +393,6 @@ begin
   KillerDog.OnTimer:=KillerForms;
   KillerDog.Enabled:=True;
 
-  FormsNotifier:=TDCLFormsNotifier.Create(FForms);
-
   FDBConnector:=TDCLDBConnector.Create;
   if FDBConnector.Connected then
   begin
@@ -275,6 +421,8 @@ begin
       ReadBaseID;
     end;
   end;
+
+  FScripts:=TList<TDCLScriptItem>.Create;
 
   {$IFDEF IBALL}
   GPT.IBAll:=True;
@@ -326,8 +474,6 @@ begin
   inherited Destroy;
   if Assigned(FDCLMenu) then
     FreeAndNil(FDCLMenu);
-  if Assigned(FormsNotifier) then
-    FreeAndNil(FormsNotifier);
 end;
 
 procedure TDCLMain.CloseAllDialogs;

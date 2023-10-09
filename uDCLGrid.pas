@@ -64,7 +64,7 @@ type
     FDataControlType: TDataControlType;
     FGridStyle: TGridStyle;
     FReadFieldsMode, FMultiSelectMode, FReadOnly, FDataReadOnly, FNavigatorVisible,
-      FFlatNavig, FNoDataField, FNoButtonPanel, FindProcess: Boolean;
+      FFlatNavig, FNoDataField, FNoButtonPanel, FindProcess, FNoPrintTool: Boolean;
     FTableParts, FLookupTables: TList<TDCLGrid>;
     FCurrentTablePart: TDCLGrid;
     FDCLFields: TList<TDCLField>;
@@ -568,13 +568,13 @@ begin
       begin
         If FMasterDataField<>'' Then
         begin
-          Data.FieldByName(FDependField).AsString:=FQuery.FieldByName
-            (FMasterDataField).AsString;
+          Data.FieldByName(FDependField).AsString:=Data.DataSource.DataSet.FieldByName
+            (FMasterDataField).AsString;;
         end;
       end
       else
       begin
-        if MasterValueVariableName<>'' then
+        if FMasterValueVariableName<>'' then
         begin
           Data.FieldByName(DependField).AsString:=FVariables.Variables[FNamespace, FMasterValueVariableName];
         end;
@@ -622,7 +622,7 @@ procedure TDCLGrid.AfterPost(Data: TDataSet);
 begin
   ExecEvents(evtAfterPost);
   ReFreshData;
-  FormsNotifier.NotifyForms(fnaRefresh);
+  FIDCLMain.NotifyForms(fnaRefresh);
   UpdateAllControls;
   SetDataStatus(dssSaved);
 end;
@@ -1531,7 +1531,11 @@ begin
 
   if Assigned(DCLCommand) then
   begin
-    if DCLCommand.ChoiceButton then
+    if DCLCommand.CloseButton then
+    begin
+      (FForm as TDCLForm).CloseAction:=fcaClose;
+    end
+    else if DCLCommand.ChoiceButton then
     begin
       Choose;
       FForm.ModalResult:=mrOk;
@@ -3819,7 +3823,8 @@ begin
   begin
     ButtonClose:=TDCLCommandButton.Create(FDBConnector);
     ButtonClose.Caption:=GetDCLMessageString(msClose);
-    ButtonClose.Command:='Close;';
+    ButtonClose.CloseButton:=True;
+    //ButtonClose.Command:='Close;';
     //ButtonClose.Pict:='esc';
     ButtonClose.Cancel:=True;
     FButtons.Add(ButtonClose);
@@ -3857,6 +3862,7 @@ begin
   FNoButtonPanel:=False;
   FNavigatorVisible:=False;
   FFlatNavig:=False;
+  FNoPrintTool:=False;
   FGridStyle:=gsGrid;
 
   FMultiSelectMode:=False;
@@ -4145,6 +4151,10 @@ begin
     FNoButtonPanel:=True;
   end;
 
+  If IsLexem('NoPrintTool;', ScrStr) then
+  begin
+      FNoPrintTool:=True;
+  end;
   If IsLexem('AddNotAllowOperation=', ScrStr) then
   begin
     TranslateVal(ScrStr, True);
@@ -4350,19 +4360,22 @@ begin
 
       if Assigned(FQuery) then
       begin
-        if FToolButtonsCount>0 then
+        if not FNoPrintTool then
         begin
-          FToolBarSplitter:=TToolButton.Create(FToolBar);
-          FToolBarSplitter.Parent:=FToolBar;
-          FToolBarSplitter.Style:=tbsSeparator;
-          FToolBarSplitter.Width:=ToolBarButtonSpliterWidth;
-        end;
+          if FToolButtonsCount>0 then
+          begin
+            FToolBarSplitter:=TToolButton.Create(FToolBar);
+            FToolBarSplitter.Parent:=FToolBar;
+            FToolBarSplitter.Style:=tbsSeparator;
+            FToolBarSplitter.Width:=ToolBarButtonSpliterWidth;
+          end;
 
-        FToolBarButtonPrint:=TToolButton.Create(FToolBar);
-        FToolBarButtonPrint.Parent:=FToolBar;
-        FToolBarButtonPrint.ImageIndex:=FPicturesIndexes[ptPrint];
-        FToolBarButtonPrint.OnClick:=Print;
-        Inc(FToolButtonsCount);
+          FToolBarButtonPrint:=TToolButton.Create(FToolBar);
+          FToolBarButtonPrint.Parent:=FToolBar;
+          FToolBarButtonPrint.ImageIndex:=FPicturesIndexes[ptPrint];
+          FToolBarButtonPrint.OnClick:=Print;
+          Inc(FToolButtonsCount);
+        end;
       end;
 
       FDBGrid:=TDBGrid.Create(FMainPanel);
@@ -4448,6 +4461,8 @@ begin
     PartSplitter:=TSplitter.Create(FMainPanel);
     PartSplitter.Parent:=FMainPanel;
     PartSplitter.Align:=alBottom;
+
+    FCurrentTablePart:=FTableParts[0];
   end;
 
   if Assigned(FDBGrid) then

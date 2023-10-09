@@ -4,12 +4,11 @@ unit uDCLGlobalVariables;
 interface
 
 uses
-  uDCLGlobalConfigTable, uDCLFormsNotifier;
+  uDCLGlobalConfigTable;
 
 var
   GPT: TGPT;
   Path, AppConfigDir, UserProfileDir: string;
-  FormsNotifier: TDCLFormsNotifier;
 
 implementation
 

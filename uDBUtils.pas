@@ -240,7 +240,7 @@ begin
         ftLargeint, ftBCD: Field.Width:=DigitEditWidth;
       else
       begin
-        //Field.Width:=EditWidth;
+        Field.Width:=EditWidth;
       end;
     end;
   end;

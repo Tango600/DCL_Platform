@@ -139,10 +139,6 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="uDCLFormsNotifier.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
         <Filename Value="fChangePasswordForm.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="FormChangePassword"/>
@@ -193,6 +189,10 @@
         <IsPartOfProject Value="True"/>
         <ComponentName Value="MessageForm"/>
         <ResourceBaseClass Value="Form"/>
+      </Unit>
+      <Unit>
+        <Filename Value="uDCLScriptSigner.pas"/>
+        <IsPartOfProject Value="True"/>
       </Unit>
     </Units>
   </ProjectOptions>

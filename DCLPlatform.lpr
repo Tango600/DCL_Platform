@@ -94,7 +94,7 @@ begin
   MainForm.DCLMain:=DCL;
   S:=FindScryptFileCall;
   If S<>'' then
-    DCL.RunSkriptFromFile(S);
+    DCL.LoadScriptsFromFile(S, True);
 
   DialogName:=FindFormCall;
   if DialogName='' then

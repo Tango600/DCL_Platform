@@ -334,7 +334,7 @@ begin
   end;
 
   SaveFormPos;
-  FFormCloseStatus:=fcaClose;
+  FFormCloseStatus:=fcaRelease;
 end;
 
 procedure TDCLForm.OnFormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -666,6 +666,11 @@ end;
 
 procedure TDCLForm.SetStatusNum(Str: String; Num, Width: Integer);
 begin
+  if Num=-1 then
+  begin
+    FStatusBar.Panels[FStatusBar.Panels.Count-1].Text:=Str;
+  end
+  else
   if (Num>0) and (FStatusBar.Panels.Count>Num) then
   begin
     FStatusBar.Panels[Num+StatusInfo].Text:=Str;
