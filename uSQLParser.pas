@@ -191,7 +191,7 @@ begin
       ftDBFilter, ftComboFilter: begin
         if Filter.FilterString<>'-1' then
         begin
-          if LastFilter.Between then
+          if Assigned(LastFilter) and LastFilter.Between then
           begin
             isNot:='';
             if Filter.NotFilter then
@@ -214,7 +214,6 @@ begin
         Operation:='=';
         Case GetSimplyFieldType(Filter.Field, Query) of
           sftString: begin
-
             Suffix:='';
             if Filter.NotLike then
             begin
