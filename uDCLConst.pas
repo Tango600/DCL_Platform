@@ -59,8 +59,7 @@ const
   ShowFormPanel=True;
   CloseButton=True;
 
-  TextScriptFileExt='.dst';
-  SignedScriptExt='.dcs';
+  SignedScriptExt='.dss';
   SignMethodVer='1.3';
 
   DBTypeFirebird='firebird';

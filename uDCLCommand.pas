@@ -600,9 +600,9 @@ begin
     tmpS:=FindParam('OpenFileDialog=', Command);
     tmpS1:=FindParam('Ext=', Command);
     OpenDialog:=TOpenDialog.Create(nil);
-    If tmpS1<>'' Then
+    If tmpS1<>'' then
       OpenDialog.DefaultExt:=tmpS1;
-    If OpenDialog.Execute Then
+    If OpenDialog.Execute then
       FVariables.Variables[FNameSpace, tmpS]:=OpenDialog.FileName
     Else
       FVariables.Variables[FNameSpace, tmpS]:='';
@@ -622,6 +622,26 @@ begin
     Else
       FVariables.Variables[FNameSpace, tmpS]:='';
     FreeAndNil(SaveDialog);
+  end;
+
+  If IsLexem('OpenScript;', Command) then
+  begin
+    OpenDialog:=TOpenDialog.Create(nil);
+    OpenDialog.DefaultExt:=SignedScriptExt;
+    OpenDialog.Filter:='DCL Scripts|*'+SignedScriptExt;
+
+    If OpenDialog.Execute then
+    begin
+      FIDCLMain.LoadScriptsFromFile(OpenDialog.FileName, True);
+    end;
+    FreeAndNil(OpenDialog);
+  end;
+
+  If IsLexem('OpenScript=', Command) then
+  begin
+    tmpS:=FindParam('FileName=', Command);
+    if FileExists(tmpS) then
+      FIDCLMain.LoadScriptsFromFile(tmpS, True);
   end;
 
   If IsLexem('Report=', Command) then
@@ -1285,6 +1305,9 @@ begin
   DCL:=FIDCLMain.GetScriptText(DialogName);
   if DCL.Count>0 then
   begin
+    if PosEx('script type=command', DCL[0])<>0 then
+      Exit;
+
     if NoContext then
       lForm:=TDCLForm.Create(FIDCLMain, DialogName, NameSpace, ParentForm, DCL,
         nil, nil, Self, ReturnValueParams, Modal)

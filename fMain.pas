@@ -50,7 +50,6 @@ procedure TMainForm.WMSysCommand(var message: TWMSysCommand);
 begin
   Case message.CmdType of
   AboutMenuItem: ShowAbout;
-  //LockMenuItem: DCLMainLogOn.Lock;
   Else
     inherited;
   End;
