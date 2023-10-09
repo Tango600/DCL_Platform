@@ -4349,7 +4349,12 @@ begin
         FDBGrid.Options:=FDBGrid.Options+[dgMultiSelect];
       end;
       if FReadOnly then
+      begin
+        FDBGrid.Options:=FDBGrid.Options+[dgRowSelect];
         FDBGrid.Options:=FDBGrid.Options-[dgEditing];
+        FDBGrid.Options:=FDBGrid.Options+[dgDisableDelete];
+        FDBGrid.Options:=FDBGrid.Options+[dgDisableInsert];
+      end;
 
       FDBGrid.DataSource:=FData;
       {$IFDEF FPC}
