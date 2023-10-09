@@ -2168,8 +2168,8 @@ begin
     Except
       ShowErrorMessage( - 1115, 'SQL='+TempStr);
     end;
-    Field.LookupData.LookupData:=TDataSource.Create(Self);
-    Field.LookupData.LookupData.DataSet:=Field.LookupData.LookupQuery;
+    Field.LookupData.LookupDS:=TDataSource.Create(Self);
+    Field.LookupData.LookupDS.DataSet:=Field.LookupData.LookupQuery;
   end
   Else
   begin
@@ -2205,7 +2205,7 @@ begin
     NoDataField:=True;
 
   DBLookupControl.ReadOnly:=Field.ReadOnly;
-  DBLookupControl.ListSource:=Field.LookupData.LookupData;
+  DBLookupControl.ListSource:=Field.LookupData.LookupDS;
   If Field.Width>0 Then
     DBLookupControl.Width:=Field.Width
   Else

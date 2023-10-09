@@ -60,10 +60,10 @@ type
   end;
 
   TDCLLookup=class
-    LookupQuery:TDCLDialogQuery;
-    LookupData:TDataSource;
-    NoDataField:Boolean;
-    ModifyEdit:String;
+    LookupQuery: TDCLDialogQuery;
+    LookupDS: TDataSource;
+    NoDataField: Boolean;
+    ModifyEdit: String;
   end;
 
   TContextFieldButton=class
