@@ -92,7 +92,7 @@ type
     procedure DeleteStatus(Num: Integer);
     procedure DeleteAllStatus;
 
-    property CloseAction: TDCLFormCloseAction read FFormCloseStatus write FFormCloseStatus;
+    property CloseAction: TDCLFormCloseAction read FFormCloseStatus;
     property Grids: TList<TDCLGrid> read FGrids;
     property CurrentGrid: TDCLGrid read FCurrentGrid;
     property DialogName: String read FDialogName;
@@ -342,7 +342,6 @@ var
   S:String;
   DlgRes:Integer;
 begin
-  FFormCloseStatus:=fcaQuery;
   If FCloseQuery then
   Begin
     S:=CloseQueryText;
@@ -350,14 +349,8 @@ begin
       S:=GetDCLMessageString(msClose);
     DlgRes:=ShowErrorMessage(10, S);
     CanClose:=DlgRes=1;
-    if CanClose then
-      FFormCloseStatus:=fcaClose
-    else
-      FFormCloseStatus:=fcaNone;
     FormCanClose:=CanClose;
-  End
-  Else
-    FFormCloseStatus:=fcaClose;
+  End;
 end;
 
 procedure TDCLForm.SetRecordsStatus(Str: String);

@@ -231,10 +231,6 @@ begin
     begin
       if ff is TDCLForm then
       begin
-        If (ff as TDCLForm).CloseAction=fcaInProgress then
-        begin
-          CloseForm(ff as TDCLForm);
-        end;
         If (ff as TDCLForm).CloseAction=fcaRelease then
         begin
           ReleaseForm(ff as TDCLForm);
