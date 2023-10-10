@@ -55,9 +55,9 @@ type
 implementation
 
 uses
-{$IFDEF MSWINDOWS}
+  {$IFDEF MSWINDOWS}
   uSheetOfficeReportSelector, uTextOfficeReportSelector,
-{$ENDIF}
+  {$ENDIF}
   fAbout, uDCLGlobalVariables, uDCLConfigTable, uDCLDataStorage,
   uRunProgram, uDCLMessages, uDCLMultiLang, uSQLUtils, uSystemUtils,
   {$IFDEF TRANSACTIONDB}

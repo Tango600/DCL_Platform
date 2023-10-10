@@ -4,19 +4,16 @@
 interface
 
 uses
-{$IFDEF FPC}
-  DBExtCtrls,
-{$ENDIF}
 {$IFDEF MSWINDOWS}
-  Windows, {$IFnDEF FPC}Winapi.Messages, {$ENDIF}
+  Windows,
 {$ENDIF}
   Classes, SysUtils, Controls, Forms, DB, Generics.Collections, ToolWin,
   ComCtrls, StdCtrls, ExtCtrls, Graphics, DBCtrls, DBGrids, Grids,
-  CheckLst, Menus, ClipBrd,
+  CheckLst, Menus, ClipBrd, DBExtCtrls,
   uDCLData, uDCLTypes, uDCLConst, uDCLVariables, uStringParams, uIDCLMain,
   uDCLDBConnector, uDCLQuery, uDCLMeasurements, uDBUtils, uDCLMultiLang,
-  uDCLCommandButton, uDCLField, uDCLMessages, uDCLImages, cNoScrollBarDBGrid,
-  cMediaFieldGroup, uDCLBaseLayoutManger, uDCLHorizontalFieldLayoutManger,
+  uDCLCommandButton, uDCLField, uDCLMessages, uDCLImages, cMediaFieldGroup,
+  uDCLBaseLayoutManger, uDCLHorizontalFieldLayoutManger,
   uDCLVerticalFieldLayoutManger;
 
 type
@@ -83,7 +80,7 @@ type
     FOrdersFields: TList<TSortField>;
     FOrderByFields, FNotOrderByFields: TStringList;
     FSumQuery: TDCLDialogQuery;
-    FSummGrid: TNoScrollBarDBGrid;
+    FSummGrid: TDBGrid;
     FEvents: TList<TDCLEvent>;
     FNotAllowedOperations: TList<TNotAllowedOperation>;
     FBrushColors: TList<TBrushColor>;
@@ -307,9 +304,7 @@ type
 implementation
 
 uses
-  {$IFDEF FPC}
   EditBtn, LCLProc, lcltype,
-  {$ENDIF}
   uDCLCommand, uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, uDCLForm,
   uPrintBase, uDCLGlobalVariables, uDCLMD5, uExpressionParser;
 
@@ -537,10 +532,10 @@ begin
         end;
       end;
 
-      if Edit.DCLEditComponent.Control is DateTimePicker then
+      if Edit.DCLEditComponent.Control is TDateTimePicker then
       If (not Edit.NoDataField) and FieldExists(Edit.FieldName, FQuery) then
       begin
-        (Edit.DCLEditComponent.Control as DateTimePicker).Date:=FQuery.FieldByName(Edit.FieldName).AsDateTime;
+        (Edit.DCLEditComponent.Control as TDateTimePicker).Date:=FQuery.FieldByName(Edit.FieldName).AsDateTime;
       end;
 
       if Edit.DCLEditComponent.Control is TComboBox then
@@ -831,16 +826,12 @@ var
       SortOrder:=FF.Order;
       if SortOrder=soDesc then
       begin
-        {$IFDEF FPC}
         Column.Title.ImageIndex:=FPicturesIndexes[ptUpArrow];
-        {$ENDIF}
         FF.Order:=soAsc;
       end
       else
       begin
-        {$IFDEF FPC}
         Column.Title.ImageIndex:=FPicturesIndexes[ptDownArrow];
-        {$ENDIF}
         FF.Order:=soDesc;
       end;
     end;
@@ -853,9 +844,7 @@ var
     FF:=GetField(Column.FieldName);
     if not Assigned(FF) then
     begin
-      {$IFDEF FPC}
       Column.Title.ImageIndex:=FPicturesIndexes[ptUpArrow];
-      {$ENDIF}
 
       FF:=TSortField.Create;
       FF.FieldName:=LowerCase(Column.FieldName);
@@ -892,9 +881,7 @@ begin
     If KeyState(VK_SHIFT) then
     begin
       //Снять
-      {$IFDEF FPC}
       Column.Title.ImageIndex:=-1;
-      {$ENDIF}
       RemoveField(Column.FieldName);
     end
     else
@@ -915,9 +902,7 @@ begin
           FOrdersFields.Clear;
           for i:=0 to FDBGrid.Columns.Count-1 do
           begin
-            {$IFDEF FPC}
             FDBGrid.Columns[i].Title.ImageIndex:=-1;
-            {$ENDIF}
           end;
 
           AddField(Column);
@@ -2173,7 +2158,7 @@ begin
   end
   Else
   begin
-    ShowErrorMessage( - 3000, '');
+    ShowErrorMessage( - 3000, 'No SQL statement!');
   end;
 
   DBLookupControl:=TDBLookupComboBox.Create(FFieldsPanel);
@@ -2494,12 +2479,10 @@ begin
   Calendar.LabelField.Caption:=InitCap(Calendar.Caption);
   Inc(FTop, Calendar.LabelField.Height+LabelTopInterval);
 
-  Calendar.Control:=DateTimePicker.Create(FFiltersPanel);
+  Calendar.Control:=TDateTimePicker.Create(FFiltersPanel);
   Calendar.Control.Parent:=FFiltersPanel;
-  {$IFDEF FPC}
-  Calendar.Control.DateOrder:=doDMY;
+  //Calendar.Control.DateOrder:=doDMY;
   Calendar.Control.DateFormat:=GPT.DateFormat;
-  {$ENDIF}
 
   Calendar.Control.Top:=FTop;
   Inc(FTop, Calendar.Control.Height+CompenentTopStep);
@@ -2524,7 +2507,7 @@ begin
   Calendar:=nil;
   for c in FCalendars do
   begin
-    if c.Control=(Sender as DateTimePicker) then
+    if c.Control=(Sender as TDateTimePicker) then
     begin
       Calendar:=c;
       break;
@@ -2533,7 +2516,7 @@ begin
 
   if Assigned(Calendar) then
   begin
-    EdDate:=DateToStr((Sender as DateTimePicker).Date);
+    EdDate:=DateToStr((Sender as TDateTimePicker).Date);
     FVariables.Variables[FNamespace, Calendar.Variable]:=EdDate;
 
     If Calendar.ReOpen Then
@@ -2700,7 +2683,7 @@ begin
   FSumData.DataSet:=FSumQuery;
   FSumQuery.Open;
 
-  FSummGrid:=TNoScrollBarDBGrid.Create(FMainPanel);
+  FSummGrid:=TDBGrid.Create(FMainPanel);
   FSummGrid.Align:=alBottom;
   FSummGrid.Height:=SummGridHeight;
   FSummGrid.Name:='SumGrid';
@@ -2741,16 +2724,14 @@ end;
 procedure TDCLGrid.AddDateBox(Field: TDCLField; Scr: String);
 var
   NeedValue: Integer;
-  DateBox: DateTimePicker;
+  DateBox: TDateTimePicker;
   S, KeyField: String;
   ShadowQuery: TDCLDialogQuery;
 begin
-  DateBox:=DateTimePicker.Create(FFieldsPanel);
+  DateBox:=TDateTimePicker.Create(FFieldsPanel);
   DateBox.Parent:=FFieldsPanel;
-  {$IFDEF FPC}
-  DateBox.DateOrder:=doDMY;
+  //DateBox.DateOrder:=doDMY;
   DateBox.DateFormat:=GPT.DateFormat;
-  {$ENDIF}
 
   If FindParam('ComponentName=', Scr)<>'' Then
     DateBox.Name:=FindParam('ComponentName=', Scr);
@@ -2864,7 +2845,7 @@ begin
   if Assigned(Field) then
   begin
     // Update variables
-    Value:=DateToStr((f.DCLEditComponent.Control as DateTimePicker).Date);
+    Value:=DateToStr((f.DCLEditComponent.Control as TDateTimePicker).Date);
     FVariables.Variables[FNamespace, Field.Variable]:=Value;
 
     If not Field.ReadOnly then
@@ -3331,7 +3312,7 @@ begin
       ReturnValue.Multiselect:=ReturnValueParams.Multiselect;
 
       ReturnValue.Values:=TList<TGetValueItem>.Create;
-      if Assigned(FDBGrid) and FMultiSelectMode and {$IFDEF FPC}FDBGrid.HasMultiSelection{$ELSE}(dgMultiSelect in FDBGrid.Options){$ENDIF} then
+      if Assigned(FDBGrid) and FMultiSelectMode and FDBGrid.HasMultiSelection then
       begin
         for i:=1 to FDBGrid.SelectedRows.Count do
         begin
@@ -3564,16 +3545,14 @@ end;
 
 function TDCLGrid.CalculateSeed: String;
 var
-  Fields: {$IFDEF FPC}TSortedList<String>{$ELSE}TList<String>{$ENDIF};
+  Fields: TSortedList<String>;
   FN: TField;
   S, F, Se: String;
 begin
   Result:='';
 
-  Fields:={$IFDEF FPC}TSortedList<String>{$ELSE}TList<String>{$ENDIF}.Create;
-  {$IFDEF FPC}
+  Fields:=TSortedList<String>.Create;
   Fields.Duplicates:=dupIgnore;
-  {$ENDIF}
   if Assigned(FQuery) and FQuery.Active then
   begin
     for FN in FQuery.Fields do
@@ -3887,7 +3866,7 @@ begin
     GetDBGridFieldsPos(FieldsPos);
 
     if FieldsPos.Count>0 then
-      FieldsPos.SaveToFile(ConfigPath+Seed+'.ini'{$IFDEF FPC}, TEncoding.UTF8{$ENDIF});
+      FieldsPos.SaveToFile(ConfigPath+Seed+'.ini', TEncoding.UTF8);
 
     FreeAndNil(FieldsPos);
   end;
@@ -4357,10 +4336,8 @@ begin
       end;
 
       FDBGrid.DataSource:=FData;
-      {$IFDEF FPC}
       FDBGrid.AlternateColor:=GridAlternateColor;
       FDBGrid.TitleImageList:=FImages;
-      {$ENDIF}
       FDBGrid.OnDblClick:=GridDblClick;
       FDBGrid.OnTitleClick:=GridColumnClick;
 
@@ -4643,7 +4620,7 @@ begin
     if DirectoryExists(ConfigPath) and FileExists(ConfigPath+S+'.ini') then
     begin
       FieldsPos:=TStringList.Create;
-      FieldsPos.LoadFromFile(ConfigPath+S+'.ini'{$IFDEF FPC}, TEncoding.UTF8{$ENDIF});
+      FieldsPos.LoadFromFile(ConfigPath+S+'.ini', TEncoding.UTF8);
       if FieldsPos.Count>0 then
       begin
         for i:=1 to FieldsPos.Count do

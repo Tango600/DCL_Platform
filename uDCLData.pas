@@ -5,12 +5,7 @@ interface
 
 uses
   StdCtrls, ComCtrls, Controls, Graphics, ExtCtrls, DB, Buttons, Classes,
-  Generics.Collections, SysUtils, Forms,
-{$IFnDEF FPC}
-  Vcl.DBCtrls,
-{$ELSE}
-  DBCtrls,
-{$ENDIF}
+  Generics.Collections, SysUtils, Forms, DBCtrls,
   uDCLConst, uDCLTypes;
 
 type
@@ -27,7 +22,7 @@ type
 
   TDCLCalendar=class
     LabelField: TDialogLabel;
-    Control: DateTimePicker;
+    Control: TDateTimePicker;
     Caption, Field, Variable: String;
     Value: TDate;
     Num: Integer;

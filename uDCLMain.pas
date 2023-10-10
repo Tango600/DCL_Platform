@@ -454,13 +454,11 @@ begin
 {$IFDEF MSWINDOWS}
   SysUtils.GetFormatSettings;
 {$ENDIF}
-{$IFDEF FPC}
 {$IFDEF UNIX}
   FormatSettings.DateSeparator:=GPT.DateSeparator;
   FormatSettings.ShortDateFormat:=GPT.DateFormat;
   FormatSettings.LongTimeFormat:=GPT.TimeFormat;
   FormatSettings.TimeSeparator:=GPT.TimeSeparator;
-{$ENDIF}
 {$ENDIF}
 end;
 

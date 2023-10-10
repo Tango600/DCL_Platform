@@ -164,9 +164,6 @@ begin
   FDBConnector.SetConnector(LocalQuery);
 
   FMainMenu:=TMainMenu.Create(FMainForm);
-  {$IFDEF DELPHI}
-  FMainMenu.AutoHotkeys:=maManual;
-  {$ENDIF}
   if not TableExist(FDBConnector, DCLTable) then
   begin
     CreateAboutItem;

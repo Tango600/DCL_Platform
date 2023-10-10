@@ -155,21 +155,11 @@ begin
     FPages.Name:='Pages_'+FDialogName;
     FPages.Align:=alClient;
     FPages.OnChange:=PageChange;
-{$IFNDEF FPC}
-    FPages.TabHeight:=1;
-    FPages.TabWidth:=1;
-{$ELSE}
     FPages.ShowTabs:=False;
-{$ENDIF}
   end
   Else
   begin
-{$IFNDEF FPC}
-    FPages.TabHeight:=0;
-    FPages.TabWidth:=0;
-{$ELSE}
     FPages.ShowTabs:=True;
-{$ENDIF}
   end;
 
   pc:=FPages.PageCount;
@@ -306,7 +296,7 @@ begin
       if Self.FormStyle=fsMDIChild then
         Section:=Section+'MDI';
 
-      Settings:=TIniFile.Create(ConfigPath+'Settings.ini'{$IFDEF FPC}, TEncoding.UTF8{$ENDIF});
+      Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
       Self.Top:=Settings.ReadInteger(Section, 'Top', Self.Top);
       Self.Left:=Settings.ReadInteger(Section, 'Left', Self.Left);
       Self.Height:=Settings.ReadInteger(Section, 'Height', Self.Height);
@@ -451,9 +441,7 @@ begin
     begin
       TB:=TFormPanelButton.Create(Self);
       TB.Parent:=FormBar;
-      {$IFDEF FPC}
       TB.AutoSize:=True;
-      {$ENDIF}
       TB.Width:=FormPanelButtonWidth;
       TB.Height:=FormPanelButtonHeight;
       TB.OnClick:=ToolButtonClick;
@@ -747,7 +735,7 @@ begin
     if Self.FormStyle=fsMDIChild then
       Section:=Section+'MDI';
 
-    Settings:=TIniFile.Create(ConfigPath+'Settings.ini'{$IFDEF FPC}, TEncoding.UTF8{$ENDIF});
+    Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
     Settings.WriteInteger(Section, 'Top', Self.Top);
     Settings.WriteInteger(Section, 'Left', Self.Left);
     Settings.WriteInteger(Section, 'Height', Self.Height);

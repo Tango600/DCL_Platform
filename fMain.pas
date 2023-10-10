@@ -5,7 +5,7 @@ interface
 
 uses
   {$IFDEF MSWINDOWS}
-  Windows, Messages, {$IFDEF FPC}LazUTF8, {$ENDIF}
+  Windows, Messages, LazUTF8,
   {$ENDIF}
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls,
   uDCLConst, uDCLData, uDCLMultiLang, uIDCLMain;
@@ -73,7 +73,7 @@ begin
     if Self.FormStyle=fsMDIForm then
       SectionName:=SectionName+'MDI';
 
-    Settings:=TIniFile.Create(ConfigPath+'MainForm.ini'{$IFDEF FPC}, TEncoding.UTF8{$ENDIF});
+    Settings:=TIniFile.Create(ConfigPath+'MainForm.ini', TEncoding.UTF8);
     Settings.WriteInteger(SectionName, 'Top', Self.Top);
     Settings.WriteInteger(SectionName, 'Left', Self.Left);
     Settings.WriteInteger(SectionName, 'Height', Self.Height);
@@ -142,7 +142,7 @@ begin
     ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim;
     if DirectoryExists(ConfigPath) and FileExists(ConfigPath+'MainForm.ini') then
     begin
-      Settings:=TIniFile.Create(ConfigPath+'MainForm.ini'{$IFDEF FPC}, TEncoding.UTF8{$ENDIF});
+      Settings:=TIniFile.Create(ConfigPath+'MainForm.ini', TEncoding.UTF8);
 
       SectionName:='Position';
       if Self.FormStyle=fsMDIForm then

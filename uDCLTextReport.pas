@@ -4,7 +4,6 @@ unit uDCLTextReport;
 interface
 
 uses
-  {$IFDEF FPC}DBExtCtrls, {$ELSE}Variants, {$ENDIF}
   Classes, SysUtils, Controls, Forms, ComCtrls, StdCtrls, Buttons, ExtCtrls,
   DBCtrls, DB, Generics.Collections,
   uDCLTypes, uDCLConst, uDCLData, uDCLDBConnector, uDCLGrid, uDCLVariables;
@@ -142,9 +141,9 @@ end;
 
 procedure TDCLTextReport.GrabDateOnChange(Sender: TObject);
 begin
-  If FVarsToControls.Count>(Sender as DateTimePicker).Tag Then
-    FVariables.Variables[FNamespace, FVarsToControls[(Sender as DateTimePicker).Tag]]:=
-      DateToStr((Sender as DateTimePicker).Date);
+  If FVarsToControls.Count>(Sender as TDateTimePicker).Tag Then
+    FVariables.Variables[FNamespace, FVarsToControls[(Sender as TDateTimePicker).Tag]]:=
+      DateToStr((Sender as TDateTimePicker).Date);
 end;
 
 procedure TDCLTextReport.RePlaseVariables(var VarsSet: String);
@@ -353,7 +352,7 @@ var
   BtOk, BtCancel: TButton;
   ParamsCountList, ElementsTop: Word;
   GrabLabel: TDialogLabel;
-  GrabDate: DateTimePicker;
+  GrabDate: TDateTimePicker;
   LocalVar1, LocalVar2, RecCount: Word;
   tmpSQL, tmpSQL1: String;
   GrabValueForm: TForm;
@@ -572,7 +571,7 @@ begin
           GrabLabel.Caption:=FindParam('GrabDate=', InitSkrypts[LocalVar1]);
 
         tmpSQL:=FindParam('GrabDate=', InitSkrypts[LocalVar1]);
-        GrabDate:=DateTimePicker.Create(GrabValueForm);
+        GrabDate:=TDateTimePicker.Create(GrabValueForm);
         GrabDate.Parent:=GrabValueForm;
         GrabDate.Name:='GrabDate'+IntToStr(LocalVar1);
         GrabDate.Date:=Date;
@@ -716,7 +715,7 @@ begin
         end;
       end;
     end;
-    BodyText1:=Copy(BodyText, 1, Length(BodyText)-Length(CR));
+    BodyText1:=Copy(BodyText, 1, Length(BodyText)-Length(LineEnding));
   end
   Else
     BodyText1:='';

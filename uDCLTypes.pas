@@ -5,23 +5,13 @@ interface
 
 Uses
   Controls, ExtCtrls, StdCtrls, ComCtrls, Buttons, cMeDateEdit,
-{$IFnDEF FPC}
-  Vcl.DBCtrls, Vcl.DBGrids,
-{$ELSE}
   EditBtn, DBExtCtrls, DBCtrls, DBGrids,
-{$ENDIF}
 {$IFDEF ADO}
   ADODB, ADOConst, ADOInt,
 {$ENDIF}
 {$IFDEF IBX}
-  {$IFDEF FPC}
   IBDatabase, IBTable, IBCustomDataSet, IBSQL, IBQuery,
   IBUpdateSQL, //uIBUpdateSQLW,
-  {$ELSE}
-  IBX.IBDatabase, IBX.IBTable, IBX.IBCustomDataSet, IBX.IBSQL, IBX.IBQuery,
-  IBX.IBVisualConst, IBX.IBXConst, IBX.IBUpdateSQL,
-  uIBUpdateSQLW,
-  {$ENDIF}
 {$ENDIF}
 {$IFDEF ZEOS}
   ZConnection, ZDataset, ZSqlUpdate, ZAbstractConnection,
@@ -88,18 +78,10 @@ type
   TDialogSpeedButton=TSpeedButton;
   TFormPanelButton=TSpeedButton;
 
-  {$IFNDEF FPC}
-  DateTimePicker=TDateTimePicker;
-  TDBDate=TDBEdit;
-  TNavButtons=TNavButton;
-  TNavButtonsSet=TNavButtonSet;
-  {$ENDIF}
-  {$IFDEF FPC}
-  DateTimePicker={$IFDEF ZVComponents}TZVDateTimePicker{$ELSE}TMyDateEdit{$ENDIF};
+  TDateTimePicker={$IFDEF ZVComponents}TZVDateTimePicker{$ELSE}TMyDateEdit{$ENDIF};
   TDBDate=TDBDateEdit;
   TNavButtons=TDBNavButton;
   TNavButtonsSet=TDBNavButtonSet;
-  {$ENDIF}
 
 
 implementation

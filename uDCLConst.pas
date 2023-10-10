@@ -12,11 +12,7 @@ uses
 {$IFDEF ZEOS}
   ZClasses,
 {$ENDIF}
-{$IFnDEF FPC}
-  Vcl.DBCtrls, System.SysUtils
-{$ELSE}
-  DBCtrls, DBGrids, LazVersion, SysUtils
-{$ENDIF};
+  DBCtrls, DBGrids, LazVersion, SysUtils;
 
 const
 {$IFDEF MSWINDOWS}
@@ -76,48 +72,20 @@ const
   TargetCPU={$I %FPCTARGETCPU%};
   TargetOS={$I %FPCTARGETOS%};
 {$ENDIF}
-{$IFDEF DELPHI}
-  InternalAppNameSuffix='Delphi';
-{$IFDEF MSWINDOWS}
-  //LineEnding=#13#10;
-{$ENDIF}
-{$IFDEF WIN32}
-  TargetCPU='i386';
-{$ENDIF}
-{$IFDEF WIN64}
-  TargetCPU='x86-64';
-{$ENDIF}
-{$ENDIF}
-  CR={$IFDEF FPC}LineEnding{$ELSE}sLineBreak{$ENDIF};
 {$IFDEF UNIX}
   CrossDelim='\';
   ConfigDir=PathDelim+'.config'+PathDelim;
   OSType='posix';
-{$ENDIF}
-{$IFNDEF FPC}
-{$IFDEF WIN32}
-  TargetOS='Windows x32';
-{$ENDIF}
-{$IFDEF WIN64}
-  TargetOS='Windows x64';
-{$ENDIF}
 {$ENDIF}
 {$IFDEF MSWINDOWS}
   CrossDelim='/';
   ConfigDir=PathDelim;
   OSType='windows';
 {$ENDIF}
-{$IFDEF FPC}
   GridAlternateColor=$E0DDDD;
-{$ENDIF}
   MemFileName='DCL_Run_Unit_'+DBEngineType;
 
   EncodingUTF8='utf8';
-{$IFDEF DELPHI}
-  UTF8BOM=#$EF#$BB#$BF;
-  UTF16LEBOM=#$FF#$FE;
-  DefaultInterfaceEncoding='utf8';
-{$ENDIF}
   AppTitle='DCL Platform';
   InternalAppName='DCLPlatform_'+InternalAppNameSuffix;
 
