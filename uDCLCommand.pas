@@ -644,6 +644,26 @@ begin
       FIDCLMain.LoadScriptsFromFile(tmpS, True);
   end;
 
+  If IsLexem('LoadScript;', Command) then
+  begin
+    OpenDialog:=TOpenDialog.Create(nil);
+    OpenDialog.DefaultExt:=SignedScriptExt;
+    OpenDialog.Filter:='DCL Scripts|*'+SignedScriptExt;
+
+    If OpenDialog.Execute then
+    begin
+      FIDCLMain.LoadScriptsFromFile(OpenDialog.FileName, False);
+    end;
+    FreeAndNil(OpenDialog);
+  end;
+
+  If IsLexem('LoadScript=', Command) then
+  begin
+    tmpS:=FindParam('LoadScript=', Command);
+    if FileExists(tmpS) then
+      FIDCLMain.LoadScriptsFromFile(tmpS, False);
+  end;
+
   If IsLexem('Report=', Command) then
   begin
     RunTextReport(Command, FDCLGrid.Query, FDCLGrid);
