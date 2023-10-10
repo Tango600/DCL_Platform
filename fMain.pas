@@ -161,7 +161,6 @@ begin
   AppendMenu(GetSystemMenu(Handle, False), MF_SEPARATOR, 0, '');
   AppendMenu(GetSystemMenu(Handle, False), MF_STRING, AboutMenuItem,
     Pchar(UTF8ToWinCP('DCL '+GetDCLMessageString(msVersion)+' : '+DCLVersion)));
-  //AppendMenu(GetSystemMenu(Handle, False), MF_STRING, LockMenuItem, PChar(UTF8ToWinCP(GetDCLMessageString(msLock)+'...')));
   {$ENDIF}
 end;
 
