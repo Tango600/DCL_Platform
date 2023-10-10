@@ -639,9 +639,13 @@ begin
 
   If IsLexem('OpenScript=', Command) then
   begin
-    tmpS:=FindParam('FileName=', Command);
+    tmpS:=FindParam('OpenScript=', Command);
+    tmpS1:=FindParam('Run=', Command);
+    Flg1:=False;
+    if tmpS1<>'' then
+      Flg1:=tmpS1='1';
     if FileExists(tmpS) then
-      FIDCLMain.LoadScriptsFromFile(tmpS, True);
+      FIDCLMain.LoadScriptsFromFile(tmpS, Flg1);
   end;
 
   If IsLexem('LoadScript;', Command) then
