@@ -12,8 +12,9 @@ type
   end;
 
   TDCLScriptItem=class
+    PackageInfo: TPackageInfo;
     RunOnStart: Boolean;
-    RunType: Byte;  // 0 - ND, 1 - Command, 2 - Dialog
+    RunType: Byte;  // 0 - ND (Dialog), 1 - Command, 2 - Dialog
     Ident, Parent: Integer;
     ScriptName: String;
     ScriptText: TStringStream;
@@ -362,8 +363,11 @@ var
   b, f: Boolean;
   S, s1, sn: String;
   ScriptItem: TDCLScriptItem;
+  PackageInfo: TPackageInfo;
 begin
   Result:=TDictionary<String, TDCLScriptItem>.Create;
+  PackageInfo:=TPackageInfo.Create;
+  PackageInfo.PackageHash:=GetPackageSignedHash(Package);
 
   f:=True;
   b:=False;
@@ -377,6 +381,7 @@ begin
       begin
         sn:=s1;
         ScriptItem:=TDCLScriptItem.Create;
+        ScriptItem.PackageInfo:=PackageInfo;
         ScriptItem.ScriptName:=sn;
         s1:=FindParam('Run=', S);
         ScriptItem.RunOnStart:=s1<>'';

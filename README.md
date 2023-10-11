@@ -24,6 +24,7 @@
 данных и бизнес-логики, хотя это не строгое разделение.
 
 
+
 Сборка
 --------
 
@@ -33,6 +34,13 @@
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 ![OSX](https://img.shields.io/badge/OSX-888888?style=for-the-badge&logo=macos&logoColor=black)
+
+
+>  Почему нет бинарников в разделе Релиз?
+
+  Потому что в любой момент можно с помощью доступной и бесплатной среды, собрать себе последнюю 
+  версию платформы и получить сразу всё самое новое.
+
 
 
 ##### Примечание
