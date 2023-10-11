@@ -441,6 +441,7 @@ begin
     begin
       TB:=TFormPanelButton.Create(Self);
       TB.Parent:=FormBar;
+      TB.Images:=FormBar.Images;
       TB.Alignment:=taLeftJustify;
       TB.Height:=FormPanelButtonHeight;
       TB.OnClick:=ToolButtonClick;
@@ -448,7 +449,7 @@ begin
       TB.Constraints.MaxWidth:=FormPanelButtonWidth;
       TB.Tag:=Tag;
       TB.Margin:=PanelButtonTextRight;
-      TB.Glyph:=DrawBMPButton(ptFormDotNew);
+      TB.ImageIndex:=NewDialogImage;
       TB.Font.Style:=[fsItalic];
       TB.AutoSize:=True;
     end;
@@ -597,8 +598,8 @@ end;
 
 procedure TDCLForm.OnActivateForm(Sender: TObject);
 var
-  i: Byte;
-  TB1: TFormPanelButton;
+  i: Integer;
+  TB: TFormPanelButton;
   ff: TForm;
 begin
   If ShowFormPanel and Assigned(FormBar) Then
@@ -609,28 +610,28 @@ begin
       begin
         If Assigned(ff) Then
         begin
-          TB1:=nil;
+          TB:=nil;
           for i:=1 to FormBar.ControlCount do
           begin
             if FormBar.Controls[i-1].Owner=ff then
             begin
-              TB1:=FormBar.Controls[i-1] as TFormPanelButton;
+              TB:=FormBar.Controls[i-1] as TFormPanelButton;
               break;
             end;
           end;
 
-          If Assigned(TB1) Then
+          If Assigned(TB) Then
           begin
             If ff=Screen.ActiveForm Then
             begin
-              TB1.Glyph:=DrawBMPButton(ptFormDotActive);
-              TB1.Font.Style:=[fsBold];
+              TB.ImageIndex:=ActiveDialogImage;
+              TB.Font.Style:=[fsBold];
             end
             Else
             begin
-              TB1.Glyph:=DrawBMPButton(ptFormDotInActive);
-              TB1.Font.Style:=[];
-            end
+              TB.ImageIndex:=InActiveDialogImage;
+              TB.Font.Style:=[];
+            end;
           end;
         end;
       end;

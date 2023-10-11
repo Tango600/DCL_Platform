@@ -86,6 +86,10 @@ const
 
   ToolPanelName='FormBar';
 
+  NewDialogImage=0;
+  ActiveDialogImage=1;
+  InActiveDialogImage=2;
+
 implementation
 
 end.

@@ -4,7 +4,7 @@ unit uDCLMenu;
 interface
 
 uses
-  Classes, SysUtils, Forms, Menus, ComCtrls,
+  Classes, SysUtils, Forms, Menus, ComCtrls, Controls,
   uDCLConst, uDCLDBConnector, uDBUtils, uDCLMeasurements, uDCLTypes,
   uDCLDBStructure, uIDCLMain;
 
@@ -21,6 +21,7 @@ type
     LocalQuery: TDCLSimlyQuery;
     FormBar: TToolBar;
     findItemFlg: TMenuItem;
+    FImages: TImageList;
 
     procedure InitActions;
     procedure CloseActions;
@@ -43,7 +44,7 @@ type
 implementation
 
 uses
-  uDCLGlobalVariables, uDCLQueryUtils;
+  uDCLGlobalVariables, uDCLQueryUtils, uDCLImages;
 
 { TDCLMenu }
 
@@ -170,6 +171,11 @@ begin
     Exit;
   end;
 
+  FImages:=TImageList.Create(Self);
+  FImages.Add(DrawBMPButton(ptFormDotNew), nil);
+  FImages.Add(DrawBMPButton(ptFormDotActive), nil);
+  FImages.Add(DrawBMPButton(ptFormDotInActive), nil);
+
   If ShowFormPanel and Not Assigned(FormBar) Then
   begin
     FormBar:=TToolBar.Create(FMainForm);
@@ -178,6 +184,7 @@ begin
     FormBar.ShowCaptions:=True;
     FormBar.Height:=FormPanelHeight;
     FormBar.ButtonWidth:=FormPanelButtonWidth;
+    FormBar.Images:=FImages;
     FormBar.Show;
   end;
 

@@ -58,8 +58,6 @@ Begin
 End;
 
 Function DrawBMPButton(Const BMPType: TPicturesTypes): TBitmap;
-Const
-  BMPPos=0;
 Var
   Marker: Cardinal;
   MS, BS: TStream;
@@ -134,16 +132,16 @@ Begin
   If BMPType=ptLogo Then
     MS.Write(DCLbmp, Length(DCLbmp));
 
-  If BMPType=ptLogo_small Then
+  If BMPType=ptLogo_small then
     MS.Write(DCLbmp_Small, Length(DCLbmp_Small));
 
-  If MS.Size>0 Then
+  If MS.Size>0 then
   Begin
     Marker:=0;
     MS.Position:=0;
     MS.Read(Marker, PAGSignatureSize);
 
-    If Marker=PAGSignature Then  // 80, 65, 71
+    If Marker=PAGSignature then  // 80, 65, 71
     Begin
       // Compressed BMP/
       BS:=TMemoryStream.Create;
@@ -156,7 +154,7 @@ Begin
     End;
 
     Result:=TBitmap.Create;
-    MS.Position:=BMPPos;
+    MS.Position:=0;
     Result.LoadFromStream(MS);
     Result.TransparentColor:=Result.Canvas.Pixels[0, 0];
     Result.TransparentMode:=tmFixed;
