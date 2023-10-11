@@ -436,20 +436,21 @@ begin
 
   if ShowFormPanel then
   begin
-    FormBar:=Application.MainForm.FindComponent('FormBar') as TToolBar;
+    FormBar:=Application.MainForm.FindComponent(ToolPanelName) as TToolBar;
     if Assigned(FormBar) then
     begin
       TB:=TFormPanelButton.Create(Self);
       TB.Parent:=FormBar;
-      TB.AutoSize:=True;
-      TB.Width:=FormPanelButtonWidth;
+      TB.Alignment:=taLeftJustify;
       TB.Height:=FormPanelButtonHeight;
       TB.OnClick:=ToolButtonClick;
-      TB.Constraints.MaxWidth:=110;
+      TB.Constraints.MinWidth:=100;
+      TB.Constraints.MaxWidth:=FormPanelButtonWidth;
       TB.Tag:=Tag;
       TB.Margin:=PanelButtonTextRight;
       TB.Glyph:=DrawBMPButton(ptFormDotNew);
       TB.Font.Style:=[fsItalic];
+      TB.AutoSize:=True;
     end;
   end;
 
@@ -521,12 +522,12 @@ begin
         tmpS:=SrcLine;
         TranslateVal(tmpS, True);
         tmpS1:=FindParam('Caption=', tmpS);
+        if Assigned(TB) then
+          TB.Caption:=tmpS1;
         if GPT.MainFormCaption<>'' then
           tmpS1:=tmpS1+' \'+Trim(GPT.MainFormCaption)+'\';
 
         Self.Caption:=tmpS1;
-        if Assigned(TB) then
-          TB.Caption:=tmpS1;
       end;
 
       If IsLexem('OnTop=', SrcLine) then

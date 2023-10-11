@@ -71,7 +71,7 @@ const
   FieldsStepLeft=17;
   FormPanelHeight=28;
   FormPanelButtonHeight=FormPanelHeight-5;
-  FormPanelButtonWidth=85;
+  FormPanelButtonWidth=130;
   PanelButtonTextRight=3;
   SummGridHeight=27;
   SumPanelHeight=150;
@@ -83,6 +83,8 @@ const
   StatusDB=1;
   StatusInfo=2;
   StatusCustom=3;
+
+  ToolPanelName='FormBar';
 
 implementation
 
