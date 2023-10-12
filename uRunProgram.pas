@@ -1,25 +1,10 @@
 unit uRunProgram;
-{$I DefineType.pas}
+{$mode delphi}
 
 interface
 
 uses
-{$IFDEF FPC}
-  LCLIntf,
-{$ENDIF}
-{$IFnDEF FPC}
-{$IFDEF MSWINDOWS}
-  Windows, ShellApi, ShlObj,
-{$ENDIF}
-{$ENDIF}
-  Classes, Process, SysUtils;
-
-{$IFnDEF FPC}
-type
-  TProcessString=String;
-  TProcessChar=char;
-  TProcessStrings=TStringList;
-{$ENDIF}
+  LCLIntf, Classes, Process, SysUtils;
 
   procedure Run(Command, Param: String; Wait: Boolean);
   procedure OpenFile(DocumentFileName: String);
@@ -85,79 +70,45 @@ end;
 procedure Run(Command, Param: String; Wait: Boolean);
 var
   Proc: TProcess;
-  P: TProcessString;
+  C, P: TProcessString;
   Params: TStringList;
 begin
   Params:=TStringList.Create;
 
-  Proc:=TProcess.Create(nil);
+  C:=Command;
+  CommandLineToList(C, Params);
 
   P:=Param;
   CommandLineToList(P, Params);
 
-  if (Params.Count>0) and (Command='') then
+  if Params.Count>0 then
   begin
-    Proc.Executable:=Params[0];
-    Params.Delete(0);
-  end
-  else
-    Proc.Executable:=Command;
+    Proc:=TProcess.Create(nil);
+    if (Params.Count>0) and (Command='') then
+    begin
+      Proc.Executable:=Params[0];
+      Params.Delete(0);
+    end
+    else
+      Proc.Executable:=Params[0];
 
-  if P<>'' then
-  begin
-    Params.Append(P);
+    if P<>'' then
+    begin
+      Params.Append(P);
+    end;
+    Proc.Parameters:=Params;
+    If Wait then
+      Proc.Options:=Proc.Options+[poWaitOnExit, poUsePipes];
+
+    Proc.Execute;
+    FreeAndNil(Proc);
   end;
-  Proc.Parameters:=Params;
-  If Wait then
-    Proc.Options:=Proc.Options+[poWaitOnExit, poUsePipes];
-
-  Proc.Execute;
-
   FreeAndNil(Params);
-  FreeAndNil(Proc);
 end;
-
-{$IFnDEF FPC}
-procedure ExecApp(const App: String; const CurrDir: String);
-var
-  SI: TStartupInfo;
-  PI: TProcessInformation;
-  CmdLine: String;
-  cd:PChar;
-begin
-  Assert(App <> '');
-  cd:=nil;
-
-  CmdLine := App;
-  UniqueString(CmdLine);
-
-  FillChar(SI, SizeOf(SI), 0);
-  FillChar(PI, SizeOf(PI), 0);
-  SI.cb := SizeOf(SI);
-  SI.dwFlags := STARTF_USESHOWWINDOW;
-  SI.wShowWindow := SW_SHOWNORMAL;
-
-  SetLastError(ERROR_INVALID_PARAMETER);
-  if (CurrDir<>'') and FileExists(CurrDir) then
-  begin
-    cd:=PChar(CurrDir);
-  end;
-
-  {$WARN SYMBOL_PLATFORM OFF}
-  Win32Check(CreateProcess(nil, PChar(CmdLine), nil, nil, False, CREATE_DEFAULT_ERROR_MODE {$IFDEF UNICODE}or CREATE_UNICODE_ENVIRONMENT{$ENDIF}, nil, cd, SI, PI));
-  {$WARN SYMBOL_PLATFORM ON}
-  CloseHandle(PI.hThread);
-  CloseHandle(PI.hProcess);
-end;
-{$ENDIF}
 
 procedure OpenFile(DocumentFileName: String);
 begin
-{$IFDEF FPC}
   OpenDocument(DocumentFileName);
-{$ELSE}
-  ExecApp(DocumentFileName, ExtractFilePath(DocumentFileName));
-{$ENDIF}
 end;
 
 end.
