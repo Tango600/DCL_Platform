@@ -84,13 +84,8 @@ begin
   if Params.Count>0 then
   begin
     Proc:=TProcess.Create(nil);
-    if (Params.Count>0) and (Command='') then
-    begin
-      Proc.Executable:=Params[0];
-      Params.Delete(0);
-    end
-    else
-      Proc.Executable:=Params[0];
+    Proc.Executable:=Params[0];
+    Params.Delete(0);
 
     if P<>'' then
     begin

@@ -41,7 +41,6 @@ type
     FEvents: TList<TDCLEvent>;
     FReturnValueParams: TReturnValueParams;
     FUserLevel: TUserLevelsType;
-
     FIsSingle: Boolean;
 
     procedure ToolButtonClick(Sender: TObject);
