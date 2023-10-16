@@ -6,9 +6,6 @@ interface
 Uses
   Controls, ExtCtrls, StdCtrls, ComCtrls, Buttons, cMeDateEdit,
   EditBtn, DBExtCtrls, DBCtrls, DBGrids,
-{$IFDEF ADO}
-  ADODB, ADOConst, ADOInt,
-{$ENDIF}
 {$IFDEF IBX}
   IBDatabase, IBTable, IBCustomDataSet, IBSQL, IBQuery,
   IBUpdateSQL, //uIBUpdateSQLW,
@@ -26,13 +23,6 @@ type
   TDCLDBGrid=TDBGrid;
   TDCLDialogButton=TBitBtn;
 
-{$IFDEF ADO}
-  TDCLDialogQuery=TADOQuery;
-  TDCLSimlyQuery=TADOQuery;
-  TDBConnector=TADOConnection;
-  TDatabaseObject=TADOConnection;
-  TCommandQuery=TADOCommand;
-{$ENDIF}
 {$IFDEF IBX}
   TDCLDialogQuery=TIBQuery;
   TDCLSimlyQuery=TIBQuery;

@@ -159,7 +159,7 @@ Type
   TDataStatus=(dssChanged, dssSaved);
   TNotifyActionsType=(naDone, naScriptRun, naMessage, naExecAndWait, naExec, naExitToTime);
   TQueryType=(qtMain, qtFind, qtDefault);
-  TFilterType=(ftNone, ftDBFilter, ftContextFilter, ftComboFilter);
+  TFilterType=(ftNone, ftDBFilter, ftContextFilter, ftComboFilter, ftTempFilter);
   TOfficeFormat=(ofNone, ofMSO, ofOO, ofPossible);
   TOfficeDocumentFormat=(odfNone, odfMSO97, odfMSO2007, odfOO, odfPossible);
   TDocumentType=(dtNone, dtSheet, dtText);
@@ -177,7 +177,7 @@ Type
   TFieldFormat=(fftNone, fftDigit, fftDate, fftTime, fftDateTime, fftTrim, fftFloat);
   TSheetFillStrategy=(sfsInsert, sfsReplace);
   TFieldParsingMode=(fpmNone, fpmCaption, fpmField);
-  TPopupMenuAction=(pmaNone, pmaCopy, pmaCut, pmaPaste, pmaUndo, pmaFindCurrCell, pmaClearFind);
+  TPopupMenuAction=(pmaNone, pmaCopy, pmaCut, pmaPaste, pmaUndo, pmaFindCurrCell, pmaDelTempFilter, pmaClearFind);
   TSortOrder=(soNone, soAsc, soDesc);
   TConditionTypes=(ctND, ctEq, ctNotEq, ctGt, ctGtEq, ctLe, ctLeEq, ctIn, ctNotIn,
     ctBt, ctNotBt);

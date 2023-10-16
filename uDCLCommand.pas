@@ -668,11 +668,6 @@ begin
       FIDCLMain.LoadScriptsFromFile(tmpS, False);
   end;
 
-  If IsLexem('Report=', Command) then
-  begin
-    RunTextReport(Command, FDCLGrid.Query, FDCLGrid);
-  end;
-
   if IsLexem('ReadConfig=', Command) then
   begin
     tmpS:=FindParam('ReadConfig=', Command);
@@ -770,16 +765,6 @@ begin
   if IsLexem('Dialog=', Command) then
   begin
     DialogCommand(Command);
-  end;
-
-  If IsLexem('CloseDialog;', Command) or IsLexem('Close;', Command) Then
-  begin
-    If Assigned(FDCLForm) Then
-    Begin
-      tmpDCLForm:=FDCLForm.ParentForm;
-      FDCLForm.Close;
-      FDCLForm:=tmpDCLForm;
-    End;
   end;
 
   If IsLexem('Execute=', Command) then
@@ -949,6 +934,16 @@ begin
 
   If Assigned(FDCLForm) Then
   begin
+    If IsLexem('CloseDialog;', Command) or IsLexem('Close;', Command) Then
+    begin
+      If Assigned(FDCLForm) Then
+      Begin
+        tmpDCLForm:=FDCLForm.ParentForm;
+        FDCLForm.ForceClose;
+        FDCLForm:=tmpDCLForm;
+      End;
+    end;
+
     {$IFNDEF NOONTOP}
     If IsLexem('OnTop=', Command) then
     begin
@@ -1032,6 +1027,11 @@ begin
     begin
       tmpS:=FindParam('SetFormCaption=', Command);
       FDCLForm.Caption:=tmpS;
+    end;
+
+    If IsLexem('Report=', Command) then
+    begin
+      RunTextReport(Command, FDCLGrid.Query, FDCLGrid);
     end;
   end;
 

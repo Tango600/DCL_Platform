@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Controls, ComCtrls, StdCtrls, ExtCtrls, DB, DBCtrls,
-  Buttons, Dialogs, ExtDlgs, Graphics, {$IFnDEF FPC}JPEG, {$ENDIF}
+  Buttons, Dialogs, ExtDlgs, Graphics, Generics.Collections,
   uDCLConst, uDCLMeasurements, uDCLData, uDCLField, uLZW, uDCLImages,
   uDCLMultiLang, uDCLMessages, uStringParams, uDCLUtils;
 
@@ -19,6 +19,8 @@ type
     FFieldName, FFileName: String;
     FIsCompressed, FReadOnly: Boolean;
     ButtonPanel: TPanel;
+    FPicturesIndexes: TDictionary<TPicturesTypes, Integer>;
+    FImages: TImageList;
     MemoField: TDBMemo;
     GraficField: TDBImage;
     RichField: {$IFnDEF FPC}TDBRichEdit; {$ELSE}TDBMemo; {$ENDIF}
@@ -30,11 +32,14 @@ type
     OpenDialog: TOpenDialog;
     SaveDialog: TSaveDialog;
 
+    function GetImageIndex(PictureType: TPicturesTypes): Integer;
+
     procedure OnDBImageRead(Sender: TObject; S: TStream; var GraphExt: String);
     procedure OnDBImageWrite(Sender: TObject; S: TStream; GraphExt : string);
   public
     constructor Create(Parent: TWinControl; Data: TDataSource; Field: TDCLField;
-      GroupType: TGroupType); overload;
+      GroupType: TGroupType; PicturesIndexes: TDictionary<TPicturesTypes, Integer>;
+      Images: TImageList); overload;
 
     procedure Load(Sender: TObject);
     procedure Save(Sender: TObject);
@@ -44,11 +49,20 @@ type
     procedure LoadData(FileName: String);
 
     property IsCompressed: Boolean read FIsCompressed write FIsCompressed;
+    property ImageList: TImageList read FImages;
   end;
 
 implementation
 
 { TMediaFieldGroup }
+
+function TMediaFieldGroup.GetImageIndex(PictureType: TPicturesTypes): Integer;
+begin
+  if FPicturesIndexes.ContainsKey(PictureType) then
+    Result:=FPicturesIndexes[PictureType]
+  else
+    Result:=-1;
+end;
 
 procedure TMediaFieldGroup.OnDBImageRead(Sender: TObject; S: TStream;
   var GraphExt: String);
@@ -134,10 +148,13 @@ begin
 end;
 
 constructor TMediaFieldGroup.Create(Parent: TWinControl; Data: TDataSource;
-  Field: TDCLField; GroupType: TGroupType);
+  Field: TDCLField; GroupType: TGroupType; PicturesIndexes: TDictionary<TPicturesTypes, Integer>;
+  Images: TImageList);
 begin
   inherited Create(Parent);
   Self.Parent:=Parent;
+  FPicturesIndexes:=PicturesIndexes;
+  FImages:=Images;
 
   If Field.Height>0 Then
     Height:=Field.Height
@@ -225,9 +242,10 @@ begin
     LoadButton.Width:=25;
     LoadButton.Height:=GroupToolButtonHeight;
     LoadButton.Hint:=GetDCLMessageString(msLoad);
+    LoadButton.Images:=FImages;
+    LoadButton.ImageIndex:=GetImageIndex(ptLoad);
     LoadButton.ShowHint:=True;
     LoadButton.OnClick:=Load;
-    LoadButton.Glyph.Assign(DrawBMPButton(ptLoad));
 
     ClearButton:=TSpeedButton.Create(ButtonPanel);
     ClearButton.Parent:=ButtonPanel;
@@ -236,9 +254,10 @@ begin
     ClearButton.Width:=25;
     ClearButton.Height:=GroupToolButtonHeight;
     ClearButton.Hint:=GetDCLMessageString(msClear);
+    ClearButton.Images:=FImages;
+    ClearButton.ImageIndex:=GetImageIndex(ptClear);
     ClearButton.ShowHint:=True;
     ClearButton.OnClick:=Clear;
-    ClearButton.Glyph.Assign(DrawBMPButton(ptClear));
   end;
 
   SaveButton:=TSpeedButton.Create(ButtonPanel);
@@ -248,9 +267,10 @@ begin
   SaveButton.Width:=25;
   SaveButton.Height:=GroupToolButtonHeight;
   SaveButton.Hint:=GetDCLMessageString(msSave);
+  SaveButton.Images:=FImages;
+  SaveButton.ImageIndex:=GetImageIndex(ptSave);
   SaveButton.ShowHint:=True;
   SaveButton.OnClick:=Save;
-  SaveButton.Glyph.Assign(DrawBMPButton(ptSave));
 end;
 
 procedure TMediaFieldGroup.Load(Sender: TObject);

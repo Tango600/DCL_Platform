@@ -4,8 +4,8 @@ unit uIDCLMain;
 interface
 
 uses
-  Forms, Classes, Generics.Collections,
-  uDCLConst, uDCLVariables, uDCLDBConnector;
+  Forms, Classes, Generics.Collections, Controls,
+  uDCLConst, uDCLVariables, uDCLDBConnector, uDCLImages;
 
 type
   IDCLMain=interface
@@ -25,6 +25,9 @@ type
 
     procedure About;
     procedure Exit;
+    function GetImageList: TImageList;
+    function GetImageIndex(PictureType: TPicturesTypes): Integer;
+    function GetImageIndexes: TDictionary<TPicturesTypes, Integer>;
 
     procedure LoadScriptsFromFile(FileName: String; Run: Boolean);
     procedure ClearScriptPool;

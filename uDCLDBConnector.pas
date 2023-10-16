@@ -5,9 +5,6 @@ interface
 
 uses
   Classes, SysUtils, Forms,
-  {$IFDEF ADO}
-    ActiveX, ADODB, ADOConst, ADOInt,
-  {$ENDIF}
   {$IFDEF FPC}
     {$IFDEF IBX}
       IB, IBDatabase, IBCustomDataSet,
@@ -70,29 +67,6 @@ begin
   Name:='DCL_DBConnector1';
   FErrorCode:=255;
 
-  {$IFDEF ADO}
-  If Length(GPT.ConnectionString)>20 Then
-  begin
-    If CompareString(GPT.DBType, DBTypeFirebird) then
-      GPT.IBAll:=True;
-
-    GPT.NewConnectionString:='';
-    ConnectionString:=GPT.ConnectionString;
-    LoginPrompt:=False;
-
-    try
-      If Properties.Count>0 Then
-        Open;
-      FErrorCode:=0;
-      KeepConnection:=True;
-    Except
-      On E: Exception do
-      begin
-        DebugProc('  ... Fail');
-      end;
-    end;
-  end;
-  {$ENDIF}
   {$IFDEF IBX}
   GPT.NewDBUserName:='';
   GPT.IBAll:=True;
@@ -442,9 +416,6 @@ end;
 
 procedure TDCLDBConnector.SetConnector(Query: TDCLDialogQuery);
 begin
-  {$IFDEF ADO}
-  Query.Connection:=Self;
-  {$ENDIF}
   {$IFDEF IBX}
   Query.DataBase:=Self;
   {$ENDIF}

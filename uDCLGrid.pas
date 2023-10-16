@@ -73,10 +73,8 @@ type
     PartSplitter: TSplitter;
     FTablePartsPages: TPageControl;
     FTablePartsTabs: TTabSheet;
-    FImages: TImageList;
     FFilters: TList<TDBFilter>;
     FCalendars: TList<TDCLCalendar>;
-    FPicturesIndexes: TDictionary<TPicturesTypes, Integer>;
     FOrdersFields: TList<TSortField>;
     FOrderByFields, FNotOrderByFields: TStringList;
     FSumQuery: TDCLDialogQuery;
@@ -95,8 +93,6 @@ type
 
     function FindDCLFieldByName(FieldName: String): TDCLField;
     function GetFieldsCount: Integer;
-
-    procedure CreateImageList;
 
     procedure OpenQuery(QText: String);
     procedure SetNewQuery(Data: TDataSource);
@@ -234,6 +230,10 @@ type
     procedure AddPopupItem(Caption: String; Action: TPopupMenuAction; AChortCutKey: String; PictType: TPicturesTypes);
     procedure AddPopupSeparator;
     procedure OnPopupMenuClick(Sender: TObject);
+    procedure PopupMenuOnPopup(Sender: TObject);
+
+    procedure SetTempFilter;
+    procedure DeleteTempFilter;
 
     procedure Undo;
     procedure PCopy;
@@ -421,20 +421,6 @@ begin
     Result:=FDCLFields.Count
   else
     Result:=0;
-end;
-
-procedure TDCLGrid.CreateImageList;
-begin
-  FPicturesIndexes:=TDictionary<TPicturesTypes, Integer>.Create;
-
-  FImages:=TImageList.Create(Self);
-
-  FPicturesIndexes.Add(ptFind, FImages.Add(DrawBMPButton(ptFind), nil));
-  FPicturesIndexes.Add(ptStructure, FImages.Add(DrawBMPButton(ptStructure), nil));
-  FPicturesIndexes.Add(ptPrint, FImages.Add(DrawBMPButton(ptPrint), nil));
-
-  FPicturesIndexes.Add(ptDownArrow, FImages.Add(DrawBMPButton(ptDownArrow), nil));
-  FPicturesIndexes.Add(ptUpArrow, FImages.Add(DrawBMPButton(ptUpArrow), nil));
 end;
 
 procedure TDCLGrid.OpenQuery(QText: String);
@@ -826,12 +812,12 @@ var
       SortOrder:=FF.Order;
       if SortOrder=soDesc then
       begin
-        Column.Title.ImageIndex:=FPicturesIndexes[ptUpArrow];
+        Column.Title.ImageIndex:=FIDCLMain.GetImageIndex(ptUpArrow);
         FF.Order:=soAsc;
       end
       else
       begin
-        Column.Title.ImageIndex:=FPicturesIndexes[ptDownArrow];
+        Column.Title.ImageIndex:=FIDCLMain.GetImageIndex(ptDownArrow);
         FF.Order:=soDesc;
       end;
     end;
@@ -844,7 +830,7 @@ var
     FF:=GetField(Column.FieldName);
     if not Assigned(FF) then
     begin
-      Column.Title.ImageIndex:=FPicturesIndexes[ptUpArrow];
+      Column.Title.ImageIndex:=FIDCLMain.GetImageIndex(ptUpArrow);
 
       FF:=TSortField.Create;
       FF.FieldName:=LowerCase(Column.FieldName);
@@ -1431,7 +1417,8 @@ procedure TDCLGrid.AddMediaFieldGroup(Field: TDCLField; GroupType: TGroupType);
 var
   MediaField: TMediaFieldGroup;
 begin
-  MediaField:=TMediaFieldGroup.Create(FFieldsPanel, FData, Field, GroupType);
+  MediaField:=TMediaFieldGroup.Create(FFieldsPanel, FData, Field, GroupType,
+    FIDCLMain.GetImageIndexes, FIDCLMain.GetImageList);
 
   Field.DCLEditComponent:=TDCLEdit.Create;
   Field.DCLEditComponent.Control:=MediaField;
@@ -3669,10 +3656,7 @@ begin
   ItemMenu.Caption:=Caption;
   ItemMenu.ShortCut:=TextToShortCut(AChortCutKey);
   ItemMenu.OnClick:=OnPopupMenuClick;
-
-  ItemMenu.Bitmap.Assign(DrawBMPButton(PictType));
-  ItemMenu.Bitmap.TransparentColor:=clWhite;
-  ItemMenu.Bitmap.TransparentMode:=tmAuto;
+  ItemMenu.ImageIndex:=FIDCLMain.GetImageIndex(PictType);
 
   PopupGridMenu.Items.Add(ItemMenu);
 end;
@@ -3696,6 +3680,8 @@ begin
     pmaCut: Cut;
     pmaPaste: Paste;
     pmaUndo: Undo;
+    pmaFindCurrCell: SetTempFilter;
+    pmaDelTempFilter: DeleteTempFilter;
     pmaClearFind: begin
       if Assigned(FindGrid) then
       begin
@@ -3708,14 +3694,138 @@ begin
   end;
 end;
 
+procedure TDCLGrid.PopupMenuOnPopup(Sender: TObject);
+var
+  I: TMenuItem;
+  F: TDBFilter;
+  h: Boolean;
+begin
+  h:=False;
+  for F in FFilters do
+  begin
+    if F.FilterType=ftTempFilter then
+    begin
+      h:=True;
+      break;
+    end;
+  end;
+
+  for I in PopupGridMenu.Items do
+  begin
+    if I.Tag=Ord(pmaDelTempFilter) then
+    begin
+      I.Visible:=h;
+      break;
+    end;
+  end;
+end;
+
+procedure TDCLGrid.SetTempFilter;
+var
+  F, TempFilter: TDBFilter;
+begin
+  TempFilter:=nil;
+  for F in FFilters do
+  begin
+    if F.FilterType=ftTempFilter then
+    begin
+      TempFilter:=F;
+      break;
+    end;
+  end;
+
+  if not Assigned(TempFilter) then
+  begin
+    TempFilter:=TDBFilter.Create;
+    TempFilter.FilterType:=ftTempFilter;
+    TempFilter.NotLike:=True;
+    TempFilter.CaseC:=True;
+    TempFilter.Partial:=False;
+    FFilters.Add(TempFilter);
+  end;
+
+  if Assigned(TempFilter) then
+  begin
+    if FGridStyle=gsGrid then
+    begin
+      TempFilter.Field:=FDBGrid.SelectedColumn.FieldName;
+      TempFilter.FilterString:=FDBGrid.SelectedColumn.Field.AsString;
+
+      FDBGrid.SelectedColumn.Title.ImageIndex:=FIDCLMain.GetImageIndex(ptGridFilter);
+      OpenQuery(QueryBuilder);
+    end;
+  end;
+end;
+
+procedure TDCLGrid.DeleteTempFilter;
+var
+  F: TDBFilter;
+  SF: TSortField;
+  i: Integer;
+  Column: TColumn;
+
+  function GetField(FieldName: String): TSortField;
+  var
+    FF: TSortField;
+  begin
+    Result:=nil;
+    for FF in FOrdersFields do
+    begin
+      if LowerCase(FF.FieldName)=LowerCase(FieldName) then
+      begin
+        Result:=FF;
+        break;
+      end;
+    end;
+  end;
+begin
+  for F in FFilters do
+  begin
+    if F.FilterType=ftTempFilter then
+    begin
+      FFilters.Remove(F);
+      Column:=nil;
+      for i:=0 to FDBGrid.Columns.Count-1 do
+      begin
+        if LowerCase(F.Field)=LowerCase(FDBGrid.Columns[i].FieldName) then
+        begin
+          Column:=FDBGrid.Columns[i];
+          break;
+        end;
+      end;
+
+      if Assigned(Column) then
+      begin
+        SF:=GetField(Column.FieldName);
+        if Assigned(SF) then
+        begin
+          case SF.Order of
+          soNone: Column.Title.ImageIndex:=-1;
+          soAsc: Column.Title.ImageIndex:=FIDCLMain.GetImageIndex(ptDownArrow);
+          soDesc: Column.Title.ImageIndex:=FIDCLMain.GetImageIndex(ptUpArrow);
+          end;
+        end
+        else
+          Column.Title.ImageIndex:=-1;
+      end;
+
+      OpenQuery(QueryBuilder);
+      break;
+    end;
+  end;
+end;
+
 procedure TDCLGrid.Undo;
 begin
-  if Assigned(FDBGrid) and Assigned(FData) and
-    Assigned(FData.DataSet) then
-      FData.DataSet.Cancel;
-{$IFDEF MSWINDOWS}
+  if Assigned(FDBGrid) then
+  begin
+    if Assigned(FData) and
+      Assigned(FData.DataSet) then
+        FData.DataSet.Cancel;
+  end;
+  {$IFDEF MSWINDOWS}
   SendMessage(GetFocus, WM_UNDO, 0, 0);
-{$ENDIF}
+  {$ENDIF}
 end;
 
 procedure TDCLGrid.PCopy;
@@ -3814,8 +3924,6 @@ begin
   FQueryes:=TDictionary<TQueryType, TDCLQueryStore>.Create;
 
   CreateToolPanel;
-
-  CreateImageList;
 
   FExtData:=Data;
 
@@ -4141,7 +4249,7 @@ begin
     FToolButtonsCount:=0;
     FToolBar:=TToolBar.Create(FToolsPanel);
     FToolBar.Parent:=FToolsPanel;
-    FToolBar.Images:=FImages;
+    FToolBar.Images:=FIDCLMain.GetImageList;
     FToolBar.OnResize:=OnGridResize;
     FToolBar.Height:=ToolButtonPanelHeight;
     FToolBar.ButtonHeight:=ToolButtonHeight;
@@ -4218,7 +4326,7 @@ begin
   begin
     FToolBarButtonFind:=TToolButton.Create(FToolBar);
     FToolBarButtonFind.Parent:=FToolBar;
-    FToolBarButtonFind.ImageIndex:=FPicturesIndexes[ptFind];
+    FToolBarButtonFind.ImageIndex:=FIDCLMain.GetImageIndex(ptFind);
     FToolBarButtonFind.OnClick:=Find;
     Inc(FToolButtonsCount);
   end;
@@ -4296,7 +4404,7 @@ begin
 
         FToolBarButtonStruct:=TToolButton.Create(FToolBar);
         FToolBarButtonStruct.Parent:=FToolBar;
-        FToolBarButtonStruct.ImageIndex:=FPicturesIndexes[ptStructure];
+        FToolBarButtonStruct.ImageIndex:=FIDCLMain.GetImageIndex(ptStructure);
         FToolBarButtonStruct.OnClick:=Structure;
         Inc(FToolButtonsCount);
       end;
@@ -4315,7 +4423,7 @@ begin
 
           FToolBarButtonPrint:=TToolButton.Create(FToolBar);
           FToolBarButtonPrint.Parent:=FToolBar;
-          FToolBarButtonPrint.ImageIndex:=FPicturesIndexes[ptPrint];
+          FToolBarButtonPrint.ImageIndex:=FIDCLMain.GetImageIndex(ptPrint);
           FToolBarButtonPrint.OnClick:=Print;
           Inc(FToolButtonsCount);
         end;
@@ -4337,17 +4445,23 @@ begin
 
       FDBGrid.DataSource:=FData;
       FDBGrid.AlternateColor:=GridAlternateColor;
-      FDBGrid.TitleImageList:=FImages;
+      FDBGrid.TitleImageList:=FIDCLMain.GetImageList;
       FDBGrid.OnDblClick:=GridDblClick;
       FDBGrid.OnTitleClick:=GridColumnClick;
 
       PopupGridMenu:=TPopupMenu.Create(FDBGrid);
       PopupGridMenu.Parent:=FDBGrid;
+      PopupGridMenu.Images:=FIDCLMain.GetImageList;
+      PopupGridMenu.OnPopup:=PopupMenuOnPopup;
+
       FDBGrid.PopupMenu:=PopupGridMenu;
       FDBGrid.OnDrawColumnCell:=GridDrawDataCell;
 
-      AddPopupItem(GetDCLMessageString(msFindCurrCell), pmaFindCurrCell, 'Alt+F', ptNone);
-      AddPopupItem(GetDCLMessageString(msClearAllFind), pmaClearFind, 'Alt+C', ptNone);
+      AddPopupItem(GetDCLMessageString(msFindCurrCell), pmaFindCurrCell, 'Alt+F', ptFindCurrCell);
+      AddPopupItem(GetDCLMessageString(msDeleteTempFilter), pmaDelTempFilter, 'Alt+D', ptClearAllFind);
+
+      AddPopupSeparator;
+      AddPopupItem(GetDCLMessageString(msClearAllFind), pmaClearFind, 'Alt+C', ptClearAllFind);
 
       AddPopupSeparator;
 

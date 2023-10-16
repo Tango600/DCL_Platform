@@ -8,8 +8,9 @@ uses
   Windows,
   {$ENDIF}
   Classes, SysUtils, Generics.Collections, Forms, ExtCtrls, LazFileUtils,
+  Controls,
   uDCLTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenu, uDCLNotifier,
-  uIDCLMain, uDCLConst, uDCLScriptSigner;
+  uIDCLMain, uDCLConst, uDCLScriptSigner, uDCLImages;
 
 type
 
@@ -27,6 +28,8 @@ type
     FBusyMode: Boolean;
     FDCLNotifier: TDCLNotifier;
     FScripts: TList<TDCLScriptItem>;
+    FPicturesIndexes: TDictionary<TPicturesTypes, Integer>;
+    FImages: TImageList;
 
     procedure KillerForms(Sender: TObject);
     function GetScriptText(ScriptName: String): TStringList;
@@ -37,6 +40,7 @@ type
     function ReadBaseID: String;
 
     function TestGlobalParamsTable: Boolean;
+    procedure CreateImageList;
   public
     constructor Create; overload;
     destructor Destroy; override;
@@ -54,6 +58,9 @@ type
     procedure About;
 
     procedure Exit;
+    function GetImageList: TImageList;
+    function GetImageIndex(PictureType: TPicturesTypes): Integer;
+    function GetImageIndexes: TDictionary<TPicturesTypes, Integer>;
 
     function IsNeedLogin: Boolean;
 
@@ -68,6 +75,7 @@ type
     property Variables: TVariables read FVariables;
     property MainForm: TForm read FMainForm write FMainForm;
     property Forms: TList<TForm> read FForms;
+    property ImageList: TImageList read FImages;
   end;
 
 implementation
@@ -346,14 +354,47 @@ begin
   Result:=FDBConnector.Connected and not TableExist(FDBConnector, GPTTableName);
 end;
 
+procedure TDCLMain.CreateImageList;
+  procedure PictureAdd(PictureType: TPicturesTypes);
+  begin
+    FPicturesIndexes.Add(PictureType, FImages.Add(DrawBMPButton(PictureType), nil));
+  end;
+begin
+  FPicturesIndexes:=TDictionary<TPicturesTypes, Integer>.Create;
+
+  FImages:=TImageList.Create(Self);
+  FImages.Scaled:=True;
+  FImages.RegisterResolutions([16, 24, 48]);
+
+  PictureAdd(ptFind);
+  PictureAdd(ptStructure);
+  PictureAdd(ptPrint);
+
+  PictureAdd(ptDownArrow);
+  PictureAdd(ptUpArrow);
+
+  PictureAdd(ptFindCurrCell);
+  PictureAdd(ptClearAllFind);
+
+  PictureAdd(ptCopy);
+  PictureAdd(ptCut);
+  PictureAdd(ptPaste);
+  PictureAdd(ptUndo);
+
+  PictureAdd(ptTools);
+
+  PictureAdd(ptLoad);
+  PictureAdd(ptClear);
+  PictureAdd(ptSave);
+
+  PictureAdd(ptGridFilter);
+end;
+
 constructor TDCLMain.Create;
 var
   FDCLConfig: TDCLConfig;
   Params: TStringList;
 begin
-  {$IFDEF ADO}
-  CoInitialize(nil);
-  {$ENDIF}
   GPT.NoParamsTable:=False;
 
   Path:=ExtractFilePath(Application.ExeName);
@@ -369,6 +410,7 @@ begin
   FDCLConfig.GetParamsStructure;
 
   InitLangEnv;
+  CreateImageList;
 
   LoadLangRes(LangName, Path);
 
@@ -538,6 +580,24 @@ end;
 procedure TDCLMain.Exit;
 begin
   Application.MainForm.Close;
+end;
+
+function TDCLMain.GetImageList: TImageList;
+begin
+  Result:=FImages;
+end;
+
+function TDCLMain.GetImageIndex(PictureType: TPicturesTypes): Integer;
+begin
+  if FPicturesIndexes.ContainsKey(PictureType) then
+    Result:=FPicturesIndexes[PictureType]
+  else
+    Result:=-1;
+end;
+
+function TDCLMain.GetImageIndexes: TDictionary<TPicturesTypes, Integer>;
+begin
+  Result:=FPicturesIndexes;
 end;
 
 end.

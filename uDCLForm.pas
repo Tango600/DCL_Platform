@@ -80,6 +80,7 @@ type
       ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False); overload;
     destructor Destroy; override;
 
+    procedure ForceClose;
     procedure RefreshForm;
 
     procedure SetRecordsStatus(RecNo, RecordCount: LongInt); overload;
@@ -195,7 +196,7 @@ end;
 procedure TDCLForm.AddMainItem(Caption: String; Action: TNotifyEvent);
 begin
   FMainItemMenu:=TMenuItem.Create(FFormMenu);
-  FMainItemMenu.Bitmap:=DrawBMPButton(ptTools);
+  FMainItemMenu.ImageIndex:=FIDCLMain.GetImageIndex(ptTools);
   FMainItemMenu.Caption:=Caption;
   FMainItemMenu.OnClick:=Action;
   FFormMenu.Items.Add(FMainItemMenu);
@@ -426,6 +427,7 @@ begin
   {$ENDIF}
 
   FFormMenu:=TMainMenu.Create(Self);
+  FFormMenu.Images:=FIDCLMain.GetImageList;
 
   AddMainItem(InitCap(GetDCLMessageString(msSettings)), nil);
   AddSubItem(GetDCLMessageString(msResetFieldsSettings), ptNone, ResetFieldsSettings);
@@ -744,6 +746,12 @@ begin
 
     FreeAndNil(Settings);
   end;
+end;
+
+procedure TDCLForm.ForceClose;
+begin
+  FCloseQuery:=False;
+  Close;
 end;
 
 end.

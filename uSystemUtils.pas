@@ -69,19 +69,6 @@ Begin
 {$ENDIF}
 End;
 
-function GetParams(App: String): String;
-var
-  p:Integer;
-begin
-  p:=Pos(' ', App);
-  if p=0 then
-    Result:=App
-  else
-  begin
-    Result:=Copy(App, p+1, Length(App));
-  end;
-end;
-
 {$IFDEF MSWINDOWS}
 Function KeyState(Key: Integer): Boolean;
 Begin
@@ -136,38 +123,6 @@ end;
 Function KeyState(Key: Integer): Boolean;
 Begin
   Result:=GetKeyState(Key)<>0;
-End;
-
-Function ExecuteApp(App: String; Wait: Boolean=False): Boolean;
-Var
-  aProcess: TProcess;
-Begin
-  Try
-    aProcess:=TProcess.Create(nil);
-    aProcess.Commandline:=App;
-    If Wait then
-      aProcess.Options:=aProcess.Options+[poWaitOnExit, poUsePipes];
-    aProcess.Execute;
-    Result:=True;
-    FreeAndNil(aProcess);
-  Except
-    Result:=False;
-  end;
-End;
-
-procedure ExecApp(const App: String; const CurrDir: String);
-Begin
-  ExecuteApp(App);
-End;
-
-Function ExecAndWait(Const FileName: ShortString; Const WinState: Word; Wait:Boolean=True): Boolean;
-Begin
-  Result:=ExecuteApp(FileName, Wait);
-End;
-
-Procedure Exec(Const FileName, Directory: String);
-Begin
-  ExecuteApp(FileName);
 End;
 
 {$ENDIF}

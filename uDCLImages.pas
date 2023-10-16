@@ -8,10 +8,11 @@ uses
   uLZW, uDCLResources;
 
 type
-  TPicturesTypes=(ptNone, pt0x0, ptEsc, ptFind, ptPrint, ptStructure, ptFormDotNew, ptUndo,
-    ptFormDotActive, ptFormDotInactive, ptCut, ptCopy, ptAppend, ptLoad, ptNew,
-    ptSave, ptFindCurrCell, ptClearAllFind, ptClear, ptCancel, ptPaste, ptEdit,
-    ptLogo_small, ptBookmark, ptLogo, ptPost, ptTools, ptDownArrow, ptUpArrow);
+  TPicturesTypes=(ptNone, pt0x0, ptEsc, ptFind, ptPrint, ptStructure, ptFormDotNew,
+    ptUndo, ptFormDotActive, ptFormDotInactive, ptCut, ptCopy, ptAppend, ptLoad,
+    ptSave, ptFindCurrCell, ptClearAllFind, ptClear, ptPaste,
+    ptLogo_small, ptLogo, ptTools, ptDownArrow, ptUpArrow, ptGridFilter,
+    ptNew);
 
 Function DrawBMPButton(Const BMPType: TPicturesTypes): TBitmap;
 function GetIcon: TIcon;
@@ -75,26 +76,24 @@ Begin
   MS:=TMemoryStream.Create;
   If BMPType=ptFind Then
     MS.Write(FindBMP, Length(FindBMP));
+  If BMPType=ptGridFilter then
+    MS.Write(GridFilter, Length(GridFilter));
   If BMPType=ptFindCurrCell Then
     MS.Write(FindCurrCellBMP, Length(FindCurrCellBMP));
   If BMPType=ptClearAllFind Then
-    MS.Write(FindCurrCellBMP_Neg, Length(FindCurrCellBMP_Neg));
+    MS.Write(ClearAllFind, Length(ClearAllFind));
   If BMPType=ptPrint Then
     MS.Write(PrintBMP, Length(PrintBMP));
   If BMPType=ptStructure Then
     MS.Write(StructBMP, Length(StructBMP));
   If BMPType=ptEsc Then
     MS.Write(Esc, Length(Esc));
-  If BMPType=ptBookmark Then
-    MS.Write(Bitmap_BookMark, Length(Bitmap_BookMark));
   If BMPType=ptLoad Then
     MS.Write(Bitmap_Load, Length(Bitmap_Load));
   If BMPType=ptSave Then
     MS.Write(Bitmap_Save, Length(Bitmap_Save));
   If BMPType=ptClear Then
     MS.Write(Bitmap_Clear, Length(Bitmap_Clear));
-  If BMPType=ptCancel Then
-    MS.Write(Bitmap_X, Length(Bitmap_X));
   If BMPType=ptFormDotNew Then
     MS.Write(FormDotNew, Length(FormDotNew));
   If BMPType=ptFormDotActive Then
@@ -116,24 +115,14 @@ Begin
   If BMPType=ptUpArrow Then
     MS.Write(UpArrow, Length(UpArrow));
 
-  If BMPType=ptEdit Then
-    MS.Write(Bitmap_Pen, Length(Bitmap_Pen));
   If (BMPType=ptNew) or (BMPType=ptAppend) Then
     MS.Write(Bitmap_New, Length(Bitmap_New));
 
   If BMPType=ptTools Then
-    MS.Write(Tools16, Length(Tools16));
-
-  If BMPType=ptCancel Then
-    MS.Write(Bitmap_Cancel, Length(Bitmap_Cancel));
-  If BMPType=ptPost Then
-    MS.Write(Bitmap_Post, Length(Bitmap_Post));
+    MS.Write(Tools, Length(Tools));
 
   If BMPType=ptLogo Then
     MS.Write(DCLbmp, Length(DCLbmp));
-
-  If BMPType=ptLogo_small then
-    MS.Write(DCLbmp_Small, Length(DCLbmp_Small));
 
   If MS.Size>0 then
   Begin

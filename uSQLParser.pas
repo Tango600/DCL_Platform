@@ -207,7 +207,7 @@ begin
           end;
         end;
       end;
-      ftContextFilter: begin
+      ftContextFilter, ftTempFilter: begin
         isNot:='';
         if Filter.NotFilter then
           isNot:='!';
