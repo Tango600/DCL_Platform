@@ -63,10 +63,6 @@ begin
       GPT.DCLUserName:=ParamStr(i+1);
     If PosEx('-password', ParamStr(i))<>0 Then
       GPT.EnterPass:=ParamStr(i+1);
-    If PosEx('-scr', ParamStr(i))<>0 Then
-      GPT.LaunchScrFile:=ParamStr(i+1);
-    If PosEx('-dialog', ParamStr(i))<>0 Then
-      GPT.LaunchForm:=ParamStr(i+1);
   End;
 
   LoadConfig(GPT.IniFileName);
