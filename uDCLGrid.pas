@@ -4444,7 +4444,8 @@ begin
       end;
 
       FDBGrid.DataSource:=FData;
-      FDBGrid.AlternateColor:=GridAlternateColor;
+      if FBrushColors.Count=0 then
+        FDBGrid.AlternateColor:=GridAlternateColor;
       FDBGrid.TitleImageList:=FIDCLMain.GetImageList;
       FDBGrid.OnDblClick:=GridDblClick;
       FDBGrid.OnTitleClick:=GridColumnClick;
