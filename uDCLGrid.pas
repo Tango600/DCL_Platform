@@ -383,11 +383,13 @@ begin
       If PosEx('underline', FindParam('FontStyle=', ScrLine))<>0 Then
         ButtonParams.FontStyle:=ButtonParams.FontStyle+[fsUnderLine];
 
+      flg:=FindParam('AutoSize=', ScrLine)='1';
+
       tmpS:=FindParam('Width=', ScrLine);
       If tmpS<>'' then
       begin
         v1:=StrToIntEx(tmpS);
-        If v1>30 then
+        If (v1>30) and (not flg) then
           ButtonParams.Width:=v1
         else
           ButtonParams.Width:=-1;
