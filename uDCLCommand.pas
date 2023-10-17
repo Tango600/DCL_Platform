@@ -548,6 +548,7 @@ var
   i, v1, v2: Integer;
   Wait, Flg1, Flg2: Boolean;
   tmpDCLForm: TDCLForm;
+  vForm: TForm;
   {$IFDEF MSWINDOWS}
   SheetReportSelector: TSheetOfficeReportSelector;
   TextOfficeReportSelector: TTextOfficeReportSelector;
@@ -687,6 +688,33 @@ begin
     DCLConfig:=TDCLConfigTable.Create(FDBConnector);
     DCLConfig.WriteConfig(tmpS, tmpS2, '');
     FreeAndNil(DCLConfig);
+  end;
+
+  if IsLexem('DialogByName=', Command) then
+  begin
+    tmpS:=FindParam('DialogByName=', Command);
+    tmpS1:=Copy(tmpS, 1, Pos('.', tmpS)-1);
+    tmpS2:=Copy(tmpS, Pos('.', tmpS)+1, Length(tmpS));
+
+    for vForm in FForms do
+    begin
+      tmpDCLForm:=vForm as TDCLForm;
+      if DCLCompareString(tmpDCLForm.DialogName, tmpS1) then
+      begin
+        If DCLCompareString(tmpS2, 'hide') then
+          tmpDCLForm.Hide;
+        If DCLCompareString(tmpS2, 'show') then
+          tmpDCLForm.SetFocus;
+        If DCLCompareString(tmpS2, 'close') then
+          tmpDCLForm.Close;
+        If DCLCompareString(tmpS2, 'refresh') then
+          tmpDCLForm.RefreshForm;
+        If DCLCompareString(tmpS2, 'top') then
+          tmpDCLForm.ShowOnTop;
+
+        break;
+      end;
+    end;
   end;
 
   if IsLexem('Message=', Command) then
@@ -930,9 +958,9 @@ begin
 
   If Assigned(FDCLForm) Then
   begin
-    If IsLexem('CloseDialog;', Command) or IsLexem('Close;', Command) Then
+    If IsLexem('CloseDialog;', Command) or IsLexem('Close;', Command) then
     begin
-      If Assigned(FDCLForm) Then
+      If Assigned(FDCLForm) then
       Begin
         tmpDCLForm:=FDCLForm.ParentForm;
         FDCLForm.ForceClose;

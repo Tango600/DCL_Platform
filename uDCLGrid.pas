@@ -1609,21 +1609,21 @@ begin
         (FindParam('UpdateTable=', Line), FindParam('KeyFields=', Line));
 
     FCurrentTablePart.SetSQL(tSQL);
-
-    if FQuery.Active then
-      FCurrentTablePart.Query.open;
+    FCurrentTablePart.NoDataField:=FindParam('NoDataField=', Line)='1';
 
     If FindParam('DependField=', Line)<>'' Then
     begin
       FCurrentTablePart.DependField:=FindParam('DependField=', Line);
     end;
 
+    if (not FCurrentTablePart.NoDataField) and Assigned(FQuery) and FQuery.Active then
+      FCurrentTablePart.Query.open;
+
     If FindParam('MasterDataField=', Line)<>'' then
     begin
       FCurrentTablePart.MasterDataField:=FindParam('MasterDataField=', Line);
     end;
 
-    FCurrentTablePart.NoDataField:=FindParam('NoDataField=', Line)='1';
     If FindParam('VariableName=', Line)<>'' then
     begin
       FCurrentTablePart.MasterValueVariableName:=FindParam('VariableName=', Line);
@@ -2158,7 +2158,7 @@ begin
   DBLookupControl.ShowHint:=True;
   DBLookupControl.Hint:=Field.Hint;
 
-  If FQuery.Active Then
+  If Assigned(FQuery) and FQuery.Active Then
   begin
     If not Field.NoDataField Then
     begin
@@ -2211,7 +2211,7 @@ begin
     if TempStr<>'' then
     begin
       DBLookupControl.KeyValue:=TempStr;
-      If (Not NoDataField) and Query.CanModify Then
+      If (Not NoDataField) and FQuery.CanModify Then
       begin
         If (Not (FQuery.State in dsEditModes))and FQuery.Active and(Not NoDataField) Then
           Query.Edit;

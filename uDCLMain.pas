@@ -255,15 +255,10 @@ begin
 end;
 
 procedure TDCLMain.ReleaseForm(Form: TDCLForm);
-var
-  tmp: TDCLForm;
 begin
-  tmp:=Form.ParentForm;
   FForms.Remove(Form);
   Form.Release;
   FreeAndNil(Form);
-  if Assigned(tmp) then
-    tmp.SetFocus;
 end;
 
 function TDCLMain.GetScriptText(ScriptName: String): TStringList;
