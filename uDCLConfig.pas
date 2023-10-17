@@ -86,6 +86,12 @@ Var
   i: Integer;
   Parser: TDCLValuseParser;
   cs: String;
+
+function IsParameter(ParamName, ParamLine: String): Boolean;
+begin
+  Result:=PosEx(ParamName, ParamLine)=1;
+end;
+
 Begin
   If Params.Count>0 Then
   begin
@@ -98,192 +104,164 @@ Begin
         cs:=Params[i];
         Parser.RePlaseVariables('', cs, nil);
 
-{$IFDEF ADO}
-        If PosEx('ConnectionString=', cs)=1 Then
-          GPT.ConnectionString:=Copy(cs, 18, Length(cs));
-{$ENDIF}
 {$IFDEF SERVERDB}
-        If PosEx('UserName=', cs)=1 Then
+        If IsParameter('UserName=', cs) then
           GPT.DBUserName:=FindParam('UserName=', cs);
-        If PosEx('Password=', cs)=1 Then
+        If IsParameter('Password=', cs) then
           GPT.DBPassword:=FindParam('Password=', cs);
-        If PosEx('DBPath=', cs)=1 Then
+        If IsParameter('DBPath=', cs) then
           GPT.DBPath:=FindParam('DBPath=', cs);
-        If PosEx('ServerName=', cs)=1 Then
+        If IsParameter('ServerName=', cs) then
           GPT.ServerName:=FindParam('ServerName=', cs);
-        If PosEx('Port=', cs)=1 Then
+        If IsParameter('Port=', cs) then
           GPT.Port:=StrToIntEx(FindParam('Port=', cs));
-        If PosEx('DBType=', cs)=1 Then
+        If IsParameter('DBType=', cs) then
           GPT.DBType:=FindParam('DBType=', cs);
-        If PosEx('SQLDialect=', cs)=1 Then
+        If IsParameter('SQLDialect=', cs) then
           GPT.SQLDialect:=StrToIntEx(FindParam('SQLDialect=', cs));
 {$ENDIF}
-        If PosEx('DBTypeIB=', cs)=1 Then
+        If IsParameter('DBTypeIB=', cs) then
           GPT.IBAll:=FindParam('DBTypeIB=', cs)='1';
-        If PosEx('CodePage=', cs)=1 Then
+        If IsParameter('CodePage=', cs) then
           GPT.ServerCodePage:=FindParam('CodePage=', cs);
-        If PosEx('StringTypeChar=', cs)=1 Then
+        If IsParameter('StringTypeChar=', cs) then
           GPT.StringTypeChar:=Trim(FindParam('StringTypeChar=', cs));
-        If PosEx('Viewer=', cs)=1 Then
+        If IsParameter('Viewer=', cs) then
           GPT.Viewer:=FindParam('Viewer=', cs);
-        If PosEx('MainFormCaption=', cs)=1 Then
+        If IsParameter('MainFormCaption=', cs) then
           GPT.MainFormCaption:=FindParam('MainFormCaption=', cs);
 
-        If PosEx('DCLUserName=', cs)=1 Then
+        If IsParameter('DCLUserName=', cs) then
           GPT.DCLUserName:=FindParam('DCLUserName=', cs);
-        If PosEx('DCLUserPass=', cs)=1 Then
+        If IsParameter('DCLUserPass=', cs) then
           GPT.EnterPass:=FindParam('DCLUserPass=', cs);
 
-{$IFDEF DEVELOPERMODE}
-        If PosEx('GeneratorName=', cs)=1 Then
-          GPT.GeneratorName:=FindParam('GeneratorName=', cs);
-{$ENDIF}
-        If PosEx('DisableFieldsList=', cs)=1 Then
-          If Trim(FindParam('DisableFieldsList=', cs))='1' Then
+        If IsParameter('DisableFieldsList=', cs) then
+          If Trim(FindParam('DisableFieldsList=', cs))='1' then
             GPT.DisableFieldsList:=True;
 
-        If PosEx('GetValueSeparator=', cs)=1 Then
+        If IsParameter('GetValueSeparator=', cs) then
           GPT.GetValueSeparator:=FindParam('GetValueSeparator=', cs);
 
-        If PosEx('MultiRoles=', cs)=1 Then
+        If IsParameter('MultiRoles=', cs) then
         Begin
           GPT.MultiRolesMode:=Trim(FindParam('MultiRoles=', cs))='1';
         End;
 
-        If PosEx('Debug=', cs)=1 Then
-        Begin
-          GPT.DebugOn:=Trim(FindParam('Debug=', cs))='1';
-        End;
-
-        If PosEx('SQLMonitor=1', cs)=1 Then
+        If IsParameter('SQLMonitor=1', cs) then
         Begin
           // SQLMonActions.StartSQLTrace;
         End;
 
-        If PosEx('DebugMesseges=', cs)=1 Then
+        If IsParameter('DebugMesseges=', cs) then
         Begin
           GPT.DebugMesseges:=Trim(FindParam('DebugMesseges=', cs))='1';
         End;
 
-        If PosEx('HashPass=', cs)=1 Then
+        If IsParameter('HashPass=', cs) then
         Begin
           GPT.HashPass:=Trim(FindParam('HashPass=', cs))='1';
         End;
 
-        If PosEx('UseMessages=', cs)=1 Then
+        If IsParameter('UseMessages=', cs) then
         Begin
           GPT.UseMessages:=Trim(FindParam('UseMessages=', cs))='1';
         End;
 
-        If PosEx('ConfirmExit=', cs)=1 Then
+        If IsParameter('ConfirmExit=', cs) then
         Begin
           GPT.ExitCnf:=Trim(FindParam('ConfirmExit=', cs))='1';
         End;
 
-        If PosEx('ShowPicture=', cs)=1 Then
-        Begin
-          GPT.ShowPicture:=Trim(FindParam('ShowPicture=', cs))='1';
-        End;
-
-        If PosEx('DialogsSettings=', cs)=1 Then
+        If IsParameter('DialogsSettings=', cs) then
         Begin
           GPT.DialogsSettings:=Trim(FindParam('DialogsSettings=', cs))='1';
         End;
 
-        If PosEx('DisableColors=', cs)=1 Then
+        If IsParameter('DisableColors=', cs) then
         Begin
           GPT.DisableColors:=Trim(FindParam('DisableColors=', cs))='1';
         End;
 
-        If PosEx('OneCopy=', cs)=1 Then
+        If IsParameter('OneCopy=', cs) then
         Begin
           GPT.OneCopy:=Trim(FindParam('OneCopy=', cs))='1';
         End;
 
-        If PosEx('DisableIniPasword=1', cs)=1 Then
+        If IsParameter('DisableIniPasword=1', cs) then
         Begin
           GPT.DisableIniPasword:=True;
         End;
 
 {$IFDEF CPU32}
-        If PosEx('LibPath=', cs)=1 Then
+        If IsParameter('LibPath=', cs) then
         Begin
           GPT.LibPath:=FindParam('LibPath=', cs);
         End;
 {$ENDIF}
 {$IFDEF CPU64}
-        If PosEx('LibPath_x64=', cs)=1 Then
+        If IsParameter('LibPath_x64=', cs) then
         Begin
           GPT.LibPath:=FindParam('LibPath_x64=', cs);
         End;
 {$ENDIF}
-        If PosEx('UserLogging=1', cs)=1 Then
+        {If IsParameter('UseUTF8=', cs) then
         Begin
-          GPT.UserLogging:=True;
-        End;
-
-        If PosEx('UserLoggingHistory=1', cs)=1 Then
-        Begin
-          GPT.UserLoggingHistory:=True;
-        End;
-
-        {If PosEx('UseUTF8=', cs)=1 Then
-        Begin
-          If Trim(FindParam('UseUTF8=', cs))='1' Then
+          If Trim(FindParam('UseUTF8=', cs))='1' then
             DecodeBase:=True
           Else
             DecodeBase:=False;
         End;}
 
-        If PosEx('DateFormat=', cs)=1 Then
+        If IsParameter('DateFormat=', cs) then
         Begin
           GPT.DateFormat:=Trim(FindParam('DateFormat=', cs));
         End;
 
-        If PosEx('Language=', cs)=1 Then
+        If IsParameter('Language=', cs) then
         Begin
           ///LangName:=Trim(FindParam('Language=', cs));
         End;
 
-        If PosEx('DateSeparator=', cs)=1 Then
+        If IsParameter('DateSeparator=', cs) then
         Begin
           GPT.DateFormat:=Trim(FindParam('DateSeparator=', cs));
         End;
 
-        If PosEx('TimeFormat=', cs)=1 Then
+        If IsParameter('TimeFormat=', cs) then
         Begin
           GPT.TimeFormat:=Trim(FindParam('TimeFormat=', cs));
         End;
 
-        If PosEx('TimeSeparator=', cs)=1 Then
+        If IsParameter('TimeSeparator=', cs) then
         Begin
           GPT.TimeFormat:=Trim(FindParam('TimeSeparator=', cs));
         End;
 
         {$IFDEF MSWINDOWS}
-        If PosEx('OfficeType=', cs)=1 Then
+        If IsParameter('OfficeType=', cs) then
         Begin
           GPT.OfficeFormat:=ConvertOfficeType(Trim(FindParam('OfficeType=', cs)));
         End;
 
-        If PosEx('OfficeDocumentFormat=', cs)=1 Then
+        If IsParameter('OfficeDocumentFormat=', cs) then
         Begin
           GPT.OfficeDocumentFormat:=GetDocumentType(Trim(FindParam('OfficeDocumentFormat=', cs)));
         End;
         {$ENDIF}
 
-        If PosEx('UserLocalProfile=', cs)=1 Then
+        If IsParameter('UserLocalProfile=', cs) then
         Begin
           AppConfigDir:=Trim(FindParam('UserLocalProfile=', cs));
           AppConfigDir:=IncludeTrailingPathDelimiter(AppConfigDir);
         End;
 
-        If PosEx('WordOLEExtension=', cs)=1 Then
+        If IsParameter('WordOLEExtension=', cs) then
         Begin
           GPT.WordOLEExtension:=Trim(FindParam('WordOLEExtension=', cs));
         End;
 
-        If PosEx('ExcelOLEExtension=', cs)=1 Then
+        If IsParameter('ExcelOLEExtension=', cs) then
         Begin
           GPT.ExcelOLEExtension:=Trim(FindParam('ExcelOLEExtension=', cs));
         End;

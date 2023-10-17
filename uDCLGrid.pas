@@ -3449,21 +3449,24 @@ var
   BrushColor: TBrushColor;
   Color: String;
 begin
-  BrushColor:=TBrushColor.Create;
-  Color:=FindParam('Color=', Line);
+  if not GPT.DisableColors then
+  begin
+    BrushColor:=TBrushColor.Create;
+    Color:=FindParam('Color=', Line);
 
-  Case GetStringDataType(Color) of
-  idDigit:
-  BrushColor.Color:=StrToIntEx(Color);
-  idHex:
-  BrushColor.Color:=HexToInt(Color);
-  idColor:
-  BrushColor.Color:=StringToColor(Color);
+    Case GetStringDataType(Color) of
+    idDigit:
+    BrushColor.Color:=StrToIntEx(Color);
+    idHex:
+    BrushColor.Color:=HexToInt(Color);
+    idColor:
+    BrushColor.Color:=StringToColor(Color);
+    end;
+
+    BrushColor.ConditionValue:=FindParam('Condition=', Line);
+
+    FBrushColors.Add(BrushColor);
   end;
-
-  BrushColor.ConditionValue:=FindParam('Condition=', Line);
-
-  FBrushColors.Add(BrushColor);
 end;
 
 procedure TDCLGrid.GridDrawDataCell(Sender: TObject; const Rect: TRect;
@@ -3476,7 +3479,7 @@ var
   CondItem: TCondition;
 begin
   flg:=False;
-  if Assigned(FQuery) and FQuery.Active and (FBrushColors.Count>0) then
+  if not GPT.DisableColors and Assigned(FQuery) and FQuery.Active and (FBrushColors.Count>0) then
   begin
     Brush:=nil;
     for B in FBrushColors do

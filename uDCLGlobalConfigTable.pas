@@ -9,13 +9,13 @@ uses
 type
   TGPT=record
   // EnableSQLTrace,
-    DebugMesseges, OneCopy, ExitCnf, UseMessages, UserLogging, UserLoggingHistory, DebugOn,
-    DisableFieldsList, HashPass, ShowPicture, DialogsSettings, DisableColors,
+    DebugMesseges, OneCopy, ExitCnf, UseMessages,
+    HashPass, DialogsSettings, DisableColors, DisableFieldsList,
     DisableIniPasword, IBAll: Boolean;
     CurrentRunningScrString, CurrentRunningCmdString, Port: Integer;
     DateSeparator, TimeSeparator: Char;
     ServerCodePage, DateFormat, TimeFormat, Viewer, ConnectionString, MainFormCaption,
-    NewConnectionString, DBPath, ServerName, NewDBUserName, DBType, GeneratorName: String;
+    NewConnectionString, DBPath, ServerName, NewDBUserName, DBType: String;
     SQLDialect: Byte;
     NoParamsTable, NoUsersTable, DisableLogOnWithoutUser, MultiRolesMode: Boolean;
     DBUserName, DCLUserName, DCLUserPass, EnterPass, LongRoleName, GetValueSeparator,

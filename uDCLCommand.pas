@@ -391,14 +391,6 @@ begin
   If GetRaights>ulWrite then
   begin
     ADOCommand:=TCommandQuery.Create(Self);
-    If GPT.DebugOn Then
-    begin
-      //DebugProc('ExecSQLCommand: '+SQLCommand);
-      //DebugProc('-=EndSQL command=-');
-      //DebugProc(SQLCommand);
-      If GPT.DebugMesseges Then
-        ShowMessage(SQLCommand);
-    end;
     //If FDCLLogOn.SQLMon.TrraceStatus Then
       //FDCLLogOn.SQLMon.AddSQLText(SQLCommand);
 
