@@ -718,23 +718,19 @@ begin
   if IsLexem('Declare=', Command) then
   begin
     tmpS:=Trim(FindParam('declare=', Command));
-    For v1:=1 to ParamsCount(tmpS) do
+    v2:=PosEx('=', tmpS);
+    If v2=0 Then
+      FVariables.NewVariable(FNamespace, tmpS, '')
+    Else
     begin
-      tmpS1:=GetParam(tmpS, v1);
-      v2:=PosEx('=', tmpS1);
-      If v2=0 Then
-        FVariables.NewVariable(FNamespace, tmpS1, '')
-      Else
-      begin
-        tmpS2:=Trim(Copy(tmpS1, 1, v2-1));
-        tmpS3:=Copy(tmpS1, v2+1, Length(tmpS1)-v2);
-        if Assigned(FDCLGrid) then
-          TranslateVals(tmpS3, FDCLGrid.Query)
-        else
-          TranslateVals(tmpS3);
+      tmpS2:=Trim(Copy(tmpS, 1, v2-1));
+      tmpS3:=Copy(tmpS, v2+1, Length(tmpS)-v2);
+      if Assigned(FDCLGrid) then
+        TranslateVals(tmpS3, FDCLGrid.Query)
+      else
+        TranslateVals(tmpS3);
 
-        FVariables.NewVariable(FNamespace, tmpS2, tmpS3);
-      end;
+      FVariables.NewVariable(FNamespace, tmpS2, tmpS3);
     end;
   end;
 
