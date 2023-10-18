@@ -584,6 +584,7 @@ end;
 destructor TDCLForm.Destroy;
 begin
   FRetValueProc:=nil;
+  FIDCLMain:=nil;
   inherited Destroy;
 end;
 

@@ -41,6 +41,7 @@ type
   public
     constructor Create(IDCLMain: IDCLMain; NameSpace: String; DCLForm: TForm;
       DCLGrid: TDCLGrid); overload;
+    destructor Destroy; override;
 
     procedure OpenDialog(DialogName: String);
     function RunCommandScript(CommandName: String): Boolean;
@@ -111,6 +112,12 @@ begin
 
   FParser:=TDCLValuseParser.Create(FNameSpace, FVariables);
   FParser.SetConnector(FDBConnector);
+end;
+
+destructor TDCLCommand.Destroy;
+begin
+  FIDCLMain:=nil;
+  inherited Destroy;
 end;
 
 procedure TDCLCommand.OpenDialog(DialogName: String);

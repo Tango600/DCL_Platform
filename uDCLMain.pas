@@ -33,8 +33,8 @@ type
 
     procedure KillerForms(Sender: TObject);
     function GetScriptText(ScriptName: String): TStringList;
-    procedure CloseForm(Form: TDCLForm);
-    procedure ReleaseForm(Form: TDCLForm);
+    procedure CloseForm(Form: TForm);
+    procedure ReleaseForm(Form: TForm);
 
     procedure WriteBaseID;
     function ReadBaseID: String;
@@ -241,7 +241,7 @@ begin
       begin
         If (ff as TDCLForm).CloseAction=fcaRelease then
         begin
-          ReleaseForm(ff as TDCLForm);
+          ReleaseForm(ff);
         end;
       end;
     end;
@@ -249,12 +249,12 @@ begin
   FBusyMode:=False;
 end;
 
-procedure TDCLMain.CloseForm(Form: TDCLForm);
+procedure TDCLMain.CloseForm(Form: TForm);
 begin
   Form.Close;
 end;
 
-procedure TDCLMain.ReleaseForm(Form: TDCLForm);
+procedure TDCLMain.ReleaseForm(Form: TForm);
 begin
   FForms.Remove(Form);
   Form.Release;
@@ -498,10 +498,11 @@ end;
 
 destructor TDCLMain.Destroy;
 begin
+  KillerDog.Enabled:=False;
   CloseAllDialogs;
-  inherited Destroy;
   if Assigned(FDCLMenu) then
     FreeAndNil(FDCLMenu);
+  inherited Destroy;
 end;
 
 procedure TDCLMain.CloseAllDialogs;
@@ -512,7 +513,10 @@ begin
   For ff in FForms do
   Begin
     If Assigned(ff) and ((ff as TDCLForm).CloseAction=fcaNone) then
-      CloseForm(ff as TDCLForm);
+    begin
+      CloseForm(ff);
+      ReleaseForm(ff);
+    end;
   End;
   FBusyMode:=False;
 end;
