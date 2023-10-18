@@ -4594,6 +4594,11 @@ var
   AllowEdit, HideNavig: Boolean;
   b: TNavButtonsSet;
   NavigVisiButtonsVar: Array [1..12] Of TNavButtonsSet;
+
+function IsButton(BurronName, ButtonsSet: String): Boolean;
+begin
+  Result:=(PosEx(BurronName, ButtonsSet)<>0) or (ButtonsSet='');
+end;
 begin
   if Assigned(FNavig) then
   begin
@@ -4606,32 +4611,35 @@ begin
     For i:=1 to Length(NavigVisiButtonsVar) do
       NavigVisiButtonsVar[i]:=[];
 
-    If PosEx('first', ButtonsExpr)<>0 Then
+    If IsButton('first', ButtonsExpr) Then
       NavigVisiButtonsVar[1]:=[nbFirst];
-    If PosEx('last', ButtonsExpr)<>0 Then
+    If IsButton('last', ButtonsExpr) Then
       NavigVisiButtonsVar[4]:=[nbLast];
 
     If FUserLevel>ulReadOnly Then
     if AllowEdit then
     begin
       if not FindNotAllowedOperation(dsoInsert) then
-      If PosEx('insert', ButtonsExpr)<>0 Then
+      If IsButton('insert', ButtonsExpr) Then
         NavigVisiButtonsVar[5]:=[nbInsert];
 
       if not FindNotAllowedOperation(dsoDelete) then
-      If PosEx('delete', ButtonsExpr)<>0 Then
+      If IsButton('delete', ButtonsExpr) Then
         NavigVisiButtonsVar[6]:=[nbDelete];
 
       if not FindNotAllowedOperation(dsoEdit) then
-      If PosEx('edit', ButtonsExpr)<>0 Then
+      If IsButton('edit', ButtonsExpr) Then
         NavigVisiButtonsVar[7]:=[nbEdit];
 
-      If PosEx('post', ButtonsExpr)<>0 Then
-        NavigVisiButtonsVar[8]:=[nbPost];
-      If PosEx('cancel', ButtonsExpr)<>0 Then
-        NavigVisiButtonsVar[9]:=[nbCancel];
+      if FNotAllowedOperations.Count=0 then
+      begin
+        If IsButton('post', ButtonsExpr) Then
+          NavigVisiButtonsVar[8]:=[nbPost];
+        If IsButton('cancel', ButtonsExpr) Then
+          NavigVisiButtonsVar[9]:=[nbCancel];
+      end;
     end;
-    If PosEx('refresh', ButtonsExpr)<>0 Then
+    If IsButton('refresh', ButtonsExpr) Then
       NavigVisiButtonsVar[10]:=[nbRefresh];
 
     HideNavig:=True;
