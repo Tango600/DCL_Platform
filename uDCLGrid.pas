@@ -1616,8 +1616,7 @@ begin
       FCurrentTablePart.DependField:=FindParam('DependField=', Line);
     end;
 
-    if (not FCurrentTablePart.NoDataField) and Assigned(FQuery) and FQuery.Active then
-      FCurrentTablePart.Query.open;
+    FCurrentTablePart.Query.open;
 
     If FindParam('MasterDataField=', Line)<>'' then
     begin
