@@ -384,18 +384,24 @@ begin
         ButtonParams.FontStyle:=ButtonParams.FontStyle+[fsUnderLine];
 
       flg:=FindParam('AutoSize=', ScrLine)='1';
-
-      tmpS:=FindParam('Width=', ScrLine);
-      If tmpS<>'' then
+      if flg then
+        ButtonParams.Width:=-1
+      else
       begin
-        v1:=StrToIntEx(tmpS);
-        If (v1>30) and (not flg) then
-          ButtonParams.Width:=v1
+        tmpS:=FindParam('Width=', ScrLine);
+        If tmpS<>'' then
+        begin
+          v1:=StrToIntEx(tmpS);
+          If (v1>30) and (not flg) then
+            ButtonParams.Width:=v1
+          else
+            ButtonParams.Width:=-1;
+        end
         else
-          ButtonParams.Width:=-1;
-      end
-      Else
-        ButtonParams.Width:=ButtonWidth;
+        begin
+            ButtonParams.Width:=ButtonWidth;
+        end;
+      end;
 
       Grid.AddButton(ButtonParams);
     end;
@@ -2425,8 +2431,9 @@ begin
     Filter.NotCheck.Width:=Filter.Width;
     Filter.NotCheck.Caption:=GetDCLMessageString(msNotFilter);
     Filter.NotCheck.OnClick:=OnFilterNotCheckClick;
-    Inc(FTop, Filter.NotCheck.Height+CompenentTopStep);
+    Inc(FTop, Filter.NotCheck.Height);
   end;
+  Inc(FTop, CompenentTopStep);
 
   Inc(FFilterLeft, FieldsStepLeft+Filter.Width);
   AdjustFilterPanel(FTop);
@@ -3982,6 +3989,7 @@ begin
 
     FreeAndNil(FieldsPos);
   end;
+  FIDCLMain:=nil;
   inherited Destroy;
 end;
 

@@ -21,9 +21,6 @@ const
 {$IFDEF UNIX}
   DefaultLibraryLocation='libfbclient.so';
 {$ENDIF}
-{$IFDEF ADO}
-  DBEngineType='ADODB (Universal)';
-{$ENDIF}
 {$IFDEF IBX}
   {$IFDEF IBXLaz}
   AccessLibVersion=IBX_VERSION;
@@ -63,7 +60,6 @@ const
 
   UserLevelsSet='Undefined,Deny,ReadOnly,Write,Execute,Level1,Level2,Level3,Level4,Developer';
 
-{$IFDEF FPC}
   InternalAppNameSuffix='FPC';
   IndicatorWidth=DEFINDICATORCOLWIDTH;
 
@@ -71,7 +67,6 @@ const
   fpcVersion={$I %FPCVERSION%};
   TargetCPU={$I %FPCTARGETCPU%};
   TargetOS={$I %FPCTARGETOS%};
-{$ENDIF}
 {$IFDEF UNIX}
   CrossDelim='\';
   ConfigDir=PathDelim+'.config'+PathDelim;

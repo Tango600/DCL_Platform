@@ -79,9 +79,7 @@ begin
     If FontStyle=[fsUnderLine] Then
       FButton.Font.Style:=FButton.Font.Style+[fsUnderLine];
 
-    FButton.Glyph.Transparent:=True;
-
-    If Pict<>'' Then
+    If (Pict<>'') and Assigned(FDBConnector) Then
     begin
       BinStore:=TDCLDataStorage.Create(FDBConnector);
       MS:=BinStore.GetData(Pict, ftByName);
@@ -94,8 +92,9 @@ begin
         FButton.Glyph.TransparentColor:=BM.Canvas.Pixels[0, 0];
         FButton.Glyph.Assign(BM);
         FButton.Glyph.Transparent:=True;
-        MS.Free;
       end;
+      MS.Free;
+      FreeAndNil(BinStore);
     end;
   end;
 end;
