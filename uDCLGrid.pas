@@ -4590,10 +4590,10 @@ end;
 
 procedure TDCLGrid.ParseNavigatorButtons(ButtonsExpr: String);
 var
-  i: Integer;
+  i: TDBNavButtonType;
   AllowEdit, HideNavig: Boolean;
   b: TNavButtonsSet;
-  NavigVisiButtonsVar: Array [1..12] Of TNavButtonsSet;
+  NavigVisiButtonsVar: Array [TDBNavButtonType] of TNavButtonsSet;
 
 function IsButton(BurronName, ButtonsSet: String): Boolean;
 begin
@@ -4608,39 +4608,39 @@ begin
       AllowEdit:=FQuery.Active and FQuery.CanModify;
     end;
 
-    For i:=1 to Length(NavigVisiButtonsVar) do
+    For i:=Low(TDBNavButtonType) to High(TDBNavButtonType) do
       NavigVisiButtonsVar[i]:=[];
 
     If IsButton('first', ButtonsExpr) Then
-      NavigVisiButtonsVar[1]:=[nbFirst];
+      NavigVisiButtonsVar[nbFirst]:=[nbFirst];
     If IsButton('last', ButtonsExpr) Then
-      NavigVisiButtonsVar[4]:=[nbLast];
+      NavigVisiButtonsVar[nbLast]:=[nbLast];
 
     If FUserLevel>ulReadOnly Then
     if AllowEdit then
     begin
       if not FindNotAllowedOperation(dsoInsert) then
       If IsButton('insert', ButtonsExpr) Then
-        NavigVisiButtonsVar[5]:=[nbInsert];
+        NavigVisiButtonsVar[nbInsert]:=[nbInsert];
 
       if not FindNotAllowedOperation(dsoDelete) then
       If IsButton('delete', ButtonsExpr) Then
-        NavigVisiButtonsVar[6]:=[nbDelete];
+        NavigVisiButtonsVar[nbDelete]:=[nbDelete];
 
       if not FindNotAllowedOperation(dsoEdit) then
       If IsButton('edit', ButtonsExpr) Then
-        NavigVisiButtonsVar[7]:=[nbEdit];
+        NavigVisiButtonsVar[nbEdit]:=[nbEdit];
 
       if FNotAllowedOperations.Count=0 then
       begin
         If IsButton('post', ButtonsExpr) Then
-          NavigVisiButtonsVar[8]:=[nbPost];
+          NavigVisiButtonsVar[nbPost]:=[nbPost];
         If IsButton('cancel', ButtonsExpr) Then
-          NavigVisiButtonsVar[9]:=[nbCancel];
+          NavigVisiButtonsVar[nbCancel]:=[nbCancel];
       end;
     end;
     If IsButton('refresh', ButtonsExpr) Then
-      NavigVisiButtonsVar[10]:=[nbRefresh];
+      NavigVisiButtonsVar[nbRefresh]:=[nbRefresh];
 
     HideNavig:=True;
     for b in NavigVisiButtonsVar do
@@ -4651,10 +4651,16 @@ begin
       end;
 
     if not HideNavig then
-      FNavig.VisibleButtons:=NavigVisiButtonsVar[1]+NavigVisiButtonsVar[2]+
-        NavigVisiButtonsVar[3]+NavigVisiButtonsVar[4]+NavigVisiButtonsVar[5]+
-        NavigVisiButtonsVar[6]+NavigVisiButtonsVar[7]+NavigVisiButtonsVar[8]+
-        NavigVisiButtonsVar[9]+NavigVisiButtonsVar[10]
+    begin
+      FNavig.VisibleButtons:=[];
+      for b in NavigVisiButtonsVar do
+      begin
+        if b<>[] then
+        begin
+          FNavig.VisibleButtons:=FNavig.VisibleButtons+b;
+        end;
+      end;
+    end
     else
     begin
       Dec(FToolPanelHeight, FNavig.Height);
