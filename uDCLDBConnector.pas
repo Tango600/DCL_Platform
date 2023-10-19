@@ -68,7 +68,6 @@ begin
   FErrorCode:=255;
 
   {$IFDEF IBX}
-  GPT.NewDBUserName:='';
   GPT.IBAll:=True;
 
   If Not Assigned(DefaultTransaction) Then
@@ -158,8 +157,6 @@ begin
   end;
   {$ENDIF}
   {$IFDEF ZEOS}
-  GPT.NewDBUserName:='';
-
   If Not Connected Then
   If GPT.DBPath<>'' Then
   begin
@@ -185,7 +182,6 @@ begin
       Exit;
     end;
 
-    GPT.NewDBUserName:='';
     TransactIsolationLevel:=tiReadCommitted;
     AutoCommit:=True;
     SQLHourGlass:=True;

@@ -8,6 +8,7 @@ object MainForm: TMainForm
   ClientWidth = 436
   LCLVersion = '3.99.0.0'
   OnClose = FormClose
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnShow = FormShow
   object StatusBar1: TStatusBar

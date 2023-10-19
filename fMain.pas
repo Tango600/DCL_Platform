@@ -8,7 +8,7 @@ uses
   Windows, Messages, LazUTF8,
   {$ENDIF}
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  uDCLConst, uDCLData, uDCLMultiLang, uIDCLMain;
+  uDCLConst, uDCLData, uIDCLMain;
 
 type
 
@@ -17,6 +17,7 @@ type
   TMainForm = class(TForm)
     StatusBar1: TStatusBar;
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
   private
@@ -39,7 +40,7 @@ Const
 implementation
 
 uses
-  IniFiles, uDCLGlobalVariables, uDCLVersion;
+  IniFiles, uDCLGlobalVariables, uDCLMessages, uDCLMultiLang, uDCLVersion;
 
 {$R *.lfm}
 
@@ -80,6 +81,14 @@ begin
     Settings.WriteInteger(SectionName, 'Width', Self.Width);
 
     FreeAndNil(Settings);
+  end;
+end;
+
+procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+  if GPT.ExitCnf then
+  begin
+    CanClose:=ShowErrorMessage(10, GetDCLMessageString(msClose))=1;
   end;
 end;
 

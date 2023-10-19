@@ -391,6 +391,32 @@ var
   Params: TStringList;
 begin
   GPT.NoParamsTable:=False;
+  {$IFDEF IBALL}
+  GPT.IBAll:=True;
+  {$ELSE}
+  GPT.IBAll:=False;
+  {$ENDIF}
+  GPT.DebugMesseges:=False;
+  GPT.OneCopy:=False;
+  GPT.ExitCnf:=False;
+  GPT.UseMessages:=True;
+  GPT.DialogsSettings:=True;
+  GPT.Port:=0;
+  {$IFDEF ZEOS}
+  GPT.DBType:=DefaultDBType;
+  {$ENDIF}
+  {$IFDEF MSWINDOWS}
+  GPT.Viewer:='notepad';
+  {$ELSE}
+  GPT.Viewer:='pluma';
+  {$ENDIF}
+  GPT.OfficeFormat:=ofMSO;
+  GPT.OfficeDocumentFormat:=odfMSO2007;
+
+  GPT.TimeFormat:=DefaultTimeFormat;
+  GPT.DateFormat:=DefaultDateFormat;
+  GPT.DateSeparator:=DefaultDateSeparator;
+  GPT.TimeSeparator:=DefaultTimeSeparator;
 
   Path:=ExtractFilePath(Application.ExeName);
   SetCurrentDir(Path);
@@ -457,33 +483,6 @@ begin
 
   FScripts:=TList<TDCLScriptItem>.Create;
 
-  {$IFDEF IBALL}
-  GPT.IBAll:=True;
-  {$ELSE}
-  GPT.IBAll:=False;
-  {$ENDIF}
-  GPT.DebugMesseges:=False;
-  GPT.OneCopy:=False;
-  GPT.ExitCnf:=False;
-  GPT.UseMessages:=True;
-  GPT.DialogsSettings:=True;
-  GPT.Port:=0;
-  {$IFDEF ZEOS}
-  GPT.DBType:=DefaultDBType;
-  {$ENDIF}
-  {$IFDEF MSWINDOWS}
-  GPT.Viewer:='notepad';
-  {$ELSE}
-  GPT.Viewer:='pluma';
-  {$ENDIF}
-
-  GPT.OfficeFormat:=ofMSO;
-  GPT.OfficeDocumentFormat:=odfMSO2007;
-
-  GPT.TimeFormat:=DefaultTimeFormat;
-  GPT.DateFormat:=DefaultDateFormat;
-  GPT.DateSeparator:=DefaultDateSeparator;
-  GPT.TimeSeparator:=DefaultTimeSeparator;
   GPT.TimeStampFormat:=GPT.DateFormat+' '+GPT.TimeFormat;
 {$IFDEF MSWINDOWS}
   SysUtils.GetFormatSettings;

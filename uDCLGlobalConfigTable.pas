@@ -15,7 +15,7 @@ type
     CurrentRunningScrString, CurrentRunningCmdString, Port: Integer;
     DateSeparator, TimeSeparator: Char;
     ServerCodePage, DateFormat, TimeFormat, Viewer, ConnectionString, MainFormCaption,
-    NewConnectionString, DBPath, ServerName, NewDBUserName, DBType: String;
+    NewConnectionString, DBPath, ServerName, DBType: String;
     SQLDialect: Byte;
     NoParamsTable, NoUsersTable, DisableLogOnWithoutUser, MultiRolesMode: Boolean;
     DBUserName, DCLUserName, DCLUserPass, EnterPass, LongRoleName, GetValueSeparator,

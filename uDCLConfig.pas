@@ -188,9 +188,9 @@ Begin
           GPT.OneCopy:=Trim(FindParam('OneCopy=', cs))='1';
         End;
 
-        If IsParameter('DisableIniPasword=1', cs) then
+        If IsParameter('DisableIniPasword=', cs) then
         Begin
-          GPT.DisableIniPasword:=True;
+          GPT.DisableIniPasword:=Trim(FindParam('DisableIniPasword=', cs))='1';
         End;
 
 {$IFDEF CPU32}
@@ -225,7 +225,7 @@ Begin
 
         If IsParameter('DateSeparator=', cs) then
         Begin
-          GPT.DateFormat:=Trim(FindParam('DateSeparator=', cs));
+          GPT.DateSeparator:=Trim(FindParam('DateSeparator=', cs));
         End;
 
         If IsParameter('TimeFormat=', cs) then
@@ -235,7 +235,7 @@ Begin
 
         If IsParameter('TimeSeparator=', cs) then
         Begin
-          GPT.TimeFormat:=Trim(FindParam('TimeSeparator=', cs));
+          GPT.TimeSeparator:=Trim(FindParam('TimeSeparator=', cs));
         End;
 
         {$IFDEF MSWINDOWS}
