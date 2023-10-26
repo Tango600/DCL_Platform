@@ -294,34 +294,36 @@ Begin
 End;
 
 Function TranslateDigitToUserLevel(Level: String): TUserLevelsType; overload;
+const
+  ulPrefix='ul';
 Begin
-  If DCLCompareString(Level, 'Undefined') Then
+  If DCLCompareString(Level, ulPrefix+'Undefined') Then
     Result:=ulUndefined
-  Else If DCLCompareString(Level, 'Deny') Then
+  Else If DCLCompareString(Level, ulPrefix+'Deny') Then
     Result:=ulDeny
-  Else If DCLCompareString(Level, 'ReadOnly') Then
+  Else If DCLCompareString(Level, ulPrefix+'ReadOnly') Then
     Result:=ulReadOnly
-  Else If DCLCompareString(Level, 'Write') Then
+  Else If DCLCompareString(Level, ulPrefix+'Write') Then
     Result:=ulWrite
-  Else If DCLCompareString(Level, 'Execute') Then
+  Else If DCLCompareString(Level, ulPrefix+'Execute') Then
     Result:=ulExecute
-  Else If DCLCompareString(Level, 'Level1') Then
+  Else If DCLCompareString(Level, ulPrefix+'Level1') Then
     Result:=ulLevel1
-  Else If DCLCompareString(Level, 'Level2') Then
+  Else If DCLCompareString(Level, ulPrefix+'Level2') Then
     Result:=ulLevel2
-  Else If DCLCompareString(Level, 'Level3') Then
+  Else If DCLCompareString(Level, ulPrefix+'Level3') Then
     Result:=ulLevel3
-  Else If DCLCompareString(Level, 'Level4') Then
+  Else If DCLCompareString(Level, ulPrefix+'Level4') Then
     Result:=ulLevel4
-  Else If DCLCompareString(Level, 'Signer') Then
+  Else If DCLCompareString(Level, ulPrefix+'Signer') Then
     Result:=ulSigner
-  Else If DCLCompareString(Level, 'Developer') Then
+  Else If DCLCompareString(Level, ulPrefix+'Developer') Then
     Result:=ulDeveloper
   Else
 {$IFDEF DEVELOPERMODE}
     Result:=ulDeveloper;
 {$ELSE}
-    Result:=ulExecute;
+    Result:=ulUndefined;
 {$ENDIF}
 End;
 
