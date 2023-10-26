@@ -10,7 +10,7 @@ uses
   Classes, SysUtils, Generics.Collections, Forms, ExtCtrls, LazFileUtils,
   Controls,
   uDCLTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenu, uDCLNotifier,
-  uIDCLMain, uDCLConst, uDCLScriptSigner, uDCLImages;
+  uIDCLMain, uDCLConst, uDCLScriptsPackage, uDCLImages;
 
 type
 
@@ -68,7 +68,7 @@ type
     procedure NotifyForm(Form: TForm; Action: TFormsNotifyAction);
 
     procedure LoadScriptsFromFile(FileName: String; Run: Boolean);
-    function CheckSigned(Package: TStringList): Boolean;
+    function CheckSigned(Package: TDCLScriptsPackage): Boolean;
     procedure ClearScriptPool;
 
     property DBConnector: TDCLDBConnector read FDBConnector;
@@ -118,13 +118,12 @@ end;
 procedure TDCLMain.LoadScriptsFromFile(FileName: String; Run: Boolean);
 var
   RawPackage: TFileStream;
-  Package: TStringList;
+  Package: TDCLScriptsPackage;
   PackageName: String;
   FLoadedScripts: TDictionary<String, TDCLScriptItem>;
   I: TPair<String, TDCLScriptItem>;
   RunItem: TDCLScriptItem;
   Command: TDCLCommand;
-  PackageInfo: TPackageInfo;
   c: Integer;
 begin
   if FileExists(FileName) then
@@ -132,15 +131,13 @@ begin
     PackageName:=ExtractFileNameOnly(FileName);
     RawPackage:=TFileStream.Create(FileName, fmOpenRead);
 
-    Package:=DecodePackage(RawPackage);
+    Package:=TDCLScriptsPackage.Create;
+    Package.Load(RawPackage);
     RawPackage.Free;
-    PackageInfo:=TPackageInfo.Create;
-    PackageInfo.PackageName:=PackageName;
-    PackageInfo.PackageHash:=GetPackageSignedHash(Package);
 
     if CheckSigned(Package) then
     begin
-      FLoadedScripts:=DisassemblyPackage(Package);
+      FLoadedScripts:=Package.Scripts;
 
       for I in FLoadedScripts do
       begin
@@ -152,12 +149,9 @@ begin
         c:=FScripts.Count;
         for RunItem in FScripts do
         begin
-          if RunItem.RunOnStart or (c=1) then
+          if (Run or Package.PackageInfo.RunOnStart) and ((RunItem.RunType<>rtNone) or (c=1)) then
           begin
-            Package:=TStringList.Create;
-            Package.LoadFromStream(RunItem.ScriptText);
-
-            if RunItem.RunType=1 then
+            if RunItem.RunType=rtCommand then
             begin
               Command:=TDCLCommand.Create(Self, '', nil, nil);
               Command.RunCommandScript(RunItem.ScriptName);
@@ -175,18 +169,18 @@ begin
   end;
 end;
 
-function TDCLMain.CheckSigned(Package: TStringList): Boolean;
+function TDCLMain.CheckSigned(Package: TDCLScriptsPackage): Boolean;
 begin
   Result:=False;
   LocalQuery.Params.Clear;
-  LocalQuery.SQL.Text:='select * from '+UsersTable+' where '+UserAdminField+'=:UL';
+  LocalQuery.SQL.Text:='select * from '+UsersTable+' where '+UserAdminField+'>=:UL';
   LocalQuery.Prepare;
-  LocalQuery.ParamByName('UL').AsInteger:=Ord(ulDeveloper);
+  LocalQuery.ParamByName('UL').AsInteger:=Ord(ulSigner);
   LocalQuery.Open;
   LocalQuery.First;
   while not LocalQuery.EOF do
   begin
-    if CheckPackage(LocalQuery.FieldByName('DCL_USER_NAME').AsString, LocalQuery.FieldByName('DCL_USER_PASS').AsString, Package) then
+    if Package.CheckPackage(LocalQuery.FieldByName('DCL_USER_NAME').AsString, LocalQuery.FieldByName('DCL_USER_PASS').AsString) then
     begin
       Result:=True;
       break;
@@ -301,7 +295,7 @@ begin
   begin
     LocalQuery.Params.Clear;
     LocalQuery.SQL.Text:='select count(*) from '+GPTTableName+' where lower('+GPTNameField+') = lower(:BID)';
-    LocalQuery.ParamByName('BID').AsString:='BaseUID';
+    LocalQuery.ParamByName('BID').AsString:=BaiseUIDParamName;
     LocalQuery.Open;
     IsEmpty:=LocalQuery.Fields[0].AsInteger=0;
     LocalQuery.Close;
@@ -315,7 +309,7 @@ begin
         GPT.BaseID:=sGuid;
         LocalQuery.SQL.Text:='insert into '+GPTTableName+'('+GPTNameField+', '+
           GPTValueField+') values(:BID, :BG)';
-        LocalQuery.ParamByName('BID').AsString:='BaseUID';
+        LocalQuery.ParamByName('BID').AsString:=BaiseUIDParamName;
         LocalQuery.ParamByName('BG').AsString:=sGuid;
 
         LocalQuery.ExecSQL;
@@ -331,7 +325,7 @@ begin
   begin
     LocalQuery.Params.Clear;
     LocalQuery.SQL.Text:='select * from '+GPTTableName+' where lower('+GPTNameField+') = lower(:BID)';
-    LocalQuery.ParamByName('BID').AsString:='BaseUID';
+    LocalQuery.ParamByName('BID').AsString:=BaiseUIDParamName;
     LocalQuery.Open;
     Result:=LocalQuery.FieldByName(GPTValueField).AsString;
     LocalQuery.Close;

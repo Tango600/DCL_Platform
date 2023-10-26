@@ -225,7 +225,7 @@ Begin
 
         If IsParameter('DateSeparator=', cs) then
         Begin
-          GPT.DateSeparator:=Trim(FindParam('DateSeparator=', cs));
+          GPT.DateSeparator:=FindParam('DateSeparator=', cs)[1];
         End;
 
         If IsParameter('TimeFormat=', cs) then
@@ -235,7 +235,7 @@ Begin
 
         If IsParameter('TimeSeparator=', cs) then
         Begin
-          GPT.TimeSeparator:=Trim(FindParam('TimeSeparator=', cs));
+          GPT.TimeSeparator:=FindParam('TimeSeparator=', cs)[1];
         End;
 
         {$IFDEF MSWINDOWS}

@@ -54,6 +54,7 @@ begin
     FButton.Hint:=Hint;
     FButton.ShowHint:=True;
     FButton.Font.Style:=FontStyle;
+    FButton.Anchors:=[akLeft, akTop, akBottom];
     if Width>0 then
       FButton.Width:=Width
     else

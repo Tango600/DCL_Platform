@@ -52,13 +52,15 @@ const
   ShowFormPanel=True;
   CloseButton=True;
 
-  SignedScriptExt='.dss';
-  SignMethodVer='1.3';
+  PackagesFileExt='.dss';
+  PackagesVersion='1.3';
+
+  BaiseUIDParamName='BaseUID';
 
   DBTypeFirebird='firebird';
   DBTypeInterbase='interbase';
 
-  UserLevelsSet='Undefined,Deny,ReadOnly,Write,Execute,Level1,Level2,Level3,Level4,Developer';
+  UserLevelsSet='Undefined,Deny,ReadOnly,Write,Execute,Level1,Level2,Level3,Level4,Signer,Developer';
 
   InternalAppNameSuffix='FPC';
   IndicatorWidth=DEFINDICATORCOLWIDTH;
@@ -140,7 +142,7 @@ Type
     evtInsert, evtLineDblClick, evtBeforePost, evtScrollPart, evtPostPart, evtClose);
   TReliseStatus=(rsAlpha, rsBetta, rsPreRelase, rsUnstable, rsStable);
   TUserLevelsType=(ulUndefined, ulDeny, ulReadOnly, ulWrite, ulExecute, ulLevel1, ulLevel2, ulLevel3, ulLevel4,
-    ulDeveloper);
+    ulSigner, ulDeveloper);
   TGridStyle=(gsFields, gsFieldsHorizontal, gsGrid);
   TDataControlType=(dctMainGrid, dctSideGrid, dctTablePart, dctLookupGrid);
 

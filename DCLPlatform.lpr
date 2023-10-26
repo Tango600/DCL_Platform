@@ -13,7 +13,7 @@ uses
   {$ENDIF}
   Classes, Forms, Controls, SysUtils,
   uDCLMain, uSystemUtils, uStringParams,
-  fMain, fDCLLoginForm, fAbout
+  fMain, fDCLLoginForm, fAbout, uDCLScriptsPackage
   ;
 
 {$R *.res}

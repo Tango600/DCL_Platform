@@ -624,11 +624,11 @@ begin
     FreeAndNil(SaveDialog);
   end;
 
-  If IsLexem('OpenScript;', Command) then
+  If IsLexem('OpenPackage;', Command) then
   begin
     OpenDialog:=TOpenDialog.Create(nil);
-    OpenDialog.DefaultExt:=SignedScriptExt;
-    OpenDialog.Filter:='DCL Scripts|*'+SignedScriptExt;
+    OpenDialog.DefaultExt:=PackagesFileExt;
+    OpenDialog.Filter:='DCL Packages|*'+PackagesFileExt;
 
     If OpenDialog.Execute then
     begin
@@ -637,9 +637,9 @@ begin
     FreeAndNil(OpenDialog);
   end;
 
-  If IsLexem('OpenScript=', Command) then
+  If IsLexem('OpenPackage=', Command) then
   begin
-    tmpS:=FindParam('OpenScript=', Command);
+    tmpS:=FindParam('OpenPackage=', Command);
     tmpS1:=FindParam('Run=', Command);
     Flg1:=False;
     if tmpS1<>'' then
@@ -648,11 +648,11 @@ begin
       FIDCLMain.LoadScriptsFromFile(tmpS, Flg1);
   end;
 
-  If IsLexem('LoadScript;', Command) then
+  If IsLexem('LoadPackage;', Command) then
   begin
     OpenDialog:=TOpenDialog.Create(nil);
-    OpenDialog.DefaultExt:=SignedScriptExt;
-    OpenDialog.Filter:='DCL Scripts|*'+SignedScriptExt;
+    OpenDialog.DefaultExt:=PackagesFileExt;
+    OpenDialog.Filter:='DCL Packages|*'+PackagesFileExt;
 
     If OpenDialog.Execute then
     begin
@@ -661,9 +661,9 @@ begin
     FreeAndNil(OpenDialog);
   end;
 
-  If IsLexem('LoadScript=', Command) then
+  If IsLexem('LoadPackage=', Command) then
   begin
-    tmpS:=FindParam('LoadScript=', Command);
+    tmpS:=FindParam('LoadPackage=', Command);
     if FileExists(tmpS) then
       FIDCLMain.LoadScriptsFromFile(tmpS, False);
   end;
