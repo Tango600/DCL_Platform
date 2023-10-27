@@ -33,6 +33,9 @@ type
 
     procedure AddMainItem(Id: Integer; Capt: String);
     procedure AddSubItem(Id, ParentItemId: Integer; Capt: String);
+
+    procedure CreateMenuItems(var Query: TDCLSimlyQuery; ValueFrom, ValueTo: Integer; UserID: String);
+    procedure CreateSumMenuItems(var Query: TDCLSimlyQuery; ValueFrom, ValueTo: Integer; UserID: String);
   public
     constructor Create(Main: IDCLMain; MainForm: TForm); overload;
     destructor Destroy; override;
@@ -153,6 +156,33 @@ begin
   end;
 end;
 
+procedure TDCLMenu.CreateMenuItems(var Query: TDCLSimlyQuery; ValueFrom, ValueTo: Integer; UserID: String);
+begin
+  Query.SQL.Text:=GetRolesQueryText(IdentifyField+' between '+IntToStr(ValueFrom)+' and '+IntToStr(ValueTo), UserID);
+  Query.Open;
+  while not Query.EOF do
+  begin
+    AddMainItem(Query.FieldByName(IdentifyField).AsInteger, Query.FieldByName(DCLNameField).AsString);
+
+    Query.Next;
+  end;
+  Query.Close;
+end;
+
+procedure TDCLMenu.CreateSumMenuItems(var Query: TDCLSimlyQuery; ValueFrom,
+  ValueTo: Integer; UserID: String);
+begin
+  Query.SQL.Text:=GetRolesQueryText(IdentifyField+' between '+IntToStr(ValueFrom)+' and '+IntToStr(ValueTo), UserID);
+  Query.Open;
+  while not Query.EOF do
+  begin
+    AddSubItem(Query.FieldByName(IdentifyField).AsInteger, Query.FieldByName(ParentField).AsInteger, Query.FieldByName(DCLNameField).AsString);
+
+    Query.Next;
+  end;
+  Query.Close;
+end;
+
 constructor TDCLMenu.Create(Main: IDCLMain; MainForm: TForm);
 var
   S: String;
@@ -197,45 +227,11 @@ begin
   FMainForm.Caption:=S;
   LocalQuery.Close;
 
-  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 1 and 1000', GPT.UserID);
-  LocalQuery.Open;
-  while not LocalQuery.EOF do
-  begin
-    AddMainItem(LocalQuery.FieldByName(IdentifyField).AsInteger, LocalQuery.FieldByName(DCLNameField).AsString);
+  CreateMenuItems(LocalQuery, 1, 1000, GPT.UserID);
 
-    LocalQuery.Next;
-  end;
-  LocalQuery.Close;
-
-  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 1001 and 10000', GPT.UserID);
-  LocalQuery.Open;
-  while not LocalQuery.EOF do
-  begin
-    AddSubItem(LocalQuery.FieldByName(IdentifyField).AsInteger, LocalQuery.FieldByName(ParentField).AsInteger, LocalQuery.FieldByName(DCLNameField).AsString);
-
-    LocalQuery.Next;
-  end;
-  LocalQuery.Close;
-
-  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 10001 and 16000', GPT.UserID);
-  LocalQuery.Open;
-  while not LocalQuery.EOF do
-  begin
-    AddSubItem(LocalQuery.FieldByName(IdentifyField).AsInteger, LocalQuery.FieldByName(ParentField).AsInteger, LocalQuery.FieldByName(DCLNameField).AsString);
-
-    LocalQuery.Next;
-  end;
-  LocalQuery.Close;
-
-  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 16001 and 19000', GPT.UserID);
-  LocalQuery.Open;
-  while not LocalQuery.EOF do
-  begin
-    AddSubItem(LocalQuery.FieldByName(IdentifyField).AsInteger, LocalQuery.FieldByName(ParentField).AsInteger, LocalQuery.FieldByName(DCLNameField).AsString);
-
-    LocalQuery.Next;
-  end;
-  LocalQuery.Close;
+  CreateSumMenuItems(LocalQuery, 1001, 10000, GPT.UserID);
+  CreateSumMenuItems(LocalQuery, 10001, 16000, GPT.UserID);
+  CreateSumMenuItems(LocalQuery, 16001, 19000, GPT.UserID);
 
   S:=FMainForm.Caption;
   LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 20051 and 20100', GPT.UserID);

@@ -57,7 +57,7 @@ type
     procedure RunCommand(CommandName: String);
     procedure About;
 
-    procedure Exit;
+    procedure ExitApp;
     function GetImageList: TImageList;
     function GetImageIndex(PictureType: TPicturesTypes): Integer;
     function GetImageIndexes: TDictionary<TPicturesTypes, Integer>;
@@ -67,7 +67,7 @@ type
     procedure NotifyForms(Action: TFormsNotifyAction);
     procedure NotifyForm(Form: TForm; Action: TFormsNotifyAction);
 
-    procedure LoadScriptsFromFile(FileName: String; Run: Boolean);
+    procedure LoadPackageFromFile(FileName: String; Run: Boolean);
     function CheckSigned(Package: TDCLScriptsPackage): Boolean;
     procedure ClearScriptPool;
 
@@ -81,8 +81,8 @@ type
 implementation
 
 uses
-  uDCLConfig, uDCLCommand, uDCLDBStructure, uDCLMultiLang, fAbout,
-  uDCLGlobalVariables, uDCLUtils, uDCLMessages, uDBUtils;
+  uDCLConfig, uDCLCommand, uDCLDBStructure, uDCLMultiLang, fAbout, uDBUtils,
+  uDCLGlobalVariables, uDCLUtils, uDCLMessages, uStringParams;
 
 { TDCLMain }
 
@@ -115,56 +115,79 @@ begin
   end;
 end;
 
-procedure TDCLMain.LoadScriptsFromFile(FileName: String; Run: Boolean);
+procedure TDCLMain.LoadPackageFromFile(FileName: String; Run: Boolean);
 var
   RawPackage: TFileStream;
   Package: TDCLScriptsPackage;
-  PackageName: String;
   FLoadedScripts: TDictionary<String, TDCLScriptItem>;
   I: TPair<String, TDCLScriptItem>;
   RunItem: TDCLScriptItem;
   Command: TDCLCommand;
   c: Integer;
+  Files: TStringList;
+  S, fn: String;
 begin
-  if FileExists(FileName) then
+  Files:=TStringList.Create;
+  if ParamsCount(FileName)=1 then
   begin
-    PackageName:=ExtractFileNameOnly(FileName);
-    RawPackage:=TFileStream.Create(FileName, fmOpenRead);
-
-    Package:=TDCLScriptsPackage.Create;
-    Package.Load(RawPackage);
-    RawPackage.Free;
-
-    if CheckSigned(Package) then
+    Files.Append(FileName);
+  end
+  else
+  begin
+    for c:=1 to ParamsCount(FileName) do
     begin
-      FLoadedScripts:=Package.Scripts;
+      Files.Append(GetParam(FileName, c));
+    end;
+  end;
 
-      for I in FLoadedScripts do
-      begin
-        FScripts.Add(I.Value);
-      end;
+  for S in Files do
+  begin
+    if NoFileExt(S) then
+      fn:=S+PackagesFileExt
+    else
+      fn:=S;
 
-      if Run then
+    if FileExists(fn) then
+    begin
+      RawPackage:=TFileStream.Create(fn, fmOpenRead);
+
+      Package:=TDCLScriptsPackage.Create;
+      Package.Load(RawPackage);
+      RawPackage.Free;
+
+      if CheckSigned(Package) then
       begin
-        c:=FScripts.Count;
-        for RunItem in FScripts do
+        FLoadedScripts:=Package.Scripts;
+
+        for I in FLoadedScripts do
         begin
-          if (Run or Package.PackageInfo.RunOnStart) and ((RunItem.RunType<>rtNone) or (c=1)) then
-          begin
-            if RunItem.RunType=rtCommand then
-            begin
-              Command:=TDCLCommand.Create(Self, '', nil, nil);
-              Command.RunCommandScript(RunItem.ScriptName);
-            end
-            else
-            begin
-              OpenDialog(RunItem.ScriptName);
-            end;
+          FScripts.Add(I.Value);
+        end;
 
-            break;
+        if Run then
+        begin
+          c:=FScripts.Count;
+          for RunItem in FScripts do
+          begin
+            if (Run or Package.PackageInfo.RunOnStart) and ((RunItem.RunType<>rtNone) or (c=1)) then
+            begin
+              if RunItem.RunType=rtCommand then
+              begin
+                Command:=TDCLCommand.Create(Self, '', nil, nil);
+                Command.RunCommandScript(RunItem.ScriptName);
+              end
+              else
+              begin
+                OpenDialog(RunItem.ScriptName);
+              end;
+
+              break;
+            end;
           end;
         end;
       end;
+
+      FreeAndNil(Package);
     end;
   end;
 end;
@@ -257,32 +280,28 @@ end;
 
 function TDCLMain.GetScriptText(ScriptName: String): TStringList;
 var
-  Empty: Boolean;
   RunItem: TDCLScriptItem;
 begin
   Result:=TStringList.Create;
+
+  for RunItem in FScripts do
+  begin
+    if RunItem.ScriptName.ToLower=ScriptName.ToLower then
+    begin
+      Result.Clear;
+      RunItem.ScriptText.Position:=0;
+      Result.LoadFromStream(RunItem.ScriptText);
+      Exit;
+    end;
+  end;
+
   LocalQuery.Params.Clear;
   LocalQuery.SQL.Text:='select '+ScriptField+' from '+DCLTable+' where lower('+DCLNameField+') = lower(:sn)';
   LocalQuery.ParamByName('sn').AsString:=ScriptName;
   LocalQuery.Open;
   LocalQuery.First;
-  Empty:=LocalQuery.IsEmpty;
   Result.Text:=LocalQuery.Fields[0].AsString;
   LocalQuery.Close;
-
-  if Empty then
-  begin
-    for RunItem in FScripts do
-    begin
-      if RunItem.ScriptName.ToLower=ScriptName.ToLower then
-      begin
-        Result.Clear;
-        RunItem.ScriptText.Position:=0;
-        Result.LoadFromStream(RunItem.ScriptText);
-        break;
-      end;
-    end;
-  end;
 end;
 
 procedure TDCLMain.WriteBaseID;
@@ -566,7 +585,7 @@ begin
   About.Release;
 end;
 
-procedure TDCLMain.Exit;
+procedure TDCLMain.ExitApp;
 begin
   Application.MainForm.Close;
 end;

@@ -135,8 +135,6 @@ const
 
   TransParams=True;
 
-  ScrDataBlockWidth=80;
-
 Type
   TEventsEnum=(evtScroll, evtBeforeScroll, evtDelete, evtAfterOpen, evtAfterPost, evtCancel,
     evtInsert, evtLineDblClick, evtBeforePost, evtScrollPart, evtPostPart, evtClose);

@@ -58,7 +58,7 @@ begin
   begin
     If TimeToExit<=Now Then
     begin
-      FDCLMain.Exit;
+      FDCLMain.ExitApp;
     end;
   end;
 

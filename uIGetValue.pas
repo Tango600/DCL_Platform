@@ -1,5 +1,4 @@
 unit uIGetValue;
-{$I DefineType.pas}
 
 interface
 

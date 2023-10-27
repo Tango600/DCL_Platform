@@ -40,7 +40,8 @@ Const
 implementation
 
 uses
-  IniFiles, uDCLGlobalVariables, uDCLMessages, uDCLMultiLang, uDCLVersion;
+  IniFiles, uDCLGlobalVariables, uDCLMessages, uDCLMultiLang, uDCLVersion,
+  uStringParams;
 
 {$R *.lfm}
 
@@ -94,13 +95,15 @@ end;
 
 function FindCommandStrParam(Str: String): String;
 var
-  i: Integer;
+  i: Byte;
+  s: String;
 begin
   For i:=1 to ParamCount do
   begin
-    if Pos(LowerCase(Str), LowerCase(ParamStr(i)))<>0 then
+    s:=FindParam(Str, ParamStr(i));
+    if s<>'' then
     begin
-      Result:=Copy(ParamStr(i), Length(Str)+1, Length(ParamStr(i)));
+      Result:=s;
       break;
     end;
   end;
@@ -108,7 +111,7 @@ end;
 
 function FindMDI: Boolean;
 begin
-  Result:=FindCommandStrParam('MDI=')='1';
+  Result:=FindCommandStrParam('MDI')='1';
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);

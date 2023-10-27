@@ -632,7 +632,7 @@ begin
 
     If OpenDialog.Execute then
     begin
-      FIDCLMain.LoadScriptsFromFile(OpenDialog.FileName, True);
+      FIDCLMain.LoadPackageFromFile(OpenDialog.FileName, True);
     end;
     FreeAndNil(OpenDialog);
   end;
@@ -645,7 +645,7 @@ begin
     if tmpS1<>'' then
       Flg1:=tmpS1='1';
     if FileExists(tmpS) then
-      FIDCLMain.LoadScriptsFromFile(tmpS, Flg1);
+      FIDCLMain.LoadPackageFromFile(tmpS, Flg1);
   end;
 
   If IsLexem('LoadPackage;', Command) then
@@ -656,7 +656,7 @@ begin
 
     If OpenDialog.Execute then
     begin
-      FIDCLMain.LoadScriptsFromFile(OpenDialog.FileName, False);
+      FIDCLMain.LoadPackageFromFile(OpenDialog.FileName, False);
     end;
     FreeAndNil(OpenDialog);
   end;
@@ -665,7 +665,7 @@ begin
   begin
     tmpS:=FindParam('LoadPackage=', Command);
     if FileExists(tmpS) then
-      FIDCLMain.LoadScriptsFromFile(tmpS, False);
+      FIDCLMain.LoadPackageFromFile(tmpS, False);
   end;
 
   if IsLexem('ReadConfig=', Command) then

@@ -27,12 +27,14 @@ var
 function FindCommandStrParam(Str: String): String;
 var
   i: Byte;
+  s: String;
 begin
   For i:=1 to ParamCount do
   begin
-    if PosEx(Str, ParamStr(i))<>0 then
+    s:=FindParam(Str, ParamStr(i));
+    if s<>'' then
     begin
-      Result:=Copy(ParamStr(i), Length(Str)+1, Length(ParamStr(i)));
+      Result:=s;
       break;
     end;
   end;
@@ -48,9 +50,14 @@ begin
   Result:=FindCommandStrParam('Script=');
 end;
 
-function FindScryptFileCall: String;
+function FindPackageFileRun: String;
 begin
-  Result:=FindCommandStrParam('ScriptFile=');
+  Result:=FindCommandStrParam('RunPackage=');
+end;
+
+function FindPackageFileLoad: String;
+begin
+  Result:=FindCommandStrParam('LoadPackage=');
 end;
 
 function FindMainMenu: Boolean;
@@ -66,6 +73,7 @@ end;
 procedure RunInterface;
 var
   i, p:Integer;
+  r: Boolean;
   S, vn, v, DialogName, ScriptName, Variables: String;
 begin
   Application.CreateForm(TMainForm, MainForm);
@@ -92,9 +100,15 @@ begin
   end;
 
   MainForm.DCLMain:=DCL;
-  S:=FindScryptFileCall;
+  r:=False;
+  S:=FindPackageFileLoad;
+  if S='' then
+  begin
+    S:=FindPackageFileRun;
+    r:=True;
+  end;
   If S<>'' then
-    DCL.LoadScriptsFromFile(S, True);
+    DCL.LoadPackageFromFile(S, r);
 
   DialogName:=FindFormCall;
   if DialogName='' then

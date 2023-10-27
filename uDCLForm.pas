@@ -231,7 +231,7 @@ begin
     ItemMenu.Caption:=GetDCLMessageString(msClose);
     ItemMenu.OnClick:=CloseDialogCommand;
     ItemMenu.Bitmap:=DrawBMPButton(ptEsc);
-    ItemMenu.ShortCut:=TShortCut(27);  // TextToShortCut('Esc');
+    ItemMenu.ShortCut:=TShortCut(27);
 
     ToItem.OnClick:=nil;
     ToItem.Insert(ToItem.Count, ItemMenu);

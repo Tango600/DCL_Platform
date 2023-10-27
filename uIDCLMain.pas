@@ -1,5 +1,4 @@
 unit uIDCLMain;
-{$I DefineType.pas}
 
 interface
 
@@ -24,12 +23,12 @@ type
     procedure NotifyForm(Form: TForm; Action: TFormsNotifyAction);
 
     procedure About;
-    procedure Exit;
+    procedure ExitApp;
     function GetImageList: TImageList;
     function GetImageIndex(PictureType: TPicturesTypes): Integer;
     function GetImageIndexes: TDictionary<TPicturesTypes, Integer>;
 
-    procedure LoadScriptsFromFile(FileName: String; Run: Boolean);
+    procedure LoadPackageFromFile(FileName: String; Run: Boolean);
     procedure ClearScriptPool;
   end;
 

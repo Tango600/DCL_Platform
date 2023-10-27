@@ -82,8 +82,7 @@ End;
 
 Procedure DeleteNonPrintSimb(Var S: String);
 Var
-  L: Integer;
-  itabsize: byte;
+  L, i: Integer;
 Begin
   L:=Length(S);
   While L<>0 Do
@@ -92,7 +91,7 @@ Begin
       S[L]:=' ';
     If S[L]=#9 Then
     Begin
-      For itabsize:=1 To TabSize Do
+      For i:=1 To TabSize Do
         Insert(' ', S, L);
     End;
     If (S[L]=#13)Or(S[L]=#0) Then
@@ -329,7 +328,7 @@ End;
 
 Function GetStringDataType(const S: String): TIsDigitType;
 Var
-  iI: Word;
+  iI: Integer;
 Begin
   Result:=idString;
   If S<>'' Then
@@ -411,8 +410,15 @@ begin
   l:=i-5;
   If i<=5 then
     l:=1;
+
   For i:=Length(FileName) downto l do
   Begin
+    If FileName[i]=PathDelim then
+    begin
+      Result:=True;
+      Exit;
+    end;
+
     If FileName[i]='.' then
     Begin
       k:=p;

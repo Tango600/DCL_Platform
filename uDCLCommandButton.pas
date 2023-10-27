@@ -1,5 +1,5 @@
 unit uDCLCommandButton;
-{$I DefineType.pas}
+{$mode delphi}
 
 interface
 
@@ -59,19 +59,14 @@ begin
       FButton.Width:=Width
     else
       if Width=-1 then
-        {$IFDEF FPC}
         FButton.AutoSize:=True
-        {$ENDIF}
       else
         FButton.Width:=ButtonWidth;
 
     FButton.Default:=Default;
     FButton.Cancel:=Cancel;
     FButton.OnClick:=OnClick;
-
-    {$IFDEF FPC}
     FButton.BorderSpacing.Around:=ButtonsInterval div 2;
-    {$ENDIF}
 
     If FontStyle=[fsBold] Then
       FButton.Font.Style:=FButton.Font.Style+[fsBold];
