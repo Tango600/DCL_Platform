@@ -1,5 +1,5 @@
 unit uDCLQueryUtils;
-{$I DefineType.pas}
+{$mode delphi}
 
 interface
 

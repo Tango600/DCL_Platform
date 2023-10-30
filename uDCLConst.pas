@@ -177,7 +177,6 @@ Type
   TConditionTypes=(ctND, ctEq, ctNotEq, ctGt, ctGtEq, ctLe, ctLeEq, ctIn, ctNotIn,
     ctBt, ctNotBt);
   TPairCondition=(pcNone, pcAnd, pcOr);
-
   TTransactionType=(trtWrite, trtRead, trtUniversal);
 
 const

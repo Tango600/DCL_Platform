@@ -63,7 +63,25 @@ begin
 end;
 
 procedure TDCLMenu.InitActions;
+var
+  I: TDCLScriptItem;
+  Scr: TStringList;
 begin
+  for I in FMain.GetLoadedScripts do
+  begin
+    if (I.Ident>=40001) and (I.Ident<=40100) then
+    begin
+      if Assigned(I.ScriptText) then
+      begin
+        Scr:=TStringList.Create;
+        I.ScriptText.Position:=0;
+        Scr.LoadFromStream(I.ScriptText);
+
+        FMain.RunCommand(Scr.Text);
+      end;
+    end;
+  end;
+
   LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 40001 and 40100', GPT.UserID);
   LocalQuery.Open;
   while not LocalQuery.EOF do
@@ -76,7 +94,25 @@ begin
 end;
 
 procedure TDCLMenu.CloseActions;
+var
+  I: TDCLScriptItem;
+  Scr: TStringList;
 begin
+  for I in FMain.GetLoadedScripts do
+  begin
+    if (I.Ident>=40101) and (I.Ident<=40200) then
+    begin
+      if Assigned(I.ScriptText) then
+      begin
+        Scr:=TStringList.Create;
+        I.ScriptText.Position:=0;
+        Scr.LoadFromStream(I.ScriptText);
+
+        FMain.RunCommand(Scr.Text);
+      end;
+    end;
+  end;
+
   LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 40101 and 40200', GPT.UserID);
   LocalQuery.Open;
   while not LocalQuery.EOF do
@@ -94,9 +130,9 @@ var
 begin
   for I in FMain.GetLoadedScripts do
   begin
-    if (I.Ident>0) and (I.Ident=Ident) then
+    if I.Ident=Ident then
     begin
-      if Assigned(I.ScriptText) then
+      if I.Command<>'' then
       begin
         Result:=I.Command;
         Exit;
