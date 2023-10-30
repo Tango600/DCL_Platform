@@ -4,11 +4,15 @@ unit uDCLMenu;
 interface
 
 uses
-  Classes, SysUtils, Forms, Menus, ComCtrls, Controls, Generics.Collections,
-  uDCLConst, uDCLDBConnector, uDBUtils, uDCLMeasurements, uDCLTypes,
-  uDCLDBStructure, uIDCLMain;
+  Classes, SysUtils, Forms, Menus, ComCtrls, Controls, Generics.Collections, fgl,
+  uDCLConst, uDCLDBConnector, uDBUtils, uDCLMeasurements, uDCLTypes, uIDCLMain,
+  uDCLDBStructure;
 
 type
+  TMenuConstructionItem=class
+    Id, Parent: Integer;
+    Title: String;
+  end;
 
   { TDCLMenu }
 
@@ -34,6 +38,8 @@ type
     procedure AddMainItem(Id: Integer; Capt: String);
     procedure AddSubItem(Id, ParentItemId: Integer; Capt: String);
 
+    function ExistItemByIdent(var List: TFPGObjectList<TMenuConstructionItem>; Id: Integer): Boolean;
+
     procedure CreateMenuItems(var Query: TDCLSimlyQuery; ValueFrom, ValueTo: Integer; UserID: String);
     procedure CreateSumMenuItems(var Query: TDCLSimlyQuery; ValueFrom, ValueTo: Integer; UserID: String);
   public
@@ -44,15 +50,10 @@ type
     procedure CreateAboutItem;
   end;
 
-  TMenuConstructionItem=class
-    Id, Parent: Integer;
-    Title: String;
-  end;
-
 implementation
 
 uses
-  uDCLGlobalVariables, uDCLQueryUtils, uDCLImages, uDCLScriptsPackage, fgl;
+  uDCLGlobalVariables, uDCLQueryUtils, uDCLImages, uDCLScriptsPackage;
 
 { TDCLMenu }
 
@@ -175,6 +176,21 @@ begin
   end;
 end;
 
+function TDCLMenu.ExistItemByIdent(var List: TFPGObjectList<TMenuConstructionItem>; Id: Integer): Boolean;
+var
+  I: TMenuConstructionItem;
+begin
+  Result:=False;
+  for I in List do
+  begin
+    if I.Id=Id then
+    begin
+      Result:=True;
+      break;
+    end;
+  end;
+end;
+
 function CompareTopItems(const Item1, Item2: TMenuConstructionItem): Integer;
 begin
   if Item1.Id<Item2.Id then
@@ -217,10 +233,13 @@ begin
   Query.Open;
   while not Query.EOF do
   begin
-    ci:=TMenuConstructionItem.Create;
-    ci.Id:=Query.FieldByName(IdentifyField).AsInteger;
-    ci.Title:=Query.FieldByName(DCLNameField).AsString;
-    ConstructionItems.Add(ci);
+    if not ExistItemByIdent(ConstructionItems, Query.FieldByName(IdentifyField).AsInteger) then
+    begin
+      ci:=TMenuConstructionItem.Create;
+      ci.Id:=Query.FieldByName(IdentifyField).AsInteger;
+      ci.Title:=Query.FieldByName(DCLNameField).AsString;
+      ConstructionItems.Add(ci);
+    end;
 
     Query.Next;
   end;
@@ -258,11 +277,14 @@ begin
   Query.Open;
   while not Query.EOF do
   begin
-    ci:=TMenuConstructionItem.Create;
-    ci.Id:=Query.FieldByName(IdentifyField).AsInteger;
-    ci.Parent:=Query.FieldByName(ParentField).AsInteger;
-    ci.Title:=Query.FieldByName(DCLNameField).AsString;
-    ConstructionItems.Add(ci);
+    if not ExistItemByIdent(ConstructionItems, Query.FieldByName(IdentifyField).AsInteger) then
+    begin
+      ci:=TMenuConstructionItem.Create;
+      ci.Id:=Query.FieldByName(IdentifyField).AsInteger;
+      ci.Parent:=Query.FieldByName(ParentField).AsInteger;
+      ci.Title:=Query.FieldByName(DCLNameField).AsString;
+      ConstructionItems.Add(ci);
+    end;
 
     Query.Next;
   end;

@@ -17,7 +17,7 @@ type
   TDCLScriptItem=class
     RunType: TRunType;  // 0 - None, 1 - Command, 2 - Dialog
     Ident, Parent: Integer;
-    ScriptName, Command, FileName: String;
+    ScriptName, Command: String;
     ScriptText: TStringStream;
   end;
   
@@ -40,6 +40,7 @@ type
     procedure DisassemblyPackage(TextPackage: TStringList);
     procedure ParsePackageHeader(TextPackage: TStringList);
     function CalcPackageHash: String;
+    function GetBase41Sequence: String;
   public
     constructor Create;
 
@@ -50,7 +51,9 @@ type
     procedure AddFile(FileName: String; RunType: TRunType);
     function AddMenuItem(Title, Command: String; Ident, Parent: Integer): TDCLScriptItem;
     procedure DeleteScript(Name: String);
+    procedure DeleteMenuItem(Id: Integer);
     procedure SetScriptRunType(Name: String; RunType: TRunType);
+    procedure Delete(Item: TDCLScriptItem);
 
     function CheckPackage(Login, Password: String): Boolean;
     procedure SignPackage(Login, Password: String);
@@ -133,7 +136,6 @@ begin
   si:=TDCLScriptItem.Create;
   si.ScriptName:=ExtractFileNameOnly(FileName);
   si.RunType:=RunType;
-  si.FileName:=FileName;
   si.ScriptText:=TStringStream.Create('', TEncoding.UTF8);
   si.ScriptText.LoadFromFile(FileName);
 
@@ -164,6 +166,21 @@ begin
     if (LowerCase(I.ScriptName)=LowerCase(Name)) and (I.Ident=0) then
     begin
       FPackage.Scripts.Remove(I);
+      break;
+    end;
+  end;
+end;
+
+procedure TDCLScriptsPackage.DeleteMenuItem(Id: Integer);
+var
+  I: TDCLScriptItem;
+begin
+  for I in FPackage.Scripts do
+  begin
+    if I.Ident=Id then
+    begin
+      FPackage.Scripts.Remove(I);
+      break;
     end;
   end;
 end;
@@ -180,6 +197,11 @@ begin
       I.RunType:=RunType;
     end;
   end;
+end;
+
+procedure TDCLScriptsPackage.Delete(Item: TDCLScriptItem);
+begin
+  FPackage.Scripts.Remove(Item);
 end;
 
 function TDCLScriptsPackage.CalcPackageHash: String;
@@ -207,12 +229,17 @@ begin
   Result:=S;
 end;
 
+function TDCLScriptsPackage.GetBase41Sequence: String;
+begin
+  Result:='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+end;
+
 function TDCLScriptsPackage.EncodePackage(RunOnStart: Boolean): TStream;
 var
   RawPackage: TStream;
   I: TDCLScriptItem;
   CompressedPackage: TStream;
-  Base16X, S: String;
+  Base41X, S: String;
   b, b1, w: Word;
   TextPackage: TStringList;
 begin
@@ -257,15 +284,7 @@ begin
   RawPackage.Free;
   FreeAndNil(TextPackage);
 
-  Base16X:='';
-  for b:=Ord('A') to Ord('Z') do
-  begin
-    Base16X:=Base16X+Chr(b);
-  end;
-  for b:=Ord('a') to Ord('z') do
-  begin
-    Base16X:=Base16X+Chr(b);
-  end;
+  Base41X:=GetBase41Sequence;
 
   Result:=TMemoryStream.Create;
   w:=0;
@@ -274,17 +293,17 @@ begin
   while CompressedPackage.Read(b, 2)<>0 do
   begin
     b1:=b div (41*41);
-    S:=Base16X[b1+1];
+    S:=Base41X[b1+1];
     Result.Write(S[1], 1);
     inc(w);
 
     b1:=(b div 41) mod 41;
-    S:=Base16X[b1+1];
+    S:=Base41X[b1+1];
     Result.Write(S[1], 1);
     inc(w);
 
     b1:=b mod 41;
-    S:=Base16X[b1+1];
+    S:=Base41X[b1+1];
     Result.Write(S[1], 1);
     inc(w);
 
@@ -322,15 +341,7 @@ var
   MS: TStream;
   Buffer: Array[1..3] of Word;
 begin
-  Base41X:='';
-  for b:=Ord('A') to Ord('Z') do
-  begin
-    Base41X:=Base41X+Chr(b);
-  end;
-  for b:=Ord('a') to Ord('z') do
-  begin
-    Base41X:=Base41X+Chr(b);
-  end;
+  Base41X:=GetBase41Sequence;
 
   MS:=TMemoryStream.Create;
 

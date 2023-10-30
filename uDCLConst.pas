@@ -52,7 +52,7 @@ const
   ShowFormPanel=True;
   CloseButton=True;
 
-  PackagesFileExt='.dss';
+  PackagesFileExt='.dsp';
   PackagesVersion='1.3';
 
   BaiseUIDParamName='BaseUID';
