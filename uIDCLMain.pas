@@ -4,7 +4,7 @@ interface
 
 uses
   Forms, Classes, Generics.Collections, Controls,
-  uDCLConst, uDCLVariables, uDCLDBConnector, uDCLImages;
+  uDCLConst, uDCLVariables, uDCLDBConnector, uDCLImages, uDCLScriptsPackage;
 
 type
   IDCLMain=interface
@@ -18,6 +18,7 @@ type
     function GetScriptText(ScriptName: String): TStringList;
     procedure OpenDialog(DialogName: String);
     procedure RunCommand(CommandName: String);
+    function GetLoadedScripts: TList<TDCLScriptItem>;
 
     procedure NotifyForms(Action: TFormsNotifyAction);
     procedure NotifyForm(Form: TForm; Action: TFormsNotifyAction);

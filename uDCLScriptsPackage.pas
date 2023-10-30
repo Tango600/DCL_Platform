@@ -17,13 +17,13 @@ type
   TDCLScriptItem=class
     RunType: TRunType;  // 0 - None, 1 - Command, 2 - Dialog
     Ident, Parent: Integer;
-    ScriptName, FileName: String;
+    ScriptName, Command, FileName: String;
     ScriptText: TStringStream;
   end;
   
   TPackage=class
     PackageInfo: TPackageInfo;
-    Scripts: TDictionary<String, TDCLScriptItem>;
+    Scripts: TList<TDCLScriptItem>;
   end;
 
   { TDCLScriptsPackage }
@@ -33,12 +33,13 @@ type
     FPackage: TPackage;
 
     function GetPackageInfo: TPackageInfo;
-    function GetScripts: TDictionary<String, TDCLScriptItem>;
+    function GetScripts: TList<TDCLScriptItem>;
 
     function GetSign(Login, Password, Hash: String): String;
 
     procedure DisassemblyPackage(TextPackage: TStringList);
     procedure ParsePackageHeader(TextPackage: TStringList);
+    function CalcPackageHash: String;
   public
     constructor Create;
 
@@ -47,14 +48,14 @@ type
 
     procedure ClearFiles;
     procedure AddFile(FileName: String; RunType: TRunType);
+    function AddMenuItem(Title, Command: String; Ident, Parent: Integer): TDCLScriptItem;
     procedure DeleteScript(Name: String);
     procedure SetScriptRunType(Name: String; RunType: TRunType);
 
-    function CalcPackageHash: String;
     function CheckPackage(Login, Password: String): Boolean;
     procedure SignPackage(Login, Password: String);
 
-    property Scripts: TDictionary<String, TDCLScriptItem> read GetScripts;
+    property Scripts: TList<TDCLScriptItem> read GetScripts;
     property PackageInfo: TPackageInfo read GetPackageInfo;
   end;
 
@@ -70,20 +71,24 @@ var
   i, p: LongInt;
   b: Byte;
 begin
-  p:=0;
-  Data.Position:=0;
-  SetLength(Buffer, Data.Size);
-  for i:=1 to Data.Size do
+  Result:='';
+  if Assigned(Data) and (Data.Size>0) then
   begin
-    b:=Data.ReadByte;
-    if b>=32 then
+    p:=0;
+    Data.Position:=0;
+    SetLength(Buffer, Data.Size);
+    for i:=1 to Data.Size do
     begin
-      Buffer[p]:=b;
-      inc(p);
+      b:=Data.ReadByte;
+      if b>=32 then
+      begin
+        Buffer[p]:=b;
+        inc(p);
+      end;
     end;
-  end;
 
-  Result:=MD5Print(MD5Buffer(Buffer[0], p));
+    Result:=MD5Print(MD5Buffer(Buffer[0], p));
+  end;
 end;
 
 function TDCLScriptsPackage.GetPackageInfo: TPackageInfo;
@@ -113,7 +118,7 @@ constructor TDCLScriptsPackage.Create;
 begin
   FPackage:=TPackage.Create;
   FPackage.PackageInfo:=TPackageInfo.Create;
-  FPackage.Scripts:=TDictionary<String, TDCLScriptItem>.Create;
+  FPackage.Scripts:=TList<TDCLScriptItem>.Create;
 end;
 
 procedure TDCLScriptsPackage.ClearFiles;
@@ -126,32 +131,54 @@ var
   si: TDCLScriptItem;
 begin
   si:=TDCLScriptItem.Create;
+  si.ScriptName:=ExtractFileNameOnly(FileName);
   si.RunType:=RunType;
   si.FileName:=FileName;
   si.ScriptText:=TStringStream.Create('', TEncoding.UTF8);
   si.ScriptText.LoadFromFile(FileName);
 
-  FPackage.Scripts.Add(ExtractFileNameOnly(FileName), si);
+  FPackage.Scripts.Add(si);
+end;
+
+function TDCLScriptsPackage.AddMenuItem(Title, Command: String; Ident,
+  Parent: Integer): TDCLScriptItem;
+var
+  si: TDCLScriptItem;
+begin
+  si:=TDCLScriptItem.Create;
+  si.Command:=Command;
+  si.ScriptName:=Title;
+  si.Ident:=Ident;
+  si.Parent:=Parent;
+
+  FPackage.Scripts.Add(si);
+  Result:=si;
 end;
 
 procedure TDCLScriptsPackage.DeleteScript(Name: String);
+var
+  I: TDCLScriptItem;
 begin
-  FPackage.Scripts.Remove(Name);
+  for I in FPackage.Scripts do
+  begin
+    if (LowerCase(I.ScriptName)=LowerCase(Name)) and (I.Ident=0) then
+    begin
+      FPackage.Scripts.Remove(I);
+    end;
+  end;
 end;
 
 procedure TDCLScriptsPackage.SetScriptRunType(Name: String; RunType: TRunType);
 var
   I: TDCLScriptItem;
-  P: TPair<String, TDCLScriptItem>;
 begin
-  if FPackage.Scripts.TryGetValue(Name, I) then
+  for I in FPackage.Scripts do
   begin
-    for P in FPackage.Scripts do
+    I.RunType:=rtNone;
+    if (LowerCase(I.ScriptName)=LowerCase(Name)) and (I.Ident=0) then
     begin
-      P.Value.RunType:=rtNone;
+      I.RunType:=RunType;
     end;
-
-    I.RunType:=RunType;
   end;
 end;
 
@@ -159,13 +186,13 @@ function TDCLScriptsPackage.CalcPackageHash: String;
 var
   S, h: String;
   Hashes: TSortedList<String>;
-  P: TPair<String, TDCLScriptItem>;
+  I: TDCLScriptItem;
 begin
   Hashes:=TSortedList<String>.Create;
 
-  for P in FPackage.Scripts do
+  for I in FPackage.Scripts do
   begin
-    h:=GetDataHash(P.Value.ScriptText);
+    h:=MD5Print(MD5String(I.ScriptName+GetDataHash(I.ScriptText)));
     Hashes.Add(h);
   end;
 
@@ -183,7 +210,7 @@ end;
 function TDCLScriptsPackage.EncodePackage(RunOnStart: Boolean): TStream;
 var
   RawPackage: TStream;
-  P: TPair<String, TDCLScriptItem>;
+  I: TDCLScriptItem;
   CompressedPackage: TStream;
   Base16X, S: String;
   b, b1, w: Word;
@@ -197,17 +224,31 @@ begin
     S:='RunOnStart=1;';
   TextPackage.Append('[Sign='+FPackage.PackageInfo.Hash+';Version='+PackagesVersion+';'+S+']');
 
-  for P in FPackage.Scripts do
+  for I in FPackage.Scripts do
   begin
     S:='';
-    if P.Value.RunType<>rtNone then
+    if I.RunType<>rtNone then
     begin
-      S:=S+'RunType='+IntToStr(Ord(P.Value.RunType))+';';
+      S:=S+'RunType='+IntToStr(Ord(I.RunType))+';';
+    end;
+    if I.Command<>'' then
+    begin
+      S:=S+'Command='+I.Command+';';
     end;
 
-    TextPackage.Append('[Name='+P.Key+';'+S+']');
-    TextPackage.Append(P.Value.ScriptText.DataString);
-    TextPackage.Append('[EndName='+P.Key+';]');
+    if I.Ident<>0 then
+    begin
+      S:=S+'Ident='+IntToStr(I.Ident)+';';
+    end;
+    if I.Parent<>0 then
+    begin
+      S:=S+'Parent='+IntToStr(I.Parent)+';';
+    end;
+
+    TextPackage.Append('[Name='+I.ScriptName+';'+S+']');
+    if Assigned(I.ScriptText) then
+      TextPackage.Append(I.ScriptText.DataString);
+    TextPackage.Append('[EndName='+I.ScriptName+';]');
   end;
 
   CompressedPackage:=TMemoryStream.Create;
@@ -355,6 +396,24 @@ begin
           ScriptItem.RunType:=TRunType(StrToInt(s1));
         end;
 
+        s1:=FindParam('Command=', S);
+        if s1<>'' then
+        begin
+          ScriptItem.Command:=s1;
+        end;
+
+        s1:=FindParam('Ident=', S);
+        if s1<>'' then
+        begin
+          ScriptItem.Ident:=StrToInt(s1);
+        end;
+
+        s1:=FindParam('Parent=', S);
+        if s1<>'' then
+        begin
+          ScriptItem.Parent:=StrToInt(s1);
+        end;
+
         ScriptItem.ScriptText:=TStringStream.Create('', TEncoding.UTF8);
         b:=True;
         Continue;
@@ -367,7 +426,7 @@ begin
       if (s1<>'') and (s1=sn) then
       begin
         b:=False;
-        FPackage.Scripts.Add(sn, ScriptItem);
+        FPackage.Scripts.Add(ScriptItem);
         Continue;
       end;
     end;
@@ -383,7 +442,7 @@ begin
   end;
 end;
 
-function TDCLScriptsPackage.GetScripts: TDictionary<String, TDCLScriptItem>;
+function TDCLScriptsPackage.GetScripts: TList<TDCLScriptItem>;
 begin
   Result:=FPackage.Scripts;
 end;

@@ -47,7 +47,7 @@ type
 implementation
 
 uses
-  uDCLGlobalVariables, uDCLQueryUtils, uDCLImages;
+  uDCLGlobalVariables, uDCLQueryUtils, uDCLImages, uDCLScriptsPackage;
 
 { TDCLMenu }
 
@@ -83,7 +83,21 @@ begin
 end;
 
 function TDCLMenu.GetMenuCommandById(Ident: Integer): String;
+var
+  I: TDCLScriptItem;
 begin
+  for I in FMain.GetLoadedScripts do
+  begin
+    if (I.Ident>0) and (I.Ident=Ident) then
+    begin
+      if Assigned(I.ScriptText) then
+      begin
+        Result:=I.Command;
+        Exit;
+      end;
+    end;
+  end;
+
   LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+'='+IntToStr(Ident), GPT.UserID);
   LocalQuery.Open;
   LocalQuery.First;
@@ -157,7 +171,17 @@ begin
 end;
 
 procedure TDCLMenu.CreateMenuItems(var Query: TDCLSimlyQuery; ValueFrom, ValueTo: Integer; UserID: String);
+var
+  I: TDCLScriptItem;
 begin
+  for I in FMain.GetLoadedScripts do
+  begin
+    if (I.Ident>=ValueFrom) and (I.Ident<=ValueTo) then
+    begin
+      AddMainItem(I.Ident, I.ScriptName);
+    end;
+  end;
+
   Query.SQL.Text:=GetRolesQueryText(IdentifyField+' between '+IntToStr(ValueFrom)+' and '+IntToStr(ValueTo), UserID);
   Query.Open;
   while not Query.EOF do
@@ -171,7 +195,17 @@ end;
 
 procedure TDCLMenu.CreateSumMenuItems(var Query: TDCLSimlyQuery; ValueFrom,
   ValueTo: Integer; UserID: String);
+var
+  I: TDCLScriptItem;
 begin
+  for I in FMain.GetLoadedScripts do
+  begin
+    if (I.Ident>=ValueFrom) and (I.Ident<=ValueTo) then
+    begin
+      AddSubItem(I.Ident, I.Parent, I.ScriptName);
+    end;
+  end;
+
   Query.SQL.Text:=GetRolesQueryText(IdentifyField+' between '+IntToStr(ValueFrom)+' and '+IntToStr(ValueTo), UserID);
   Query.Open;
   while not Query.EOF do

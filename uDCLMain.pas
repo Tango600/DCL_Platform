@@ -70,6 +70,7 @@ type
     procedure LoadPackageFromFile(FileName: String; Run: Boolean);
     function CheckSigned(Package: TDCLScriptsPackage): Boolean;
     procedure ClearScriptPool;
+    function GetLoadedScripts: TList<TDCLScriptItem>;
 
     property DBConnector: TDCLDBConnector read FDBConnector;
     property Variables: TVariables read FVariables;
@@ -119,8 +120,7 @@ procedure TDCLMain.LoadPackageFromFile(FileName: String; Run: Boolean);
 var
   RawPackage: TFileStream;
   Package: TDCLScriptsPackage;
-  FLoadedScripts: TDictionary<String, TDCLScriptItem>;
-  I: TPair<String, TDCLScriptItem>;
+  I: TDCLScriptItem;
   RunItem: TDCLScriptItem;
   Command: TDCLCommand;
   c: Integer;
@@ -157,11 +157,9 @@ begin
 
       if CheckSigned(Package) then
       begin
-        FLoadedScripts:=Package.Scripts;
-
-        for I in FLoadedScripts do
+        for I in Package.Scripts do
         begin
-          FScripts.Add(I.Value);
+          FScripts.Add(I);
         end;
 
         if Run then
@@ -217,6 +215,11 @@ end;
 procedure TDCLMain.ClearScriptPool;
 begin
   FScripts.Clear;
+end;
+
+function TDCLMain.GetLoadedScripts: TList<TDCLScriptItem>;
+begin
+  Result:=FScripts;
 end;
 
 procedure TDCLMain.NotifyForms(Action: TFormsNotifyAction);
