@@ -4,7 +4,7 @@ unit uDCLMenu;
 interface
 
 uses
-  Classes, SysUtils, Forms, Menus, ComCtrls, Controls,
+  Classes, SysUtils, Forms, Menus, ComCtrls, Controls, Generics.Collections,
   uDCLConst, uDCLDBConnector, uDBUtils, uDCLMeasurements, uDCLTypes,
   uDCLDBStructure, uIDCLMain;
 
@@ -44,10 +44,15 @@ type
     procedure CreateAboutItem;
   end;
 
+  TMenuConstructionItem=class
+    Id, Parent: Integer;
+    Title: String;
+  end;
+
 implementation
 
 uses
-  uDCLGlobalVariables, uDCLQueryUtils, uDCLImages, uDCLScriptsPackage;
+  uDCLGlobalVariables, uDCLQueryUtils, uDCLImages, uDCLScriptsPackage, fgl;
 
 { TDCLMenu }
 
@@ -170,15 +175,41 @@ begin
   end;
 end;
 
+function CompareTopItems(const Item1, Item2: TMenuConstructionItem): Integer;
+begin
+  if Item1.Id<Item2.Id then
+    Result:=-1
+  else if Item1.Id>Item2.Id then
+    Result:=1
+  else if Item1.Id=Item2.Id then
+    Result:=0;
+end;
+
+function CompareSubItems(const Item1, Item2: TMenuConstructionItem): Integer;
+begin
+  if (Item1.Id*20000+Item1.Parent)<(Item2.Id*20000+Item2.Parent) then
+    Result:=-1
+  else if (Item1.Id*20000+Item1.Parent)>(Item2.Id*20000+Item2.Parent) then
+    Result:=1
+  else if (Item1.Id*20000+Item1.Parent)=(Item2.Id*20000+Item2.Parent) then
+    Result:=0;
+end;
+
 procedure TDCLMenu.CreateMenuItems(var Query: TDCLSimlyQuery; ValueFrom, ValueTo: Integer; UserID: String);
 var
   I: TDCLScriptItem;
+  ci: TMenuConstructionItem;
+  ConstructionItems: TFPGObjectList<TMenuConstructionItem>;
 begin
+  ConstructionItems:=TFPGObjectList<TMenuConstructionItem>.Create;
   for I in FMain.GetLoadedScripts do
   begin
     if (I.Ident>=ValueFrom) and (I.Ident<=ValueTo) then
     begin
-      AddMainItem(I.Ident, I.ScriptName);
+      ci:=TMenuConstructionItem.Create;
+      ci.Id:=I.Ident;
+      ci.Title:=I.ScriptName;
+      ConstructionItems.Add(ci);
     end;
   end;
 
@@ -186,23 +217,40 @@ begin
   Query.Open;
   while not Query.EOF do
   begin
-    AddMainItem(Query.FieldByName(IdentifyField).AsInteger, Query.FieldByName(DCLNameField).AsString);
+    ci:=TMenuConstructionItem.Create;
+    ci.Id:=Query.FieldByName(IdentifyField).AsInteger;
+    ci.Title:=Query.FieldByName(DCLNameField).AsString;
+    ConstructionItems.Add(ci);
 
     Query.Next;
   end;
   Query.Close;
+
+  ConstructionItems.Sort(CompareTopItems);
+
+  for ci in ConstructionItems do
+  begin
+    AddMainItem(ci.Id, ci.Title);
+  end;
 end;
 
 procedure TDCLMenu.CreateSumMenuItems(var Query: TDCLSimlyQuery; ValueFrom,
   ValueTo: Integer; UserID: String);
 var
   I: TDCLScriptItem;
+  ci: TMenuConstructionItem;
+  ConstructionItems: TFPGObjectList<TMenuConstructionItem>;
 begin
+  ConstructionItems:=TFPGObjectList<TMenuConstructionItem>.Create;
   for I in FMain.GetLoadedScripts do
   begin
     if (I.Ident>=ValueFrom) and (I.Ident<=ValueTo) then
     begin
-      AddSubItem(I.Ident, I.Parent, I.ScriptName);
+      ci:=TMenuConstructionItem.Create;
+      ci.Id:=I.Ident;
+      ci.Parent:=I.Parent;
+      ci.Title:=I.ScriptName;
+      ConstructionItems.Add(ci);
     end;
   end;
 
@@ -210,11 +258,22 @@ begin
   Query.Open;
   while not Query.EOF do
   begin
-    AddSubItem(Query.FieldByName(IdentifyField).AsInteger, Query.FieldByName(ParentField).AsInteger, Query.FieldByName(DCLNameField).AsString);
+    ci:=TMenuConstructionItem.Create;
+    ci.Id:=Query.FieldByName(IdentifyField).AsInteger;
+    ci.Parent:=Query.FieldByName(ParentField).AsInteger;
+    ci.Title:=Query.FieldByName(DCLNameField).AsString;
+    ConstructionItems.Add(ci);
 
     Query.Next;
   end;
   Query.Close;
+
+  ConstructionItems.Sort(CompareSubItems);
+
+  for ci in ConstructionItems do
+  begin
+    AddSubItem(ci.Id, ci.Parent, ci.Title);
+  end;
 end;
 
 constructor TDCLMenu.Create(Main: IDCLMain; MainForm: TForm);
