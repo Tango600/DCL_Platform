@@ -956,8 +956,11 @@ begin
                 'C.RDB$RELATION_NAME = I.RDB$RELATION_NAME and '+
                 'I.RDB$INDEX_NAME = C.RDB$INDEX_NAME and '+
                 'S.RDB$INDEX_NAME = I.RDB$INDEX_NAME) and ff.rdb$generator_name is not null and ff.rdb$identity_type = 1';
-        ShadowQuery.Open;
-        Result:=Trim(ShadowQuery.Fields[0].AsString);
+        try
+          ShadowQuery.Open;
+          Result:=Trim(ShadowQuery.Fields[0].AsString);
+        except
+        end;
       end
       else
       begin
