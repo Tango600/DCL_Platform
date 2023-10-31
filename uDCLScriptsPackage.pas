@@ -467,6 +467,7 @@ begin
     if PosEx('[Sign=', S)=1 then
     begin
       FPackage.PackageInfo.Hash:=FindParam('Sign=', S);
+      FPackage.PackageInfo.Name:=FindParam('Name=', S);
       FPackage.PackageInfo.RunOnStart:=FindParam('RunOnStart=', S)='1';
       FPackage.PackageInfo.Version:=FindParam('Version=', S);
       Break;

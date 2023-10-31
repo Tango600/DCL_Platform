@@ -1,253 +1,310 @@
 object AboutForm: TAboutForm
-  Left = 471
-  Height = 370
-  Top = 290
-  Width = 501
+  Left = 522
+  Height = 353
+  Top = 273
+  Width = 401
   BorderStyle = bsDialog
   Caption = 'О ...'
-  ClientHeight = 370
-  ClientWidth = 501
-  DesignTimePPI = 120
+  ClientHeight = 353
+  ClientWidth = 401
+  Position = poScreenCenter
+  LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
   OnResize = FormResize
-  Position = poScreenCenter
-  LCLVersion = '2.3.0.0'
-  object GroupBox1: TGroupBox
-    Left = 6
-    Height = 358
-    Top = 6
-    Width = 489
+  object PageControl1: TPageControl
+    Left = 0
+    Height = 353
+    Top = 0
+    Width = 401
+    ActivePage = TabSheet1
     Align = alClient
-    BorderSpacing.Around = 6
-    ClientHeight = 333
-    ClientWidth = 485
-    ParentBackground = False
-    ParentColor = False
+    TabIndex = 0
     TabOrder = 0
-    object ButtonOK: TButton
-      AnchorSideLeft.Control = GroupBox1
-      AnchorSideRight.Control = GroupBox1
-      AnchorSideRight.Side = asrBottom
-      AnchorSideBottom.Control = GroupBox1
-      AnchorSideBottom.Side = asrBottom
-      Left = 102
-      Height = 31
-      Top = 287
-      Width = 94
-      Anchors = [akBottom]
-      BorderSpacing.Left = 125
-      BorderSpacing.Right = 125
-      BorderSpacing.Bottom = 15
-      Cancel = True
-      Caption = 'Close'
-      ModalResult = 11
-      TabOrder = 0
+    object TabSheet1: TTabSheet
+      BorderWidth = 1
+      Caption = 'Version'
+      ClientHeight = 325
+      ClientWidth = 393
+      object GroupBox1: TGroupBox
+        Left = 1
+        Height = 323
+        Top = 1
+        Width = 391
+        Align = alClient
+        BorderSpacing.Around = 1
+        ClientHeight = 303
+        ClientWidth = 387
+        ParentBackground = False
+        ParentColor = False
+        TabOrder = 0
+        object ButtonOK: TButton
+          AnchorSideLeft.Control = GroupBox1
+          AnchorSideRight.Control = GroupBox1
+          AnchorSideRight.Side = asrBottom
+          AnchorSideBottom.Control = GroupBox1
+          AnchorSideBottom.Side = asrBottom
+          Left = 136
+          Height = 25
+          Top = 266
+          Width = 75
+          Anchors = [akBottom]
+          BorderSpacing.Left = 100
+          BorderSpacing.Right = 100
+          BorderSpacing.Bottom = 12
+          Cancel = True
+          Caption = 'Close'
+          ModalResult = 11
+          TabOrder = 0
+        end
+        object ImageLogo: TImage
+          Left = 10
+          Height = 90
+          Top = 10
+          Width = 90
+          AutoSize = True
+          Picture.Data = {
+            1754506F727461626C654E6574776F726B47726170686963F306000089504E47
+            0D0A1A0A0000000D494844520000005A0000005A0802000000B7CAD655000000
+            0674524E530000000000006EA60791000000097048597300000EC400000EC401
+            952B0E1B0000069349444154789CED9C6B6C145514C77FFBEA2E6DB12D5AE823
+            40014154504C7C14B0F21235183E1811FD801FD1C4A831317ED08F20C6882F40
+            82623028F119A3A051100301B1014102058A282F7908A5A5A5856DBBBBDD9DEB
+            87567766D96DF74EF7DE5D60FE992F3373E69EB3FF39F7CC9D39E72C3870E020
+            2DB87A3937A88431A319586873E87084E37F73EAB4CDCB93A2A2806103F17B6C
+            5E1EECE2681BADE19402C9E9983E95975F624A0D3EAF4DC5DD300C0E1E62C972
+            56AF211AB53F8ED7CDDCD13C3D8E31C5B87ABB837D236AB0BD81A57BD97626C9
+            D9C4B13D1EDE7895179EC5EDEE97D6046CDAC2DC79B45CB0736DB19F95D3A9A9
+            C8A43D86E0C37A16EE24262CC713E97873112F3E9749C5FFA376073366134EED
+            A849E1F7F0D583DC35448949EF1F60C12ECB11CB2C9C56C38AB7700122F3DBB0
+            4ABABAD85A2B67F1F3B7F1E8488450B2DD71033B1A391D8CABB378C74F5FF3C0
+            343973A5D0DC42D50482EDE9CA1778D9FE08257E85266D3DC3BCCDF1DD78A82C
+            2E62CA443014EABEBE989A6AD66F4A57FEEEC114F930549A744F29D7E57131D2
+            B31BA763CC48FC1E8829D40D8CBB49828E31D7A9E502F0BA1851485DCB7FBBFF
+            9FC80FA8758D1E2D032484036E84E2DB03044CF1D3BAAE50AFDB25FA963143A8
+            BF436698E8103ABC03193A84503E59C062926EEF9062DC3074D061BE4139ED1D
+            081DB1238577889CF38E6C4F16BD71AB6F081DA1F48A992C861EEF3021A74329
+            467663478E79075AD61DC209A5A9A03D944AC50E3DEB8E6C7A470EAE3B4CC869
+            EFC8EABA2337BDE32A5F7748BDB35CFDAF7052DEE1AC3B1264B3FA46ABFE5648
+            C502A1257624F78ECEB00EEFE894C9B384633ABC23645211A7E35803D1085EBB
+            E9CF34F1D72909E19361E5B1232A381B89EFC6E9686A63E79F4C1AAB5077B093
+            5FEA25E4F775D01E654046D3A309F8A3935613E31667B87091C7272B49C1756F
+            2BD6F3ED0E095BC382623763FDAAB27042B0FC3C274DDE61A1E3F059EE1CC5E8
+            32255C9C6AE2C925B44BE6680F87995A40BE4B89493BDBF9A4C5F264B1D02104
+            3FECA67A3455A599E6E23CB35EE378A31C174048B0BB83EA019967A4AE93858D
+            4484455D62E40C77F1D9AFB487193F9CC280B4F5497E4F84D55B78E26D3B5C74
+            A3D560533B856E86E5E1ED5F7147CF80313E6D63590B6191782AE5F0F9794C1E
+            CBAD43290CF45A22941AA12E8E9E63DB1F345DB475FD652872333E40B98F3CBB
+            A474189CE8A23E948408070E1C3870E0C08103070E1C3870E0E04A46CA57E502
+            1FD565DC5442A1CFE6D0E118272EB1FD2CE73A6C8E9080F232A6D43072047EBB
+            55EAC120F507D956CBA56072812474F83D3C339EF9E3189489CF3F91186B8FB1
+            6857BF48292BE3F5053C3E8740264C6A69E1DDF758FC0EA1CBBE5426D25194C7
+            C733B93BD3FD230D1DCCDBC8C196BE252FC7EDE3F9F11B2ACA336CD2AFDB99FD
+            18ADAD9683163A3C2ED6DCCF94CA0C2BEE4643070F7D4F53A7DC556543D8BD35
+            F35C7463E3661E9E4334556261CE289EBA59D527FC022F257E36CAA49D80656F
+            503351C9677404A3AA38F6377507E2EA2CDEB16116B794C8939C36C23126ADA5
+            2994AE7CD9608EEF21A0B2BD67EF7EEE307534C5B37015F9CAFB477C2E260D61
+            DD8974E567D410F0AA4DA4DF3696A1959CFAA767374E47793E18CA93D695F912
+            C2C32B9567D1DD30B43C191D5E978EEA019F4C4E204FB16BF468312DAC2CF51D
+            8686FA0EA90487D05D261FA743A0A52E4DB2085B737D96D53BF4561EA5259D45
+            3A74D4A54931AE67B224A543E8A94B938D1D59AC3AD6DC1E908674F6BC4353EC
+            90A2434F2835C13459B4F7E1A5259CC5AAE36BD43B9287522D93455A4516DB7B
+            726EB25CFDCBB01C8C1D26E85EA44B87D26C7A877ADDC695325934755A5D298B
+            74B484D25C7CD09AA0DB3B72F19D25E51B6D8ED121B44C96E47DB4412D3DBC41
+            99BFDA6B0BEAF08E36D31F77C5E9F82742288A3F1345DFBDE0A84CC7C2FEE3CA
+            BDA323CC91B3F15D53F397C16F41EE2D50A8BB394ABD4C16AEF610679AA818A4
+            CC20D8F03B419349962C5C73949985B8D4A4BC107CD1CADEB4734E4034C6001F
+            D3C7A9B22716E399959C684A41476314BF8B5BD564BDF68758DA2CEDFB3B0F73
+            DFCD0C2F5562D2E275ACDA6C3992D8CF5217C2E7E216BB4D1BA9F07B270B9B08
+            C9B74DC40CD6EE624215379665D29E98C1E2EF78E5F3C4275D221D02F684A80B
+            31C843A9174FFF5831E068845517F8E882FD169250175FD672E41C55A50C2EC2
+            DD3F93425DFCBC8FF91FB06A5392A77E6F6317B8A9F0926FB7513122688CD29C
+            D127654509C34BF1DB2D48BAD4C99106DA32548DE4C0C1B58C7F010DAC50E30E
+            7C6D3C0000000049454E44AE426082
+          }
+          Proportional = True
+          Stretch = True
+          Transparent = True
+          OnClick = ImageLogoClick
+        end
+        object lbProduct: TLabel
+          Left = 120
+          Height = 15
+          Top = 8
+          Width = 49
+          Caption = 'Продукт:'
+          ParentFont = False
+        end
+        object lbProductName: TLabel
+          Left = 180
+          Height = 15
+          Top = 8
+          Width = 74
+          Caption = 'DCL Platform'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lbVersion: TLabel
+          Left = 290
+          Height = 15
+          Top = 8
+          Width = 51
+          Caption = 'lbVersion'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lbDBLib: TLabel
+          Left = 180
+          Height = 15
+          Top = 32
+          Width = 43
+          Caption = 'lbDBLib'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lbDBLibVersion: TLabel
+          Left = 290
+          Height = 15
+          Top = 32
+          Width = 84
+          Caption = 'lbDBLibVersion'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lbCompillerName: TLabel
+          Left = 70
+          Height = 15
+          Top = 216
+          Width = 96
+          Caption = 'lbCompillerName'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object lbBuildType: TLabel
+          Left = 232
+          Height = 15
+          Top = 216
+          Width = 64
+          Caption = 'lbBuildType'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object Label1: TLabel
+          Left = 120
+          Height = 15
+          Top = 64
+          Width = 74
+          Caption = 'Дата сборки :'
+        end
+        object lbBuildDate: TLabel
+          Left = 208
+          Height = 15
+          Top = 64
+          Width = 65
+          Caption = 'lbBuildDate'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object Label2: TLabel
+          Left = 12
+          Height = 15
+          Top = 216
+          Width = 48
+          Caption = 'Собран :'
+        end
+        object Label3: TLabel
+          Left = 200
+          Height = 15
+          Top = 216
+          Width = 23
+          Caption = 'ОС :'
+        end
+        object Label4: TLabel
+          Left = 276
+          Height = 15
+          Top = 8
+          Width = 9
+          Caption = 'v.'
+        end
+        object Label5: TLabel
+          Left = 276
+          Height = 15
+          Top = 32
+          Width = 12
+          Caption = 'v :'
+        end
+        object Label6: TLabel
+          Left = 120
+          Height = 15
+          Top = 32
+          Width = 57
+          Caption = 'Движ. БД :'
+        end
+        object memConfigInfo: TMemo
+          Left = 10
+          Height = 58
+          Top = 112
+          Width = 366
+          Color = clForm
+          ReadOnly = True
+          TabOrder = 1
+        end
+        object lbConfigVersionText: TLabel
+          Left = 10
+          Height = 15
+          Top = 176
+          Width = 126
+          Caption = 'Версия конфигурации:'
+        end
+        object lbConfigVersion: TLabel
+          Left = 154
+          Height = 15
+          Top = 176
+          Width = 15
+          Caption = '0.1'
+        end
+      end
     end
-    object ImageLogo: TImage
-      Left = 12
-      Height = 90
-      Top = 12
-      Width = 90
-      AutoSize = True
-      OnClick = ImageLogoClick
-      Picture.Data = {
-        1754506F727461626C654E6574776F726B47726170686963F306000089504E47
-        0D0A1A0A0000000D494844520000005A0000005A0802000000B7CAD655000000
-        0674524E530000000000006EA60791000000097048597300000EC400000EC401
-        952B0E1B0000069349444154789CED9C6B6C145514C77FFBEA2E6DB12D5AE823
-        40014154504C7C14B0F21235183E1811FD801FD1C4A831317ED08F20C6882F40
-        82623028F119A3A051100301B1014102058A282F7908A5A5A5856DBBBBDD9DEB
-        87567766D96DF74EF7DE5D60FE992F3373E69EB3FF39F7CC9D39E72C3870E020
-        2DB87A3937A88431A319586873E87084E37F73EAB4CDCB93A2A2806103F17B6C
-        5E1EECE2681BADE19402C9E9983E95975F624A0D3EAF4DC5DD300C0E1E62C972
-        56AF211AB53F8ED7CDDCD13C3D8E31C5B87ABB837D236AB0BD81A57BD97626C9
-        D9C4B13D1EDE7895179EC5EDEE97D6046CDAC2DC79B45CB0736DB19F95D3A9A9
-        C8A43D86E0C37A16EE24262CC713E97873112F3E9749C5FFA376073366134EED
-        A849E1F7F0D583DC35448949EF1F60C12ECB11CB2C9C56C38AB7700122F3DBB0
-        4ABABAD85A2B67F1F3B7F1E8488450B2DD71033B1A391D8CABB378C74F5FF3C0
-        343973A5D0DC42D50482EDE9CA1778D9FE08257E85266D3DC3BCCDF1DD78A82C
-        2E62CA443014EABEBE989A6AD66F4A57FEEEC114F930549A744F29D7E57131D2
-        B31BA763CC48FC1E8829D40D8CBB49828E31D7A9E502F0BA1851485DCB7FBBFF
-        9FC80FA8758D1E2D032484036E84E2DB03044CF1D3BAAE50AFDB25FA963143A8
-        BF436698E8103ABC03193A84503E59C062926EEF9062DC3074D061BE4139ED1D
-        081DB1238577889CF38E6C4F16BD71AB6F081DA1F48A992C861EEF3021A74329
-        467663478E79075AD61DC209A5A9A03D944AC50E3DEB8E6C7A470EAE3B4CC869
-        EFC8EABA2337BDE32A5F7748BDB35CFDAF7052DEE1AC3B1264B3FA46ABFE5648
-        C502A1257624F78ECEB00EEFE894C9B384633ABC23645211A7E35803D1085EBB
-        E9CF34F1D72909E19361E5B1232A381B89EFC6E9686A63E79F4C1AAB5077B093
-        5FEA25E4F775D01E654046D3A309F8A3935613E31667B87091C7272B49C1756F
-        2BD6F3ED0E095BC382623763FDAAB27042B0FC3C274DDE61A1E3F059EE1CC5E8
-        32255C9C6AE2C925B44BE6680F87995A40BE4B89493BDBF9A4C5F264B1D02104
-        3FECA67A3455A599E6E23CB35EE378A31C174048B0BB83EA019967A4AE93858D
-        4484455D62E40C77F1D9AFB487193F9CC280B4F5497E4F84D55B78E26D3B5C74
-        A3D560533B856E86E5E1ED5F7147CF80313E6D63590B6191782AE5F0F9794C1E
-        CBAD43290CF45A22941AA12E8E9E63DB1F345DB475FD652872333E40B98F3CBB
-        A474189CE8A23E948408070E1C3870E0C08103070E1C3870E0E04A46CA57E502
-        1FD565DC5442A1CFE6D0E118272EB1FD2CE73A6C8E9080F232A6D43072047EBB
-        55EAC120F507D956CBA56072812474F83D3C339EF9E3189489CF3F91186B8FB1
-        6857BF48292BE3F5053C3E8740264C6A69E1DDF758FC0EA1CBBE5426D25194C7
-        C733B93BD3FD230D1DCCDBC8C196BE252FC7EDE3F9F11B2ACA336CD2AFDB99FD
-        18ADAD9683163A3C2ED6DCCF94CA0C2BEE4643070F7D4F53A7DC556543D8BD35
-        F35C7463E3661E9E4334556261CE289EBA59D527FC022F257E36CAA49D80656F
-        503351C9677404A3AA38F6377507E2EA2CDEB16116B794C8939C36C23126ADA5
-        2994AE7CD9608EEF21A0B2BD67EF7EEE307534C5B37015F9CAFB477C2E260D61
-        DD8974E567D410F0AA4DA4DF3696A1959CFAA767374E47793E18CA93D695F912
-        C2C32B9567D1DD30B43C191D5E978EEA019F4C4E204FB16BF468312DAC2CF51D
-        8686FA0EA90487D05D261FA743A0A52E4DB2085B737D96D53BF4561EA5259D45
-        3A74D4A54931AE67B224A543E8A94B938D1D59AC3AD6DC1E908674F6BC4353EC
-        90A2434F2835C13459B4F7E1A5259CC5AAE36BD43B9287522D93455A4516DB7B
-        726EB25CFDCBB01C8C1D26E85EA44B87D26C7A877ADDC695325934755A5D298B
-        74B484D25C7CD09AA0DB3B72F19D25E51B6D8ED121B44C96E47DB4412D3DBC41
-        99BFDA6B0BEAF08E36D31F77C5E9F82742288A3F1345DFBDE0A84CC7C2FEE3CA
-        BDA323CC91B3F15D53F397C16F41EE2D50A8BB394ABD4C16AEF610679AA818A4
-        CC20D8F03B419349962C5C73949985B8D4A4BC107CD1CADEB4734E4034C6001F
-        D3C7A9B22716E399959C684A41476314BF8B5BD564BDF68758DA2CEDFB3B0F73
-        DFCD0C2F5562D2E275ACDA6C3992D8CF5217C2E7E216BB4D1BA9F07B270B9B08
-        C9B74DC40CD6EE624215379665D29E98C1E2EF78E5F3C4275D221D02F684A80B
-        31C843A9174FFF5831E068845517F8E882FD169250175FD672E41C55A50C2EC2
-        DD3F93425DFCBC8FF91FB06A5392A77E6F6317B8A9F0926FB7513122688CD29C
-        D127654509C34BF1DB2D48BAD4C99106DA32548DE4C0C1B58C7F010DAC50E30E
-        7C6D3C0000000049454E44AE426082
-      }
-      Proportional = True
-      Stretch = True
-      Transparent = True
+    object TabSheet2: TTabSheet
+      BorderWidth = 1
+      Caption = 'Other info'
+      ClientHeight = 325
+      ClientWidth = 393
+      object GroupBox2: TGroupBox
+        Left = 1
+        Height = 323
+        Top = 1
+        Width = 391
+        Align = alClient
+        BorderSpacing.Around = 1
+        ClientHeight = 303
+        ClientWidth = 387
+        TabOrder = 0
+        object lbPackagesList: TListBox
+          Left = 10
+          Height = 120
+          Top = 48
+          Width = 360
+          Anchors = [akTop, akLeft, akRight]
+          ItemHeight = 0
+          PopupMenu = pmPackages
+          TabOrder = 0
+        end
+        object Label7: TLabel
+          Left = 10
+          Height = 15
+          Top = 24
+          Width = 123
+          Caption = 'Загруженные пакеты :'
+        end
+      end
     end
-    object lbProduct: TLabel
-      Left = 150
-      Height = 20
-      Top = 10
-      Width = 60
-      Caption = 'Продукт:'
-      ParentFont = False
-    end
-    object lbProductName: TLabel
-      Left = 225
-      Height = 20
-      Top = 10
-      Width = 94
-      Caption = 'DCL Platform'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object lbVersion: TLabel
-      Left = 362
-      Height = 20
-      Top = 10
-      Width = 65
-      Caption = 'lbVersion'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object lbDBLib: TLabel
-      Left = 225
-      Height = 20
-      Top = 40
-      Width = 55
-      Caption = 'lbDBLib'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object lbDBLibVersion: TLabel
-      Left = 362
-      Height = 20
-      Top = 40
-      Width = 107
-      Caption = 'lbDBLibVersion'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object lbCompillerName: TLabel
-      Left = 88
-      Height = 20
-      Top = 250
-      Width = 122
-      Caption = 'lbCompillerName'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object lbBuildType: TLabel
-      Left = 290
-      Height = 20
-      Top = 250
-      Width = 82
-      Caption = 'lbBuildType'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object Label1: TLabel
-      Left = 150
-      Height = 20
-      Top = 80
-      Width = 93
-      Caption = 'Дата сборки :'
-    end
-    object lbBuildDate: TLabel
-      Left = 260
-      Height = 20
-      Top = 80
-      Width = 82
-      Caption = 'lbBuildDate'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
-    object Label2: TLabel
-      Left = 15
-      Height = 20
-      Top = 250
-      Width = 60
-      Caption = 'Собран :'
-    end
-    object Label3: TLabel
-      Left = 250
-      Height = 20
-      Top = 250
-      Width = 27
-      Caption = 'ОС :'
-    end
-    object Label4: TLabel
-      Left = 345
-      Height = 20
-      Top = 10
-      Width = 10
-      Caption = 'v.'
-    end
-    object Label5: TLabel
-      Left = 345
-      Height = 20
-      Top = 40
-      Width = 14
-      Caption = 'v :'
-    end
-    object Label6: TLabel
-      Left = 150
-      Height = 20
-      Top = 40
-      Width = 71
-      Caption = 'Движ. БД :'
-    end
-    object memConfigInfo: TMemo
-      Left = 12
-      Height = 72
-      Top = 120
-      Width = 457
-      Color = clForm
-      ReadOnly = True
-      TabOrder = 1
-    end
-    object lbConfigVersionText: TLabel
-      Left = 12
-      Height = 20
-      Top = 200
-      Width = 158
-      Caption = 'Версия конфигурации:'
-    end
-    object lbConfigVersion: TLabel
-      Left = 192
-      Height = 20
-      Top = 200
-      Width = 19
-      Caption = '0.1'
+  end
+  object pmPackages: TPopupMenu
+    Left = 237
+    Top = 134
+    object miCopy: TMenuItem
+      Caption = 'Copy'
+      OnClick = miCopyClick
     end
   end
 end

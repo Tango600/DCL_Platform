@@ -27,6 +27,7 @@ type
     KillerDog: TTimer;
     FBusyMode: Boolean;
     FDCLNotifier: TDCLNotifier;
+    FPackages: TList<TPackageInfo>;
     FScripts: TList<TDCLScriptItem>;
     FPicturesIndexes: TDictionary<TPicturesTypes, Integer>;
     FImages: TImageList;
@@ -71,6 +72,7 @@ type
     function CheckSigned(Package: TDCLScriptsPackage): Boolean;
     procedure ClearScriptPool;
     function GetLoadedScripts: TList<TDCLScriptItem>;
+    function GetPackages: TList<TPackageInfo>;
 
     property DBConnector: TDCLDBConnector read FDBConnector;
     property Variables: TVariables read FVariables;
@@ -157,6 +159,11 @@ begin
 
       if CheckSigned(Package) then
       begin
+        if Package.PackageInfo.Name='' then
+          Package.PackageInfo.Name:=ExtractFileNameOnly(fn);
+
+        FPackages.Add(Package.PackageInfo);
+
         for I in Package.Scripts do
         begin
           FScripts.Add(I);
@@ -220,6 +227,11 @@ end;
 function TDCLMain.GetLoadedScripts: TList<TDCLScriptItem>;
 begin
   Result:=FScripts;
+end;
+
+function TDCLMain.GetPackages: TList<TPackageInfo>;
+begin
+  Result:=FPackages;
 end;
 
 procedure TDCLMain.NotifyForms(Action: TFormsNotifyAction);
@@ -497,6 +509,7 @@ begin
     end;
   end;
 
+  FPackages:=TList<TPackageInfo>.Create;
   FScripts:=TList<TDCLScriptItem>.Create;
 
   GPT.TimeStampFormat:=GPT.DateFormat+' '+GPT.TimeFormat;
@@ -583,7 +596,7 @@ procedure TDCLMain.About;
 var
   About: TAboutForm;
 begin
-  About:=TAboutForm.Create(Application, FDBConnector);
+  About:=TAboutForm.Create(Application, Self);
   About.ShowModal;
   About.Release;
 end;

@@ -1336,7 +1336,7 @@ procedure TDCLCommand.About;
 var
   About: TAboutForm;
 begin
-  About:=TAboutForm.Create(Self, FDBConnector);
+  About:=TAboutForm.Create(Self, FIDCLMain);
   About.ShowModal;
   About.Release;
 end;

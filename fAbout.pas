@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  uDCLDBConnector;
+  ComCtrls, Menus, uDCLDBConnector, uIDCLMain;
 
 type
 
@@ -14,6 +14,7 @@ type
   TAboutForm = class(TForm)
     ButtonOK: TButton;
     GroupBox1: TGroupBox;
+    GroupBox2: TGroupBox;
     ImageLogo: TImage;
     Label1: TLabel;
     Label2: TLabel;
@@ -21,24 +22,33 @@ type
     Label4: TLabel;
     Label5: TLabel;
     Label6: TLabel;
-    lbConfigVersion: TLabel;
-    lbConfigVersionText: TLabel;
+    Label7: TLabel;
     lbBuildDate: TLabel;
     lbBuildType: TLabel;
     lbCompillerName: TLabel;
-    lbDBLibVersion: TLabel;
+    lbConfigVersion: TLabel;
+    lbConfigVersionText: TLabel;
     lbDBLib: TLabel;
+    lbDBLibVersion: TLabel;
     lbProduct: TLabel;
     lbProductName: TLabel;
     lbVersion: TLabel;
+    lbPackagesList: TListBox;
     memConfigInfo: TMemo;
+    miCopy: TMenuItem;
+    PageControl1: TPageControl;
+    pmPackages: TPopupMenu;
+    TabSheet1: TTabSheet;
+    TabSheet2: TTabSheet;
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure ImageLogoClick(Sender: TObject);
 
-    constructor Create(Owner: TComponent; DBConnector: TDCLDBConnector); overload;
+    constructor Create(Owner: TComponent; IDCLMain: IDCLMain); overload;
+    procedure miCopyClick(Sender: TObject);
   private
     LogoClickCount: Integer;
+    FIDCLMain: IDCLMain;
     FDBConnector: TDCLDBConnector;
 
     function GetConfigInfo: String;
@@ -51,7 +61,8 @@ var
 implementation
 
 uses
-  uDCLTypes, uDCLConst, uDCLVersion, uDCLDBStructure;
+  ClipBrd,
+  uDCLTypes, uDCLConst, uDCLVersion, uDCLDBStructure, uDCLScriptsPackage;
 
 {$R *.lfm}
 
@@ -79,13 +90,27 @@ begin
   end;
 end;
 
-constructor TAboutForm.Create(Owner: TComponent; DBConnector: TDCLDBConnector);
+constructor TAboutForm.Create(Owner: TComponent; IDCLMain: IDCLMain);
+var
+  pi: TPackageInfo;
 begin
   inherited Create(Owner);
-  FDBConnector:=DBConnector;
+  FIDCLMain:=IDCLMain;
+  FDBConnector:=IDCLMain.GetDBConnector;
 
   memConfigInfo.Text:=GetConfigInfo;
   lbConfigVersion.Caption:=GetConfigVersion;
+
+  lbPackagesList.Clear;
+  for pi in FIDCLMain.GetPackages do
+  begin
+    lbPackagesList.Items.Append(pi.Name+' ('+pi.Hash+')');
+  end;
+end;
+
+procedure TAboutForm.miCopyClick(Sender: TObject);
+begin
+  Clipboard.AsText:=lbPackagesList.GetSelectedText;
 end;
 
 function TAboutForm.GetConfigInfo: String;

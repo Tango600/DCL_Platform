@@ -19,6 +19,7 @@ type
     procedure OpenDialog(DialogName: String);
     procedure RunCommand(CommandName: String);
     function GetLoadedScripts: TList<TDCLScriptItem>;
+    function GetPackages: TList<TPackageInfo>;
 
     procedure NotifyForms(Action: TFormsNotifyAction);
     procedure NotifyForm(Form: TForm; Action: TFormsNotifyAction);
