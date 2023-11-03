@@ -1,5 +1,5 @@
 unit fDCLLoginForm;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 

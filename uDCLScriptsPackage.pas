@@ -68,6 +68,18 @@ implementation
 uses
   uStringParams, MD5, uLZW, uDCLConst;
 
+const
+  NameSection='Name';
+  EndNameSection='EndName';
+  IdentSection='Ident';
+  ParentSection='Parent';
+  IdSection='Id';
+  RunTypeSection='RunType';
+  CommandSection='Command';
+  PackageNameSection='Name';
+  RunOnStartSection='RunOnStart';
+  SignHashSection='Sign';
+
 function GetDataHash(Data: TStream): String;
 var
   Buffer: Array of Byte;
@@ -247,35 +259,37 @@ begin
   TextPackage.Clear;
 
   S:='';
+  if FPackage.PackageInfo.Name<>'' then
+    S:=PackageNameSection+'='+FPackage.PackageInfo.Name+';';
   if RunOnStart then
-    S:='RunOnStart=1;';
-  TextPackage.Append('[Sign='+FPackage.PackageInfo.Hash+';Version='+PackagesVersion+';'+S+']');
+    S:=S+RunOnStartSection+'=1;';
+  TextPackage.Append('['+SignHashSection+'='+FPackage.PackageInfo.Hash+';Version='+PackagesVersion+';'+S+']');
 
   for I in FPackage.Scripts do
   begin
     S:='';
     if I.RunType<>rtNone then
     begin
-      S:=S+'RunType='+IntToStr(Ord(I.RunType))+';';
+      S:=S+RunTypeSection+'='+IntToStr(Ord(I.RunType))+';';
     end;
     if I.Command<>'' then
     begin
-      S:=S+'Command='+I.Command+';';
+      S:=S+CommandSection+'='+I.Command+';';
     end;
 
     if I.Ident<>0 then
     begin
-      S:=S+'Ident='+IntToStr(I.Ident)+';';
+      S:=S+IdentSection+'='+IntToStr(I.Ident)+';';
     end;
     if I.Parent<>0 then
     begin
-      S:=S+'Parent='+IntToStr(I.Parent)+';';
+      S:=S+ParentSection+'='+IntToStr(I.Parent)+';';
     end;
 
-    TextPackage.Append('[Name='+I.ScriptName+';'+S+']');
+    TextPackage.Append('['+NameSection+'='+I.ScriptName+';'+S+']');
     if Assigned(I.ScriptText) then
       TextPackage.Append(I.ScriptText.DataString);
-    TextPackage.Append('[EndName='+I.ScriptName+';]');
+    TextPackage.Append('['+EndNameSection+'='+I.ScriptName+';]');
   end;
 
   CompressedPackage:=TMemoryStream.Create;
@@ -392,34 +406,34 @@ begin
   sn:='';
   for S in TextPackage do
   begin
-    if Pos('[Name=', S)<>0 then
+    if (Pos('['+NameSection+'=', S)<>0) and (PosEx('['+SignHashSection+'=', S)=0) then
     begin
-      s1:=FindParam('Name=', S);
+      s1:=FindParam(NameSection+'=', S);
       if s1<>'' then
       begin
         sn:=s1;
         ScriptItem:=TDCLScriptItem.Create;
         ScriptItem.ScriptName:=sn;
 
-        s1:=FindParam('RunType=', S);
+        s1:=FindParam(RunTypeSection+'=', S);
         if s1<>'' then
         begin
           ScriptItem.RunType:=TRunType(StrToInt(s1));
         end;
 
-        s1:=FindParam('Command=', S);
+        s1:=FindParam(CommandSection+'=', S);
         if s1<>'' then
         begin
           ScriptItem.Command:=s1;
         end;
 
-        s1:=FindParam('Ident=', S);
+        s1:=FindParam(IdentSection+'=', S);
         if s1<>'' then
         begin
           ScriptItem.Ident:=StrToInt(s1);
         end;
 
-        s1:=FindParam('Parent=', S);
+        s1:=FindParam(ParentSection+'=', S);
         if s1<>'' then
         begin
           ScriptItem.Parent:=StrToInt(s1);
@@ -431,9 +445,9 @@ begin
       end;
     end;
 
-    if Pos('[EndName=', S)<>0 then
+    if Pos('['+EndNameSection+'=', S)<>0 then
     begin
-      s1:=FindParam('EndName=', S);
+      s1:=FindParam(EndNameSection+'=', S);
       if (s1<>'') and (s1=sn) then
       begin
         b:=False;
@@ -466,9 +480,9 @@ begin
   begin
     if PosEx('[Sign=', S)=1 then
     begin
-      FPackage.PackageInfo.Hash:=FindParam('Sign=', S);
-      FPackage.PackageInfo.Name:=FindParam('Name=', S);
-      FPackage.PackageInfo.RunOnStart:=FindParam('RunOnStart=', S)='1';
+      FPackage.PackageInfo.Hash:=FindParam(SignHashSection+'=', S);
+      FPackage.PackageInfo.Name:=FindParam(PackageNameSection+'=', S);
+      FPackage.PackageInfo.RunOnStart:=FindParam(RunOnStartSection+'=', S)='1';
       FPackage.PackageInfo.Version:=FindParam('Version=', S);
       Break;
     end;

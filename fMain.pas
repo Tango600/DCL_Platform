@@ -1,5 +1,5 @@
 unit fMain;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 

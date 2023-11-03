@@ -1,5 +1,5 @@
 unit uOfficeReportBaseSelector;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 
@@ -30,7 +30,7 @@ type
 implementation
 
 uses
-  uDCLOfficeUtils, uStringParams;
+  uStringParams;
 
 { TOfficeReportBaseSelector }
 

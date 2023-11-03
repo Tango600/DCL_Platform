@@ -1,5 +1,5 @@
 unit uSystemUtils;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 
@@ -134,7 +134,7 @@ End;
 
 Function UpTime: Cardinal;
 Begin
-  Result:={$IFDEF MSWINDOWS}GetTickCount
+  Result:={$IFDEF MSWINDOWS}{$IFDEF CPU64}GetTickCount64{$ELSE}GetTickCount{$ENDIF}
 {$ELSE}
     ((StrToInt(FormatDateTime('H', Time))*3600+StrToInt(FormatDateTime('N', Time))*60+
     StrToInt(FormatDateTime('S', Time)))*1000)+StrToInt(FormatDateTime('Z', Time));

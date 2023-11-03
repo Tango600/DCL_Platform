@@ -1,5 +1,4 @@
 unit uDCLResources;
-{$I DefineType.pas}
 
 interface
 

@@ -1,5 +1,5 @@
 unit uDCLNotifier;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 

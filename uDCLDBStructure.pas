@@ -1,5 +1,4 @@
 unit uDCLDBStructure;
-{$I DefineType.pas}
 
 interface
 

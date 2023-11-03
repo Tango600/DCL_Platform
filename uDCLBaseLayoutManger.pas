@@ -1,5 +1,5 @@
 unit uDCLBaseLayoutManger;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 
@@ -73,10 +73,8 @@ constructor TDCLBaseLayoutManger<T>.Create(Parent: TWinControl; Controls: TList<
 begin
   FControls:=Controls;
   FParent:=Parent;
-  {$IFDEF FPC}
   FParentResizeEvent:=FParent.OnResize;
   FParent.OnResize:=OnResize;
-  {$ENDIF}
 end;
 
 end.

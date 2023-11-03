@@ -1,5 +1,5 @@
 unit uDCLVerticalFieldLayoutManger;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 

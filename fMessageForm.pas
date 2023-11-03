@@ -1,5 +1,5 @@
 unit fMessageForm;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 

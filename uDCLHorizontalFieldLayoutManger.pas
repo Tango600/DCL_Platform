@@ -1,5 +1,5 @@
 unit uDCLHorizontalFieldLayoutManger;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 

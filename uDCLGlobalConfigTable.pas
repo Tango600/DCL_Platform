@@ -1,5 +1,4 @@
 unit uDCLGlobalConfigTable;
-{$I DefineType.pas}
 
 interface
 

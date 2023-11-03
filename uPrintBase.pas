@@ -1,5 +1,5 @@
 unit uPrintBase;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 

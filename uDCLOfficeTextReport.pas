@@ -1,5 +1,5 @@
 unit uDCLOfficeTextReport;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 
@@ -26,7 +26,7 @@ implementation
 uses
   DB,
   {$IFDEF MSWINDOWS}
-    uDCLOfficeUtils,
+  uDCLOfficeUtils,
   {$ENDIF}
   uSystemUtils, uDCLUtils, uDCLMessages, uDCLGlobalVariables,
   uStringParams, uDBUtils, uRunProgram, SumProps;

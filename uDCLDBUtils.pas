@@ -1,5 +1,5 @@
 ﻿unit uDCLDBUtils;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 

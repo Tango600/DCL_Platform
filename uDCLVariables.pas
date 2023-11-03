@@ -1,11 +1,11 @@
 unit uDCLVariables;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  uDCLConst, uDCLData, uDCLTypes;
+  uDCLConst, uDCLData;
 
 type
 

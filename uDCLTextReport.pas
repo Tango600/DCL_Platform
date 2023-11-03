@@ -1,5 +1,5 @@
 unit uDCLTextReport;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 

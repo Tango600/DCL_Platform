@@ -1,5 +1,5 @@
 unit uDCLValuesParser;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 

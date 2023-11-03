@@ -1,5 +1,5 @@
 unit uDCLDataStorage;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 

@@ -1,13 +1,10 @@
 unit uDCLOLE;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 
 uses
-  Variants, ComObj, ActiveX
-{$IFDEF FPC}
-  , types
-{$ENDIF};
+  types, Variants, ComObj, ActiveX;
 
 function IsWordInstall: Boolean;
 function IsWriterInstall: Boolean;

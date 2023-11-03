@@ -1,5 +1,5 @@
 unit uDCLData;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 
@@ -175,7 +175,7 @@ Initialization
 
   TBlobFields:=[ftBytes, ftVarBytes, ftBlob, ftGraphic, ftMemo, ftFmtMemo, ftTypedBinary, ftWideMemo];
   TStringTypedFields:=[ftUnknown, ftString, ftFixedChar, ftWideString, ftVariant, ftGuid, ftFixedWideChar, ftWideMemo];
-  TIntegerTypedFields:=[ftSmallint, ftInteger, ftWord, ftBoolean, ftAutoInc, ftLargeint, ftBytes, ftVarBytes{$IFNDEF FPC}, ftOraInterval{$ENDIF}];
+  TIntegerTypedFields:=[ftSmallint, ftInteger, ftWord, ftBoolean, ftAutoInc, ftLargeint, ftBytes, ftVarBytes, ftOraInterval];
   TFloatTypedFields:=[ftBCD, ftFloat, ftCurrency];
-  TDateTimeTypedFields:=[ftDate, ftTime, ftDateTime, ftTimeStamp {$IFNDEF FPC}, ftOraTimeStamp{$ENDIF}];
+  TDateTimeTypedFields:=[ftDate, ftTime, ftDateTime, ftTimeStamp, ftOraTimeStamp];
 end.

@@ -1,5 +1,5 @@
 unit uSQLParser;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 
