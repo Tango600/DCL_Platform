@@ -161,7 +161,7 @@ Type
   TReportViewMode=(rvmOneRecord, rvmAllDS, rvmGrid, rvmMultitRecordReport, rvmBookmarcks);
   TFieldBoxType=(fbtDBField, fbtDBCheck, fbtOutBox, fbtInputBox, fbtEditBox, fbtSimplyCombo, fbtDBLookup, fbtDBCombo, fbtGrid);
   TGraficFileType=(gftNone, gftBMP, gftJPEG, gftPNG, gftIcon, gftGIF, gftTIFF, gftOther);
-  TDataFieldTypeType=(dftDefault, dftMemo, dftGrafic, dftRichText, dftLogic, dftFloat);
+  TDCLDataFieldKind=(dftDefault, dftDateTime, dftMemo, dftGrafic, dftRichText, dftLogic, dftFloat, dftPickList);
   TSpoolType=(stNone, stSpool, stText);
   TGroupType=(gtGrafic, gtMemo, gtRichText);
   TFindType=(ftByIndex, ftByName, ftSQL);

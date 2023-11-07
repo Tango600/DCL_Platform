@@ -139,6 +139,7 @@ type
 
     procedure AddColumn(Field: TDCLField);
     procedure ParseFields(ScrLine: String);
+    procedure AddAstericsFields;
 
     procedure CreateToolPanel;
     procedure OnToolPanelResize(Sender: TObject);
@@ -1019,6 +1020,16 @@ begin
       Col.Width:=Field.Width;
 
     Col.ReadOnly:=Field.ReadOnly;
+
+    case Field.DataFieldType of
+      dftLogic: begin
+        Col.ButtonStyle:=cbsCheckboxColumn;
+        if Field.CheckValue<>'' then
+          Col.ValueChecked:=Field.CheckValue;
+        if Field.UnCheckValue<>'' then
+          Col.ValueUnchecked:=Field.UnCheckValue;
+      end;
+    end;
   end;
 end;
 
@@ -1124,9 +1135,25 @@ begin
     Else
       FCurrentField.PasswordChar:=#0;
 
+    FCurrentField.FirstFieldsLine:=S;
+    if FGridStyle in TDataGrid then
+    begin
+
+    end;
+  end;
+
+  fpmField:begin
+    p:=Pos('\', ScrLine);
+    if p=0 then
+      p:=Pos(';', ScrLine);
+    if p=0 then
+      FieldNameCapt:=ScrLine
+    else
+      FieldNameCapt:=LeftStr(ScrLine, p-1);
+
     If PosEx('As_Logic;', ScrLine)<>0 Then
     begin
-      FCurrentField.FType:=ftBoolean;
+      FCurrentField.DataFieldType:=dftLogic;
       TmpStr:=Trim(FindParam('ValueChecked=', ScrLine));
       If TmpStr<>'' Then
         FCurrentField.CheckValue:=TmpStr;
@@ -1137,52 +1164,30 @@ begin
 
     If PosEx('As_Graphic;', ScrLine)<>0 Then
     begin
-      FCurrentField.FType:=ftGraphic;
+      FCurrentField.DataFieldType:=dftGrafic;
     end;
 
     If PosEx('As_Date;', ScrLine)<>0 Then
     begin
-      FCurrentField.FType:=ftDate;
+      FCurrentField.DataFieldType:=dftDateTime;
     end;
 
     If PosEx('As_Memo;', ScrLine)<>0 Then
     begin
-      FCurrentField.FType:=ftMemo;
+      FCurrentField.DataFieldType:=dftMemo;
     end;
 
     If PosEx('As_RichText;', ScrLine)<>0 Then
     begin
       FCurrentField.DataFieldType:=dftRichText;
-      FCurrentField.FType:=ftFmtMemo;
     end;
 
     If PosEx('As_Float;', ScrLine)<>0 Then
     begin
-      FCurrentField.FType:=ftFloat;
+      FCurrentField.DataFieldType:=dftFloat;
     end;
-
-    FCurrentField.FirstFieldsLine:=S;
-    if FGridStyle in TDataGrid then
-    begin
-
-    end;
-  end;
-
-  fpmField:begin
-    p:=Pos(';', ScrLine);
-    if p=0 then
-      p:=Pos('\', ScrLine);
-    if p=0 then
-      FieldNameCapt:=ScrLine
-    else
-      FieldNameCapt:=LeftStr(ScrLine, p-1);
 
     FCurrentField.FieldName:=FieldNameCapt;
-
-    If FieldExists(FCurrentField.FieldName, Query) Then
-      FCurrentField.FType:=Query.FieldByName(FCurrentField.FieldName).DataType
-    Else
-      FCurrentField.FType:=ftString;
 
     if FGridStyle in TDataFields then
     begin
@@ -1247,6 +1252,23 @@ begin
   else
     if FFieldParsingMode=fpmField then
       FFieldParsingMode:=fpmCaption;
+end;
+
+procedure TDCLGrid.AddAstericsFields;
+var
+  DBField: TField;
+begin
+  if Assigned(FQuery) and FQuery.Active then
+  begin
+    for DBField in FQuery.Fields do
+    begin
+      FCurrentField:=TDCLField.Create;
+      FCurrentField.FieldName:=DBField.FieldName;
+      FCurrentField.Caption:=NormalizeCase(DBField.FieldName);
+
+      FDCLFields.Add(FCurrentField);
+    end;
+  end;
 end;
 
 procedure TDCLGrid.OnResizeFilterPanel(Sender: TObject);
@@ -3217,7 +3239,6 @@ begin
       FFieldColumn:=TDCLField.Create;
       If FieldExists(FieldName, LookupTable.DCLGrid.Query) Then
       begin
-        FFieldColumn.FType:=LookupTable.DCLGrid.Query.FieldByName(FieldName).DataType;
         FFieldColumn.FieldName:=FieldName;
         FFieldColumn.Caption:=Copy(TmpStr, Pos('/', TmpStr)+1, Length(TmpStr)-1);
         if v3>10 then
@@ -3870,7 +3891,7 @@ begin
   FIDCLMain:=IDCLMain;
   FUserLevel:=(Form as TDCLForm).RightsLevel;
 
-  FMainPanel:=TPanel.Create(Self);
+  FMainPanel:=TPanel.Create(Parent); // Self);
   FMainPanel.Parent:=Parent;
 
   FForm:=Form;
@@ -4041,16 +4062,17 @@ begin
   begin
     if ScrStr='*' then
     begin
-      //todo: Сделать заполнение всех полей по *
+      AddAstericsFields;
     end
     else
     begin
       FFieldsCount:=StrToIntEx(ScrStr);
+      FFieldParsingMode:=fpmCaption;
     end;
-    FFieldParsingMode:=fpmCaption;
 
     Exit;
   end;
+
   if (FFieldsCount<>-1) and FReadFieldsMode then
   begin
     if FGridStyle in TDataFields then
@@ -4441,7 +4463,7 @@ begin
         end;
       end;
 
-      FDBGrid:=TDBGrid.Create(FMainPanel);
+      FDBGrid:=TDBGrid.Create(Self);  // FMainPanel);
       FDBGrid.Parent:=FMainPanel;
       if FMultiSelectMode then
       begin

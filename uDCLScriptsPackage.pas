@@ -16,7 +16,7 @@ type
 
   TDCLScriptItem=class
     RunType: TRunType;  // 0 - None, 1 - Command, 2 - Dialog
-    Ident, Parent: Integer;
+    Id, Ident, Parent: Integer;
     ScriptName, Command: String;
     ScriptText: TStringStream;
   end;
@@ -268,6 +268,10 @@ begin
   for I in FPackage.Scripts do
   begin
     S:='';
+    if I.Id<>0 then
+    begin
+      S:=S+IdSection+'='+IntToStr(I.Id)+';';
+    end;
     if I.RunType<>rtNone then
     begin
       S:=S+RunTypeSection+'='+IntToStr(Ord(I.RunType))+';';
@@ -427,6 +431,11 @@ begin
           ScriptItem.Command:=s1;
         end;
 
+        s1:=FindParam(IdSection+'=', S);
+        if s1<>'' then
+        begin
+          ScriptItem.Id:=StrToInt(s1);
+        end;
         s1:=FindParam(IdentSection+'=', S);
         if s1<>'' then
         begin

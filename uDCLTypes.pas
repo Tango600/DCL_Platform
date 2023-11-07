@@ -5,7 +5,7 @@ interface
 
 Uses
   Controls, ExtCtrls, StdCtrls, ComCtrls, Buttons, cMeDateEdit,
-  EditBtn, DBExtCtrls, DBCtrls, DBGrids,
+  DBExtCtrls, DBCtrls, DBGrids,
 {$IFDEF IBX}
   IBDatabase, IBTable, IBCustomDataSet, IBSQL, IBQuery,
   IBUpdateSQL, //uIBUpdateSQLW,

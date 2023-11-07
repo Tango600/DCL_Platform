@@ -4,7 +4,7 @@ unit uDCLField;
 interface
 
 uses
-  Classes, SysUtils, StdCtrls, DB, Generics.Collections,
+  Classes, SysUtils, StdCtrls, Generics.Collections,
   uDCLData, uDCLTypes, uDCLConst;
 
 type
@@ -13,14 +13,13 @@ type
   TDCLField=class
   public
     FLabel: TDialogLabel;
-    FType: TFieldType;
     CharCase: TEditCharCase;
     FieldName, Caption, Hint, Variable, CheckValue, UnCheckValue,
       FullFieldName, FirstFieldsLine, NotInputValue: String;
     PasswordChar: Char;
     ReadOnly, NoDataField, UseIndex, Enabled, RequireValue: Boolean;
     Width, Height, StepLeft: Integer;
-    DataFieldType: TDataFieldTypeType;
+    DataFieldType: TDCLDataFieldKind;
     FieldTypeFormat: TFieldFormat;
     LookupData: TDCLLookup;
     DCLEditComponent: TDCLEdit;
@@ -41,7 +40,6 @@ begin
   Enabled:=True;
   CheckValue:='1';
   UnCheckValue:='0';
-  FType:=ftString;
   CharCase:=ecNormal;
   DataFieldType:=dftDefault;
 end;

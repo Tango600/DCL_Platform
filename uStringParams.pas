@@ -27,6 +27,7 @@ Function GetClearParam(const Param: String; ParamDelim: String=DefaultParamDelim
 Function PosEx(const SubStr, S: String): Cardinal;
 function Any(const StrSet, S: String): Boolean;
 Function InitCap(const S: String): String;
+function NormalizeCase(const S: String): String;
 Function TrimSymbols(S: String; TrimS: String): String;
 Function PosSet(SubSet, S: String; SepChar: String=DefaultValuesSeparator;
   Delim: String=DefaultParamDelim): Cardinal;
@@ -96,6 +97,42 @@ Begin
 
   Result:=Text;
 End;
+
+function NormalizeCase(const S: String): String;
+var
+  tmp: String;
+  l, i: Integer;
+  nextUpper: Boolean;
+begin
+  Result:='';
+  if Length(S)>0 then
+  begin
+    l:=Length(S);
+    tmp:=UpperCase(S[1]);
+    if l>1 then
+    begin
+      nextUpper:=False;
+      for i:=2 to l do
+      begin
+        if S[i]='_' then
+        begin
+          nextUpper:=True;
+          tmp:=tmp+' ';
+        end
+        else
+        begin
+          if nextUpper then
+            tmp:=tmp+UpperCase(S[i])
+          else
+            tmp:=tmp+LowerCase(S[i]);
+
+          nextUpper:=False;
+        end;
+      end;
+    end;
+    Result:=tmp;
+  end;
+end;
 
 Function TrimSymbols(S: String; TrimS: String): String;
 var
