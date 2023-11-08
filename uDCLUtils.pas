@@ -52,8 +52,6 @@ function GetGraficFileType(FileName: string): TGraficFileType;
 function GetExtByType(FileType:TGraficFileType):String;
 Function CopyStrings(FromString, ToString: String; Where: TStringList): TStringList;
 
-function GetIniToRole(UserID: String): String;
-
 function ConvertToJPEG(BitMap:TBitmap; Quality:Byte=JPEGCompressionQuality):TJpegImage;
 
 function IsDigits(Value: String): Boolean;
@@ -556,13 +554,6 @@ Begin
     For li:=FromPos+1 To CurrPos-1 Do
       Result.Append(Where[li]);
   End;
-End;
-
-function GetIniToRole(UserID: String): String;
-Begin
-  Result:='';
-  If GPT.DCLUserName<>'' Then
-    Result:=IniUserFieldName+'='+UserID+' and ';
 End;
 
 function ConvertToJPEG(BitMap:TBitmap; Quality:Byte=JPEGCompressionQuality):TJpegImage;

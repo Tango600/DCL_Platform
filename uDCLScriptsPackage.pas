@@ -304,7 +304,13 @@ begin
 
   Base41X:=GetBase41Sequence;
 
+  S:='DCL5;';
   Result:=TMemoryStream.Create;
+  Result.Write(S[1], 5);
+
+  S:=PackagesVersion+';';
+  Result.Write(S[1], 4);
+
   w:=0;
   CompressedPackage.Position:=0;
   b:=0;
@@ -353,47 +359,71 @@ var
   w: Word;
   bp: Integer;
   b: Byte;
-  Base41X: String;
+  Base41X, S: String;
   PackageText: TStream;
   TextPackage: TStringList;
   MS: TStream;
   Buffer: Array[1..3] of Word;
+  FormatBuffer: Array[1..4] of Byte;
 begin
-  Base41X:=GetBase41Sequence;
-
-  MS:=TMemoryStream.Create;
-
-  bp:=1;
-  while Package.Read(b, 1)<>0 do
+  if Package.Read(FormatBuffer[1], 4)<>0 then
   begin
-    if b<Ord('A') then
+    if (FormatBuffer[1]=68) and (FormatBuffer[2]=67) and
+      (FormatBuffer[3]=76) and (FormatBuffer[4]=53) then
     begin
-      Continue;
-    end;
+      Package.Read(b, 1);
+      if Package.Read(FormatBuffer[1], 4)<>0 then
+      begin
+        if (FormatBuffer[4]=59) then
+        begin
+          S:='';
+          for b:=1 to 3 do
+          begin
+            S:=S+Chr(FormatBuffer[b]);
+          end;
 
-    Buffer[bp]:=FindSegmentNum(Base41X, Chr(b));
-    inc(bp);
+          if PackagesVersion=S then
+          begin
+            Base41X:=GetBase41Sequence;
 
-    if bp>3 then
-    begin
-      w:=(Buffer[1]*41*41)+(Buffer[2]*41)+Buffer[3];
-      MS.WriteBuffer(w, 2);
-      bp:=1;
+            MS:=TMemoryStream.Create;
+
+            bp:=1;
+            while Package.Read(b, 1)<>0 do
+            begin
+              if b<Ord('A') then
+              begin
+                Continue;
+              end;
+
+              Buffer[bp]:=FindSegmentNum(Base41X, Chr(b));
+              inc(bp);
+
+              if bp>3 then
+              begin
+                w:=(Buffer[1]*41*41)+(Buffer[2]*41)+Buffer[3];
+                MS.WriteBuffer(w, 2);
+                bp:=1;
+              end;
+            end;
+            MS.Position:=0;
+
+            PackageText:=TStringStream.Create('', TEncoding.UTF8);
+
+            DecompressProc(MS, PackageText);
+            MS.Free;
+
+            TextPackage:=TStringList.Create;
+            TextPackage.Text:=(PackageText as TStringStream).DataString;
+            PackageText.Free;
+
+            DisassemblyPackage(TextPackage);
+            FreeAndNil(TextPackage);
+          end;
+        end;
+      end;
     end;
   end;
-  MS.Position:=0;
-
-  PackageText:=TStringStream.Create('', TEncoding.UTF8);
-
-  DecompressProc(MS, PackageText);
-  MS.Free;
-
-  TextPackage:=TStringList.Create;
-  TextPackage.Text:=(PackageText as TStringStream).DataString;
-  PackageText.Free;
-
-  DisassemblyPackage(TextPackage);
-  FreeAndNil(TextPackage);
 end;
 
 procedure TDCLScriptsPackage.DisassemblyPackage(TextPackage: TStringList);
