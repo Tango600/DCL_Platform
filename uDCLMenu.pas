@@ -169,12 +169,17 @@ procedure TDCLMenu.ClickMenu(Sender: TObject);
 var
   IdentID: Integer;
   DialogName: String;
+  Scr: TStringList;
 begin
   IdentID:=(Sender as TComponent).Tag;
   if IdentID>0 then
   begin
     DialogName:=GetMenuCommandById(IdentID);
-    FMain.OpenDialog(DialogName);
+    Scr:=FMain.GetScriptText(DialogName);
+    if (Scr.Count>0) and (Pos('script type=command', Scr[0].ToLower)<>0) then
+      FMain.RunCommand(DialogName)
+    else
+      FMain.OpenDialog(DialogName);
   end
   else
   begin
