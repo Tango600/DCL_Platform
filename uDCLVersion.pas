@@ -3,7 +3,7 @@ unit uDCLVersion;
 interface
 
 const
-  DCLVersion='12.0.1.2';
+  DCLVersion='12.1.0.0';
 
 implementation
 

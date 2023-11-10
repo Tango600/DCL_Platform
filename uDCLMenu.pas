@@ -376,7 +376,7 @@ begin
 
   InitActions;
 
-  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+'=0', GPT.UserID);
+  LocalQuery.SQL.Text:=GetOutRolesQueryText(IdentifyField+'=0');
   LocalQuery.Open;
   LocalQuery.First;
   S:=LocalQuery.FieldByName(DCLNameField).AsString;

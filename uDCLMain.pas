@@ -208,7 +208,7 @@ begin
   LocalQuery.First;
   while not LocalQuery.EOF do
   begin
-    if Package.CheckPackage(LocalQuery.FieldByName('DCL_USER_NAME').AsString, LocalQuery.FieldByName('DCL_USER_PASS').AsString) then
+    if Package.CheckPackage(LocalQuery.FieldByName(UserNameField).AsString, LocalQuery.FieldByName(UserPassField).AsString) then
     begin
       Result:=True;
       break;
@@ -425,7 +425,7 @@ begin
   GPT.IBAll:=False;
   {$ENDIF}
   GPT.DebugMesseges:=False;
-  GPT.OneCopy:=False;
+  GPT.OneCopy:=0;
   GPT.ExitCnf:=False;
   GPT.UseMessages:=True;
   GPT.DialogsSettings:=True;
@@ -464,7 +464,7 @@ begin
   LoadLangRes(LangName, Path);
 
   {$IFDEF MSWINDOWS}
-  If GPT.OneCopy Then
+  If GPT.OneCopy=1 Then
   begin
     CreateMutex(nil, True, MemFileName);
     If GetLastError=ERROR_ALREADY_EXISTS Then
@@ -508,6 +508,18 @@ begin
       ReadBaseID;
     end;
   end;
+
+  {$IFDEF MSWINDOWS}
+  If GPT.OneCopy=2 Then
+  begin
+    CreateMutex(nil, True, PChar(MemFileName+GPT.BaseID));
+    If GetLastError=ERROR_ALREADY_EXISTS Then
+    begin
+      ShowErrorMessage(1, GetDCLMessageString(msAppRunning));
+      Halt;
+    end;
+  end;
+  {$ENDIF}
 
   FPackages:=TList<TPackageInfo>.Create;
   FScripts:=TList<TDCLScriptItem>.Create;

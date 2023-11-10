@@ -91,7 +91,7 @@ procedure TLoginForm.FillUsersList;
 begin
   FQuery:=TDCLDialogQuery.Create(Self);
   FDBConnector.SetConnector(FQuery);
-  FQuery.SQL.Text:='select * from '+UsersTable+' where SHOWINLIST is not null';
+  FQuery.SQL.Text:='select * from '+UsersTable+' where '+ShowInListField+' is not null';
   FQuery.Open;
   while not FQuery.EOF do
   begin

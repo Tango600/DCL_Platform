@@ -8,15 +8,15 @@ uses
 type
   TGPT=record
   // EnableSQLTrace,
-    DebugMesseges, OneCopy, ExitCnf, UseMessages,
+    DebugMesseges, ExitCnf, UseMessages,
     HashPass, DialogsSettings, DisableColors, DisableFieldsList,
     DisableIniPasword, IBAll: Boolean;
-    CurrentRunningScrString, CurrentRunningCmdString, Port: Integer;
+    OneCopy, CurrentRunningScrString, CurrentRunningCmdString, Port: Integer;
     DateSeparator, TimeSeparator: Char;
     ServerCodePage, DateFormat, TimeFormat, Viewer, ConnectionString, MainFormCaption,
     NewConnectionString, DBPath, ServerName, DBType: String;
     SQLDialect: Byte;
-    NoParamsTable, NoUsersTable, DisableLogOnWithoutUser, MultiRolesMode: Boolean;
+    NoParamsTable, NoUsersTable, DisableLogOnWithoutUser: Boolean;
     DBUserName, DCLUserName, DCLUserPass, EnterPass, LongRoleName, GetValueSeparator,
     IniFileName, BaseID,
     StringTypeChar, ShowRoleField,

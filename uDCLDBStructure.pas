@@ -3,42 +3,35 @@ unit uDCLDBStructure;
 interface
 
 const
-  UserAdminField='ACCESSLEVEL';
-
   DCL_TablePrefix='DCL_';
 
   DCLTable=DCL_TablePrefix+'SCRIPTS';
-
-  IdField='NUMSEQ';
+  IdField='ID_SCR';
   IdentifyField='IDENT';
   ParentField='PARENT';
-  DCLNameField='DCLNAME';
+  DCLNameField='SCR_NAME';
   CommandField='COMMAND';
-  ScriptField='DCLTEXT';
-
-  INITable=DCL_TablePrefix+'INI_PROFILES';
-  IniKeyField='INI_ID';
-  IniUserFieldName='INI_USER_ID';
-  IniDialogNameField='INI_DIALOG_NAME';
-  IniParamValField='INI_PARAM_VALUE';
+  ScriptField='SCR_TEXT';
+  ScrLastUpdField='UPDATES';
 
   RolesTable=DCL_TablePrefix+'ROLES';
-  RolesMenuTable=DCL_TablePrefix+'ROLESMENU';
-  UsersTable=DCL_TablePrefix+'USERS';
-  RolesIDFiled='RolesID';
-  RolesMenuIDFiled='RoleID';
-  RoleNameField='RoleName';
-  LongRoleNameField='LONGROLENAME';
-  RoleMenuItemIDField='MenuItemID';
+  RolesIDFiled='ID_Role';
+  RoleNameField='Role_Name';
+  LongRoleNameField='LONG_ROLE_NAME';
+  RolesLastUpdField='LAST_UPDATE';
 
+  RolesMenuTable=DCL_TablePrefix+'ROLESMENU';
+  RolesMenuIDFiled='RoleID';
+  RoleMenuItemIDField='MenuItem_ID';
+
+  UsersTable=DCL_TablePrefix+'USERS';
   UserIDField='UID';
   UserNameField='DCL_USER_NAME';
   LongUserNameField='DCL_LONG_USER_NAME';
   UserPassField='DCL_USER_PASS';
-  DBUSER_NAME_Field='DBUSER_NAME';
-  DBPASS_Field='DBPASS';
-  UserRoleField='DCL_ROLE';
-  DCLROLE_ACCESSLEVEL_FIELD='ROLE_ACCESSLEVEL';
+  UserAdminField='ACCESS_LEVEL';
+
+  ShowInListField='SHOW_IN_LIST';
 
   RolesToUsersTable=DCL_TablePrefix+'ROLES_TO_USERS';
   RolesToUsersUserIDField='ru_userid';

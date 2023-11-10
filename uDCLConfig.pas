@@ -143,11 +143,6 @@ Begin
         If IsParameter('GetValueSeparator=', cs) then
           GPT.GetValueSeparator:=FindParam('GetValueSeparator=', cs);
 
-        If IsParameter('MultiRoles=', cs) then
-        Begin
-          GPT.MultiRolesMode:=Trim(FindParam('MultiRoles=', cs))='1';
-        End;
-
         If IsParameter('SQLMonitor=1', cs) then
         Begin
           // SQLMonActions.StartSQLTrace;
@@ -185,7 +180,7 @@ Begin
 
         If IsParameter('OneCopy=', cs) then
         Begin
-          GPT.OneCopy:=Trim(FindParam('OneCopy=', cs))='1';
+          GPT.OneCopy:=StrToInt(FindParam('OneCopy=', cs));
         End;
 
         If IsParameter('DisableIniPasword=', cs) then
