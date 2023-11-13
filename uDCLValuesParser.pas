@@ -79,7 +79,7 @@ Begin
       Begin
         for Field in Query.Fields do
         begin
-          while PosEx(ParamPrefix+Field.Name, Params)<>0 do
+          while PosEx(ParamPrefix+Field.FieldName, Params)<>0 do
           begin
             Pos:=PosEx(ParamPrefix+Field.FieldName, Params);
 
