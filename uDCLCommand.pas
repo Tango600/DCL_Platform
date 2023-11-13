@@ -401,14 +401,8 @@ begin
     //If FDCLLogOn.SQLMon.TrraceStatus Then
       //FDCLLogOn.SQLMon.AddSQLText(SQLCommand);
 
-    {$IFDEF ADO}
-    ADOCommand.CommandType:=cmdText;
-    ADOCommand.CommandText:=SQLCommand;
-    ADOCommand.Connection:=FDBConnector;
-    {$ELSE}
     ADOCommand.SQL.Text:=SQLCommand;
     FDBConnector.SetConnector(TDCLDialogQuery(ADOCommand));
-    {$ENDIF}
     {$IFDEF TRANSACTIONDB}
     tmp_Transaction:=TDCLDBTransaction.Create(FDBConnector, trtWrite);
     ADOCommand.Transaction:=tmp_Transaction;

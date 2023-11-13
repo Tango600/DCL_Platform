@@ -56,10 +56,6 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="uDateTimeHelper.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
         <Filename Value="uDCLMessages.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
