@@ -39,27 +39,23 @@ uses
   uExpressionParser;
 
 const
-  MaxSysVars=49;
+  MaxSysVars=48;
   SysVarsSet: Array [1..MaxSysVars] of String=('_TIME_', '_TIMES_', '_DATE_', '_DATETIME_', // 4
-    '_VERSION_', '_ISEMPTY_', '_DCLTABLE_', '_DCLNAMEFIELD_', '_DCLTEXTFIELD_', '_IDENTIFYFIELD_',
-    // 10
-    '_PARENTFLGFIELD_', '_COMMANDFIELD_', '_USERNAME_', '_PASSWORD_', '_ALIAS_', '_STRINGTYPECHAR_',
-    // 16
-    '_ROLENAME_', '_ROLEID_', '_ROLESTABLE_', '_ROLESMENU_', '_USERPASS_', '_LONGROLENAME_', // 22
-    '_FOB_', '_EOB_', '_VALUESEPARATOR_', '_FULLVERSION_', '_APPPATH_', '_CURRENTSTRING_', // 28
-    '_ENGINETYPE_', '_APPNAME_', '_DCL_USER_NAME_', '_DCL_USERS_TABLE_', '_USERID_', // 33
-    '_USERNAMEACCESSLEVELS_', '_USERGLOBALACCESSLEVEL_', '_USERACCESSLEVEL_', '_NOTIFYACTIONS_',
-    // 37
-    '_YESNO_', '_EVALFORMULA_', '_DSSTATE_', '_DSSTATENAME_', '_FULLRAIGHTS_', '_ROLEACCESSLEVEL_',
-    // 43
-    '_APPDATAPATH_', '_OS_', '_MAC_', '_USERPROFILE_', '_USERDOC_', '_DCLINI_'); // 49
+    '_VERSION_', '_ISEMPTY_', '_DCLTABLE_', '_DCLNAMEFIELD_', '_DCLTEXTFIELD_', '_IDENTIFYFIELD_',  // 10
+    '_PARENTFLGFIELD_', '_COMMANDFIELD_', '_USERNAME_', '_PASSWORD_', '_STRINGTYPECHAR_', // 15
+    '_ROLENAME_', '_ROLEID_', '_ROLESTABLE_', '_ROLESMENU_', '_USERPASS_', '_LONGROLENAME_', // 21
+    '_FOB_', '_EOB_', '_VALUESEPARATOR_', '_FULLVERSION_', '_APPPATH_', '_CURRENTSTRING_', // 27
+    '_ENGINETYPE_', '_APPNAME_', '_DCL_USER_NAME_', '_DCL_USERS_TABLE_', '_USERID_', // 32
+    '_USERNAMEACCESSLEVELS_', '_USERGLOBALACCESSLEVEL_', '_USERACCESSLEVEL_', '_NOTIFYACTIONS_',  // 36
+    '_YESNO_', '_YEAR_', '_DSSTATE_', '_DSSTATENAME_', '_FULLRAIGHTS_', '_ROLEACCESSLEVEL_',  // 42
+    '_APPDATAPATH_', '_OS_', '_MAC_', '_USERPROFILE_', '_USERDOC_', '_DCLINI_'); // 48
 
-  ProcCount=26;
+  ProcCount=28;
   ProcNames: Array [1..ProcCount] Of String=('ConvertOraDates', 'ConvertToOraDates', 'ToFloat', // 3
     'ConvertToAccessDate', 'DeleteNonFilesSimb', 'GetFileNameToTranslite', 'ExtractFileName', // 7
     'MoneyToString', 'ByIndex', 'Count', 'IndexOf', 'ReadConfig', 'WriteConfig', 'NVL', 'iif', // 15
     'GetTempFileName', 'DaysInMonth', 'GetMonthName', 'LeadingZero', 'GetAccessLevelByName', // 20
-    'MonthByDate', 'Upper', 'Lower', 'MD5File', 'MD5String', 'Eval'); // 26
+    'MonthByDate', 'Upper', 'Lower', 'MD5File', 'MD5String', 'YearOf', 'MonthOf', 'DayOf'); // 28
 
 { TDCLValuseParser }
 
@@ -138,21 +134,21 @@ begin
             Value:=GPT.DBUserName;
             14:
             Value:=GPT.DBPassword;
-            16:
+            15:
             Value:=GPT.StringTypeChar;
-            17:
+            16:
             Value:=GPT.DCLRoleName;
-            18:
+            17:
             Value:=GPT.RoleID;
-            19:
+            18:
             Value:=RolesTable;
-            20:
+            19:
             Value:=RolesMenuTable;
-            21:
+            20:
             Value:=GPT.DCLUserPass;
-            22:
+            21:
             Value:=GPT.LongRoleName;
-            23:
+            22:
             begin
               if Assigned(Query) then
               begin
@@ -162,7 +158,7 @@ begin
                   Value:='0';
               end;
             end;
-            24:
+            23:
             begin
               if Assigned(Query) then
               begin
@@ -172,57 +168,57 @@ begin
                   Value:='0';
               end;
             end;
-            25:
+            24:
             Value:=GPT.GetValueSeparator;
-            26:
+            25:
             Value:=DCLVersion;
-            27:
+            26:
             Value:=ExcludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0)));
-            28:
+            27:
             Value:=IntToStr(GPT.CurrentRunningScrString);
-            29:
+            28:
             Value:=DBEngineType;
-            30:
+            29:
             Value:=ExtractFileName(ParamStr(0));  // '_APPNAME_'
-            31:
+            30:
             Value:=GPT.DCLUserName;
-            32:
+            31:
             Value:=UsersTable;
-            33:
+            32:
             Value:=GPT.UserID;
-            34:
+            33:
             Value:=GetDCLMessageString(msAccessLevelsSet);
-            35:
+            34:
             Value:=IntToStr(Ord(GPT.AccessLevel));
-            {36:
+            {35:
             Value:=IntToStr(Ord(FDCLForm.UserLevelLocal));}
-            37:
+            36:
             Value:=GetDCLMessageString(msNotifyActionsSet);
-            38:
+            37:
             Value:=GetDCLMessageString(msNoYes);
-            {39:
-            Value:=FDCLLogOn.EvalFormula;}
-            40:begin
+            38:
+            Value:=IntToStr(YearOf(Now));
+            39:begin
               if Assigned(Query) then
                 Value:=IntToStr(Ord(Query.State));
             end;
-            41:
+            40:
             Value:=GetNameDSState(Query.State);
-            {42:
+            {41:
             Value:=IntToStr(FDCLLogOn.RoleRaightsLevel);
-            43:
+            42:
             Value:=IntToStr(FDCLLogOn.GetFullRaight);}
-            44:
+            43:
             Value:=ExcludeTrailingPathDelimiter(AppConfigDir);
-            45:
+            44:
             Value:=OSType;
-            46:
+            45:
             Value:='';
-            47:
+            46:
             Value:=UserProfileDir; // '_USERPROFILE_'
-            48:
+            47:
             Value:=GetUserDocumentsDir; // '_USERDOC_'
-            49:
+            48:
             Value:=GPT.IniFileName; // _DCLINI_
             end;
 
@@ -600,9 +596,15 @@ Begin
           25:Begin
             ResultStr:=MD5String(FunctionParams[1]);
           End;
-          26:Begin // Eval
-            ResultStr:='';;
+          26:Begin // YearOf
+            ResultStr:=IntToStr(YearOf(StrToDate(FunctionParams[1])));
           End;
+          27: begin
+            ResultStr:=IntToStr(MonthOf(StrToDate(FunctionParams[1])));
+          end;
+          28: begin
+            ResultStr:=IntToStr(DayOf(StrToDate(FunctionParams[1])));
+          end;
           End;
 
           Delete(Params, Pos, MaxLength+Length(ProcPrefix)+1+(EndPos-pv2));
