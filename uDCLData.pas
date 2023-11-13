@@ -23,7 +23,7 @@ type
   TDCLCalendar=class
     LabelField: TDialogLabel;
     Control: TDateTimePicker;
-    Caption, Field, Variable: String;
+    Caption, Field, Variable, ParamName: String;
     Value: TDate;
     Num: Integer;
     ReOpen: Boolean;

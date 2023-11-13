@@ -61,7 +61,7 @@ type
     FDataControlType: TDataControlType;
     FGridStyle: TGridStyle;
     FReadFieldsMode, FMultiSelectMode, FReadOnly, FDataReadOnly, FNavigatorVisible,
-      FFlatNavig, FNoDataField, FNoButtonPanel, FindProcess, FNoPrintTool: Boolean;
+      FFlatNavig, FNoDataField, FNoButtonPanel, FindProcess, FPrintTool: Boolean;
     FTableParts, FLookupTables: TList<TDCLGrid>;
     FCurrentTablePart: TDCLGrid;
     FDCLFields: TList<TDCLField>;
@@ -116,6 +116,7 @@ type
     procedure AfterPost(Data: TDataSet);
     procedure AfterCancel(Data: TDataSet);
 
+    procedure BeforeOpen(Data: TDataSet);
     procedure BeforeScroll(Data: TDataSet);
     procedure BeforeEdit(Data: TDataSet);
     procedure BeforePost(Data: TDataSet);
@@ -287,6 +288,7 @@ type
     property MultiSelect: Boolean read FMultiSelectMode write SetMultiSelect;
     property RightsLevel: TUserLevelsType read FUserLevel;
     property Seed: String read GetGridSeed;
+    property PrintTool: Boolean read FPrintTool write FPrintTool;
   end;
 
   { TLookupTable }
@@ -472,6 +474,7 @@ begin
   Query.AfterDelete:=OnDelete;
   Query.AfterOpen:=AfterOpen;
 
+  Query.BeforeOpen:=BeforeOpen;
   Query.BeforeScroll:=BeforeScroll;
   Query.BeforePost:=BeforePost;
   Query.BeforeEdit:=BeforeEdit;
@@ -620,6 +623,24 @@ procedure TDCLGrid.AfterCancel(Data: TDataSet);
 begin
   SetDataStatus(dssSaved);
   ExecEvents(evtCancel);
+end;
+
+procedure TDCLGrid.BeforeOpen(Data: TDataSet);
+var
+  c: TDCLCalendar;
+  p: TParam;
+begin
+  for c in FCalendars do
+  begin
+    if c.ParamName<>'' then
+    begin
+      p:=FQuery.ParamByName(c.ParamName);
+      if Assigned(p) then
+      begin
+        p.AsDate:=c.Value;
+      end;
+    end;
+  end;
 end;
 
 procedure TDCLGrid.BeforeScroll(Data: TDataSet);
@@ -1605,6 +1626,7 @@ begin
   grid:=TDCLGrid.Create(FIDCLMain, FNameSpace, FForm, FTablePartsTabs, dctTablePart, nil, Data);
   FCurrentTablePart:=grid;
   grid.Style:=Style;
+  grid.PrintTool:=FPrintTool;
   FTableParts.Add(grid);
   Result:=grid;
 end;
@@ -1638,6 +1660,7 @@ begin
 
     FCurrentTablePart.SetSQL(tSQL);
     FCurrentTablePart.NoDataField:=FindParam('NoDataField=', Line)='1';
+    FCurrentTablePart.PrintTool:=FPrintTool;
 
     If FindParam('DependField=', Line)<>'' Then
     begin
@@ -2475,7 +2498,10 @@ begin
   Calendar:=TDCLCalendar.Create;
   Calendar.Caption:=FindParam('Label=', ScrLine);
 
-  Calendar.Variable:=FindParam('VariableName=', ScrLine);
+  if FindParam('ParamName=', ScrLine)<>'' then
+    Calendar.ParamName:=FindParam('ParamName=', ScrLine)
+  else
+    Calendar.Variable:=FindParam('VariableName=', ScrLine);
 
   tmpS:=FindParam('DefaultValue=', ScrLine);
   If tmpS<>'' Then
@@ -3947,7 +3973,7 @@ begin
   FNoButtonPanel:=False;
   FNavigatorVisible:=False;
   FFlatNavig:=False;
-  FNoPrintTool:=False;
+  FPrintTool:=False;
   FGridStyle:=gsGrid;
 
   FMultiSelectMode:=False;
@@ -4236,10 +4262,11 @@ begin
     FNoButtonPanel:=True;
   end;
 
-  If IsLexem('NoPrintTool;', ScrStr) then
+  If IsLexem('PrintTool;', ScrStr) then
   begin
-      FNoPrintTool:=True;
+    FPrintTool:=True;
   end;
+
   If IsLexem('AddNotAllowOperation=', ScrStr) then
   begin
     TranslateVal(ScrStr, True);
@@ -4445,7 +4472,7 @@ begin
 
       if Assigned(FQuery) then
       begin
-        if not FNoPrintTool then
+        if FPrintTool then
         begin
           if FToolButtonsCount>0 then
           begin
@@ -4509,7 +4536,7 @@ begin
 
         AddPopupSeparator;
 
-        AddPopupItem(GetDCLMessageString(msCancel), pmaUndo, 'Ctrl+U', ptUndo);
+        AddPopupItem(GetDCLMessageString(msCancel), pmaUndo, 'Ctrl+Z', ptUndo);
       end;
 
       if FDataControlType=dctLookupGrid then
@@ -4814,6 +4841,7 @@ end;
 procedure TDCLGrid.ResetFieldsSettings;
 var
   DCLField: TDCLField;
+  Grid: TDCLGrid;
 begin
   if Assigned(FDBGrid) then
   begin
@@ -4821,6 +4849,16 @@ begin
     for DCLField in FDCLFields do
     begin
       AddColumn(DCLField);
+    end;
+
+    for Grid in FLookupTables do
+    begin
+      Grid.ResetFieldsSettings;
+    end;
+
+    for Grid in FTableParts do
+    begin
+      Grid.ResetFieldsSettings;
     end;
   end;
 end;

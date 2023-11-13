@@ -51,7 +51,6 @@ type
     function AddGrid(ParentControl: TWinControl; SurfType: TDataControlType; Query: TDCLQuery;
       Data: TDataSource): TDCLGrid;
 
-    function FindMenuItem(aItems: TMenuItem): TMenuItem;
     procedure AddMainItem(Caption: String; Action: TNotifyEvent);
     procedure AddSubItem(Caption: String; Pict: TPicturesTypes; Action: TNotifyEvent);
     procedure AddCloseFormItem;
@@ -186,11 +185,6 @@ begin
   grid:=TDCLGrid.Create(FIDCLMain, FNameSpace, Self, ParentControl, SurfType, Query, Data);
   FGrids.Add(grid);
   Result:=grid;
-end;
-
-function TDCLForm.FindMenuItem(aItems: TMenuItem): TMenuItem;
-begin
-
 end;
 
 procedure TDCLForm.AddMainItem(Caption: String; Action: TNotifyEvent);

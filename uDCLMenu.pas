@@ -388,6 +388,7 @@ begin
   CreateSumMenuItems(LocalQuery, 1001, 10000, GPT.UserID);
   CreateSumMenuItems(LocalQuery, 10001, 16000, GPT.UserID);
   CreateSumMenuItems(LocalQuery, 16001, 19000, GPT.UserID);
+  CreateSumMenuItems(LocalQuery, 19001, 20000, GPT.UserID);
 
   S:=FMainForm.Caption;
   LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 20051 and 20100', GPT.UserID);
