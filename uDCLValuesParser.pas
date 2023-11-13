@@ -32,8 +32,8 @@ type
 implementation
 
 uses
-  uDCLDBStructure, uDCLUtils, uSystemUtils, uDCLMultiLang,
-  uDBUtils, uDCLDBUtils, uDCLGlobalVariables, uDCLVersion, uDCLConfigTable,
+  DB, uDCLDBStructure, uDCLUtils, uSystemUtils, uDCLMultiLang, uDBUtils,
+  uDCLDBUtils, uDCLGlobalVariables, uDCLVersion, uDCLConfigTable,
   uExpressionParser;
 
 const
@@ -69,77 +69,40 @@ end;
 
 procedure TDCLValuseParser.RePlaseParams(var Params: String; Query: TDCLDialogQuery);
 Var
-  ReplaseField, TmpStr, FieldNameLoc: String;
-  StartSel, ParamLen, StartSearch, pv1, pv2, pv3, VarNameLength, MaxMatch: Word;
-  FindParNum: Integer;
-  FindVar: Boolean;
+  Pos, MaxLength: Integer;
+  LastField, Value: String;
+  Field, Field2: TField;
 Begin
   If Assigned(Query) Then
     If (Query.FieldCount>0)And Query.Active Then
       If TransParams Then
       Begin
-        StartSearch:=Pos(ParamPrefix, Params);
-        While Pos(ParamPrefix, Copy(Params, StartSearch, Length(Params)))<>0 Do
-        Begin
-          StartSearch:=StartSearch+Pos(ParamPrefix, Copy(Params, StartSearch, Length(Params)))-1;
-          StartSel:=StartSearch+Length(ParamPrefix)-1;
-          ParamLen:=Length(Params);
-          If ParamLen<>0 Then
-          Begin
-            pv3:=0;
-            FindParNum:=-1;
-            MaxMatch:=0;
+        for Field in Query.Fields do
+        begin
+          while PosEx(ParamPrefix+Field.Name, Params)<>0 do
+          begin
+            Pos:=PosEx(ParamPrefix+Field.FieldName, Params);
 
-            While (Query.FieldCount-1>=pv3) Do
-            Begin
-              FindVar:=True;
-              pv2:=1;
-              pv1:=StartSel+1;
-              While (FindVar)And(pv1<=ParamLen)And(pv2<=Length(Query.Fields[pv3].FieldName)) Do
-              Begin
-                FindVar:=False;
-                If Length(Query.Fields[pv3].FieldName)>=pv2 Then
-                Begin
-                  FieldNameLoc:=Query.Fields[pv3].FieldName;
-                  If UpperCase(Params[pv1])=UpperCase(FieldNameLoc[pv2]) Then
-                  Begin
-                    FindVar:=True;
-                    If MaxMatch<pv1 Then
-                    Begin
-                      MaxMatch:=pv1;
-                      FindParNum:=pv3;
-                    End;
-                  End;
-                End;
-                Inc(pv1);
-                Inc(pv2);
-              End;
-              Inc(pv3);
-            End;
+            if Pos<>0 then
+            begin
+              MaxLength:=0;
+              LastField:='';
+              for Field2 in Query.Fields do
+              begin
+                if (MaxLength<Length(Field2.FieldName)) and (PosEx(ParamPrefix+Field2.FieldName, Params)<>0) then
+                begin
+                  Pos:=PosEx(ParamPrefix+Field2.FieldName, Params);
+                  LastField:=Field2.FieldName;
+                  MaxLength:=Length(Field2.FieldName);
+                end;
+              end;
 
-            If FindParNum<>-1 Then
-            Begin
-              VarNameLength:=MaxMatch-StartSel;
-              ReplaseField:=Copy(Params, StartSel+1, VarNameLength);
-            End
-            Else
-            Begin
-              VarNameLength:=0;
-              ReplaseField:='';
-            End;
-
-            If FieldExists(ReplaseField, Query) Then
-            Begin
-              Delete(Params, StartSel, VarNameLength+1);
-              TmpStr:=TrimRight(Query.FieldByName(ReplaseField).AsString);
-              Insert(TmpStr, Params, StartSel);
-              Inc(StartSearch, Length(TmpStr)+Length(ParamPrefix));
-              TmpStr:='';
-            End
-            Else
-              Inc(StartSearch, Length(ParamPrefix)+0);
-          End;
-        End;
+              Value:=TrimRight(Query.FieldByName(LastField).AsString);
+              Delete(Params, Pos, Length(LastField)+Length(ParamPrefix));
+              Insert(Value, Params, Pos);
+            end;
+          end;
+        end;
       End;
 end;
 
