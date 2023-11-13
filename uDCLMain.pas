@@ -528,12 +528,14 @@ begin
 {$IFDEF MSWINDOWS}
   SysUtils.GetFormatSettings;
 {$ENDIF}
-{$IFDEF UNIX}
+
+  FormatSettings.TimeSeparator:=GPT.TimeSeparator;
   FormatSettings.DateSeparator:=GPT.DateSeparator;
   FormatSettings.ShortDateFormat:=GPT.DateFormat;
   FormatSettings.LongTimeFormat:=GPT.TimeFormat;
-  FormatSettings.TimeSeparator:=GPT.TimeSeparator;
-{$ENDIF}
+
+  FormatSettings.ThousandSeparator:=GPT.ThousandSeparator;
+  FormatSettings.DecimalSeparator:=GPT.DecimalSeparator;
 end;
 
 destructor TDCLMain.Destroy;

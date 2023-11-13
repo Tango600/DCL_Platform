@@ -32,7 +32,7 @@ type
 implementation
 
 uses
-  uDCLDBStructure, uDCLUtils, uSystemUtils, uDateTimeHelper, uDCLMultiLang,
+  uDCLDBStructure, uDCLUtils, uSystemUtils, uDCLMultiLang,
   uDBUtils, uDCLDBUtils, uDCLGlobalVariables, uDCLVersion, uDCLConfigTable,
   uExpressionParser;
 
@@ -240,18 +240,18 @@ begin
         Case FindSysVarNum of
         1:
         begin
-          TmpStr:=TimeToStr_(SysUtils.Time);
+          TmpStr:=TimeToStr(SysUtils.Time);
           If (TmpStr[5]=':') Then
             SetLength(TmpStr, 4);
           If (TmpStr[6]=':') Then
             SetLength(TmpStr, 5);
         end;
         2:
-        TmpStr:=TimeToStr_(SysUtils.Time);
+        TmpStr:=TimeToStr(SysUtils.Time);
         3:
-        TmpStr:=DateToStr_(Date);
+        TmpStr:=DateToStr(Date);
         4:
-        TmpStr:=TimeStampToStr(Now);
+        TmpStr:=DateTimeToStr(Now);
         5:
         TmpStr:=DCLVersion;
         6:

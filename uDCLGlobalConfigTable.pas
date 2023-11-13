@@ -12,7 +12,7 @@ type
     HashPass, DialogsSettings, DisableColors, DisableFieldsList,
     DisableIniPasword, IBAll: Boolean;
     OneCopy, CurrentRunningScrString, CurrentRunningCmdString, Port: Integer;
-    DateSeparator, TimeSeparator: Char;
+    DateSeparator, TimeSeparator, ThousandSeparator, DecimalSeparator: Char;
     ServerCodePage, DateFormat, TimeFormat, Viewer, ConnectionString, MainFormCaption,
     NewConnectionString, DBPath, ServerName, DBType: String;
     SQLDialect: Byte;

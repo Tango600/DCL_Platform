@@ -68,17 +68,6 @@ begin
   LoadConfig(GPT.IniFileName);
 
   GetParamsStructure;
-
-  //LoadLangRes(LangName, Path);
-
-  {$IFDEF FPC}
-  {$IFDEF UNIX}
-  FormatSettings.DateSeparator:=GPT.DateSeparator;
-  FormatSettings.ShortDateFormat:=GPT.DateFormat;
-  FormatSettings.LongTimeFormat:=GPT.TimeFormat;
-  FormatSettings.TimeSeparator:=GPT.TimeSeparator;
-  {$ENDIF}
-  {$ENDIF}
 end;
 
 procedure TDCLConfig.GetParamsStructure;
@@ -231,6 +220,16 @@ Begin
         If IsParameter('TimeSeparator=', cs) then
         Begin
           GPT.TimeSeparator:=FindParam('TimeSeparator=', cs)[1];
+        End;
+
+        If IsParameter('ThousandSeparator=', cs) then
+        Begin
+          GPT.ThousandSeparator:=FindParam('ThousandSeparator=', cs)[1];
+        End;
+
+        If IsParameter('DecimalSeparator=', cs) then
+        Begin
+          GPT.DecimalSeparator:=FindParam('DecimalSeparator=', cs)[1];
         End;
 
         {$IFDEF MSWINDOWS}

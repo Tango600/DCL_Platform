@@ -128,8 +128,6 @@ const
   DefaultTimeFormat='hh'+DefaultTimeSeparator+'mm'+DefaultTimeSeparator+'ss';
   DefaultTimeStampFormat=DefaultDateFormat+' '+DefaultTimeFormat;
 
-  StopFilterFlg=-1;
-
   ToolCommandsCount=3;
   ToolButtonsCmd: Array [1..ToolCommandsCount] Of String=('structure', 'print', 'find');
 

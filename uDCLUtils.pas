@@ -1,5 +1,5 @@
 unit uDCLUtils;
-{$I DefineType.pas}
+{$mode Delphi}
 
 interface
 
@@ -13,7 +13,7 @@ uses
   JPEG,
 {$ENDIF}
   Graphics,
-  uLZW, uSystemUtils, uDCLDBStructure, uDCLMultiLang,
+  uLZW, uSystemUtils, uDCLMultiLang,
   uDCLData, uDCLConst, uStringParams;
 
 function IsLexem(const Lexem, S: String): Boolean;
@@ -317,11 +317,7 @@ Begin
   Else If DCLCompareString(Level, ulPrefix+'Developer') Then
     Result:=ulDeveloper
   Else
-{$IFDEF DEVELOPERMODE}
-    Result:=ulDeveloper;
-{$ELSE}
     Result:=ulUndefined;
-{$ENDIF}
 End;
 
 Function GetStringDataType(const S: String): TIsDigitType;

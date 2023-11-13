@@ -371,6 +371,7 @@ begin
     if (FormatBuffer[1]=68) and (FormatBuffer[2]=67) and
       (FormatBuffer[3]=76) and (FormatBuffer[4]=53) then
     begin
+      b:=1;
       Package.Read(b, 1);
       if Package.Read(FormatBuffer[1], 4)<>0 then
       begin
