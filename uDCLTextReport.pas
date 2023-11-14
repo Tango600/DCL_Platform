@@ -662,7 +662,7 @@ procedure TDCLTextReport.PrintReport;
 var
   TmpStr, BodyText, BodyText1: String;
   StartPos, LengthParam, DelLen: Cardinal;
-  FieldsCounter, NameLength, StartSel, FFactor: Integer;
+  FieldsCounter, NameLength, StartSel: Integer;
   Parser: TDCLValuseParser;
   Alig: String;
 begin
@@ -720,9 +720,8 @@ begin
   Else
     BodyText1:='';
 
-  FFactor:=0;
   Parser:=TDCLValuseParser.Create(FNameSpace, FVariables);
-  Parser.RePlaceProc(BodyText1, FFactor, nil);
+  Parser.RePlaceProc(BodyText1, nil);
   Body.Append(BodyText1);
 end;
 

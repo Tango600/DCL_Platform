@@ -69,30 +69,26 @@ uses
 { TDCLCommand }
 
 procedure TDCLCommand.TranslateVals(var S: String);
-var
-  Factor: Integer;
 begin
   if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) then
   begin
     FParser.RePlaseParams(S, FDCLGrid.Query);
     FParser.RePlaseVariables(FNameSpace, S, FDCLGrid.Query);
-    FParser.RePlaceProc(S, Factor, FDCLGrid.Query);
+    FParser.RePlaceProc(S, FDCLGrid.Query);
   end
   else
   begin
     FParser.RePlaseVariables(FNameSpace, S, nil);
-    FParser.RePlaceProc(S, Factor, nil);
+    FParser.RePlaceProc(S, nil);
   end;
 end;
 
 procedure TDCLCommand.TranslateVals(var S: String; Query: TDCLDialogQuery);
-var
-  Factor: Integer;
 begin
   FParser:=TDCLValuseParser.Create(FNameSpace, FVariables);
   FParser.RePlaseParams(S, Query);
   FParser.RePlaseVariables(FNameSpace, S, Query);
-  FParser.RePlaceProc(S, Factor, Query);
+  FParser.RePlaceProc(S, Query);
 end;
 
 constructor TDCLCommand.Create(IDCLMain: IDCLMain; NameSpace: String;

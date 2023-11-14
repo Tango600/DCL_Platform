@@ -19,8 +19,6 @@ const
 Function FindParam(const KeyWord, StrParam: String): String;
 Function GetParam(const ParamsSet: String; ParamNo: Integer;
   SeparateChar: String=DefaultValuesSeparator; ParamDelim: String=DefaultParamDelim): String;
-Function ParamPos(const ParamsSet: String; ParamNo: Integer;
-  SeparateChar: String=DefaultValuesSeparator; ParamDelim: String=DefaultParamDelim): Integer;
 Function ParamsCount(const ParamsSet: String; SeparateChar: String=DefaultValuesSeparator;
   ParamDelim: String=DefaultParamDelim): Integer;
 Function GetClearParam(const Param: String; ParamDelim: String=DefaultParamDelim): String;
@@ -31,11 +29,6 @@ function NormalizeCase(const S: String): String;
 Function TrimSymbols(S: String; TrimS: String): String;
 Function PosSet(SubSet, S: String; SepChar: String=DefaultValuesSeparator;
   Delim: String=DefaultParamDelim): Cardinal;
-{$IFNDEF FPC}
-Function ConvertEncoding(Const S, FromEncoding, ToEncoding: String): String;
-function LeftStr(const S: string; Count: integer): string;
-function RightStr(const S: string; Count: integer): string;
-{$ENDIF}
 Function TextToString(Text: String): String;
 function TrimChars(CharsSet, S:string):String;
 
@@ -46,28 +39,6 @@ implementation
 
 uses
   uDCLConst, uDCLData;
-
-{$IFNDEF FPC}
-Function ConvertEncoding(Const S, FromEncoding, ToEncoding: String): String;
-Begin
-  If (ToEncoding='utf8') and (PosEx('cp', FromEncoding)=1) and (FromEncoding<>'utf8') and (FromEncoding<>ToEncoding) then
-    Result:=System.AnsiToUtf8(S)
-  Else
-    Result:=S;
-End;
-
-function LeftStr(const S: string; Count: integer): string;
-begin
-  result := Copy(S, 1, Count);
-end;
-
-function RightStr(const S: string; Count: integer): string;
-begin
-   If Count>Length(S) then
-     Count:=Length(S);
-   result := Copy(S, 1 + Length(S) - Count, Count);
-end;
-{$ENDIF}
 
 Function DCLCompareString(S1, S2: String): Boolean;
 Begin
@@ -334,67 +305,9 @@ begin
     Result:='';
 end;
 
-Function ParamPos(const ParamsSet: String; ParamNo: Integer;
-  SeparateChar: String=DefaultValuesSeparator; ParamDelim: String=DefaultParamDelim): Integer;
-var
-  ParamCount, ParamLen, pv1: Integer;
-  StopSeparate: Boolean;
-  DelimLeft, DelimRight, CurrDelim: Char;
-begin
-  If ParamNo=0 then
-  Begin
-    Result:=1;
-    Exit;
-  End;
-
-  if ParamDelim='' then
-    ParamDelim:=DefaultParamDelim;
-
-  if Length(ParamDelim)=2 then
-  begin
-    DelimLeft:=ParamDelim[1];
-    DelimRight:=ParamDelim[2];
-  end
-  Else
-  begin
-    DelimLeft:=ParamDelim[1];
-    DelimRight:=ParamDelim[1];
-  end;
-
-  if SeparateChar='' then
-    SeparateChar:=DefaultValuesSeparator;
-  Dec(ParamNo);
-  ParamCount:=0;
-  pv1:=1;
-  StopSeparate:=False;
-  ParamLen:=Length(ParamsSet);
-  if ParamLen<>0 then
-  begin
-    CurrDelim:=DelimLeft;
-    While (ParamCount<>ParamNo)and(ParamLen+1<>pv1) do
-    begin
-      if (Pos(ParamsSet[pv1], SeparateChar)<>0)and not StopSeparate then
-        Inc(ParamCount);
-      if ParamsSet[pv1]=CurrDelim then
-      begin
-        StopSeparate:=not StopSeparate;
-        if CurrDelim=DelimLeft then
-          CurrDelim:=DelimRight
-        Else if CurrDelim=DelimRight then
-          CurrDelim:=DelimLeft;
-      end;
-      Inc(pv1);
-    end;
-
-    Result:=pv1;
-  end
-  Else
-    Result:=1;
-end;
-
 Function PosEx(const SubStr, S: String): Cardinal;
 begin
-  Result:=Pos(AnsiLowerCase(SubStr), AnsiLowerCase(S));
+  Result:=Pos(LowerCase(SubStr), LowerCase(S));
 end;
 
 function Any(const StrSet, S: String): Boolean;

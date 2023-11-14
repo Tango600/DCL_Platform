@@ -24,7 +24,7 @@ type
 
     procedure RePlaseParams(var Params: String; Query: TDCLDialogQuery);
     procedure RePlaseVariables(const Namespace: String; var ValueSet: String; Query: TDCLDialogQuery);
-    procedure RePlaceProc(var Params: String; Var Factor: Integer; Query: TDCLDialogQuery);
+    procedure RePlaceProc(var Params: String; Query: TDCLDialogQuery);
 
     procedure TranslateVals(var Params: String; Query: TDCLDialogQuery; CheckParams: Boolean);
 
@@ -39,7 +39,7 @@ uses
   uExpressionParser;
 
 const
-  MaxSysVars=48;
+  MaxSysVars=47;
   SysVarsSet: Array [1..MaxSysVars] of String=('_TIME_', '_TIMES_', '_DATE_', '_DATETIME_', // 4
     '_VERSION_', '_ISEMPTY_', '_DCLTABLE_', '_DCLNAMEFIELD_', '_DCLTEXTFIELD_', '_IDENTIFYFIELD_',  // 10
     '_PARENTFLGFIELD_', '_COMMANDFIELD_', '_USERNAME_', '_PASSWORD_', '_STRINGTYPECHAR_', // 15
@@ -48,14 +48,13 @@ const
     '_ENGINETYPE_', '_APPNAME_', '_DCL_USER_NAME_', '_DCL_USERS_TABLE_', '_USERID_', // 32
     '_USERNAMEACCESSLEVELS_', '_USERGLOBALACCESSLEVEL_', '_USERACCESSLEVEL_', '_NOTIFYACTIONS_',  // 36
     '_YESNO_', '_YEAR_', '_DSSTATE_', '_DSSTATENAME_', '_FULLRAIGHTS_', '_ROLEACCESSLEVEL_',  // 42
-    '_APPDATAPATH_', '_OS_', '_MAC_', '_USERPROFILE_', '_USERDOC_', '_DCLINI_'); // 48
+    '_APPDATAPATH_', '_OS_', '_USERPROFILE_', '_USERDOC_', '_DCLINI_'); // 48
 
-  ProcCount=28;
-  ProcNames: Array [1..ProcCount] Of String=('ConvertOraDates', 'ConvertToOraDates', 'ToFloat', // 3
-    'ConvertToAccessDate', 'DeleteNonFilesSimb', 'GetFileNameToTranslite', 'ExtractFileName', // 7
-    'MoneyToString', 'ByIndex', 'Count', 'IndexOf', 'ReadConfig', 'WriteConfig', 'NVL', 'iif', // 15
-    'GetTempFileName', 'DaysInMonth', 'GetMonthName', 'LeadingZero', 'GetAccessLevelByName', // 20
-    'MonthByDate', 'Upper', 'Lower', 'MD5File', 'MD5String', 'YearOf', 'MonthOf', 'DayOf'); // 28
+  ProcCount=24;
+  ProcNames: Array [1..ProcCount] Of String=('ToFloat', 'DeleteNonFilesSimb', 'GetFileNameToTranslite', //3
+    'ExtractFileName', 'MoneyToString', 'ByIndex', 'Count', 'IndexOf', 'ReadConfig', 'WriteConfig', // 10
+    'NVL', 'iif', 'GetTempFileName', 'DaysInMonth', 'GetMonthName', 'LeadingZero', 'GetAccessLevelByName', // 17
+    'Upper', 'Lower', 'MD5File', 'MD5String', 'YearOf', 'MonthOf', 'DayOf'); // 24
 
 { TDCLValuseParser }
 
@@ -213,12 +212,10 @@ begin
             44:
             Value:=OSType;
             45:
-            Value:='';
-            46:
             Value:=UserProfileDir; // '_USERPROFILE_'
-            47:
+            46:
             Value:=GetUserDocumentsDir; // '_USERDOC_'
-            48:
+            47:
             Value:=GPT.IniFileName; // _DCLINI_
             end;
 
@@ -319,16 +316,19 @@ begin
   ReplaseSysVars(ValueSet, Query);
 end;
 
-procedure TDCLValuseParser.RePlaceProc(var Params: String; var Factor: Integer;
-  Query: TDCLDialogQuery);
+procedure TDCLValuseParser.RePlaceProc(var Params: String; Query: TDCLDialogQuery);
 var
   Proc, Proc2, ResultStr, ProcParams: String;
-  Pos, MaxLength, i, FindNum, Skobki, pv1, pv2, EndPos, ParamLen: Integer;
-  FunctionParams: Array Of String;
-  FunctionParamsCount: Byte;
+  Pos, FunctionParamsCount, MaxLength, i, FindNum, Skobki, pv1, pv2, EndPos, ParamLen: Integer;
+  FunctionParams: Array of String;
   DCLConfig: TDCLConfigTable;
+
+  function CompareProcName(ProcIndex: Integer; ProcName: String): Boolean;
+  begin
+    Result:=ProcNames[ProcIndex].ToLower=ProcName.ToLower;
+  end;
+
 Begin
-  Inc(Factor);
   ParamLen:=Length(Params);
   for Proc in ProcNames do
   begin
@@ -378,7 +378,7 @@ Begin
           EndPos:=pv1;
 
           ProcParams:=Copy(Params, pv2+1, pv1-pv2-1);
-          RePlaceProc(ProcParams, Factor, Query);
+          RePlaceProc(ProcParams, Query);
 
           FunctionParamsCount:=ParamsCount(ProcParams);
           SetLength(FunctionParams, FunctionParamsCount+1);
@@ -389,25 +389,8 @@ Begin
             // RePlaseVariables(FunctionParams[pv1]);
           End;
 
-          Case FindNum Of
-          // ConvertOraDates
-          1:
+          if CompareProcName(FindNum, 'tofloat') then
           Begin
-            ResultStr:=Copy(FunctionParams[1], 9, 2)+'.'+Copy(FunctionParams[1], 6, 2)+'.'+
-              Copy(FunctionParams[1], 1, 4);
-          End;
-
-          // ConvertToOraDates
-          2:
-          Begin
-            ResultStr:=Copy(FunctionParams[1], 7, 4)+'-'+Copy(FunctionParams[1], 4, 2)+'-'+
-              Copy(FunctionParams[1], 1, 2)+' 00:00:00';
-          End;
-
-          // tofloat
-          3:
-          Begin
-            //Trim(FunctionParams[1]);
             if PosEx('.', FunctionParams[1])=0 then
               ResultStr:=FunctionParams[1]+'.00'
             Else
@@ -419,20 +402,8 @@ Begin
               Else
                 ResultStr:=FunctionParams[1];
             End;
-          End;
-
-          // ConvertToAccessDate
-          4:
-          Begin
-            If PosEx('.', FunctionParams[1])<>0 Then
-              ResultStr:=Copy(FunctionParams[1], 4, 2)+'/'+Copy(FunctionParams[1], 1, 2)+'/'+
-                Copy(FunctionParams[1], 7, 4)
-            Else
-              ResultStr:=FunctionParams[1];
-          End;
-
-          // deletenonfilessimb
-          5:
+          End
+          else if CompareProcName(FindNum, 'deletenonfilessimb') then
           Begin
             ParamLen:=Length(FunctionParams[1]);
             While ParamLen<>0 Do
@@ -445,32 +416,24 @@ Begin
               Dec(ParamLen);
             End;
             ResultStr:=FunctionParams[1];
-          End;
-
-          // GetFileNameToTranslite
-          6:
+          End
+          else if CompareProcName(FindNum, 'GetFileNameToTranslite') then
           Begin
             ResultStr:=GetFileNameToTranslite(FunctionParams[1]);
-          End;
-
-          // ExtractFileName
-          7:
+          End
+          else if CompareProcName(FindNum, 'ExtractFileName') then
           Begin
             ResultStr:=ExtractFileName(FunctionParams[1]);
-          End;
-
-          // SumWrite
-          8:
+          End
+          else if CompareProcName(FindNum, 'SumWrite')  then
           Begin
             ResultStr:=FunctionParams[1];
             If Length(FunctionParams)>2 then
               If FunctionParams[2]<>'' then
                 ResultStr:=FunctionParams[1]+'.'+FunctionParams[2];
             ResultStr:=MoneyToString(StrToFloatEx(ResultStr), True, False);
-          End;
-
-          // ByIndex
-          9:
+          End
+          else if CompareProcName(FindNum, 'ByIndex') then
           Begin
             ResultStr:='';
             For i:=2 to FunctionParamsCount do
@@ -478,16 +441,12 @@ Begin
               ResultStr:=ResultStr+FunctionParams[i]+',';
             End;
             ResultStr:=GetParam(ResultStr, StrToInt(FunctionParams[1]));
-          End;
-
-          // Count
-          10:
+          End
+          else if CompareProcName(FindNum, 'Count') then
           Begin
             ResultStr:=IntToStr(ParamsCount(FunctionParams[1]));
-          End;
-
-          // IndexOf
-          11:
+          End
+          else if CompareProcName(FindNum, 'IndexOf') then
           Begin
             ResultStr:='';
             for i:=2 to FunctionParamsCount do
@@ -498,24 +457,21 @@ Begin
                 Break;
               End;
             end;
-          End;
-
-          12: // ReadConfig
+          End
+          else if CompareProcName(FindNum, 'ReadConfig') then
           Begin
             DCLConfig:=TDCLConfigTable.Create(FDBConnector);
             ResultStr:=DCLConfig.ReadConfig(FunctionParams[1], '');
             FreeAndNil(DCLConfig);
-          End;
-
-          13: // WriteConfig
+          End
+          else if CompareProcName(FindNum, 'WriteConfig') then
           Begin
             DCLConfig:=TDCLConfigTable.Create(FDBConnector);
             DCLConfig.WriteConfig(FunctionParams[1], FunctionParams[2], '');
             FreeAndNil(DCLConfig);
             ResultStr:='';
-          End;
-
-          14: // NVL
+          End
+          else if CompareProcName(FindNum, 'NVL') then
           Begin
             If FunctionParamsCount=2 Then
             If Assigned(Query) then
@@ -527,9 +483,8 @@ Begin
                 Else
                   ResultStr:=GetFieldFromParam(FunctionParams[1], Query).AsString;
               End;
-          End;
-
-          15: // iif
+          End
+          else if CompareProcName(FindNum, 'iif') then
           Begin
             If FunctionParamsCount=3 then
             Begin
@@ -538,23 +493,23 @@ Begin
               else
                 ResultStr:=FunctionParams[3];
             End;
-          End;
-          16: // GetTempFileName
+          End
+          else if CompareProcName(FindNum, 'GetTempFileName') then
           Begin
             ResultStr:=GetTempFileName(FunctionParams[1]);
-          End;
-          17: // DaysInMonth
+          End
+          else if CompareProcName(FindNum, 'DaysInMonth') then
           Begin
             ResultStr:=IntToStr(DaysInAMonth(StrToInt(FunctionParams[2]), StrToInt(FunctionParams[1])));
-          End;
-          18: // GetMonthName
+          End
+          else if CompareProcName(FindNum, 'GetMonthName') then
           Begin
             ResultStr:=FunctionParams[1];
             pv1:=StrToIntEx(ResultStr);
             If ((pv1>0) and (pv1<13)) then
               ResultStr:=GetLacalaizedMonthName(pv1);
-          End;
-          19: // LeadingZero
+          End
+          else if CompareProcName(FindNum, 'LeadingZero') then
           Begin
             ResultStr:=FunctionParams[1];
             If StrToInt(FunctionParams[2])>0 then
@@ -563,12 +518,12 @@ Begin
                 For pv1:=1 to StrToInt(FunctionParams[2]) do
                   ResultStr:='0'+ResultStr;
             End;
-          End;
-          20: // GetAccessLevelByName
+          End
+          else if CompareProcName(FindNum, 'GetAccessLevelByName') then
           Begin
             ResultStr:=IntToStr(Ord(TranslateDigitToUserLevel(FunctionParams[1])));
-          End;
-          21: // MonthByDate
+          End
+          else if CompareProcName(FindNum, 'MonthByDate') then
           Begin
             ResultStr:=FunctionParams[1];
             try
@@ -578,34 +533,38 @@ Begin
             Except
               ResultStr:='';
             End;
-          End;
-          22:
+          End
+          else if CompareProcName(FindNum, 'Upper') then
           Begin
-            ResultStr:=AnsiUpperCase(FunctionParams[1]);
-          End;
-          23:
+            ResultStr:=UpperCase(FunctionParams[1]);
+          End
+          else if CompareProcName(FindNum, 'Lower') then
           Begin
             ResultStr:=AnsiLowerCase(FunctionParams[1]);
-          End;
-          24:Begin
+          End
+          else if CompareProcName(FindNum, 'MD5File') then
+          Begin
             If FileExists(FunctionParams[1]) then
             Begin
               ResultStr:=MD5File(FunctionParams[1]);
             End;
-          End;
-          25:Begin
+          End
+          else if CompareProcName(FindNum, 'MD5String') then
+          Begin
             ResultStr:=MD5String(FunctionParams[1]);
-          End;
-          26:Begin // YearOf
+          End
+          else if CompareProcName(FindNum, 'YearOf') then
+          Begin
             ResultStr:=IntToStr(YearOf(StrToDate(FunctionParams[1])));
-          End;
-          27: begin
+          End
+          else if CompareProcName(FindNum, 'MonthOf') then
+          begin
             ResultStr:=IntToStr(MonthOf(StrToDate(FunctionParams[1])));
-          end;
-          28: begin
+          end
+          else if CompareProcName(FindNum, 'DayOf') then
+          begin
             ResultStr:=IntToStr(DayOf(StrToDate(FunctionParams[1])));
           end;
-          End;
 
           Delete(Params, Pos, MaxLength+Length(ProcPrefix)+1+(EndPos-pv2));
           Insert(GetClearParam(ResultStr), Params, Pos);
@@ -613,19 +572,15 @@ Begin
       end;
     end;
   end;
-  Dec(Factor);
 end;
 
 procedure TDCLValuseParser.TranslateVals(var Params: String;
   Query: TDCLDialogQuery; CheckParams: Boolean);
-var
-  Factor: Integer;
 begin
   RePlaseVariables(FNameSpace, Params, Query);
   if CheckParams and Assigned(Query) then
     RePlaseParams(Params, Query);
-  Factor:=0;
-  RePlaceProc(Params, Factor, Query);
+  RePlaceProc(Params, Query);
 end;
 
 procedure TDCLValuseParser.SetConnector(DBConnector: TDCLDBConnector);

@@ -453,15 +453,13 @@ end;
 
 procedure TDCLGrid.TranslateVal(var Params: String; CheckParams: Boolean);
 var
-  Factor: Integer;
   Parser: TDCLValuseParser;
 begin
   Parser:=TDCLValuseParser.Create(FNameSpace, FVariables);
   Parser.RePlaseVariables(FNameSpace, Params, FQuery);
   if CheckParams then
     Parser.RePlaseParams(Params, FQuery);
-  Factor:=0;
-  Parser.RePlaceProc(Params, Factor, FQuery);
+  Parser.RePlaceProc(Params, FQuery);
 end;
 
 procedure TDCLGrid.SetQueryEvents(Query: TDCLQuery);

@@ -285,7 +285,7 @@ begin
   V:=V+TriadaK(I, kpk, usd);
   if s1<1 then
     V:='ноль '+V;
-  f:=AnsiUpperCase(Copy(V, 1, 1));
+  f:=UpperCase(Copy(V, 1, 1));
   l:=Copy(V, 2, 256);
   V:=f+l;
   Result:=V;
