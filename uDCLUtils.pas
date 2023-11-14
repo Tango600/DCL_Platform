@@ -334,8 +334,7 @@ Begin
         Result:=idColor;
         Exit;
       End;
-      If (PosEx('ul', S)=1) and (PosSet(UserLevelsSet, S)<>0) and (Length(S)>5)
-      then
+      If (PosEx('ul', S)=1) and (Length(S)>5) and (IndexInSet(UserLevelsSet, S.Substring(2))<>0) then
       Begin
         Result:=idUserLevel;
         Exit;

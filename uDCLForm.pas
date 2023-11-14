@@ -484,10 +484,10 @@ begin
         idUserLevel:
         UserLevelLocal:=TranslateDigitToUserLevel(FindParam('UserAccessRaight=', SrcLine));
         end;
-        If UserLevelLocal>FUserLevel Then
+        If UserLevelLocal<FUserLevel Then
         begin
           ShowErrorMessage(0, GetDCLMessageString(msNotAllowOpenForm));
-          ExitCode:=1;
+          FReject:=True;
           Exit;
         end;
       end;

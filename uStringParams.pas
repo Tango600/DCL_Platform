@@ -27,8 +27,8 @@ function Any(const StrSet, S: String): Boolean;
 Function InitCap(const S: String): String;
 function NormalizeCase(const S: String): String;
 Function TrimSymbols(S: String; TrimS: String): String;
-Function PosSet(SubSet, S: String; SepChar: String=DefaultValuesSeparator;
-  Delim: String=DefaultParamDelim): Cardinal;
+Function IndexInSet(SetValue, S: String; SepChar: String=DefaultValuesSeparator;
+  Delim: String=DefaultParamDelim): Integer;
 Function TextToString(Text: String): String;
 function TrimChars(CharsSet, S:string):String;
 
@@ -336,34 +336,27 @@ begin
     Result:='';
 end;
 
-Function PosSet(SubSet, S: String; SepChar: String=DefaultValuesSeparator;
-  Delim: String=DefaultParamDelim): Cardinal;
-Var
+Function IndexInSet(SetValue, S: String; SepChar: String=DefaultValuesSeparator;
+  Delim: String=DefaultParamDelim): Integer;
+var
   p, i, Pos: Cardinal;
   ps: String;
 Begin
   Result:=0;
-  p:=ParamsCount(SubSet, SepChar, Delim);
+  p:=ParamsCount(SetValue, SepChar, Delim);
   If p>0 then
-    If p=1 then
+  Begin
+    For i:=1 to p do
     Begin
-      Result:=PosEx(GetParam(SubSet, 1, SepChar, Delim), S);
-    End
-    else
-    Begin
-      For i:=1 to p do
-      Begin
-        Pos:=0;
-        ps:=GetParam(SubSet, i, SepChar, Delim);
-        If ps<>'' then
-          Pos:=PosEx(ps, S);
-        If Pos<>0 then
-        Begin
-          Result:=Pos;
-          Exit;
-        End;
-      End;
+      Pos:=0;
+      ps:=GetParam(SetValue, i, SepChar, Delim);
+      If LowerCase(Trim(ps))=LowerCase(Trim(S)) then
+      begin
+        Result:=i;
+        Exit;
+      end;
     End;
+  End;
 End;
 
 function TrimChars(CharsSet, S:string):String;
