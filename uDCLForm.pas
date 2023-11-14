@@ -480,9 +480,9 @@ begin
         tmpS:=FindParam('UserAccessRaight=', tmpS);
         Case GetStringDataType(tmpS) of
         idDigit:
-        UserLevelLocal:=TranslateDigitToUserLevel(StrToIntEx(FindParam('UserAccessRaight=', SrcLine)));
+        UserLevelLocal:=TranslateDigitToUserLevel(StrToIntEx(tmpS));
         idUserLevel:
-        UserLevelLocal:=TranslateDigitToUserLevel(FindParam('UserAccessRaight=', SrcLine));
+        UserLevelLocal:=TranslateDigitToUserLevel(tmpS);
         end;
         If UserLevelLocal<FUserLevel Then
         begin
