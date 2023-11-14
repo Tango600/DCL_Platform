@@ -139,8 +139,11 @@ begin
   if MDI or FindMDI then
   begin
     FormStyle:=fsMDIForm;
-
     Height:=600;
+  end
+  else
+  begin
+    BorderIcons:=BorderIcons-[biMaximize];
   end;
 end;
 
