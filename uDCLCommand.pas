@@ -122,21 +122,54 @@ begin
 end;
 
 function TDCLCommand.RunCommandScript(CommandName: String): Boolean;
+const
+  WhiteSpace=[' ',#9,#10,#13];
 var
   DCL: TStringList;
   LineNum: Integer;
 
-  procedure Run(IfFlag, Skeep: Boolean);
-  const
-    WhiteSpace=[' ',#9,#10,#13];
+  function ParseWhile(LineNum: Integer): Boolean;
   var
-    IfResult, Flg, Skp: Boolean;
     posI, posI2: Integer;
+    Line, ConditionStr: String;
+  begin
+    Line:=TrimLeft(DCL[LineNum]);
+    if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) then
+      TranslateVals(Line, FDCLGrid.Query)
+    else
+      TranslateVals(Line);
+
+    posI:=Pos('(', Line);
+    posI2:=Pos(')', Line);
+
+    if (posI=0) and (posI2=0) then
+    begin
+      posI:=1;
+      While (posI<=Length(Line)) and not charinset(Line[posI], WhiteSpace) do
+        Inc(posI);
+
+      While (posI<=Length(Line)) and charinset(Line[posI], WhiteSpace) do
+        Inc(posI);
+
+      ConditionStr:=Copy(Line, posI, Length(Line)-8).Trim
+    end
+    else
+      ConditionStr:=Copy(Line, posI+1, Pos(')', Line)-posI-1).Trim;
+
+    Result:=ParseLogicalExpression(ConditionStr);
+  end;
+
+  procedure Run(WhileFlg, IfFlag, Skeep: Boolean);
+  var
+    IfResult, WhileResult, Flg, Skp: Boolean;
+    posI, posI2, whileLineNum: Integer;
     Line, IfCondition: String;
   begin
     Flg:=IfFlag;
     Skp:=Skeep;
+    whileLineNum:=-1;
     IfResult:=IfFlag;
+    WhileResult:=WhileFlg;
     while DCL.Count>LineNum+1 do
     begin
       Inc(LineNum);
@@ -145,6 +178,21 @@ var
       if Line='' then
         Continue;
       if Pos('//', TrimLeft(Line))=1 then
+        Continue;
+
+      if IsLexem('EndDo', Line) then
+      begin
+        if not WhileResult then
+        begin
+          LineNum:=whileLineNum-1;
+        end
+        else
+          WhileResult:=False;
+
+        Continue;
+      end;
+
+      if WhileResult then
         Continue;
 
       if IsLexem('Else', Line) then
@@ -168,7 +216,7 @@ var
       begin
         if not Flg then
         begin
-          Run(False, True);
+          Run(WhileResult, False, True);
           Continue;
         end;
 
@@ -193,7 +241,7 @@ var
 
         IfResult:=ParseLogicalExpression(IfCondition);
 
-        Run(IfResult, False);
+        Run(WhileResult, IfResult, False);
 
         IfResult:=True;
         Continue;
@@ -208,6 +256,15 @@ var
         break;
       end;
 
+      if IsLexem('while ', Line) and (PosEx(' do', Line)>2) then
+      begin
+        whileLineNum:=LineNum;
+        Line:=TrimLeft(DCL[whileLineNum]);
+
+        WhileResult:=not ParseWhile(whileLineNum);
+        Continue;
+      end;
+
       RunCommand(Line);
     end;
   end;
@@ -219,7 +276,7 @@ begin
   if DCL.Count>0 then
   begin
     LineNum:=-1;
-    Run(True, False);
+    Run(False, True, False);
     Result:=True;
   end;
   DCL.Free;
