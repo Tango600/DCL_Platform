@@ -366,6 +366,7 @@ begin
   begin
     FormBar:=TToolBar.Create(FMainForm);
     FormBar.Parent:=FMainForm;
+    FormBar.AutoSize:=True;
     FormBar.Name:=ToolPanelName;
     FormBar.ShowCaptions:=True;
     FormBar.Height:=FormPanelHeight;
