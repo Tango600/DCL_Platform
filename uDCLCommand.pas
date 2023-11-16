@@ -128,12 +128,12 @@ var
   DCL: TStringList;
   LineNum: Integer;
 
-  function ParseWhile(LineNum: Integer): Boolean;
+  function ParseWhile(WhileLineNum: Integer): Boolean;
   var
     posI, posI2: Integer;
     Line, ConditionStr: String;
   begin
-    Line:=TrimLeft(DCL[LineNum]);
+    Line:=TrimLeft(DCL[WhileLineNum]);
     if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) then
       TranslateVals(Line, FDCLGrid.Query)
     else
@@ -162,7 +162,7 @@ var
   procedure Run(WhileFlg, IfFlag, Skeep: Boolean);
   var
     IfResult, WhileResult, Flg, Skp: Boolean;
-    posI, posI2, whileLineNum: Integer;
+    posI, posI2, whileLineNum, tempLineNum: Integer;
     Line, IfCondition: String;
   begin
     Flg:=IfFlag;
@@ -180,16 +180,9 @@ var
       if Pos('//', TrimLeft(Line))=1 then
         Continue;
 
-      if IsLexem('EndDo', Line) then
+      if IsLexem('EndWhile', Line) then
       begin
-        if not WhileResult then
-        begin
-          LineNum:=whileLineNum-1;
-        end
-        else
-          WhileResult:=False;
-
-        Continue;
+        Exit;
       end;
 
       if WhileResult then
@@ -259,9 +252,14 @@ var
       if IsLexem('while ', Line) and (PosEx(' do', Line)>2) then
       begin
         whileLineNum:=LineNum;
-        Line:=TrimLeft(DCL[whileLineNum]);
+        while ParseWhile(whileLineNum) do
+        begin
+          Run(False, IfResult, False);
+          tempLineNum:=LineNum;
+          LineNum:=WhileLineNum-1;
+        end;
+        LineNum:=tempLineNum;
 
-        WhileResult:=not ParseWhile(whileLineNum);
         Continue;
       end;
 
