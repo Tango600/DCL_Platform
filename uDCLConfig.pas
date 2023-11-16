@@ -55,6 +55,12 @@ begin
   If GPT.IniFileName='' Then
     GPT.IniFileName:=lPath+'DCL.ini';
 
+  if ParamCount>0 then
+  begin
+    if FileExists(ParamStr(1)) and (LowerCase(ExtractFileExt(ParamStr(1)))='.ini') then
+      GPT.IniFileName:=ParamStr(1);
+  end;
+
   For i:=1 to ParamCount do
   Begin
     If PosEx('-ini', ParamStr(i))<>0 Then

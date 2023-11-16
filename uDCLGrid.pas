@@ -4072,7 +4072,7 @@ procedure TDCLGrid.OnGridResize(Sender: TObject);
 begin
   if Assigned(FToolBar) and (FToolButtonsCount>0) then
   begin
-    FToolBar.ButtonWidth:=((FToolBar.ClientWidth-(ToolBarButtonSpliterWidth * (FToolButtonsCount-1))) div FToolButtonsCount)-FToolButtonsCount;
+    FToolBar.ButtonWidth:=((FToolBar.ClientWidth-(ToolBarButtonSpliterWidth * (FToolButtonsCount-1))) div FToolButtonsCount)-FToolButtonsCount-1;
   end;
 end;
 
