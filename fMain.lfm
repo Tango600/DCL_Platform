@@ -3,6 +3,7 @@ object MainForm: TMainForm
   Height = 71
   Top = 125
   Width = 436
+  BorderWidth = 3
   Caption = 'MainForm'
   ClientHeight = 71
   ClientWidth = 436
@@ -12,10 +13,10 @@ object MainForm: TMainForm
   OnCreate = FormCreate
   OnShow = FormShow
   object StatusBar1: TStatusBar
-    Left = 0
+    Left = 3
     Height = 23
-    Top = 48
-    Width = 436
+    Top = 45
+    Width = 430
     Panels = <>
     SimplePanel = False
   end

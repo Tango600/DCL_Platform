@@ -33,13 +33,8 @@ const
   ContextButtonInterval=5;
   ToolLeftInterval=15;
 
-{$IFDEF FPC}
   CalendarLeft={$IFDEF ZVComponents}25{$ELSE}15{$ENDIF};
   DateBoxAddWidth={$IFDEF ZVComponents}20{$ELSE}30{$ENDIF};
-{$ELSE}
-  CalendarLeft=15;
-  DateBoxAddWidth=0;
-{$ENDIF}
   ToolButtonPanelHeight=29;
   ToolButtonHeight=25;
   ToolBarButtonSpliterWidth=8;
@@ -51,7 +46,6 @@ const
   BeginStepTop=25;
 
   ButtonWidth=90;
-  //ButtonHeight=27;
 
   LabelTopInterval=4;
   CompenentTopStep=8;

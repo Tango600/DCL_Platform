@@ -179,10 +179,6 @@ Begin
 
   If Assigned(Query) then
   Begin
-{$IFDEF DELPHI}
-    If GPT.DebugOn Then
-      Query.FieldList.SaveToFile(AppConfigDir+'Existing_Fields.txt');
-{$ENDIF}
     If tmpFieldName<>'' then
       If Query.FieldCount<>0 Then
         For v1FieldNum:=0 To Query.FieldCount-1 Do

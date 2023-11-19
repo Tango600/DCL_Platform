@@ -7,7 +7,7 @@ uses
   Classes, SysUtils, Generics.Collections, Forms, Controls, StdCtrls, DB, Dialogs,
   uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uDCLForm, uDCLVariables, uIDCLMain,
   uDCLUtils, uStringParams, uDCLDBConnector, uDCLDBStructure, uDBUtils,
-  uDCLValuesParser, uIGetValue;
+  uDCLValuesParser, uIGetValue, MathParser;
 
 type
 
@@ -24,6 +24,7 @@ type
     FVariables: TVariables;
     FParser: TDCLValuseParser;
     FUserLevelLocal: TUserLevelsType;
+    MathParser: TMathParser;
 
     procedure TranslateVals(var S: String); overload;
     procedure TranslateVals(var S: String; Query: TDCLDialogQuery); overload;
@@ -65,6 +66,15 @@ uses
   uDCLDBTransaction,
   {$ENDIF}
   uDCLTextReport, uExpressionParser;
+
+const
+  WhiteSpace=[' ',#9,#10,#13];
+
+type
+  TStackItem=class
+    Flag, ConditionResult: Boolean;
+    Line: Integer;
+  end;
 
 { TDCLCommand }
 
@@ -108,6 +118,8 @@ begin
 
   FParser:=TDCLValuseParser.Create(FNameSpace, FVariables);
   FParser.SetConnector(FDBConnector);
+
+  MathParser:=TMathParser.Create;
 end;
 
 destructor TDCLCommand.Destroy;
@@ -122,18 +134,18 @@ begin
 end;
 
 function TDCLCommand.RunCommandScript(CommandName: String): Boolean;
-const
-  WhiteSpace=[' ',#9,#10,#13];
 var
   DCL: TStringList;
   LineNum: Integer;
+  Item: TStackItem;
+  CondHosts: TStack<TStackItem>;
 
-  function ParseWhile(WhileLineNum: Integer): Boolean;
+  function ParseCondition(CondLineNum: Integer): Boolean;
   var
     posI, posI2: Integer;
     Line, ConditionStr: String;
   begin
-    Line:=TrimLeft(DCL[WhileLineNum]);
+    Line:=TrimLeft(DCL[CondLineNum]);
     if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) then
       TranslateVals(Line, FDCLGrid.Query)
     else
@@ -159,17 +171,67 @@ var
     Result:=ParseLogicalExpression(ConditionStr);
   end;
 
-  procedure Run(WhileFlg, IfFlag, Skeep: Boolean);
+  procedure ProcessVariables(Line: String);
   var
-    IfResult, WhileResult, Flg, Skp: Boolean;
-    posI, posI2, whileLineNum, tempLineNum: Integer;
-    Line, IfCondition: String;
+    LeftSide, RightSide: String;
+    p, l: Integer;
+    f: Boolean;
+    r: Double;
   begin
-    Flg:=IfFlag;
-    Skp:=Skeep;
-    whileLineNum:=-1;
-    IfResult:=IfFlag;
-    WhileResult:=WhileFlg;
+    l:=Length(Line);
+    p:=Pos('=', Line);
+    if p<>0 then
+    begin
+      LeftSide:=Trim(Copy(Line, 1, p-1));
+      RightSide:=Trim(Copy(Line, p+1, l));
+
+      if FIDCLMain.GetVariables.Exists(FNameSpace, LeftSide) then
+      begin
+        f:=True;
+        r:=0;
+        try
+          MathParser.Expression:=RightSide;
+          r:=MathParser.Calculate;
+        except
+          f:=False;
+        end;
+
+        if f then
+        begin
+          FIDCLMain.GetVariables.Variables[FNameSpace, LeftSide]:=FloatToStr(r, DefaultFormatSettings);
+        end
+        else
+        begin
+          FIDCLMain.GetVariables.Variables[FNameSpace, LeftSide]:=RightSide;
+        end;
+      end;
+    end;
+  end;
+
+  procedure Run;
+  var
+    Line: String;
+    Flg: Boolean;
+
+    procedure AddPredCondition(LN: Integer);
+    var
+      ConditionResult: Boolean;
+    begin
+      ConditionResult:=Item.ConditionResult;
+      Item:=TStackItem.Create;
+      Item.Flag:=ConditionResult;
+      if ConditionResult then
+        ConditionResult:=ParseCondition(LN)
+      else
+        ConditionResult:=False;
+
+      Item.ConditionResult:=ConditionResult;
+      Item.Line:=LN;
+
+      CondHosts.Push(Item);
+    end;
+
+  begin
     while DCL.Count>LineNum+1 do
     begin
       Inc(LineNum);
@@ -180,68 +242,88 @@ var
       if Pos('//', TrimLeft(Line))=1 then
         Continue;
 
-      if IsLexem('EndWhile', Line) then
-      begin
-        Exit;
-      end;
-
-      if WhileResult then
-        Continue;
-
-      if IsLexem('Else', Line) then
-      begin
-        if not Skp then
-          IfResult:=not IfResult;
-        Continue;
-      end;
-
-      if IsLexem('EndIf', Line) then
-      begin
-        Exit;
-      end;
-
       if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) then
         TranslateVals(Line, FDCLGrid.Query)
       else
         TranslateVals(Line);
 
+      Item:=CondHosts.Peek;
+
+      //region If
       if IsLexem('if ', Line) and (PosEx(' then', Line)>2) then
       begin
-        if not Flg then
-        begin
-          Run(WhileResult, False, True);
-          Continue;
-        end;
-
-        Line:=TrimLeft(Line);
-
-        posI:=Pos('(', Line);
-        posI2:=Pos(')', Line);
-
-        if (posI=0) and (posI2=0) then
-        begin
-          posI:=1;
-          While (posI<=Length(Line)) and not charinset(Line[posI], WhiteSpace) do
-            Inc(posI);
-
-          While (posI<=Length(Line)) and charinset(Line[posI], WhiteSpace) do
-            Inc(posI);
-
-          IfCondition:=Copy(Line, posI, Length(Line)-8).Trim
-        end
-        else
-          IfCondition:=Copy(Line, posI+1, Pos(')', Line)-posI-1).Trim;
-
-        IfResult:=ParseLogicalExpression(IfCondition);
-
-        Run(WhileResult, IfResult, False);
-
-        IfResult:=True;
+        AddPredCondition(LineNum);
         Continue;
       end;
 
-      if (not IfResult) or Skp then
+      if IsLexem('Else', Line) then
+      begin
+        Item.ConditionResult:=not Item.ConditionResult;
         Continue;
+      end;
+
+      if IsLexem('EndIf', Line) then
+      begin
+        Item:=CondHosts.Pop;
+        Continue;
+      end;
+      //end region
+
+      //region Do While
+      if IsLexem('Do', Line) then
+      begin
+        Flg:=Item.Flag;
+        Item:=TStackItem.Create;
+        Item.Flag:=Flg;
+        Item.ConditionResult:=True;
+        Item.Line:=LineNum;
+
+        CondHosts.Push(Item);
+        Continue;
+      end;
+
+      if IsLexem('while', Line) and (PosEx('do', Line)=0) then
+      begin
+        if ParseCondition(LineNum) then
+        begin
+          LineNum:=Item.Line;
+        end
+        else
+          CondHosts.Pop;
+
+        Continue;
+      end;
+      //end region
+
+      //region While do
+      if IsLexem('while ', Line) and (PosEx(' do', Line)>7) then
+      begin
+        AddPredCondition(LineNum);
+        Continue;
+      end;
+
+      if IsLexem('EndWhile', Line) then
+      begin
+        if ParseCondition(Item.Line) then
+        begin
+          LineNum:=Item.Line;
+        end
+        else
+          Item:=CondHosts.Pop;
+
+        Continue;
+      end;
+      //end region
+
+      if not Item.Flag then
+      begin
+        Continue;
+      end
+      else
+      begin
+        if not Item.ConditionResult then
+          Continue;
+      end;
 
       if IsLexem('break;', Line) then
       begin
@@ -249,21 +331,12 @@ var
         break;
       end;
 
-      if IsLexem('while ', Line) and (PosEx(' do', Line)>2) then
-      begin
-        whileLineNum:=LineNum;
-        while ParseWhile(whileLineNum) do
-        begin
-          Run(False, IfResult, False);
-          tempLineNum:=LineNum;
-          LineNum:=WhileLineNum-1;
-        end;
-        LineNum:=tempLineNum;
-
-        Continue;
-      end;
-
       RunCommand(Line);
+
+      if Line<>'' then
+      begin
+        ProcessVariables(Line);
+      end;
     end;
   end;
 
@@ -273,8 +346,16 @@ begin
   DCL:=FIDCLMain.GetScriptText(CommandName);
   if DCL.Count>0 then
   begin
+    CondHosts:=TStack<TStackItem>.Create;
     LineNum:=-1;
-    Run(False, True, False);
+
+    Item:=TStackItem.Create;
+    Item.Flag:=True;
+    Item.ConditionResult:=True;
+    Item.Line:=0;
+    CondHosts.Push(Item);
+
+    Run;
     Result:=True;
   end;
   DCL.Free;
