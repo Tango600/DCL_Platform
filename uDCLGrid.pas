@@ -1308,6 +1308,11 @@ var
   DropList: TComboBox;
   v1, v2: Integer;
 begin
+  If FGridStyle in TDataGrid Then
+  begin
+    Field.DCLEditComponent:=TDCLEdit.Create;
+    //Field.DataFieldType:=;
+  end;
   If FGridStyle in TDataFields Then
   begin
     DropList:=TComboBox.Create(FFieldsPanel);
