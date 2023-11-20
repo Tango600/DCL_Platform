@@ -19,6 +19,11 @@ type
     property Position: Integer read FPosition;
   end;
 
+  // Plus := '+'
+  // Minus := '-'
+  // Multiply := '*'
+  // Divide := '/'
+
   // <Number> := <'0'..'9'>[.]<'0'..'9'>[e<['0'..'9']>] ...
   // <Primitive> := <'('><AddAndSub><')'> | <Number>
   // <MulAndDiv> := <Primitive> [<Multiply> | <Divide>] <Primitive> ...
@@ -289,19 +294,19 @@ begin
           Log('NextToken: TokenType = div');
           if not CharInSet(Data[Position+1], ['a'..'z', 'A'..'Z']) then
           begin
-            if (Data[Position+1]=#0) or CharInSet(Data[Position+1], ['0'..'9']) or (Pos('-+/^()*', Data[Position+1])<>0) then
+            if CharInSet(Data[Position], ['0'..'9']) or (Pos(Data[Position], '-+/^( )*')<>0) then
               Token := TTokenType.ttDiv;
           end;
           SkipSpaces;
           Exit;
         end;
+
         if Identifier='mod' then
         begin
           Log('NextToken: TokenType = mod');
-          if not CharInSet(Data[Position+1], ['a'..'z', 'A'..'Z']) then
+          if CharInSet(Data[Position], ['0'..'9']) or (Pos(Data[Position], '-+/^( )*')<>0) then
           begin
-            if (Data[Position+1]=#0) or CharInSet(Data[Position+1], ['0'..'9']) or (Pos('-+/^()*', Data[Position+1])<>0) then
-              Token := TTokenType.ttMod;
+            Token := TTokenType.ttMod;
           end;
           SkipSpaces;
           Exit;
@@ -320,7 +325,7 @@ begin
 
       Log('NextToken: TokenType = Function, Value = ' + Identifier);
     end;
-    #0:
+    #0, ';':
     begin
       Log('NextToken: TokenType = Terminal');
       Token := TTokenType.ttTerminal;
@@ -541,6 +546,12 @@ begin
       raise EParserError.Create(FunctionPosition, sBadFunctionArgument);
     Result := Sqrt(X);
   end
+  else if FunctionName = 'ABS' then
+    Result := Abs(X)
+  else if FunctionName = 'TRUNC' then
+    Result := Trunc(X)
+  else if FunctionName = 'ROUND' then
+    Result := Round(X)
   else if FunctionName = 'SIN' then
     Result := Sin(X)
   else if FunctionName = 'COS' then

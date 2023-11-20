@@ -185,6 +185,7 @@ var
       LeftSide:=Trim(Copy(Line, 1, p-1));
       RightSide:=Trim(Copy(Line, p+1, l));
 
+      if Pos(' ', LeftSide)=0 then
       if FIDCLMain.GetVariables.Exists(FNameSpace, LeftSide) then
       begin
         f:=True;

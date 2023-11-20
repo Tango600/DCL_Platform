@@ -13,3 +13,5 @@
 /backup/*
 /*.exe
 /Dialogs/*
+/backup/*
+/libraries/foreigners/backup/*
