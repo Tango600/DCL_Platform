@@ -9,7 +9,7 @@ type
   TGPT=record
   // EnableSQLTrace,
     DebugMesseges, ExitCnf, UseMessages,
-    HashPass, DialogsSettings, DisableColors, DisableFieldsList,
+    DialogsSettings, DisableColors, DisableFieldsList,
     DisableIniPasword, IBAll: Boolean;
     OneCopy, CurrentRunningScrString, CurrentRunningCmdString, Port: Integer;
     DateSeparator, TimeSeparator, ThousandSeparator, DecimalSeparator: Char;
