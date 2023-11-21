@@ -230,8 +230,6 @@ begin
   if Field.Width<=0 then
   begin
     case FieldType of
-      //ftDateTime: Field.Width:=DateTimeBoxWidth;
-      //ftDate, ftTime: Field.Width:=DateTimeBoxWidth;
       ftFloat, ftCurrency, ftSmallint, ftInteger, ftWord, ftAutoInc,
         ftLargeint, ftBCD: Field.Width:=DigitEditWidth;
       else

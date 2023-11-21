@@ -5,7 +5,6 @@ interface
 
 const
   EditWidth=230;
-  DateTimeBoxWidth=110;
   DigitEditWidth=80;
   GetValueEditWidth=181;
   GetValueButtonGeom=22;
@@ -33,8 +32,6 @@ const
   ContextButtonInterval=5;
   ToolLeftInterval=15;
 
-  CalendarLeft={$IFDEF ZVComponents}25{$ELSE}15{$ENDIF};
-  DateBoxAddWidth={$IFDEF ZVComponents}20{$ELSE}30{$ENDIF};
   ToolButtonPanelHeight=29;
   ToolButtonHeight=25;
   ToolBarButtonSpliterWidth=8;

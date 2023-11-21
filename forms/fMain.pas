@@ -100,7 +100,7 @@ var
 begin
   For i:=1 to ParamCount do
   begin
-    s:=FindParam(Str, ParamStr(i));
+    s:=FindParam(Str+'=', ParamStr(i));
     if s<>'' then
     begin
       Result:=s;
@@ -111,7 +111,11 @@ end;
 
 function FindMDI: Boolean;
 begin
+  {$IFDEF MSWINDOWS}
   Result:=FindCommandStrParam('MDI')='1';
+  {$ELSE}
+  Result:=False;
+  {$ENDIF}
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
@@ -123,6 +127,7 @@ begin
   Caption:='DCL Platform '+DCLVersion;
 
   MDI:=False;
+  {$IFDEF MSWINDOWS}
   if FileExists('interface.ini') then
   begin
     AssignFile(T, 'interface.ini');
@@ -135,6 +140,7 @@ begin
     end;
     CloseFile(T);
   end;
+  {$ENDIF}
 
   if MDI or FindMDI then
   begin

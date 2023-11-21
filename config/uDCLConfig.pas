@@ -148,11 +148,6 @@ Begin
           GPT.DebugMesseges:=Trim(FindParam('DebugMesseges=', cs))='1';
         End;
 
-        If IsParameter('HashPass=', cs) then
-        Begin
-          GPT.HashPass:=Trim(FindParam('HashPass=', cs))='1';
-        End;
-
         If IsParameter('UseMessages=', cs) then
         Begin
           GPT.UseMessages:=Trim(FindParam('UseMessages=', cs))='1';

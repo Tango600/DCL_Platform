@@ -11,9 +11,8 @@ uses
   {$IFDEF FPC}
   Interfaces, lcltype,
   {$ENDIF}
-  Classes, Forms, Controls, SysUtils,
-  uDCLMain, uSystemUtils, uStringParams,
-  fMain, fDCLLoginForm, fAbout, uDCLScriptsPackage
+  Classes, Forms, Controls, SysUtils, uDCLMain, uSystemUtils, uStringParams,
+  fMain, fDCLLoginForm, fAbout
   ;
 
 {$R *.res}
