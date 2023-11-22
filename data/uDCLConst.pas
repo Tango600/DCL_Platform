@@ -53,7 +53,7 @@ const
   CloseButton=True;
 
   PackagesFileExt='.dsp';
-  PackagesVersion='1.3';
+  PackagesVersion='1.4';
 
   BaiseUIDParamName='BaseUID';
 

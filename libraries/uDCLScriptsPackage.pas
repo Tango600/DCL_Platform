@@ -10,13 +10,14 @@ type
   TRunType=(rtNone, rtCommand, rtDialog);
 
   TPackageInfo=class
-    Name, Hash, Version: String;
+    Name, Sign, Version: String;
     RunOnStart: Boolean;
   end;
 
   TDCLScriptItem=class
+    Update: Boolean;
     RunType: TRunType;  // 0 - None, 1 - Command, 2 - Dialog
-    Id, Ident, Parent: Integer;
+    Id, Ident, Parent, Order: Integer;
     ScriptName, Command: String;
     ScriptText: TStringStream;
   end;
@@ -30,6 +31,7 @@ type
 
   TDCLScriptsPackage=class
   private
+    FDataHash: String;
     FPackage: TPackage;
 
     function GetPackageInfo: TPackageInfo;
@@ -50,6 +52,8 @@ type
     procedure ClearFiles;
     procedure AddFile(FileName: String; RunType: TRunType);
     function AddMenuItem(Title, Command: String; Ident, Parent: Integer): TDCLScriptItem;
+    procedure AddUpdate(FileName: String; Order: Integer);
+
     procedure DeleteScript(Name: String);
     procedure DeleteMenuItem(Id: Integer);
     procedure SetScriptRunType(Name: String; RunType: TRunType);
@@ -69,8 +73,12 @@ uses
   uStringParams, MD5, uLZW, uDCLConst;
 
 const
+  KeySection='Key';
   NameSection='Name';
   EndNameSection='EndName';
+  UpdateSection='Update';
+  EndUpdateSection='UpdateEnd';
+  OrderSection='Order';
   IdentSection='Ident';
   ParentSection='Parent';
   IdSection='Id';
@@ -113,20 +121,22 @@ end;
 
 function TDCLScriptsPackage.GetSign(Login, Password, Hash: String): String;
 begin
-  Result:=Login+'\'+Password+'\'+Hash;
+  Result:='DCL;'+Login+'\'+Password+'\'+Hash;
 end;
 
 procedure TDCLScriptsPackage.SignPackage(Login, Password: String);
 begin
-  FPackage.PackageInfo.Hash:=MD5Print(MD5String(GetSign(Login, Password, CalcPackageHash)));
+  FDataHash:=CalcPackageHash;
+  FPackage.PackageInfo.Sign:=MD5Print(MD5String(GetSign(Login, Password, FDataHash)));
 end;
 
 function TDCLScriptsPackage.CheckPackage(Login, Password: String): Boolean;
 var
   h: String;
 begin
-  h:=MD5Print(MD5String(GetSign(Login, Password, CalcPackageHash)));
-  Result:=h=FPackage.PackageInfo.Hash;
+  FDataHash:=CalcPackageHash;
+  h:=MD5Print(MD5String(GetSign(Login, Password, FDataHash)));
+  Result:=h=FPackage.PackageInfo.Sign;
 end;
 
 constructor TDCLScriptsPackage.Create;
@@ -167,6 +177,20 @@ begin
 
   FPackage.Scripts.Add(si);
   Result:=si;
+end;
+
+procedure TDCLScriptsPackage.AddUpdate(FileName: String; Order: Integer);
+var
+  si: TDCLScriptItem;
+begin
+  si:=TDCLScriptItem.Create;
+  si.Update:=True;
+  si.ScriptName:=ExtractFileNameOnly(FileName);
+  si.Order:=Order;
+  si.ScriptText:=TStringStream.Create('', TEncoding.UTF8);
+  si.ScriptText.LoadFromFile(FileName);
+
+  FPackage.Scripts.Add(si);
 end;
 
 procedure TDCLScriptsPackage.DeleteScript(Name: String);
@@ -251,95 +275,118 @@ var
   RawPackage: TStream;
   I: TDCLScriptItem;
   CompressedPackage: TStream;
-  Base41X, S: String;
+  Base41X, S, HashKey: String;
   b, b1, w: Word;
   TextPackage: TStringList;
 begin
-  TextPackage:=TStringList.Create;
-  TextPackage.Clear;
-
-  S:='';
-  if FPackage.PackageInfo.Name<>'' then
-    S:=PackageNameSection+'='+FPackage.PackageInfo.Name+';';
-  if RunOnStart then
-    S:=S+RunOnStartSection+'=1;';
-  TextPackage.Append('['+SignHashSection+'='+FPackage.PackageInfo.Hash+';Version='+PackagesVersion+';'+S+']');
-
-  for I in FPackage.Scripts do
-  begin
-    S:='';
-    if I.Id<>0 then
-    begin
-      S:=S+IdSection+'='+IntToStr(I.Id)+';';
-    end;
-    if I.RunType<>rtNone then
-    begin
-      S:=S+RunTypeSection+'='+IntToStr(Ord(I.RunType))+';';
-    end;
-    if I.Command<>'' then
-    begin
-      S:=S+CommandSection+'='+I.Command+';';
-    end;
-
-    if I.Ident<>0 then
-    begin
-      S:=S+IdentSection+'='+IntToStr(I.Ident)+';';
-    end;
-    if I.Parent<>0 then
-    begin
-      S:=S+ParentSection+'='+IntToStr(I.Parent)+';';
-    end;
-
-    TextPackage.Append('['+NameSection+'='+I.ScriptName+';'+S+']');
-    if Assigned(I.ScriptText) then
-      TextPackage.Append(I.ScriptText.DataString);
-    TextPackage.Append('['+EndNameSection+'='+I.ScriptName+';]');
-  end;
-
-  CompressedPackage:=TMemoryStream.Create;
-  RawPackage:=TStringStream.Create(TextPackage.Text, TEncoding.UTF8);
-  CompressProc(RawPackage, CompressedPackage);
-  RawPackage.Free;
-  FreeAndNil(TextPackage);
-
-  Base41X:=GetBase41Sequence;
-
-  S:='DCL5;';
   Result:=TMemoryStream.Create;
-  Result.Write(S[1], 5);
-
-  S:=PackagesVersion+';';
-  Result.Write(S[1], 4);
-
-  w:=0;
-  CompressedPackage.Position:=0;
-  b:=0;
-  while CompressedPackage.Read(b, 2)<>0 do
+  if FPackage.PackageInfo.Sign<>'' then
   begin
-    b1:=b div (41*41);
-    S:=Base41X[b1+1];
-    Result.Write(S[1], 1);
-    inc(w);
+    TextPackage:=TStringList.Create;
+    TextPackage.Clear;
 
-    b1:=(b div 41) mod 41;
-    S:=Base41X[b1+1];
-    Result.Write(S[1], 1);
-    inc(w);
+    HashKey:=Copy(FPackage.PackageInfo.Sign, 1, 6);
 
-    b1:=b mod 41;
-    S:=Base41X[b1+1];
-    Result.Write(S[1], 1);
-    inc(w);
+    S:='';
+    if FPackage.PackageInfo.Name<>'' then
+      S:=PackageNameSection+'='+FPackage.PackageInfo.Name+';';
+    if RunOnStart then
+      S:=S+RunOnStartSection+'=1;';
+    TextPackage.Append('['+SignHashSection+'='+FPackage.PackageInfo.Sign+';Version='+PackagesVersion+';'+S+']');
 
-    if w>80 then
+    for I in FPackage.Scripts do
     begin
-      S:=LineEnding;
-      Result.Write(S[1], Length(S));
-      w:=0;
+      S:='';
+      if not I.Update then
+      begin
+        if I.Id<>0 then
+        begin
+          S:=S+IdSection+'='+IntToStr(I.Id)+';';
+        end;
+        if I.RunType<>rtNone then
+        begin
+          S:=S+RunTypeSection+'='+IntToStr(Ord(I.RunType))+';';
+        end;
+        if I.Command<>'' then
+        begin
+          S:=S+CommandSection+'='+I.Command+';';
+        end;
+
+        if I.Ident<>0 then
+        begin
+          S:=S+IdentSection+'='+IntToStr(I.Ident)+';';
+        end;
+        if I.Parent<>0 then
+        begin
+          S:=S+ParentSection+'='+IntToStr(I.Parent)+';';
+        end;
+
+        TextPackage.Append('['+NameSection+'='+I.ScriptName+';'+KeySection+'='+HashKey+';'+S+']');
+        if Assigned(I.ScriptText) then
+          TextPackage.Append(I.ScriptText.DataString);
+        TextPackage.Append('['+EndNameSection+'='+I.ScriptName+';'+KeySection+'='+HashKey+']');
+      end
+      else
+      begin
+        if I.Order<>0 then
+          S:=IntToStr(I.Order);
+
+        TextPackage.Append('['+UpdateSection+'='+I.ScriptName+';'+KeySection+'='+HashKey+';'+S+']');
+        if Assigned(I.ScriptText) then
+          TextPackage.Append(I.ScriptText.DataString);
+        TextPackage.Append('['+EndUpdateSection+'='+I.ScriptName+';'+KeySection+'='+HashKey+']');
+      end;
     end;
+
+    CompressedPackage:=TMemoryStream.Create;
+    RawPackage:=TStringStream.Create(TextPackage.Text, TEncoding.UTF8);
+    CompressProc(RawPackage, CompressedPackage);
+    RawPackage.Free;
+    FreeAndNil(TextPackage);
+
+    Base41X:=GetBase41Sequence;
+
+    S:='DCL5;';
+    Result.Write(S[1], 5);
+
+    S:=PackagesVersion+';';
+    Result.Write(S[1], 4);
+
+    w:=9;
+    CompressedPackage.Position:=0;
     b:=0;
+    while CompressedPackage.Read(b, 2)<>0 do
+    begin
+      b1:=b div (41*41);
+      S:=Base41X[b1+1];
+      Result.Write(S[1], 1);
+      inc(w);
+
+      b1:=(b div 41) mod 41;
+      S:=Base41X[b1+1];
+      Result.Write(S[1], 1);
+      inc(w);
+
+      b1:=b mod 41;
+      S:=Base41X[b1+1];
+      Result.Write(S[1], 1);
+      inc(w);
+
+      if w>80 then
+      begin
+        S:=LineEnding;
+        Result.Write(S[1], Length(S));
+        w:=0;
+      end;
+      b:=0;
+    end;
+    CompressedPackage.Free;
+  end
+  else
+  begin
+    S:='Package not signed!';
+    Result.Write(S[1], S.Length);
   end;
-  CompressedPackage.Free;
 end;
 
 function FindSegmentNum(Base41, Segment: String): Integer;
@@ -430,18 +477,20 @@ end;
 procedure TDCLScriptsPackage.DisassemblyPackage(TextPackage: TStringList);
 var
   b, f: Boolean;
-  S, s1, sn: String;
+  S, s1, sn, HashKey: String;
   ScriptItem: TDCLScriptItem;
 begin
   FPackage.Scripts.Clear;
   ParsePackageHeader(TextPackage);
+
+  HashKey:=Copy(FPackage.PackageInfo.Sign, 1, 6);
 
   f:=True;
   b:=False;
   sn:='';
   for S in TextPackage do
   begin
-    if (Pos('['+NameSection+'=', S)<>0) and (PosEx('['+SignHashSection+'=', S)=0) then
+    if (Pos('['+NameSection+'=', S)<>0) and (PosEx(KeySection+'='+HashKey, S)<>0) and (PosEx('['+SignHashSection+'=', S)=0) then
     begin
       s1:=FindParam(NameSection+'=', S);
       if s1<>'' then
@@ -485,7 +534,7 @@ begin
       end;
     end;
 
-    if Pos('['+EndNameSection+'=', S)<>0 then
+    if (Pos('['+EndNameSection+'=', S)<>0) and (Pos(KeySection+'='+HashKey, S)<>0) then
     begin
       s1:=FindParam(EndNameSection+'=', S);
       if (s1<>'') and (s1=sn) then
@@ -520,7 +569,7 @@ begin
   begin
     if PosEx('[Sign=', S)=1 then
     begin
-      FPackage.PackageInfo.Hash:=FindParam(SignHashSection+'=', S);
+      FPackage.PackageInfo.Sign:=FindParam(SignHashSection+'=', S);
       FPackage.PackageInfo.Name:=FindParam(PackageNameSection+'=', S);
       FPackage.PackageInfo.RunOnStart:=FindParam(RunOnStartSection+'=', S)='1';
       FPackage.PackageInfo.Version:=FindParam('Version=', S);

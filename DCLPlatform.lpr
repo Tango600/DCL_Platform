@@ -30,7 +30,7 @@ var
 begin
   For i:=1 to ParamCount do
   begin
-    s:=FindParam(Str, ParamStr(i));
+    s:=FindParam(Str+'=', ParamStr(i));
     if s<>'' then
     begin
       Result:=s;
@@ -41,32 +41,32 @@ end;
 
 function FindFormCall: String;
 begin
-  Result:=FindCommandStrParam('Form=');
+  Result:=FindCommandStrParam('Form');
 end;
 
 function FindScriptName: String;
 begin
-  Result:=FindCommandStrParam('Script=');
+  Result:=FindCommandStrParam('Script');
 end;
 
 function FindPackageFileRun: String;
 begin
-  Result:=FindCommandStrParam('RunPackage=');
+  Result:=FindCommandStrParam('RunPackage');
 end;
 
 function FindPackageFileLoad: String;
 begin
-  Result:=FindCommandStrParam('LoadPackage=');
+  Result:=FindCommandStrParam('LoadPackage');
 end;
 
 function FindMainMenu: Boolean;
 begin
-  Result:=FindCommandStrParam('MainMenu=')='1';
+  Result:=FindCommandStrParam('MainMenu')='1';
 end;
 
 function FindVariablesParams: String;
 begin
-  Result:=FindCommandStrParam('Variables=');
+  Result:=FindCommandStrParam('Variables');
 end;
 
 procedure RunInterface;

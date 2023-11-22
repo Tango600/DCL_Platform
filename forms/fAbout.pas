@@ -104,7 +104,7 @@ begin
   lbPackagesList.Clear;
   for pi in FIDCLMain.GetPackages do
   begin
-    lbPackagesList.Items.Append(pi.Name+' ('+pi.Hash+')');
+    lbPackagesList.Items.Append(pi.Name+' ('+pi.Sign+')');
   end;
 end;
 

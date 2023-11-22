@@ -30,7 +30,7 @@ type
     procedure TranslateVals(var S: String; Query: TDCLDialogQuery); overload;
     procedure SetValue(S: String);
 
-    procedure ExecSQLCommand(SQLCommand: String);
+    procedure ExecSQLCommand(SQL: String);
 
     function GetRaights: TUserLevelsType;
     procedure RunTextReport(ScrLine: String; Query: TDCLDialogQuery; Grid: TDCLGrid);
@@ -369,7 +369,7 @@ var
   Grid, PartGrid: TDCLGrid;
   DCLQuery: TDCLDialogQuery;
   {$IFDEF TRANSACTIONDB}
-  tmp_Transaction:TTransaction;
+  tmp_Transaction: TDCLDBTransaction;
   {$ENDIF}
   Form: TForm;
   Edit: TDCLEdit;
@@ -521,50 +521,39 @@ begin
   end;
 end;
 
-procedure TDCLCommand.ExecSQLCommand(SQLCommand: String);
+procedure TDCLCommand.ExecSQLCommand(SQL: String);
 var
-  ADOCommand: TCommandQuery;
+  SQLCommand: TCommandQuery;
   {$IFDEF TRANSACTIONDB}
-  tmp_Transaction:TTransaction;
+  tmp_Transaction: TDCLDBTransaction;
   {$ENDIF}
 begin
   If GetRaights>ulWrite then
   begin
-    ADOCommand:=TCommandQuery.Create(Self);
-    //If FDCLLogOn.SQLMon.TrraceStatus Then
-      //FDCLLogOn.SQLMon.AddSQLText(SQLCommand);
-
-    ADOCommand.SQL.Text:=SQLCommand;
-    FDBConnector.SetConnector(TDCLDialogQuery(ADOCommand));
+    SQLCommand:=TCommandQuery.Create(Self);
+    SQLCommand.SQL.Text:=SQL;
+    FDBConnector.SetConnector(TDCLDialogQuery(SQLCommand));
     {$IFDEF TRANSACTIONDB}
     tmp_Transaction:=TDCLDBTransaction.Create(FDBConnector, trtWrite);
-    ADOCommand.Transaction:=tmp_Transaction;
+    SQLCommand.Transaction:=tmp_Transaction;
     tmp_Transaction.StartTransaction;
     {$ENDIF}
 
     try
-      If not IsReturningQuery(SQLCommand) then
-        {$IFDEF ADO}
-        ADOCommand.Execute
-        {$ELSE}
-        ADOCommand.ExecSQL
-        {$ENDIF}
+      If not IsReturningQuery(SQL) then
+        SQLCommand.ExecSQL
       else
-        {$IFDEF ADO}
-        ADOCommand.Execute;
-        {$ELSE}
-        ADOCommand.Open;
-        {$ENDIF}
+        SQLCommand.Open;
     Except
       On ex: Exception do
-        ShowErrorMessage( - 1110, 'SQL='+SQLCommand+' / '+ex.Message);
+        ShowErrorMessage( - 1110, 'SQL='+SQL+' / '+ex.Message);
     end;
     {$IFDEF TRANSACTIONDB}
     tmp_Transaction.Commit;
     FreeAndNil(tmp_Transaction);
     {$ENDIF}
 
-    FreeAndNil(ADOCommand);
+    FreeAndNil(SQLCommand);
 
     if Assigned(FDCLForm) then
       FIDCLMain.NotifyForm(FDCLForm, fnaRefresh)
