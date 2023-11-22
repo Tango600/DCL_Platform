@@ -166,7 +166,8 @@ begin
 
         for I in Package.Scripts do
         begin
-          FScripts.Add(I);
+          if not I.Update then
+            FScripts.Add(I);
         end;
 
         if Run then

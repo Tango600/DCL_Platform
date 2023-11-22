@@ -10,7 +10,7 @@ type
   TRunType=(rtNone, rtCommand, rtDialog);
 
   TPackageInfo=class
-    Name, Sign, Version: String;
+    Name, Sign, Hash, Version: String;
     RunOnStart: Boolean;
   end;
 
@@ -31,7 +31,6 @@ type
 
   TDCLScriptsPackage=class
   private
-    FDataHash: String;
     FPackage: TPackage;
 
     function GetPackageInfo: TPackageInfo;
@@ -126,17 +125,17 @@ end;
 
 procedure TDCLScriptsPackage.SignPackage(Login, Password: String);
 begin
-  FDataHash:=CalcPackageHash;
-  FPackage.PackageInfo.Sign:=MD5Print(MD5String(GetSign(Login, Password, FDataHash)));
+  FPackage.PackageInfo.Hash:=CalcPackageHash;
+  FPackage.PackageInfo.Sign:=MD5Print(MD5String(GetSign(Login, Password, FPackage.PackageInfo.Hash)));
 end;
 
 function TDCLScriptsPackage.CheckPackage(Login, Password: String): Boolean;
 var
-  h: String;
+  sh: String;
 begin
-  FDataHash:=CalcPackageHash;
-  h:=MD5Print(MD5String(GetSign(Login, Password, FDataHash)));
-  Result:=h=FPackage.PackageInfo.Sign;
+  FPackage.PackageInfo.Hash:=CalcPackageHash;
+  sh:=MD5Print(MD5String(GetSign(Login, Password, FPackage.PackageInfo.Hash)));
+  Result:=sh=FPackage.PackageInfo.Sign;
 end;
 
 constructor TDCLScriptsPackage.Create;
@@ -477,7 +476,7 @@ end;
 procedure TDCLScriptsPackage.DisassemblyPackage(TextPackage: TStringList);
 var
   b, f: Boolean;
-  S, s1, sn, HashKey: String;
+  S, s1, sn, un, HashKey: String;
   ScriptItem: TDCLScriptItem;
 begin
   FPackage.Scripts.Clear;
@@ -488,8 +487,10 @@ begin
   f:=True;
   b:=False;
   sn:='';
+  un:='';
   for S in TextPackage do
   begin
+    // region Name
     if (Pos('['+NameSection+'=', S)<>0) and (PosEx(KeySection+'='+HashKey, S)<>0) and (PosEx('['+SignHashSection+'=', S)=0) then
     begin
       s1:=FindParam(NameSection+'=', S);
@@ -534,16 +535,54 @@ begin
       end;
     end;
 
-    if (Pos('['+EndNameSection+'=', S)<>0) and (Pos(KeySection+'='+HashKey, S)<>0) then
+    if (sn<>'') and (Pos('['+EndNameSection+'=', S)<>0) and (Pos(KeySection+'='+HashKey, S)<>0) then
     begin
       s1:=FindParam(EndNameSection+'=', S);
       if (s1<>'') and (s1=sn) then
       begin
         b:=False;
         FPackage.Scripts.Add(ScriptItem);
+        sn:='';
         Continue;
       end;
     end;
+    // end region Name
+
+    // region Update
+    if (Pos('['+UpdateSection+'=', S)<>0) and (PosEx(KeySection+'='+HashKey, S)<>0) and (PosEx('['+SignHashSection+'=', S)=0) then
+    begin
+      s1:=FindParam(UpdateSection+'=', S);
+      if s1<>'' then
+      begin
+        un:=s1;
+        ScriptItem:=TDCLScriptItem.Create;
+        ScriptItem.Update:=True;
+        ScriptItem.ScriptName:=un;
+
+        s1:=FindParam(OrderSection+'=', S);
+        if s1<>'' then
+        begin
+          ScriptItem.Order:=StrToInt(s1);
+        end;
+
+        ScriptItem.ScriptText:=TStringStream.Create('', TEncoding.UTF8);
+        b:=True;
+        Continue;
+      end;
+    end;
+
+    if (un<>'') and (Pos('['+EndUpdateSection+'=', S)<>0) and (Pos(KeySection+'='+HashKey, S)<>0) then
+    begin
+      s1:=FindParam(EndUpdateSection+'=', S);
+      if (s1<>'') and (s1=un) then
+      begin
+        b:=False;
+        FPackage.Scripts.Add(ScriptItem);
+        un:='';
+        Continue;
+      end;
+    end;
+    // end region Update
 
     if b and Assigned(ScriptItem) and Assigned(ScriptItem.ScriptText) then
     begin

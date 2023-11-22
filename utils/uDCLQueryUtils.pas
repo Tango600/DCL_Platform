@@ -15,11 +15,12 @@ function GetRolesQueryText(Where, UserID: String): String;
 begin
   If GPT.DCLUserName='' Then
   begin
-    Result:='select * from '+DCLTable+' where '+Where+' order by '+IdentifyField+', '+ParentField;
+    Result:=GetOutRolesQueryText(Where);
   end
   else
   begin
-    Result:='select s.* from '+DCLTable+' s, '+RolesMenuTable+' rm, '+RolesTable+' r, '+UsersTable+' u, '+
+    Result:='select distinct s.'+IdField+', s.'+IdentifyField+', s.'+ParentField+', s.'+DCLNameField+', s.'+CommandField+' from '+
+      DCLTable+' s, '+RolesMenuTable+' rm, '+RolesTable+' r, '+UsersTable+' u, '+
       RolesToUsersTable+' ru '+' where r.'+RolesIDFiled+'=rm.'+RolesMenuIDFiled+' and rm.'+RoleMenuItemIDField+'=s.'+
       IdentifyField+' and ru.'+RolesToUsersRoleIDField+'=r.'+RolesIDFiled+' and u.'+UserIDField+
       '=ru.'+RolesToUsersUserIDField+' and u.'+UserIDField+'='+UserID+' and '+Where+' order by s.'+IdentifyField+', s.'+ParentField;
@@ -28,7 +29,8 @@ end;
 
 function GetOutRolesQueryText(Where: String): String;
 begin
-  Result:='select * from '+DCLTable+' where '+Where+' order by '+IdentifyField+', '+ParentField;
+  Result:='select s.'+IdField+', s.'+IdentifyField+', s.'+ParentField+', s.'+DCLNameField+', s.'+CommandField+' from '+
+    DCLTable+' s where '+Where+' order by s.'+IdentifyField+', s.'+ParentField;
 end;
 
 end.
