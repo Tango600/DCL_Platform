@@ -956,6 +956,19 @@ begin
     FreeAndNil(DataStorage);
   end;
 
+  If IsLexem('MD5Data=', Command) then
+  begin
+    Flg2:=FindParam('ByID=', Command)='1';
+    tmpS:=FindParam('MD5Data=', Command);
+    tmpS1:=FindParam('VariableName=', Command);
+
+    DataStorage:=TDCLDataStorage.Create(FDBConnector);
+    if Flg2 then
+      FVariables.NewVariable(FNamespace, tmpS1, DataStorage.MD5(tmpS, ftByIndex))
+    else
+      FVariables.NewVariable(FNamespace, tmpS1, DataStorage.MD5(tmpS, ftByName));
+  end;
+
   If GetRaights>=ulWrite then
   begin
     If IsLexem('PutToDB=', Command) then
@@ -1029,19 +1042,6 @@ begin
       else
         DataStorage.DeCompressData(tmpS, ftByName);
       FreeAndNil(DataStorage);
-    end;
-
-    If IsLexem('MD5Data=', Command) then
-    begin
-      Flg2:=FindParam('ByID=', Command)='1';
-      tmpS:=FindParam('MD5Data=', Command);
-      tmpS1:=FindParam('VariableName=', Command);
-
-      DataStorage:=TDCLDataStorage.Create(FDBConnector);
-      if Flg2 then
-        FVariables.NewVariable(FNamespace, tmpS1, DataStorage.MD5(tmpS, ftByIndex))
-      else
-        FVariables.NewVariable(FNamespace, tmpS1, DataStorage.MD5(tmpS, ftByName));
     end;
   end;
 
@@ -1199,38 +1199,41 @@ begin
     begin
       FDCLForm.CurrentGrid.ReFreshData;
     end;
+  end;
 
+  if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) and FDCLGrid.Query.Active then
+  begin
     if IsLexem('First;', Command) then
     begin
-      FDCLForm.CurrentGrid.Query.First;
+      FDCLGrid.Query.First;
     end;
 
     if IsLexem('Last;', Command) then
     begin
-      FDCLForm.CurrentGrid.Query.Last;
+      FDCLGrid.Query.Last;
     end;
 
     if IsLexem('Prior;', Command) then
     begin
-      FDCLForm.CurrentGrid.Query.Prior;
+      FDCLGrid.Query.Prior;
     end;
 
     if IsLexem('Next;', Command) then
     begin
-      FDCLForm.CurrentGrid.Query.Next;
+      FDCLGrid.Query.Next;
     end;
 
     if IsLexem('Cancel;', Command) then
     begin
-      if FDCLForm.CurrentGrid.Query.State in dsEditModes then
-        FDCLForm.CurrentGrid.Query.Cancel;
+      if FDCLGrid.Query.State in dsEditModes then
+        FDCLGrid.Query.Cancel;
     end;
 
     If IsLexem('GotoKey=', Command) then
     begin
       tmpS:=FindParam('KeyField=', Command);
       tmpS1:=FindParam('GotoKey=', Command);
-      FDCLForm.CurrentGrid.Query.Locate(tmpS, tmpS1, [loCaseInsensitive]);
+      FDCLGrid.Query.Locate(tmpS, tmpS1, [loCaseInsensitive]);
     end;
 
     If IsLexem('EditByName=', Command) then
@@ -1239,7 +1242,7 @@ begin
       tmpS1:=Copy(tmpS, 1, Pos('.', tmpS)-1);
       tmpS2:=Copy(tmpS, Pos('.', tmpS)+1, Length(tmpS));
 
-      for DCLEdit in FDCLForm.CurrentGrid.Edits do
+      for DCLEdit in FDCLGrid.Edits do
       begin
         If Assigned(DCLEdit.Control) Then
         begin
@@ -1279,42 +1282,42 @@ begin
     begin
       if IsLexem('Post;', Command) then
       begin
-        if FDCLForm.CurrentGrid.Query.CanModify and (FDCLForm.CurrentGrid.Query.State in dsEditModes) then
-          FDCLForm.CurrentGrid.Query.Post;
+        if FDCLGrid.Query.CanModify and (FDCLGrid.Query.State in dsEditModes) then
+          FDCLGrid.Query.Post;
       end;
 
       if IsLexem('Append;', Command) then
       begin
-        if FDCLForm.CurrentGrid.Query.CanModify then
-        if not (FDCLForm.CurrentGrid.Query.State in dsEditModes) then
-          FDCLForm.CurrentGrid.Query.Append;
+        if FDCLGrid.Query.CanModify then
+        if not (FDCLGrid.Query.State in dsEditModes) then
+          FDCLGrid.Query.Append;
       end;
 
       if IsLexem('Insert;', Command) then
       begin
-        if FDCLForm.CurrentGrid.Query.CanModify then
-        if not (FDCLForm.CurrentGrid.Query.State in dsEditModes) then
-          FDCLForm.CurrentGrid.Query.Insert;
+        if FDCLGrid.Query.CanModify then
+        if not (FDCLGrid.Query.State in dsEditModes) then
+          FDCLGrid.Query.Insert;
       end;
 
       if IsLexem('Edit;', Command) then
       begin
-        if FDCLForm.CurrentGrid.Query.CanModify then
-        if not (FDCLForm.CurrentGrid.Query.State in dsEditModes) then
-          FDCLForm.CurrentGrid.Query.Edit;
+        if FDCLGrid.Query.CanModify then
+        if not (FDCLGrid.Query.State in dsEditModes) then
+          FDCLGrid.Query.Edit;
       end;
 
       If IsLexem('Delete;', Command) then
       begin
-        if FDCLForm.CurrentGrid.Query.CanModify then
-          FDCLForm.CurrentGrid.Query.Delete;
+        if FDCLGrid.Query.CanModify then
+          FDCLGrid.Query.Delete;
       end;
 
       If IsLexem('DeleteConf;', Command) then
       begin
-        if FDCLForm.CurrentGrid.Query.CanModify then
+        if FDCLGrid.Query.CanModify then
           If ShowErrorMessage(10, GetDCLMessageString(msDeleteRecordQ))=1 then
-            FDCLForm.CurrentGrid.Query.Delete;
+            FDCLGrid.Query.Delete;
       end;
 
       If IsLexem('SetFieldValue=', Command) then
@@ -1338,23 +1341,30 @@ begin
               If tmpS4<>'' then
               begin
                 v1:=StrToIntEx(tmpS1)-1;
+                if Assigned(FDCLForm) and Assigned(FDCLForm.CurrentGrid) then
                 If (v1>=0) and (FDCLForm.CurrentGrid.TableParts.Count>v1) and Assigned(FDCLForm.CurrentGrid.TableParts[v1]) then
                 begin
-                  If not (FDCLForm.CurrentGrid.TableParts[v1].Query.State in dsEditModes) then
-                    FDCLForm.CurrentGrid.TableParts[v1].Query.Edit;
-                  FDCLForm.CurrentGrid.TableParts[v1].Query.FieldByName(tmpS4).AsString:=tmpS;
+                  if FDCLForm.CurrentGrid.TableParts[v1].Query.CanModify then
+                  begin
+                    If not (FDCLForm.CurrentGrid.TableParts[v1].Query.State in dsEditModes) then
+                      FDCLForm.CurrentGrid.TableParts[v1].Query.Edit;
+                    FDCLForm.CurrentGrid.TableParts[v1].Query.FieldByName(tmpS4).AsString:=tmpS;
 
-                  if Flg1 then
-                    FDCLForm.CurrentGrid.TableParts[v1].Query.Post;
+                    if Flg1 then
+                      FDCLForm.CurrentGrid.TableParts[v1].Query.Post;
+                  end;
                 end;
               end
               else
               begin
-                If not (FDCLForm.CurrentGrid.Query.State in dsEditModes) then
-                  FDCLForm.CurrentGrid.Query.Edit;
-                FDCLForm.CurrentGrid.Query.FieldByName(tmpS4).AsString:=tmpS;
-                if Flg1 then
-                  FDCLForm.CurrentGrid.TableParts[v1].Query.Post;
+                if FDCLGrid.Query.CanModify then
+                begin
+                  If not (FDCLGrid.Query.State in dsEditModes) then
+                    FDCLGrid.Query.Edit;
+                  FDCLGrid.Query.FieldByName(tmpS4).AsString:=tmpS;
+                  if Flg1 then
+                    FDCLGrid.Query.Post;
+                end;
               end;
             end;
           end;
@@ -1367,11 +1377,6 @@ begin
   begin
     If GetRaights>=ulWrite Then
     begin
-      If IsLexem('Refresh_part;', Command) then
-      begin
-        FDCLForm.CurrentGrid.CurrentTablePart.ReFreshData;
-      end;
-    
       If IsLexem('Insert_part;', Command) then
       begin
         FDCLForm.CurrentGrid.CurrentTablePart.Query.Insert;
@@ -1402,6 +1407,16 @@ begin
       begin
         FDCLForm.CurrentGrid.CurrentTablePart.Query.Edit;
       end;
+    end;
+
+    If IsLexem('Cancel_part;', Command) then
+    begin
+      FDCLForm.CurrentGrid.CurrentTablePart.Query.Cancel;
+    end;
+
+    If IsLexem('Refresh_part;', Command) then
+    begin
+      FDCLForm.CurrentGrid.CurrentTablePart.ReFreshData;
     end;
 
     If IsLexem('Next_part;', Command) then
