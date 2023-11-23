@@ -144,6 +144,7 @@ Type
 
   TNotAllowedOperation=(dsoNone, dsoDelete, dsoInsert, dsoEdit);
 
+  TChooseMode=(cmNone, cmChooseAndClose, cmChooseAndContinue);
   TLogOnStatus=(lsUnInitaliced, lsLogonOK, lsRejected, lsNotNeed);
   TPassStatus=(psNone, psConfirmed, psCanceled);
   TFormsNotifyAction=(fnaRefresh, fnaClose, fnaMinimize, fnaMaximaze, fnaSetMDI,

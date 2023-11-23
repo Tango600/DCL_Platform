@@ -104,10 +104,11 @@ type
 
   TReturnValueParams=class
   public
+    Mode: TChooseMode;
     KeyField, ValueField, KeyEditName, ValueEditName, KeyModifyField, ValueModifyField,
       KeyVar, ValueVar, BatchScript: String;
-    Multiselect, Modal: Boolean;
-    constructor Create(aKeyField, aValueField, aKeyEditName, aValueEditName, aKeyModifyField, aValueModifyField,
+    Multiselect: Boolean;
+    constructor Create(aMode: TChooseMode; aKeyField, aValueField, aKeyEditName, aValueEditName, aKeyModifyField, aValueModifyField,
       aKeyVar, aValueVar, aBatchScript: String; aMultiselect: Boolean);
   end;
 
@@ -146,9 +147,11 @@ end;
 
 { TReturnValueParams }
 
-constructor TReturnValueParams.Create(aKeyField, aValueField, aKeyEditName, aValueEditName, aKeyModifyField, aValueModifyField,
-    aKeyVar, aValueVar, aBatchScript: String; aMultiselect: Boolean);
+constructor TReturnValueParams.Create(aMode: TChooseMode; aKeyField, aValueField, aKeyEditName,
+  aValueEditName, aKeyModifyField, aValueModifyField, aKeyVar, aValueVar,
+  aBatchScript: String; aMultiselect: Boolean);
 begin
+  Mode:=aMode;
   KeyField:=aKeyField;
   ValueField:=aValueField;
   KeyEditName:=aKeyEditName;

@@ -1513,23 +1513,23 @@ procedure TDCLCommand.DialogCommand(ScrStr: String);
 var
   TmpStr, DialogName: String;
   ModalOpen, NoContext: Boolean;
-  v1, ModalResult: Integer;
+  v1: Integer;
   ReturnValueParams: TReturnValueParams;
   lDCLForm: TDCLForm;
 begin
   DialogName:=FindParam('Dialog=', ScrStr);
   ModalOpen:=FindParam('ModalOpen=', ScrStr)='1';
   ReturnValueParams:=nil;
-  //If FindParam('Choose=', ScrStr)='1' then
   If FindParam('ChooseMode=', ScrStr)<>'' then
   begin
-    ReturnValueParams:=TReturnValueParams.Create(FindParam('KeyField=', ScrStr),
+    ReturnValueParams:=TReturnValueParams.Create(TChooseMode(StrToInt(FindParam('ChooseMode=', ScrStr))), FindParam('KeyField=', ScrStr),
       FindParam('ValueField=', ScrStr), FindParam('KeyEditName=', ScrStr), FindParam('ValueEditName=', ScrStr),
       FindParam('KeyModifyField=', ScrStr), FindParam('ValueModifyField=', ScrStr),
       FindParam('KeyVariable=', ScrStr), FindParam('ValueVariable=', ScrStr),
       FindParam('BatchScript=', ScrStr), FindParam('MultiSelect=', ScrStr)='1');
 
-    //ModalOpen:=FindParam('BatchScript=', ScrStr)='1';
+    if ReturnValueParams.Mode=cmChooseAndContinue then
+      ModalOpen:=False;
   end;
   NoContext:=FindParam('NoContext=', ScrStr)='1';
 
@@ -1554,12 +1554,7 @@ begin
     begin
       if lDCLForm.Showing then
         lDCLForm.Hide;
-      ModalResult:=lDCLForm.ShowModal;
-
-      If (ModalResult=mrOK) and Assigned(lDCLForm.ReturnValue) and (lDCLForm.ReturnValue.Values.Count>0) Then
-      begin
-        GetValueProc(lDCLForm.ReturnValue);
-      end;
+      lDCLForm.ShowModal;
     end;
     FDCLForm:=lDCLForm;
   end;

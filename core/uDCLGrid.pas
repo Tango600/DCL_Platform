@@ -3383,10 +3383,10 @@ begin
       if Assigned((FForm as TDCLForm).RetValueMethod) then
         (FForm as TDCLForm).RetValueMethod.GetValueProc(ReturnValue);
 
-      if ReturnValueParams.Modal then
-        FForm.ModalResult:=mrOk
-      else
+      if ReturnValueParams.Mode=cmChooseAndClose then
+      begin
         FForm.Close;
+      end;
     end;
   end;
 end;
