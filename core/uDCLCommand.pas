@@ -619,7 +619,7 @@ begin
   If LowerCase(tmpS1)='isolate' Then
     v1:=2;
 
-  TextReport:=TDCLTextReport.Create(FNameSpace, FDBConnector, Query, Grid, FVariables, tmpDCL, RepIdParams);
+  TextReport:=TDCLTextReport.Create(FNameSpace, FIDCLMain, Grid, tmpDCL, RepIdParams);
 
   Case v1 of
   0:
@@ -636,6 +636,8 @@ begin
   begin
     tmpS:=Trim(FindParam('FileName=', ScrLine));
     TranslateVals(tmpS, Query);
+    if tmpS='' then
+      tmpS:='Report.txt';
 
     v1:=StrToIntEx(Trim(FindParam('ViewMode=', ScrLine)));
     TextReport.OpenReport(tmpS, TReportViewMode(v1));
@@ -647,9 +649,9 @@ begin
       tmpS1:='1';
     If tmpS1<>'1' Then
       If FindParam('Viewer=', ScrLine)<>'' Then
-        Run('"'+FindParam('Viewer=', ScrLine)+'"', tmpS1, False)
+        Run('"'+FindParam('Viewer=', ScrLine)+'"', tmpS, False)
       Else
-        Run('"'+GPT.Viewer+'"', tmpS1, False);
+        Run('"'+GPT.Viewer+'"', tmpS, False);
 
     TextReport.CloseReport('Report.txt');
   end;
@@ -1527,7 +1529,7 @@ begin
       FindParam('KeyVariable=', ScrStr), FindParam('ValueVariable=', ScrStr),
       FindParam('BatchScript=', ScrStr), FindParam('MultiSelect=', ScrStr)='1');
 
-    ModalOpen:=FindParam('BatchScript=', ScrStr)='1';
+    //ModalOpen:=FindParam('BatchScript=', ScrStr)='1';
   end;
   NoContext:=FindParam('NoContext=', ScrStr)='1';
 

@@ -6,7 +6,8 @@ interface
 uses
   Classes, SysUtils, Controls, Forms, ComCtrls, StdCtrls, Buttons, ExtCtrls,
   DBCtrls, DB, Generics.Collections,
-  uDCLTypes, uDCLConst, uDCLData, uDCLDBConnector, uDCLGrid, uDCLVariables;
+  uDCLTypes, uDCLConst, uIDCLMain, uDCLData, uDCLDBConnector, uDCLGrid,
+  uDCLVariables;
 
 type
 
@@ -14,6 +15,7 @@ type
 
   TDCLTextReport=class
   private
+    FDCLMain: IDCLMain;
     FNameSpace: String;
     FDBConnector: TDCLDBConnector;
     FQuery: TDCLDialogQuery;
@@ -38,8 +40,8 @@ type
     procedure ReplaseRepParams(var ReplaseText: TStringList);
     function TranslateRepParams(ParamName: String): String;
   public
-    constructor Create(const NameSpace: String; DBConnector: TDCLDBConnector; Query: TDCLDialogQuery;
-      DCLGrid: TDCLGrid; Variables: TVariables; Scrypt: TStringList; ParamsSetID: Integer);
+    constructor Create(const NameSpace: String; DCLMain: IDCLMain;
+      DCLGrid: TDCLGrid; Scrypt: TStringList; ParamsSetID: Integer);
 
     procedure InitReport(Mode: TNewQueryMode);
 
@@ -326,17 +328,16 @@ begin
   Result:=ResultString;
 end;
 
-constructor TDCLTextReport.Create(const NameSpace: String;
-  DBConnector: TDCLDBConnector; Query: TDCLDialogQuery; DCLGrid: TDCLGrid;
-  Variables: TVariables; Scrypt: TStringList; ParamsSetID: Integer);
+constructor TDCLTextReport.Create(const NameSpace: String; DCLMain: IDCLMain;
+      DCLGrid: TDCLGrid; Scrypt: TStringList; ParamsSetID: Integer);
 begin
   FNameSpace:=NameSpace;
-  FDBConnector:=DBConnector;
-  FQuery:=Query;
+  FDCLMain:=DCLMain;
+  FDBConnector:=DCLMain.GetDBConnector;
   FDCLGrid:=DCLGrid;
   FScrypt:=Scrypt;
   FParamsSetID:=ParamsSetID;
-  FVariables:=Variables;
+  FVariables:=DCLMain.GetVariables;
   FVarsToControls:=TList<String>.Create;
 end;
 
@@ -638,9 +639,11 @@ begin
   begin
     FReportQuery:=TDCLSimlyQuery.Create(nil);
     FDBConnector.SetConnector(FReportQuery);
-  end;
+  end
+  else
+    FReportQuery:=FDCLGrid.Query;
 
-  If GlobalSQL.Count<>0 Then
+  If NewNew and (GlobalSQL.Count>0) Then
   begin
     tmpSQL:=GlobalSQL.Text;
     FReportQuery.Close;

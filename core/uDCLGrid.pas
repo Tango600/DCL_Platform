@@ -3357,7 +3357,7 @@ begin
       ReturnValue.Multiselect:=ReturnValueParams.Multiselect;
 
       ReturnValue.Values:=TList<TGetValueItem>.Create;
-      if Assigned(FDBGrid) and FMultiSelectMode and FDBGrid.HasMultiSelection then
+      if Assigned(FDBGrid) and FMultiSelectMode and (FDBGrid.SelectedRows.Count>0) then
       begin
         for i:=1 to FDBGrid.SelectedRows.Count do
         begin
@@ -4173,6 +4173,12 @@ begin
   begin
     TranslateVal(ScrStr, True);
     FDataReadOnly:=FindParam('ReadOnlyData=', ScrStr)='1';
+  end;
+
+  if IsLexem('DataReadOnly=', ScrStr) then
+  begin
+    TranslateVal(ScrStr, True);
+    FDataReadOnly:=FindParam('DataReadOnly=', ScrStr)='1';
   end;
 
   if IsLexem('Style=', ScrStr) then
