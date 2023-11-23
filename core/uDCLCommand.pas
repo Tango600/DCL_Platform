@@ -1335,10 +1335,10 @@ begin
 
             if v1<>0 then
             begin
-              tmpS4:=tmpS3.Substring(1, v1-1);
-              tmpS2:=tmpS3.Substring(v1+1);
+              tmpS4:=tmpS3.Substring(0, v1-1);
+              tmpS2:=tmpS3.Substring(v1);
 
-              If tmpS4<>'' then
+              If tmpS1<>'' then
               begin
                 v1:=StrToIntEx(tmpS1)-1;
                 if Assigned(FDCLForm) and Assigned(FDCLForm.CurrentGrid) then
@@ -1348,7 +1348,7 @@ begin
                   begin
                     If not (FDCLForm.CurrentGrid.TableParts[v1].Query.State in dsEditModes) then
                       FDCLForm.CurrentGrid.TableParts[v1].Query.Edit;
-                    FDCLForm.CurrentGrid.TableParts[v1].Query.FieldByName(tmpS4).AsString:=tmpS;
+                    FDCLForm.CurrentGrid.TableParts[v1].Query.FieldByName(tmpS4).AsString:=tmpS2;
 
                     if Flg1 then
                       FDCLForm.CurrentGrid.TableParts[v1].Query.Post;
@@ -1361,7 +1361,7 @@ begin
                 begin
                   If not (FDCLGrid.Query.State in dsEditModes) then
                     FDCLGrid.Query.Edit;
-                  FDCLGrid.Query.FieldByName(tmpS4).AsString:=tmpS;
+                  FDCLGrid.Query.FieldByName(tmpS4).AsString:=tmpS2;
                   if Flg1 then
                     FDCLGrid.Query.Post;
                 end;
