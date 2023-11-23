@@ -3338,6 +3338,7 @@ var
   ValueItem: TGetValueItem;
   Bookmark: TBookmark;
   i: Integer;
+  CommandObj: TDCLCommand;
 begin
   if Assigned((FForm as TDCLForm).ReturnValueParams) then
   begin
@@ -3354,7 +3355,15 @@ begin
       ReturnValue.KeyVar:=ReturnValueParams.KeyVar;
       ReturnValue.ValueVar:=ReturnValueParams.ValueVar;
       ReturnValue.BatchScript:=ReturnValueParams.BatchScript;
+      ReturnValue.FinishScript:=ReturnValueParams.FinishScript;
       ReturnValue.Multiselect:=ReturnValueParams.Multiselect;
+
+      if ReturnValueParams.InitScript<>'' then
+      begin
+        CommandObj:=TDCLCommand.Create(FIDCLMain, FNameSpace, FForm, Self);
+        CommandObj.RunCommandScript(ReturnValueParams.InitScript);
+        FreeAndNil(CommandObj);
+      end;
 
       ReturnValue.Values:=TList<TGetValueItem>.Create;
       if Assigned(FDBGrid) and FMultiSelectMode and (FDBGrid.SelectedRows.Count>0) then

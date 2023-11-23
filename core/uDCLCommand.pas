@@ -1528,6 +1528,9 @@ begin
       FindParam('KeyVariable=', ScrStr), FindParam('ValueVariable=', ScrStr),
       FindParam('BatchScript=', ScrStr), FindParam('MultiSelect=', ScrStr)='1');
 
+    ReturnValueParams.InitScript:=FindParam('InitScript=', ScrStr);
+    ReturnValueParams.FinishScript:=FindParam('FinishScript=', ScrStr);
+
     if ReturnValueParams.Mode=cmChooseAndContinue then
       ModalOpen:=False;
   end;
@@ -1638,6 +1641,11 @@ begin
       begin
         RunCommandScript(ReturnValue.BatchScript);
       end;
+    end;
+
+    if ReturnValue.FinishScript<>'' then
+    begin
+      RunCommandScript(ReturnValue.FinishScript);
     end;
 
     FDCLForm:=lDCLForm;

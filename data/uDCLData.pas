@@ -88,7 +88,8 @@ type
   { TReturnFormValue }
 
   TReturnFormValue=class
-    KeyModifyField, ValueModifyField, KeyVar, ValueVar, KeyEditName, ValueEditName, BatchScript: String;
+    KeyModifyField, ValueModifyField, KeyVar, ValueVar, KeyEditName, ValueEditName,
+      InitScript, BatchScript, FinishScript: String;
     Multiselect: Boolean;
     Values: TList<TGetValueItem>;
     DestinationForm: TForm;
@@ -106,7 +107,7 @@ type
   public
     Mode: TChooseMode;
     KeyField, ValueField, KeyEditName, ValueEditName, KeyModifyField, ValueModifyField,
-      KeyVar, ValueVar, BatchScript: String;
+      KeyVar, ValueVar, InitScript, BatchScript, FinishScript: String;
     Multiselect: Boolean;
     constructor Create(aMode: TChooseMode; aKeyField, aValueField, aKeyEditName, aValueEditName, aKeyModifyField, aValueModifyField,
       aKeyVar, aValueVar, aBatchScript: String; aMultiselect: Boolean);
