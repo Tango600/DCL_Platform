@@ -71,12 +71,10 @@ const
   TargetOS={$I %FPCTARGETOS%};
 {$IFDEF UNIX}
   CrossDelim='\';
-  ConfigDir=PathDelim+'.config'+PathDelim;
   OSType='posix';
 {$ENDIF}
 {$IFDEF MSWINDOWS}
   CrossDelim='/';
-  ConfigDir=PathDelim;
   OSType='windows';
 {$ENDIF}
   GridAlternateColor=$E0DDDD;

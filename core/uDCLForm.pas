@@ -38,7 +38,6 @@ type
     FCurrentGrid: TDCLGrid;
     FStatusBar: TStatusBar;
     FReturnValue: TReturnFormValue;
-    FEvents: TList<TDCLEvent>;
     FReturnValueParams: TReturnValueParams;
     FUserLevel: TUserLevelsType;
     FIsSingle: Boolean;
@@ -67,9 +66,6 @@ type
     procedure OnFormCloseQuery(Sender: TObject; var CanClose: Boolean);
 
     procedure SetRecordsStatus(Str: String); overload;
-
-    procedure ParseEvents(ScrStr: String);
-    procedure AddEvent(EventType: TEventsEnum; ScriptName: String);
 
     procedure SaveFormPos;
   public
@@ -407,7 +403,6 @@ begin
   FVariables:=FIDCLMain.GetVariables;
   FOPL:=OPL;
   FGrids:=TList<TDCLGrid>.Create;
-  FEvents:=TList<TDCLEvent>.Create;
 
   Height:=DefaultFormHeight;
   Width:=DefaultFormWidth;
@@ -537,11 +532,6 @@ begin
       If IsLexem('Single;', SrcLine) then
       begin
         FIsSingle:=True;
-      end;
-
-      if IsLexem('Events=', SrcLine) then
-      begin
-        ParseEvents(SrcLine);
       end;
 
       Command.RunCommand(SrcLine);
@@ -692,30 +682,6 @@ end;
 procedure TDCLForm.SetDBStatus(Str: String);
 begin
   FStatusBar.Panels[StatusDB].Text:=Str;
-end;
-
-procedure TDCLForm.ParseEvents(ScrStr: String);
-var
-  S: String;
-begin
-  If PosEx('Close=', ScrStr)<>0 Then
-  begin
-    S:=FindParam('Close=', ScrStr);
-    //AddEvent(evtClose, S);
-  end;
-end;
-
-procedure TDCLForm.AddEvent(EventType: TEventsEnum; ScriptName: String);
-var
-  Event: TDCLEvent;
-begin
-  if ScriptName<>'' then
-  begin
-    Event:=TDCLEvent.Create;
-    Event.EventType:=EventType;
-    Event.ScriptName:=ScriptName;
-    FEvents.Add(Event);
-  end;
 end;
 
 procedure TDCLForm.SaveFormPos;

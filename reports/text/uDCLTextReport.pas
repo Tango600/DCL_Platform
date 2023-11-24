@@ -18,7 +18,6 @@ type
     FDCLMain: IDCLMain;
     FNameSpace: String;
     FDBConnector: TDCLDBConnector;
-    FQuery: TDCLDialogQuery;
     FDialogRes: TModalResult;
     FDCLGrid: TDCLGrid;
     FScrypt: TStringList;
@@ -752,18 +751,17 @@ begin
     end;
     rvmGrid:
     begin
-      {If Assigned(FDCLGrid) Then
-        If FDCLGrid.Style in TDataGrid Then
-          If FDCLGrid.Grid.SelectedRows.Count>0 Then
-          begin
-            For BookMarks:=0 to FDCLGrid.Grid.SelectedRows.Count-1 do
-            begin
-              FReportQuery.GoToBookmark(TBookmark(FDCLGrid.Grid.SelectedRows[BookMarks]));
-              PrintReport;
-            end;
-          end
-          Else}
-            PrintReport;
+      {If Assigned(FDCLGrid) and (FDCLGrid.Style in TDataGrid) and
+        (FDCLGrid.Grid.SelectedRows.Count>0) Then
+      begin
+        For BookMarks:=0 to FDCLGrid.Grid.SelectedRows.Count-1 do
+        begin
+          FReportQuery.GoToBookmark(TBookmark(FDCLGrid.Grid.SelectedRows[BookMarks]));
+          PrintReport;
+        end;
+      end
+      Else}
+        PrintReport;
     end;
     rvmMultitRecordReport:
     begin
@@ -781,19 +779,18 @@ begin
     end;
     rvmBookmarcks:
     begin
-      {If Assigned(FDCLGrid) Then
-        If FDCLGrid.DisplayMode in TDataGrid Then
-          If FDCLGrid.Grid.SelectedRows.Count>0 Then
-          begin
-            Nubers:=1;
-            For BookMarks:=0 to FDCLGrid.Grid.SelectedRows.Count-1 do
-            begin
-              FReportQuery.GoToBookmark(TBookmark(FDCLGrid.Grid.SelectedRows[BookMarks]));
-              PrintReport;
-              SaveReport(FileName+'-'+IntToStr(Nubers)+'.txt');
-              inc(Nubers);
-            end;
-          end;}
+      {If Assigned(FDCLGrid) and (FDCLGrid.Style in TDataGrid) and
+        (FDCLGrid.Grid.SelectedRows.Count>0) Then
+      begin
+        Nubers:=1;
+        For BookMarks:=0 to FDCLGrid.Grid.SelectedRows.Count-1 do
+        begin
+          FReportQuery.GoToBookmark(TBookmark(FDCLGrid.Grid.SelectedRows[BookMarks]));
+          PrintReport;
+          SaveReport(FileName+'-'+IntToStr(Nubers)+'.txt');
+          inc(Nubers);
+        end;
+      end;}
     end;
     end;
   end

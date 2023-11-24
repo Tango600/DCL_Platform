@@ -11,7 +11,7 @@ uses
 implementation
 
 uses
-  uDCLMultiLang, uDCLGlobalVariables;
+  uDCLMultiLang;
 
 Function ShowErrorMessage(ErrorCode: Integer; AddText: String=''): Integer;
 Var
@@ -22,11 +22,6 @@ Begin
 
   If ErrorCode<0 Then
   Begin
-    If GPT.CurrentRunningScrString>0 Then
-      MessageText:=MessageText+' / '+AddText+LineEnding+
-        GetDCLMessageString(msIn)+' '+GetDCLMessageString(msStringNum)+'('+GetDCLMessageString(msVisualCommand)+') : '+
-        IntToStr(GPT.CurrentRunningScrString)+'/-1';
-
     Result:=MessageDlg(MessageText, mtError, [mbOK], 0);
   End
   Else

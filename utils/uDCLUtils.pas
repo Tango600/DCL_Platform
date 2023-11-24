@@ -6,9 +6,6 @@ interface
 uses
   SysUtils, Forms, ExtCtrls, Dialogs,
   Controls, Classes, DateUtils,
-{$IFDEF UNIX}
-  cwstring, process, unix, lclintf,
-{$ENDIF}
 {$IFNDEF FPC}
   JPEG,
 {$ENDIF}

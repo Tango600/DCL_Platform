@@ -34,21 +34,19 @@ type
 implementation
 
 uses
-  DB, uDCLDBStructure, uDCLUtils, uSystemUtils, uDCLMultiLang, uDBUtils,
+  DB, uDCLUtils, uSystemUtils, uDCLMultiLang, uDBUtils,
   uDCLDBUtils, uDCLGlobalVariables, uDCLVersion, uDCLConfigTable,
   uExpressionParser;
 
 const
-  MaxSysVars=47;
+  MaxSysVars=33;
   SysVarsSet: Array [1..MaxSysVars] of String=('_TIME_', '_TIMES_', '_DATE_', '_DATETIME_', // 4
-    '_VERSION_', '_ISEMPTY_', '_DCLTABLE_', '_DCLNAMEFIELD_', '_DCLTEXTFIELD_', '_IDENTIFYFIELD_',  // 10
-    '_PARENTFLGFIELD_', '_COMMANDFIELD_', '_USERNAME_', '_PASSWORD_', '_STRINGTYPECHAR_', // 15
-    '_ROLENAME_', '_ROLEID_', '_ROLESTABLE_', '_ROLESMENU_', '_USERPASS_', '_LONGROLENAME_', // 21
-    '_FOB_', '_EOB_', '_VALUESEPARATOR_', '_FULLVERSION_', '_APPPATH_', '_CURRENTSTRING_', // 27
-    '_ENGINETYPE_', '_APPNAME_', '_DCL_USER_NAME_', '_DCL_USERS_TABLE_', '_USERID_', // 32
-    '_USERNAMEACCESSLEVELS_', '_USERGLOBALACCESSLEVEL_', '_USERACCESSLEVEL_', '_NOTIFYACTIONS_',  // 36
-    '_YESNO_', '_YEAR_', '_DSSTATE_', '_DSSTATENAME_', '_FULLRAIGHTS_', '_ROLEACCESSLEVEL_',  // 42
-    '_APPDATAPATH_', '_OS_', '_USERPROFILE_', '_USERDOC_', '_DCLINI_'); // 48
+    '_VERSION_', '_ISEMPTY_', '_USERNAME_', '_PASSWORD_', '_STRINGTYPECHAR_', '_ROLENAME_', // 10
+    '_ROLEID_', '_USERPASS_', '_LONGROLENAME_', '_FOB_', '_EOB_', '_VALUESEPARATOR_', // 16
+    '_APPPATH_', '_ENGINETYPE_', '_APPNAME_', '_DCL_USER_NAME_', '_USERID_', // 21
+    '_USERNAMEACCESSLEVELS_', '_USERACCESSLEVEL_', '_NOTIFYACTIONS_', '_YESNO_', // 25
+    '_YEAR_', '_DSSTATE_', '_DSSTATENAME_', '_APPDATAPATH_', '_OS_', '_USERPROFILE_', // 31
+    '_USERDOC_', '_DCLINI_'); // 33
 
   ProcCount=24;
   ProcNames: Array [1..ProcCount] Of String=('ToFloat', 'DeleteNonFilesSimb', 'GetFileNameToTranslite', //3
@@ -92,13 +90,7 @@ begin
           begin
             Case FindSysVarNum of
             1:
-            begin
-              Value:=TimeToStr(SysUtils.Time);
-              If (Value[5]=':') Then
-                SetLength(Value, 4);
-              If (Value[6]=':') Then
-                SetLength(Value, 5);
-            end;
+            Value:=TimeToStr(SysUtils.Time);
             2:
             Value:=TimeToStr(SysUtils.Time);
             3:
@@ -118,36 +110,20 @@ begin
               end;
             end;
             7:
-            Value:=DCLTable;
-            8:
-            Value:=DCLNameField;
-            9:
-            Value:=ScriptField;
-            10:
-            Value:=IdentifyField;
-            11:
-            Value:=ParentField;
-            12:
-            Value:=CommandField;
-            13:
             Value:=GPT.DBUserName;
-            14:
+            8:
             Value:=GPT.DBPassword;
-            15:
+            9:
             Value:=GPT.StringTypeChar;
-            16:
+            10:
             Value:=GPT.DCLRoleName;
-            17:
+            11:
             Value:=GPT.RoleID;
-            18:
-            Value:=RolesTable;
-            19:
-            Value:=RolesMenuTable;
-            20:
+            12:
             Value:=GPT.DCLUserPass;
-            21:
+            13:
             Value:=GPT.LongRoleName;
-            22:
+            14:
             begin
               if Assigned(Query) then
               begin
@@ -157,7 +133,7 @@ begin
                   Value:='0';
               end;
             end;
-            23:
+            15:
             begin
               if Assigned(Query) then
               begin
@@ -167,55 +143,43 @@ begin
                   Value:='0';
               end;
             end;
-            24:
+            16:
             Value:=GPT.GetValueSeparator;
-            25:
-            Value:=DCLVersion;
-            26:
+            17:
             Value:=ExcludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0)));
-            27:
-            Value:=IntToStr(GPT.CurrentRunningScrString);
-            28:
+            18:
             Value:=DBEngineType;
-            29:
+            19:
             Value:=ExtractFileName(ParamStr(0));  // '_APPNAME_'
-            30:
+            20:
             Value:=GPT.DCLUserName;
-            31:
-            Value:=UsersTable;
-            32:
+            21:
             Value:=GPT.UserID;
-            33:
+            22:
             Value:=GetDCLMessageString(msAccessLevelsSet);
-            34:
+            23:
             Value:=IntToStr(Ord(GPT.AccessLevel));
-            {35:
-            Value:=IntToStr(Ord(FDCLForm.UserLevelLocal));}
-            36:
+            24:
             Value:=GetDCLMessageString(msNotifyActionsSet);
-            37:
+            25:
             Value:=GetDCLMessageString(msNoYes);
-            38:
+            26:
             Value:=IntToStr(YearOf(Now));
-            39:begin
+            27:begin
               if Assigned(Query) then
                 Value:=IntToStr(Ord(Query.State));
             end;
-            40:
+            28:
             Value:=GetNameDSState(Query.State);
-            {41:
-            Value:=IntToStr(FDCLLogOn.RoleRaightsLevel);
-            42:
-            Value:=IntToStr(FDCLLogOn.GetFullRaight);}
-            43:
+            29:
             Value:=ExcludeTrailingPathDelimiter(AppConfigDir);
-            44:
+            30:
             Value:=OSType;
-            45:
+            31:
             Value:=UserProfileDir; // '_USERPROFILE_'
-            46:
+            32:
             Value:=GetUserDocumentsDir; // '_USERDOC_'
-            47:
+            33:
             Value:=GPT.IniFileName; // _DCLINI_
             end;
 

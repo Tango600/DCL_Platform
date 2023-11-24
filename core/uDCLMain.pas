@@ -302,7 +302,7 @@ begin
 
   for RunItem in FScripts do
   begin
-    if RunItem.ScriptName.ToLower=ScriptName.ToLower then
+    if not RunItem.Update and (RunItem.ScriptName.ToLower=ScriptName.ToLower) then
     begin
       Result.Clear;
       RunItem.ScriptText.Position:=0;
