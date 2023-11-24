@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, ComObj, Variants, Graphics,
-  uDCLConst, uDCLTypes, uDCLData, uDCLBaseOfficeReport, uDCLDBConnector,
+  uDCLConst, uDCLDBAwareTypes, uDCLData, uDCLBaseOfficeReport, uDCLDBConnector,
   uDCLValuesParser;
 
 type

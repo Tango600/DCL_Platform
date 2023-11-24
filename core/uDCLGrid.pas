@@ -13,7 +13,7 @@ uses
   uDCLData, uDCLTypes, uDCLConst, uDCLVariables, uStringParams, uIDCLMain,
   uDCLDBConnector, uDCLQuery, uDCLMeasurements, uDBUtils, uDCLMultiLang,
   uDCLCommandButton, uDCLField, uDCLMessages, uDCLImages, cMediaFieldGroup,
-  uDCLBaseLayoutManger, uDCLHorizontalFieldLayoutManger,
+  uDCLBaseLayoutManger, uDCLHorizontalFieldLayoutManger, uDCLDBAwareTypes,
   uDCLVerticalFieldLayoutManger;
 
 type

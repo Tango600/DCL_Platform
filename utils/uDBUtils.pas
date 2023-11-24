@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, DB,
-  uDCLTypes, uDCLData, uDCLConst, uDCLDBConnector, uDCLField, uDCLMeasurements;
+  uDCLDBAwareTypes, uDCLData, uDCLConst, uDCLDBConnector, uDCLField, uDCLMeasurements;
 
   function TableExist(DBConnector: TDBConnector; TableName: String): Boolean;
   function FieldExist(DBConnector: TDCLDBConnector; TableName, FieldName: String): Boolean; overload;

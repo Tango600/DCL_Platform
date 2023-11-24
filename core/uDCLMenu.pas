@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Menus, ComCtrls, Controls, Generics.Collections, fgl,
-  uDCLConst, uDCLDBConnector, uDBUtils, uDCLMeasurements, uDCLTypes, uIDCLMain,
+  uDCLConst, uDCLDBConnector, uDBUtils, uDCLMeasurements, uIDCLMain, uDCLDBAwareTypes,
   uDCLDBStructure;
 
 type
@@ -130,7 +130,7 @@ var
 begin
   for I in FMain.GetLoadedScripts do
   begin
-    if I.Ident=Ident then
+    if (Ident>0) and (I.Ident=Ident) then
     begin
       if I.Command<>'' then
       begin
@@ -167,19 +167,27 @@ end;
 
 procedure TDCLMenu.ClickMenu(Sender: TObject);
 var
-  IdentID: Integer;
+  IdentID, p: Integer;
   DialogName: String;
+  Host: Boolean;
   Scr: TStringList;
 begin
   IdentID:=(Sender as TComponent).Tag;
   if IdentID>0 then
   begin
+    Host:=False;
     DialogName:=GetMenuCommandById(IdentID);
+    p:=Pos(';', DialogName);
+    if p<>0 then
+    begin
+      Host:=DialogName.Substring(p+1).ToLower.IndexOf('host=1')<>0;
+      DialogName:=DialogName.Substring(0, p-1);
+    end;
     Scr:=FMain.GetScriptText(DialogName);
     if (Scr.Count>0) and (Pos('script type=command', Scr[0].ToLower)<>0) then
       FMain.RunCommand(DialogName)
     else
-      FMain.OpenDialog(DialogName);
+      FMain.OpenDialog(DialogName, Host);
   end
   else
   begin

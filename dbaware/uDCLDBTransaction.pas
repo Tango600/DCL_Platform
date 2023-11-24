@@ -21,7 +21,7 @@ uses
   {$IFDEF SQLdbFamily}
     SQLDB,
   {$ENDIF}
-  uDCLTypes, uDCLConst;
+  uDCLDBAwareTypes, uDCLConst;
 
 type
 

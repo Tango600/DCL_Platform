@@ -25,7 +25,7 @@ uses
 {$IFDEF ZEOS}
   //ZConnection, ZDataset, ZSqlUpdate,
 {$ENDIF}
-  DB, uDCLTypes, uDCLData, uDCLConst;
+  DB, uDCLDBAwareTypes, uDCLData, uDCLConst;
 
 const
   FetchAllData=True;

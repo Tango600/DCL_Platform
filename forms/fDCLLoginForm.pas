@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  uDCLConst, uDCLDBConnector, uDCLTypes, uDCLDBStructure;
+  uDCLConst, uDCLDBConnector, uDCLDBAwareTypes, uDCLDBStructure;
 
 type
 

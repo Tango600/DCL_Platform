@@ -9,7 +9,7 @@ uses
   {$ENDIF}
   Classes, SysUtils, Generics.Collections, Forms, ExtCtrls, LazFileUtils,
   Controls,
-  uDCLTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenu, uDCLNotifier,
+  uDCLDBAwareTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenu, uDCLNotifier,
   uIDCLMain, uDCLConst, uDCLScriptsPackage, uDCLImages;
 
 type
@@ -54,7 +54,7 @@ type
 
     procedure CreateMenu(MainForm: TForm);
 
-    procedure OpenDialog(DialogName: String);
+    procedure OpenDialog(DialogName: String; Host: Boolean);
     procedure RunCommand(CommandName: String);
     procedure About;
 
@@ -184,7 +184,7 @@ begin
               end
               else
               begin
-                OpenDialog(RunItem.ScriptName);
+                OpenDialog(RunItem.ScriptName, False);
               end;
 
               break;
@@ -591,7 +591,7 @@ begin
   {$ENDIF}
 end;
 
-procedure TDCLMain.OpenDialog(DialogName: String);
+procedure TDCLMain.OpenDialog(DialogName: String; Host: Boolean);
 var
   Command: TDCLCommand;
 begin

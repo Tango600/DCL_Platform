@@ -6,8 +6,8 @@ interface
 uses
   Classes, SysUtils, Controls, Forms, ComCtrls, StdCtrls, Buttons, ExtCtrls,
   DBCtrls, DB, Generics.Collections,
-  uDCLTypes, uDCLConst, uIDCLMain, uDCLData, uDCLDBConnector, uDCLGrid,
-  uDCLVariables;
+  uDCLDBAwareTypes, uDCLConst, uIDCLMain, uDCLData, uDCLDBConnector, uDCLGrid,
+  uDCLTypes, uDCLVariables;
 
 type
 

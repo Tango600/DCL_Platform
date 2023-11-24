@@ -22,9 +22,9 @@ uses
     SQLDB, SQLDBLib,
   {$ENDIF}
   {$IFDEF FPC}
-    FileUtil, LazUTF8, LConvEncoding, {$IFDEF ZVComponents}ZVDateTimePicker, {$ENDIF}
+    FileUtil, LazUTF8, LConvEncoding,
   {$ENDIF}
-  uDCLData, uDCLConst, uDCLTypes, uDCLDebug, uDCLUtils, uSystemUtils;
+  uDCLData, uDCLConst, uDCLDBAwareTypes, uDCLDebug, uDCLUtils, uSystemUtils;
 
 type
   { TDCLDBConnector }

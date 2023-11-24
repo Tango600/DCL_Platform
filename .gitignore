@@ -13,6 +13,8 @@
 /backup/*
 /*.exe
 /Dialogs/*
-/backup/*
 /libraries/foreigners/backup/*
 */backup/*
+/core/variables/backup
+/reports/office/backup/
+/reports/text/backup/

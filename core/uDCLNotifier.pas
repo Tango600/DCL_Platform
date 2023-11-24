@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, ExtCtrls,
-  uDCLConst, uDCLTypes, uDCLDBConnector, uDCLGlobalConfigTable, fMessageForm,
+  uDCLConst, uDCLDBAwareTypes, uDCLDBConnector, uDCLGlobalConfigTable, fMessageForm,
   uDCLGlobalVariables, uIDCLMain;
 
 type

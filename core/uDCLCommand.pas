@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections, Forms, Controls, StdCtrls, DB, Dialogs,
-  uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uDCLForm, uDCLVariables, uIDCLMain,
+  uDCLData, uDCLDBAwareTypes, uDCLConst, uDCLGrid, uDCLForm, uDCLVariables, uIDCLMain,
   uDCLUtils, uStringParams, uDCLDBConnector, uDCLDBStructure, uDBUtils,
   uDCLValuesParser, uIGetValue, MathParser;
 

@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils,
-  uDCLDBConnector, uDCLTypes, uDCLDBStructure;
+  uDCLDBConnector, uDCLDBAwareTypes, uDCLDBStructure;
 
 type
 

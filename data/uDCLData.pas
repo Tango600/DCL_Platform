@@ -6,7 +6,7 @@ interface
 uses
   StdCtrls, ComCtrls, Controls, Graphics, ExtCtrls, DB, Buttons, Classes,
   Generics.Collections, SysUtils, Forms, DBCtrls,
-  uDCLConst, uDCLTypes;
+  uDCLConst, uDCLTypes, uDCLDBAwareTypes;
 
 type
   TVariable=class

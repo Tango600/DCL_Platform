@@ -62,7 +62,7 @@ implementation
 
 uses
   ClipBrd,
-  uDCLTypes, uDCLConst, uDCLVersion, uDCLDBStructure, uDCLScriptsPackage;
+  uDCLDBAwareTypes, uDCLConst, uDCLVersion, uDCLDBStructure, uDCLScriptsPackage;
 
 {$R *.lfm}
 

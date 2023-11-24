@@ -16,7 +16,7 @@ type
     function GetVariables: TVariables;
 
     function GetScriptText(ScriptName: String): TStringList;
-    procedure OpenDialog(DialogName: String);
+    procedure OpenDialog(DialogName: String; Host: Boolean);
     procedure RunCommand(CommandName: String);
     function GetLoadedScripts: TList<TDCLScriptItem>;
     function GetPackages: TList<TPackageInfo>;
