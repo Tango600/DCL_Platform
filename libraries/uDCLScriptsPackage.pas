@@ -11,11 +11,11 @@ type
 
   TPackageInfo=class
     Name, Sign, Hash, Version: String;
-    RunOnStart: Boolean;
+    RunOnStart, ForUpdate: Boolean;
   end;
 
   TDCLScriptItem=class
-    Update: Boolean;
+    SQL: Boolean;
     RunType: TRunType;  // 0 - None, 1 - Command, 2 - Dialog
     Id, Ident, Parent, Order: Integer;
     ScriptName, Command: String;
@@ -73,9 +73,10 @@ uses
 
 const
   KeySection='Key';
+  ForUpdateSection='ForUpdate';
   NameSection='Name';
   EndNameSection='EndName';
-  UpdateSection='Update';
+  UpdateSection='SQLUpdate';
   EndUpdateSection='UpdateEnd';
   OrderSection='Order';
   IdentSection='Ident';
@@ -124,17 +125,25 @@ begin
 end;
 
 procedure TDCLScriptsPackage.SignPackage(Login, Password: String);
+var
+  S: String;
 begin
+  S:='';
   FPackage.PackageInfo.Hash:=CalcPackageHash;
-  FPackage.PackageInfo.Sign:=MD5Print(MD5String(GetSign(Login, Password, FPackage.PackageInfo.Hash)));
+  if FPackage.PackageInfo.ForUpdate then
+    S:=';AllowUpdate!';
+  FPackage.PackageInfo.Sign:=MD5Print(MD5String(GetSign(Login+S, Password, FPackage.PackageInfo.Hash+S)));
 end;
 
 function TDCLScriptsPackage.CheckPackage(Login, Password: String): Boolean;
 var
-  sh: String;
+  S, sh: String;
 begin
+  S:='';
   FPackage.PackageInfo.Hash:=CalcPackageHash;
-  sh:=MD5Print(MD5String(GetSign(Login, Password, FPackage.PackageInfo.Hash)));
+  if FPackage.PackageInfo.ForUpdate then
+    S:=';AllowUpdate!';
+  sh:=MD5Print(MD5String(GetSign(Login+S, Password, FPackage.PackageInfo.Hash+S)));
   Result:=sh=FPackage.PackageInfo.Sign;
 end;
 
@@ -183,7 +192,7 @@ var
   si: TDCLScriptItem;
 begin
   si:=TDCLScriptItem.Create;
-  si.Update:=True;
+  si.SQL:=True;
   si.ScriptName:=ExtractFileNameOnly(FileName);
   si.Order:=Order;
   si.ScriptText:=TStringStream.Create('', TEncoding.UTF8);
@@ -291,12 +300,14 @@ begin
       S:=PackageNameSection+'='+FPackage.PackageInfo.Name+';';
     if RunOnStart then
       S:=S+RunOnStartSection+'=1;';
+    if FPackage.PackageInfo.ForUpdate then
+      S:=S+ForUpdateSection+'=1;';
     TextPackage.Append('['+SignHashSection+'='+FPackage.PackageInfo.Sign+';Version='+PackagesVersion+';'+S+']');
 
     for I in FPackage.Scripts do
     begin
       S:='';
-      if not I.Update then
+      if not I.SQL then
       begin
         if I.Id<>0 then
         begin
@@ -556,7 +567,7 @@ begin
       begin
         un:=s1;
         ScriptItem:=TDCLScriptItem.Create;
-        ScriptItem.Update:=True;
+        ScriptItem.SQL:=True;
         ScriptItem.ScriptName:=un;
 
         s1:=FindParam(OrderSection+'=', S);
@@ -608,6 +619,7 @@ begin
   begin
     if PosEx('[Sign=', S)=1 then
     begin
+      FPackage.PackageInfo.ForUpdate:=FindParam(ForUpdateSection+'=', S)='1';
       FPackage.PackageInfo.Sign:=FindParam(SignHashSection+'=', S);
       FPackage.PackageInfo.Name:=FindParam(PackageNameSection+'=', S);
       FPackage.PackageInfo.RunOnStart:=FindParam(RunOnStartSection+'=', S)='1';

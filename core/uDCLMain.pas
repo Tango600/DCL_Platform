@@ -166,7 +166,7 @@ begin
 
         for I in Package.Scripts do
         begin
-          if not I.Update then
+          if not I.SQL then
             FScripts.Add(I);
         end;
 
@@ -302,7 +302,7 @@ begin
 
   for RunItem in FScripts do
   begin
-    if not RunItem.Update and (RunItem.ScriptName.ToLower=ScriptName.ToLower) then
+    if not RunItem.SQL and (RunItem.ScriptName.ToLower=ScriptName.ToLower) then
     begin
       Result.Clear;
       RunItem.ScriptText.Position:=0;

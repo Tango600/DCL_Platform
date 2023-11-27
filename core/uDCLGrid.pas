@@ -2548,7 +2548,6 @@ end;
 procedure TDCLGrid.CalendarOnChange(Sender: TObject);
 var
   c, Calendar: TDCLCalendar;
-  EdDate: String;
 begin
   Calendar:=nil;
   for c in FCalendars do
@@ -2562,8 +2561,11 @@ begin
 
   if Assigned(Calendar) then
   begin
-    EdDate:=DateToStr((Sender as TDateTimePicker).Date);
-    FVariables.Variables[FNamespace, Calendar.Variable]:=EdDate;
+    Calendar.Value:=(Sender as TDateTimePicker).Date;
+    if (Calendar.ParamName<>'') and Assigned(FQuery.ParamByName(Calendar.ParamName)) then
+      FQuery.ParamByName(Calendar.ParamName).AsDate:=Calendar.Value
+    else if Calendar.Variable<>'' then
+      FVariables.Variables[FNamespace, Calendar.Variable]:=DateToStr(Calendar.Value);
 
     If Calendar.ReOpen Then
     begin
