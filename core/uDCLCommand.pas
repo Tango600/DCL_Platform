@@ -25,6 +25,7 @@ type
     FParser: TDCLValuseParser;
     FUserLevelLocal: TUserLevelsType;
     MathParser: TMathParser;
+    FDisableAutoRefresh: Boolean;
 
     procedure TranslateVals(var S: String); overload;
     procedure TranslateVals(var S: String; Query: TDCLDialogQuery); overload;
@@ -52,6 +53,8 @@ type
     procedure About;
 
     procedure GetValueProc(ReturnValue: TReturnFormValue);
+
+    property DisableAutoRefresh: Boolean read FDisableAutoRefresh write FDisableAutoRefresh;
   end;
 
 implementation
@@ -120,6 +123,7 @@ begin
   FParser.SetConnector(FDBConnector);
 
   MathParser:=TMathParser.Create;
+  FDisableAutoRefresh:=False;
 end;
 
 destructor TDCLCommand.Destroy;
@@ -435,7 +439,7 @@ begin
     If SQLText='' Then
       SQLText:=FindParam('SQL=', S);
     TranslateVals(SQLText);
-    If SQLText<>'' Then
+    If IsReturningQuery(SQLText) Then
     begin
       DCLQuery:=TDCLDialogQuery.Create(Self);
       FDBConnector.SetConnector(DCLQuery);
@@ -555,6 +559,7 @@ begin
 
     FreeAndNil(SQLCommand);
 
+    if not FDisableAutoRefresh then
     if Assigned(FDCLForm) then
       FIDCLMain.NotifyForm(FDCLForm, fnaRefresh)
     else
@@ -686,6 +691,11 @@ begin
   If IsLexem('About;', Command) or IsLexem('Version;', Command) Then
   begin
     About;
+  end;
+
+  if IsLexem('DisableAutoRefresh;', Command) then
+  begin
+    FDisableAutoRefresh:=True;
   end;
 
   TranslateVals(Command);

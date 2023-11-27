@@ -16,7 +16,7 @@ type
     FButton: TDCLDialogButton;
     FDBConnector: TDCLDBConnector;
   public
-    Caption, Hint, Command, Pict: String;
+    Caption, Hint, Command, Pict, ExecAfter: String;
     CloseButton, ChoiceButton, Default, Cancel, ForEach, Host: Boolean;
     FontStyle: TFontStyles;
     Width: Integer;

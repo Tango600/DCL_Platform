@@ -84,6 +84,7 @@ type
     FBrushColors: TList<TBrushColor>;
     FStructureList: TCheckListBox;
     PopupGridMenu: TPopupMenu;
+    FLocalBookmark: TBookmark;
 
     FFieldLayout: TDCLBaseLayoutManger<TDCLField>;
 
@@ -378,6 +379,8 @@ begin
       end;
 
       ButtonParams.ForEach:=FindParam('ForEach=', ScrLine)='1';
+      if ButtonParams.ForEach then
+        ButtonParams.ExecAfter:=FindParam('ExecAfter=', ScrLine);
 
       If PosEx('bold', FindParam('FontStyle=', ScrLine))<>0 Then
         ButtonParams.FontStyle:=ButtonParams.FontStyle+[fsBold];
@@ -1539,7 +1542,6 @@ var
   DCLCommand, c: TDCLCommandButton;
   guid: TGUID;
   ns: String;
-  i: Integer;
   Bookmark: TBookmark;
 begin
   for c in FButtons do
@@ -1569,22 +1571,35 @@ begin
     begin
       if (FGridStyle in TDataGrid) and FMultiSelectMode then
       begin
-        for i:=1 to FDBGrid.SelectedRows.Count do
+        for Bookmark in FDBGrid.SelectedRows do
         begin
-          Bookmark:=FDBGrid.SelectedRows[i-1];
-          FQuery.GoToBookmark(TBookmark(Bookmark));
-
-          ns:=FNameSpace;
-          if DCLCommand.Host then
+          if Assigned(Bookmark) then
           begin
-            CreateGUID(guid);
-            ns:=GUIDToString(guid);
-          end;
+            FQuery.GoToBookmark(Bookmark);
 
-          CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
-          CommandObj.SelectRunType(DCLCommand.Command);
+            ns:=FNameSpace;
+            if DCLCommand.Host then
+            begin
+              CreateGUID(guid);
+              ns:=GUIDToString(guid);
+            end;
+
+            CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
+            CommandObj.DisableAutoRefresh:=True;
+            CommandObj.SelectRunType(DCLCommand.Command);
+            FreeAndNil(CommandObj);
+          end;
         end;
       end;
+
+      if DCLCommand.ExecAfter<>'' then
+      begin
+        CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
+        CommandObj.SelectRunType(DCLCommand.ExecAfter);
+        FreeAndNil(CommandObj);
+      end;
+
+      ReFreshData;
     end
     else
     begin
@@ -1597,6 +1612,7 @@ begin
 
       CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
       CommandObj.SelectRunType(DCLCommand.Command);
+      FreeAndNil(CommandObj);
     end;
   end;
 end;
@@ -1664,6 +1680,7 @@ begin
     FCurrentTablePart.SetSQL(tSQL);
     FCurrentTablePart.NoDataField:=FindParam('NoDataField=', Line)='1';
     FCurrentTablePart.PrintTool:=FPrintTool;
+    FCurrentTablePart.MultiSelect:=FindParam('MultiSelect=', Line)='1';
 
     If FindParam('DependField=', Line)<>'' Then
     begin
@@ -3292,18 +3309,12 @@ end;
 procedure TDCLGrid.ReFreshData;
 var
   tpc: TDCLGrid;
-  FLocalBookmark: TBookmark;
 begin
   If FQuery.Active Then
   Begin
     If FQuery.State in dsEditModes Then
       FQuery.Post;
 
-    {$IFnDEF NODSBOOKMARKS}
-    FLocalBookmark:=FQuery.Bookmark;
-    {$ELSE}
-    FLocalBookmark:=FQuery.GetKeyBookmark;
-    {$ENDIF}
     For tpc in FTableParts do
     begin
       tpc.Close;
@@ -3312,21 +3323,6 @@ begin
   End;
 
   Open;
-  {$IFnDEF NODSBOOKMARKS}
-  If Assigned(FLocalBookmark) Then
-    try
-      if Length(FLocalBookmark)>0 then
-      If FQuery.Active then
-      If FQuery.BookmarkValid(FLocalBookmark) then
-      If FQuery.RecordCount>0 then
-        FQuery.Bookmark:=FLocalBookmark;
-    finally
-      FQuery.FreeBookmark(FLocalBookmark);
-    end;
-  {$ELSE}
-  If Assigned(FLocalBookmark) Then
-    FQuery.GotoKeyBookmark(FLocalBookmark);
-  {$ENDIF}
   For tpc in FTableParts do
   begin
     tpc.Open;
@@ -4067,6 +4063,22 @@ begin
   Except
     ShowErrorMessage( - 1100, 'SQL='+FQuery.SQL.Text);
   End;
+
+  {$IFnDEF NODSBOOKMARKS}
+  If Assigned(FLocalBookmark) Then
+    try
+      if Length(FLocalBookmark)>0 then
+      If FQuery.Active then
+      If FQuery.BookmarkValid(FLocalBookmark) then
+      If FQuery.RecordCount>0 then
+        FQuery.Bookmark:=FLocalBookmark;
+    finally
+      FQuery.FreeBookmark(FLocalBookmark);
+    end;
+  {$ELSE}
+  If Assigned(FLocalBookmark) Then
+    FQuery.GotoKeyBookmark(FLocalBookmark);
+  {$ENDIF}
 end;
 
 procedure TDCLGrid.Close;
@@ -4075,6 +4087,11 @@ begin
   begin
     If FQuery.State in dsEditModes Then
       FQuery.Post;
+    {$IFnDEF NODSBOOKMARKS}
+    FLocalBookmark:=FQuery.Bookmark;
+    {$ELSE}
+    FLocalBookmark:=FQuery.GetKeyBookmark;
+    {$ENDIF}
     FQuery.Close;
   end;
 end;
