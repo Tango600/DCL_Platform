@@ -128,7 +128,6 @@ end;
 
 destructor TDCLCommand.Destroy;
 begin
-  FIDCLMain:=nil;
   inherited Destroy;
 end;
 
