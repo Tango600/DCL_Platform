@@ -458,7 +458,7 @@ begin
 
   if Assigned(OPL) then
   begin
-    Command:=TDCLCommand.Create(FIDCLMain, FNameSpace, Self, FCurrentGrid);
+    Command:=TDCLCommand.Create(Self, FIDCLMain, FNameSpace, Self, FCurrentGrid);
     if Assigned(ReturnValueParams) and ReturnValueParams.Multiselect then
       FCurrentGrid.MultiSelect:=True;
 

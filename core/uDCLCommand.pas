@@ -41,8 +41,8 @@ type
       ParentForm: TDCLForm; Grid: TDCLGrid;
       ReturnValueParams: TReturnValueParams; Modal: Boolean): TDCLForm;
   public
-    constructor Create(IDCLMain: IDCLMain; NameSpace: String; DCLForm: TForm;
-      DCLGrid: TDCLGrid); overload;
+    constructor Create(Parent: TComponent; IDCLMain: IDCLMain; NameSpace: String;
+      DCLForm: TForm; DCLGrid: TDCLGrid); overload;
     destructor Destroy; override;
 
     procedure OpenDialog(DialogName: String);
@@ -104,9 +104,10 @@ begin
   FParser.RePlaceProc(S, Query);
 end;
 
-constructor TDCLCommand.Create(IDCLMain: IDCLMain; NameSpace: String;
+constructor TDCLCommand.Create(Parent: TComponent; IDCLMain: IDCLMain; NameSpace: String;
   DCLForm: TForm; DCLGrid: TDCLGrid);
 begin
+  inherited Create(Parent);
   FIDCLMain:=IDCLMain;
   FDBConnector:=FIDCLMain.GetDBConnector;
   FForms:=FIDCLMain.GetForms;

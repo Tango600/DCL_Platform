@@ -780,7 +780,7 @@ begin
 
   if IsExist then
   begin
-    CommandObj:=TDCLCommand.Create(FIDCLMain, FNameSpace, FForm, Self);
+    CommandObj:=TDCLCommand.Create(Self, FIDCLMain, FNameSpace, FForm, Self);
     for Event in FEvents do
     begin
       if Event.EventType=EventType then
@@ -789,7 +789,6 @@ begin
         if not IsExist then
         begin
           CommandObj.RunCommand(Event.ScriptName);
-          FreeAndNil(CommandObj);
         end;
       end;
     end;
@@ -1584,19 +1583,17 @@ begin
               ns:=GUIDToString(guid);
             end;
 
-            CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
+            CommandObj:=TDCLCommand.Create(Self, FIDCLMain, ns, FForm, Self);
             CommandObj.DisableAutoRefresh:=True;
             CommandObj.SelectRunType(DCLCommand.Command);
-            FreeAndNil(CommandObj);
           end;
         end;
       end;
 
       if DCLCommand.ExecAfter<>'' then
       begin
-        CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
+        CommandObj:=TDCLCommand.Create(Self, FIDCLMain, ns, FForm, Self);
         CommandObj.SelectRunType(DCLCommand.ExecAfter);
-        FreeAndNil(CommandObj);
       end;
 
       ReFreshData;
@@ -1610,9 +1607,8 @@ begin
         ns:=GUIDToString(guid);
       end;
 
-      CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
+      CommandObj:=TDCLCommand.Create(Self, FIDCLMain, ns, FForm, Self);
       CommandObj.SelectRunType(DCLCommand.Command);
-      FreeAndNil(CommandObj);
     end;
   end;
 end;
@@ -1832,7 +1828,7 @@ begin
 
   if Assigned(Button) then
   begin
-    Command:=TDCLCommand.Create(FIDCLMain, FNameSpace, FForm, Self);
+    Command:=TDCLCommand.Create(Self, FIDCLMain, FNameSpace, FForm, Self);
     Command.SelectRunType(Button.Command);
   end;
 end;
@@ -3358,9 +3354,8 @@ begin
 
       if ReturnValueParams.InitScript<>'' then
       begin
-        CommandObj:=TDCLCommand.Create(FIDCLMain, FNameSpace, FForm, Self);
+        CommandObj:=TDCLCommand.Create(Self, FIDCLMain, FNameSpace, FForm, Self);
         CommandObj.RunCommandScript(ReturnValueParams.InitScript);
-        FreeAndNil(CommandObj);
       end;
 
       ReturnValue.Values:=TList<TGetValueItem>.Create;

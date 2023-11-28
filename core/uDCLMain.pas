@@ -179,7 +179,7 @@ begin
             begin
               if RunItem.RunType=rtCommand then
               begin
-                Command:=TDCLCommand.Create(Self, '', nil, nil);
+                Command:=TDCLCommand.Create(Self, Self, '', nil, nil);
                 Command.RunCommandScript(RunItem.ScriptName);
               end
               else
@@ -595,7 +595,7 @@ procedure TDCLMain.OpenDialog(DialogName: String; Host: Boolean);
 var
   Command: TDCLCommand;
 begin
-  Command:=TDCLCommand.Create(Self, '', nil, nil);
+  Command:=TDCLCommand.Create(Self, Self, '', nil, nil);
   Command.OpenDialog(DialogName);
 end;
 
@@ -603,7 +603,7 @@ procedure TDCLMain.RunCommand(CommandName: String);
 var
   Command: TDCLCommand;
 begin
-  Command:=TDCLCommand.Create(Self, '', nil, nil);
+  Command:=TDCLCommand.Create(Self, Self, '', nil, nil);
   Command.RunCommandScript(CommandName);
 end;
 
