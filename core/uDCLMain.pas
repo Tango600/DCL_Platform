@@ -55,7 +55,7 @@ type
     procedure CreateMenu(MainForm: TForm);
 
     procedure OpenDialog(DialogName: String; Host: Boolean);
-    procedure RunCommand(CommandName: String);
+    procedure RunCommandScript(CommandName: String);
     procedure About;
 
     procedure ExitApp;
@@ -599,7 +599,7 @@ begin
   Command.OpenDialog(DialogName);
 end;
 
-procedure TDCLMain.RunCommand(CommandName: String);
+procedure TDCLMain.RunCommandScript(CommandName: String);
 var
   Command: TDCLCommand;
 begin

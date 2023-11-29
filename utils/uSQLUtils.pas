@@ -37,10 +37,14 @@ Begin
 
   If not Result then
   Begin
-    If (PosEx('update', SQQL)=1)and(PosEx('set', SQQL)>10) then
+    If (PosEx('update', SQQL)=1)and(PosEx('set', SQQL)>10)and(PosEx('returning', SQQL)>17) then
+      Result:=True
+    Else If (PosEx('update', SQQL)=1)and(PosEx('set', SQQL)>10) then
       Result:=False
     Else If (PosEx('delete', SQQL)=1)and(PosEx('from', SQQL)>7) then
       Result:=False
+    Else If (PosEx('insert', SQQL)=1)and(PosEx('into', SQQL)>7)and(PosEx('returning', SQQL)>17) then
+      Result:=True
     Else If (PosEx('insert', SQQL)=1)and(PosEx('into', SQQL)>7) then
       Result:=False
     Else If (PosEx('execute', SQQL)=1)and(PosEx('procedure', SQQL)>8) then

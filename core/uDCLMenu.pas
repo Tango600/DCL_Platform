@@ -4,7 +4,7 @@ unit uDCLMenu;
 interface
 
 uses
-  Classes, SysUtils, Forms, Menus, ComCtrls, Controls, Generics.Collections, fgl,
+  Classes, SysUtils, Forms, Menus, ComCtrls, Controls, fgl,
   uDCLConst, uDCLDBConnector, uDBUtils, uDCLMeasurements, uIDCLMain, uDCLDBAwareTypes,
   uDCLDBStructure;
 
@@ -40,8 +40,7 @@ type
 
     function ExistItemByIdent(var List: TFPGObjectList<TMenuConstructionItem>; Id: Integer): Boolean;
 
-    procedure CreateMenuItems(var Query: TDCLSimlyQuery; ValueFrom, ValueTo: Integer; UserID: String);
-    procedure CreateSumMenuItems(var Query: TDCLSimlyQuery; ValueFrom, ValueTo: Integer; UserID: String);
+    procedure CreateMenuItems(var Query: TDCLSimlyQuery; Parent: Integer; UserID: String);
   public
     constructor Create(Main: IDCLMain; MainForm: TForm); overload;
     destructor Destroy; override;
@@ -77,7 +76,7 @@ begin
         I.ScriptText.Position:=0;
         Scr.LoadFromStream(I.ScriptText);
 
-        FMain.RunCommand(Scr.Text);
+        FMain.RunCommandScript(Scr.Text);
       end;
     end;
   end;
@@ -86,7 +85,7 @@ begin
   LocalQuery.Open;
   while not LocalQuery.EOF do
   begin
-    FMain.RunCommand(LocalQuery.FieldByName(DCLNameField).AsString);
+    FMain.RunCommandScript(LocalQuery.FieldByName(DCLNameField).AsString);
 
     LocalQuery.Next;
   end;
@@ -108,7 +107,7 @@ begin
         I.ScriptText.Position:=0;
         Scr.LoadFromStream(I.ScriptText);
 
-        FMain.RunCommand(Scr.Text);
+        FMain.RunCommandScript(Scr.Text);
       end;
     end;
   end;
@@ -117,7 +116,7 @@ begin
   LocalQuery.Open;
   while not LocalQuery.EOF do
   begin
-    FMain.RunCommand(LocalQuery.FieldByName(DCLNameField).AsString);
+    FMain.RunCommandScript(LocalQuery.FieldByName(DCLNameField).AsString);
 
     LocalQuery.Next;
   end;
@@ -185,7 +184,7 @@ begin
     end;
     Scr:=FMain.GetScriptText(DialogName);
     if (Scr.Count>0) and (Pos('script type=command', Scr[0].ToLower)<>0) then
-      FMain.RunCommand(DialogName)
+      FMain.RunCommandScript(DialogName)
     else
       FMain.OpenDialog(DialogName, Host);
   end
@@ -250,17 +249,7 @@ begin
     Result:=0;
 end;
 
-function CompareSubItems(const Item1, Item2: TMenuConstructionItem): Integer;
-begin
-  if (Item1.Id*20000+Item1.Parent)<(Item2.Id*20000+Item2.Parent) then
-    Result:=-1
-  else if (Item1.Id*20000+Item1.Parent)>(Item2.Id*20000+Item2.Parent) then
-    Result:=1
-  else if (Item1.Id*20000+Item1.Parent)=(Item2.Id*20000+Item2.Parent) then
-    Result:=0;
-end;
-
-procedure TDCLMenu.CreateMenuItems(var Query: TDCLSimlyQuery; ValueFrom, ValueTo: Integer; UserID: String);
+procedure TDCLMenu.CreateMenuItems(var Query: TDCLSimlyQuery; Parent: Integer; UserID: String);
 var
   I: TDCLScriptItem;
   ci: TMenuConstructionItem;
@@ -269,7 +258,8 @@ begin
   ConstructionItems:=TFPGObjectList<TMenuConstructionItem>.Create;
   for I in FMain.GetLoadedScripts do
   begin
-    if (I.Ident>=ValueFrom) and (I.Ident<=ValueTo) then
+    if (I.Ident>=1) and (I.Ident<=20000) then
+    if ((Parent=0) and (I.Parent=0)) or (I.Parent=Parent) then
     begin
       ci:=TMenuConstructionItem.Create;
       ci.Id:=I.Ident;
@@ -278,51 +268,11 @@ begin
     end;
   end;
 
-  Query.SQL.Text:=GetRolesQueryText(IdentifyField+' between '+IntToStr(ValueFrom)+' and '+IntToStr(ValueTo), UserID);
-  Query.Open;
-  while not Query.EOF do
-  begin
-    if not ExistItemByIdent(ConstructionItems, Query.FieldByName(IdentifyField).AsInteger) then
-    begin
-      ci:=TMenuConstructionItem.Create;
-      ci.Id:=Query.FieldByName(IdentifyField).AsInteger;
-      ci.Title:=Query.FieldByName(DCLNameField).AsString;
-      ConstructionItems.Add(ci);
-    end;
+  if Parent=0 then
+    Query.SQL.Text:=GetRolesQueryText(IdentifyField+' between 1 and 20000 and '+ParentField+' is null', UserID)
+  else
+    Query.SQL.Text:=GetRolesQueryText(IdentifyField+' between 1 and 20000 and '+ParentField+' = '+IntToStr(Parent), UserID);
 
-    Query.Next;
-  end;
-  Query.Close;
-
-  ConstructionItems.Sort(CompareTopItems);
-
-  for ci in ConstructionItems do
-  begin
-    AddMainItem(ci.Id, ci.Title);
-  end;
-end;
-
-procedure TDCLMenu.CreateSumMenuItems(var Query: TDCLSimlyQuery; ValueFrom,
-  ValueTo: Integer; UserID: String);
-var
-  I: TDCLScriptItem;
-  ci: TMenuConstructionItem;
-  ConstructionItems: TFPGObjectList<TMenuConstructionItem>;
-begin
-  ConstructionItems:=TFPGObjectList<TMenuConstructionItem>.Create;
-  for I in FMain.GetLoadedScripts do
-  begin
-    if (I.Ident>=ValueFrom) and (I.Ident<=ValueTo) then
-    begin
-      ci:=TMenuConstructionItem.Create;
-      ci.Id:=I.Ident;
-      ci.Parent:=I.Parent;
-      ci.Title:=I.ScriptName;
-      ConstructionItems.Add(ci);
-    end;
-  end;
-
-  Query.SQL.Text:=GetRolesQueryText(IdentifyField+' between '+IntToStr(ValueFrom)+' and '+IntToStr(ValueTo), UserID);
   Query.Open;
   while not Query.EOF do
   begin
@@ -339,11 +289,15 @@ begin
   end;
   Query.Close;
 
-  ConstructionItems.Sort(CompareSubItems);
+  ConstructionItems.Sort(CompareTopItems);
 
   for ci in ConstructionItems do
   begin
-    AddSubItem(ci.Id, ci.Parent, ci.Title);
+    if Parent=0 then
+      AddMainItem(ci.Id, ci.Title)
+    else
+      AddSubItem(ci.Id, ci.Parent, ci.Title);
+    CreateMenuItems(Query, ci.Id, UserID);
   end;
 end;
 
@@ -392,12 +346,7 @@ begin
   FMainForm.Caption:=S;
   LocalQuery.Close;
 
-  CreateMenuItems(LocalQuery, 1, 1000, GPT.UserID);
-
-  CreateSumMenuItems(LocalQuery, 1001, 10000, GPT.UserID);
-  CreateSumMenuItems(LocalQuery, 10001, 16000, GPT.UserID);
-  CreateSumMenuItems(LocalQuery, 16001, 19000, GPT.UserID);
-  CreateSumMenuItems(LocalQuery, 19001, 20000, GPT.UserID);
+  CreateMenuItems(LocalQuery, 0, GPT.UserID);
 
   S:=FMainForm.Caption;
   LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 20051 and 20100', GPT.UserID);

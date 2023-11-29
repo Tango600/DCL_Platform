@@ -1245,7 +1245,8 @@ begin
     begin
       tmpS:=FindParam('KeyField=', Command);
       tmpS1:=FindParam('GotoKey=', Command);
-      FDCLGrid.Query.Locate(tmpS, tmpS1, [loCaseInsensitive]);
+      if tmpS1<>'' then
+        FDCLGrid.Query.Locate(tmpS, tmpS1, [loCaseInsensitive]);
     end;
 
     If IsLexem('EditByName=', Command) then

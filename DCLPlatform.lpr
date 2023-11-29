@@ -119,7 +119,7 @@ begin
     end
     else
     begin
-      DCL.RunCommand(ScriptName);
+      DCL.RunCommandScript(ScriptName);
     end;
   end
   Else

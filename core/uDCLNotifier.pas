@@ -96,7 +96,7 @@ begin
 
       case Action of
       naScriptRun: begin
-        FDCLMain.RunCommand(NotifyText);
+        FDCLMain.RunCommandScript(NotifyText);
       end;
       naExec, naExecAndWait: begin
         Run(NotifyText, '', Action=naExecAndWait);

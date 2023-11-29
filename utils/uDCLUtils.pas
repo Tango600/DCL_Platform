@@ -309,6 +309,8 @@ Begin
     Result:=ulLevel3
   Else If DCLCompareString(Level, ulPrefix+'Level4') Then
     Result:=ulLevel4
+  Else If DCLCompareString(Level, ulPrefix+'Updater') Then
+    Result:=ulUpdater
   Else If DCLCompareString(Level, ulPrefix+'Signer') Then
     Result:=ulSigner
   Else If DCLCompareString(Level, ulPrefix+'Developer') Then

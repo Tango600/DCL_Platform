@@ -17,7 +17,7 @@ type
 
     function GetScriptText(ScriptName: String): TStringList;
     procedure OpenDialog(DialogName: String; Host: Boolean);
-    procedure RunCommand(CommandName: String);
+    procedure RunCommandScript(CommandName: String);
     function GetLoadedScripts: TList<TDCLScriptItem>;
     function GetPackages: TList<TPackageInfo>;
 

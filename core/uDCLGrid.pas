@@ -788,7 +788,7 @@ begin
         IsExist:=CommandObj.RunCommandScript(Event.ScriptName);
         if not IsExist then
         begin
-          CommandObj.RunCommand(Event.ScriptName);
+          CommandObj.RunCommand(Event.ScriptName+';');
         end;
       end;
     end;
