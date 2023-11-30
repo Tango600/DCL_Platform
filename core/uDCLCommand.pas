@@ -666,8 +666,8 @@ end;
 
 procedure TDCLCommand.RunCommand(Command: String);
 var
-  tmpS, tmpS1, tmpS2, tmpS3, tmpS4: String;
-  i, v1, v2: Integer;
+  tmpS, tmpS1, tmpS2, tmpS3: String;
+  v1, v2: Integer;
   Wait, Flg1, Flg2: Boolean;
   tmpDCLForm: TDCLForm;
   vForm: TForm;
@@ -1202,12 +1202,7 @@ begin
       end;
     end;
 
-    If IsLexem('Refresh;', Command) then
-    begin
-      FDCLForm.CurrentGrid.ReFreshData;
-    end;
-
-    If IsLexem('ReOpen;', Command) then
+    If IsLexem('RefreshDialog;', Command) then
     begin
       FDCLForm.CurrentGrid.ReFreshData;
     end;
@@ -1215,6 +1210,11 @@ begin
 
   if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) and FDCLGrid.Query.Active then
   begin
+    If IsLexem('Refresh;', Command) then
+    begin
+      FDCLGrid.ReFreshData;
+    end;
+
     if IsLexem('First;', Command) then
     begin
       FDCLGrid.Query.First;
@@ -1339,45 +1339,40 @@ begin
         tmpS1:=Trim(FindParam('TablePartNum=', Command));
         Flg1:=FindParam('Post=', Command)='1';
 
+        if Assigned(FDCLForm) and Assigned(FDCLForm.CurrentGrid) then
         If tmpS<>'' then
         begin
-          for i:=1 to ParamsCount(tmpS) do
+          v1:=Pos('=', tmpS);
+          if v1<>0 then
           begin
-            tmpS3:=GetParam(tmpS, i);
-            v1:=Pos('=', tmpS3);
+            tmpS3:=tmpS.Substring(0, v1-1);
+            tmpS2:=tmpS.Substring(v1);
 
-            if v1<>0 then
+            If tmpS1<>'' then
             begin
-              tmpS4:=tmpS3.Substring(0, v1-1);
-              tmpS2:=tmpS3.Substring(v1);
-
-              If tmpS1<>'' then
+              v1:=StrToIntEx(tmpS1)-1;
+              If (v1>=0) and (FDCLForm.CurrentGrid.TableParts.Count>v1) and Assigned(FDCLForm.CurrentGrid.TableParts[v1]) then
               begin
-                v1:=StrToIntEx(tmpS1)-1;
-                if Assigned(FDCLForm) and Assigned(FDCLForm.CurrentGrid) then
-                If (v1>=0) and (FDCLForm.CurrentGrid.TableParts.Count>v1) and Assigned(FDCLForm.CurrentGrid.TableParts[v1]) then
+                if FDCLForm.CurrentGrid.TableParts[v1].Query.CanModify then
                 begin
-                  if FDCLForm.CurrentGrid.TableParts[v1].Query.CanModify then
-                  begin
-                    If not (FDCLForm.CurrentGrid.TableParts[v1].Query.State in dsEditModes) then
-                      FDCLForm.CurrentGrid.TableParts[v1].Query.Edit;
-                    FDCLForm.CurrentGrid.TableParts[v1].Query.FieldByName(tmpS4).AsString:=tmpS2;
+                  If not (FDCLForm.CurrentGrid.TableParts[v1].Query.State in dsEditModes) then
+                    FDCLForm.CurrentGrid.TableParts[v1].Query.Edit;
+                  FDCLForm.CurrentGrid.TableParts[v1].Query.FieldByName(tmpS3).AsString:=tmpS2;
 
-                    if Flg1 then
-                      FDCLForm.CurrentGrid.TableParts[v1].Query.Post;
-                  end;
-                end;
-              end
-              else
-              begin
-                if FDCLGrid.Query.CanModify then
-                begin
-                  If not (FDCLGrid.Query.State in dsEditModes) then
-                    FDCLGrid.Query.Edit;
-                  FDCLGrid.Query.FieldByName(tmpS4).AsString:=tmpS2;
                   if Flg1 then
-                    FDCLGrid.Query.Post;
+                    FDCLForm.CurrentGrid.TableParts[v1].Query.Post;
                 end;
+              end;
+            end
+            else
+            begin
+              if FDCLForm.CurrentGrid.Query.CanModify then
+              begin
+                If not (FDCLForm.CurrentGrid.Query.State in dsEditModes) then
+                  FDCLForm.CurrentGrid.Query.Edit;
+                FDCLForm.CurrentGrid.Query.FieldByName(tmpS3).AsString:=tmpS2;
+                if Flg1 then
+                  FDCLForm.CurrentGrid.Query.Post;
               end;
             end;
           end;

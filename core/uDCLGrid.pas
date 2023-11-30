@@ -3341,14 +3341,13 @@ var
   ReturnValue: TReturnFormValue;
   ValueItem: TGetValueItem;
   Bookmark: TBookmark;
-  i: Integer;
   CommandObj: TDCLCommand;
 begin
   if Assigned((FForm as TDCLForm).ReturnValueParams) then
   begin
     ReturnValueParams:=(FForm as TDCLForm).ReturnValueParams;
     if Assigned(FQuery) and FQuery.Active and FieldExists(ReturnValueParams.KeyField, FQuery) and
-      FieldExists(ReturnValueParams.ValueField, FQuery) then
+      ((ReturnValueParams.ValueField='') or FieldExists(ReturnValueParams.ValueField, FQuery)) then
     begin
       ReturnValue:=TReturnFormValue.Create;
       ReturnValue.DestinationForm:=FForm;
@@ -3371,13 +3370,13 @@ begin
       ReturnValue.Values:=TList<TGetValueItem>.Create;
       if Assigned(FDBGrid) and FMultiSelectMode and (FDBGrid.SelectedRows.Count>0) then
       begin
-        for i:=1 to FDBGrid.SelectedRows.Count do
+        for Bookmark in FDBGrid.SelectedRows do
         begin
-          Bookmark:=FDBGrid.SelectedRows[i-1];
           FQuery.GoToBookmark(TBookmark(Bookmark));
           ValueItem:=TGetValueItem.Create;
           ValueItem.Key:=FQuery.FieldByName(ReturnValueParams.KeyField).AsString;
-          ValueItem.Value:=FQuery.FieldByName(ReturnValueParams.ValueField).AsString;
+          if ReturnValueParams.ValueField<>'' then
+            ValueItem.Value:=FQuery.FieldByName(ReturnValueParams.ValueField).AsString;
 
           ReturnValue.Values.Add(ValueItem);
         end;
@@ -3386,7 +3385,8 @@ begin
       begin
         ValueItem:=TGetValueItem.Create;
         ValueItem.Key:=FQuery.FieldByName(ReturnValueParams.KeyField).AsString;
-        ValueItem.Value:=FQuery.FieldByName(ReturnValueParams.ValueField).AsString;
+        if ReturnValueParams.ValueField<>'' then
+          ValueItem.Value:=FQuery.FieldByName(ReturnValueParams.ValueField).AsString;
 
         ReturnValue.Values.Add(ValueItem);
       end;
@@ -4060,7 +4060,6 @@ begin
 
     FreeAndNil(FieldsPos);
   end;
-  FIDCLMain:=nil;
   inherited Destroy;
 end;
 
