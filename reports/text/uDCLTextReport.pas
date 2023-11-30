@@ -272,10 +272,10 @@ end;
 
 function TDCLTextReport.TranslateRepParams(ParamName: String): String;
 var
-  ParamFieldNum: Byte;
-  ParamNum: Word;
+  ParamNum: Integer;
   ResultString, ReturnField, tmpSQL1: String;
   ParamsQuery: TDCLSimlyQuery;
+  F: TField;
 begin
   ParamNum:=0;
   While (UpperCase(RepParams[ParamNum])<>UpperCase(Trim(ParamName)))and
@@ -304,12 +304,12 @@ begin
       While Not ParamsQuery.Eof do
       begin
         tmpSQL1:='';
-        For ParamFieldNum:=0 to ParamsQuery.FieldCount-1 do
+        For F in ParamsQuery.Fields do
         begin
-          tmpSQL1:=tmpSQL1+TrimRight(ParamsQuery.Fields[ParamFieldNum].AsString);
+          tmpSQL1:=tmpSQL1+TrimRight(F.AsString);
         end;
 
-        ResultString:=ResultString+tmpSQL1+#10;
+        ResultString:=ResultString+tmpSQL1+LineEnding;
         ParamsQuery.Next;
       end;
     end
@@ -317,7 +317,7 @@ begin
     begin
       While Not ParamsQuery.Eof do
       begin
-        ResultString:=ResultString+TrimRight(ParamsQuery.FieldByName(ReturnField).AsString)+#10;
+        ResultString:=ResultString+TrimRight(ParamsQuery.FieldByName(ReturnField).AsString)+LineEnding;
         ParamsQuery.Next;
       end;
     end;
@@ -753,7 +753,8 @@ procedure TDCLTextReport.OpenReport(FileName: String; ViewMode: TReportViewMode
   );
 // 0-Normal 1 Record;  1-All Records;  2-Bookmarks; 3-All records (Num)
 var
-  BookMarks, Nubers: Integer;
+  BookMark: TBookmark;
+  Nubers: Integer;
 begin
   If FDialogRes=mrCancel Then
     Exit;
@@ -773,16 +774,17 @@ begin
     end;
     rvmGrid:
     begin
-      {If Assigned(FDCLGrid) and (FDCLGrid.Style in TDataGrid) and
-        (FDCLGrid.Grid.SelectedRows.Count>0) Then
+      If Assigned(FDCLGrid) and (FDCLGrid.Style in TDataGrid) and
+        Assigned(FDCLGrid.SelectedRows) and
+        (FDCLGrid.SelectedRows.Count>0) Then
       begin
-        For BookMarks:=0 to FDCLGrid.Grid.SelectedRows.Count-1 do
+        For BookMark in FDCLGrid.SelectedRows do
         begin
-          FReportQuery.GoToBookmark(TBookmark(FDCLGrid.Grid.SelectedRows[BookMarks]));
+          FReportQuery.GoToBookmark(BookMark);
           PrintReport;
         end;
       end
-      Else}
+      Else
         PrintReport;
     end;
     rvmMultitRecordReport:
@@ -801,18 +803,19 @@ begin
     end;
     rvmBookmarcks:
     begin
-      {If Assigned(FDCLGrid) and (FDCLGrid.Style in TDataGrid) and
-        (FDCLGrid.Grid.SelectedRows.Count>0) Then
+      If Assigned(FDCLGrid) and (FDCLGrid.Style in TDataGrid) and
+        Assigned(FDCLGrid.SelectedRows) and
+        (FDCLGrid.SelectedRows.Count>0) Then
       begin
         Nubers:=1;
-        For BookMarks:=0 to FDCLGrid.Grid.SelectedRows.Count-1 do
+        For BookMark in FDCLGrid.SelectedRows do
         begin
-          FReportQuery.GoToBookmark(TBookmark(FDCLGrid.Grid.SelectedRows[BookMarks]));
+          FReportQuery.GoToBookmark(BookMark);
           PrintReport;
           SaveReport(FileName+'-'+IntToStr(Nubers)+'.txt');
           inc(Nubers);
         end;
-      end;}
+      end;
     end;
     end;
   end

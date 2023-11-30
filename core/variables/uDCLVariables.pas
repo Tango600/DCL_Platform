@@ -51,7 +51,7 @@ end;
 
 function TVariables.Exists(NameSpace, VariableName: String): Boolean;
 begin
-  Result:=Assigned(Find(Namespace, VariableName);
+  Result:=Assigned(Find(Namespace, VariableName));
 end;
 
 procedure TVariables.NewVariable(const NameSpace, VariableName, Value: String);

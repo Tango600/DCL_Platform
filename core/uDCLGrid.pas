@@ -238,6 +238,8 @@ type
     procedure SetTempFilter;
     procedure DeleteTempFilter;
 
+    function GetSelectedRows: TBookmarkList;
+
     procedure Undo;
     procedure PCopy;
     procedure Cut;
@@ -290,6 +292,7 @@ type
     property RightsLevel: TUserLevelsType read FUserLevel;
     property Seed: String read GetGridSeed;
     property PrintTool: Boolean read FPrintTool write FPrintTool;
+    property SelectedRows: TBookmarkList read GetSelectedRows;
   end;
 
   { TLookupTable }
@@ -3875,6 +3878,15 @@ begin
       OpenQuery(QueryBuilder);
       break;
     end;
+  end;
+end;
+
+function TDCLGrid.GetSelectedRows: TBookmarkList;
+begin
+  Result:=nil;
+  if Assigned(FDBGrid) then
+  begin
+    Result:=FDBGrid.SelectedRows;
   end;
 end;
 
