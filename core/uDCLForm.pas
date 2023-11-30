@@ -479,7 +479,7 @@ begin
         idUserLevel:
         UserLevelLocal:=TranslateDigitToUserLevel(tmpS);
         end;
-        If UserLevelLocal<FUserLevel Then
+        If UserLevelLocal>FUserLevel Then
         begin
           ShowErrorMessage(0, GetDCLMessageString(msNotAllowOpenForm));
           FReject:=True;

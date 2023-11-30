@@ -4446,7 +4446,8 @@ begin
   begin
     FReadOnly:=True;
     {$IFDEF READONLYPROPERTY}
-    FQuery.ReadOnly:=True;
+    if not FQuery.Active then
+      FQuery.ReadOnly:=True;
     {$ELSE}
     AddNotAllowedOperation(dsoInsert);
     AddNotAllowedOperation(dsoDelete);
