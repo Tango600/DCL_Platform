@@ -90,36 +90,6 @@ end;
 {$ENDIF}
 {$IFDEF UNIX}
 
-function GetMacAddress: string;
-var
-  aProcess: TProcess;
-  aStrings: TStringList;
-  aString, aBuffer: String;
-  i: Integer;
-begin
-  Result:='00-00-00-00-00-00';
-  aProcess:=TProcess.Create(Nil);
-  aProcess.Commandline:='/sbin/ifconfig';
-  aProcess.Options:=[poUsePipes, poNoConsole];
-  aProcess.Execute;
-  SetLength(aBuffer, 3000);
-  Repeat
-    i:=aProcess.Output.Read(aBuffer[1], Length(aBuffer));
-    aString:=aString+Copy(aBuffer, 1, i);
-  Until i=0;
-  aProcess.Free;
-  aStrings:=TStringList.Create;
-  aStrings.Text:=aString;
-  For i:=0 To aStrings.Count-1 Do
-    If Not(Pos('HWaddr ', aStrings[i])=0) Then
-    Begin
-      aString:=aStrings[i];
-      Delete(aString, 1, Pos('HWaddr ', aString)+6);
-      Result:=aString;
-    End;
-  aStrings.Free;
-end;
-
 Function KeyState(Key: Integer): Boolean;
 Begin
   Result:=GetKeyState(Key)<>0;

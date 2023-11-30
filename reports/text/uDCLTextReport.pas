@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Controls, Forms, ComCtrls, StdCtrls, Buttons, ExtCtrls,
-  DBCtrls, DB, Generics.Collections,
+  DBCtrls, DB, Generics.Collections, LazUTF8,
   uDCLDBAwareTypes, uDCLConst, uIDCLMain, uDCLData, uDCLDBConnector, uDCLGrid,
   uDCLTypes, uDCLVariables;
 
@@ -61,6 +61,16 @@ uses
 const
   EditTopStep=23;
 
+Function PosEx(const SubStr, S: String): Cardinal;
+begin
+  Result:=UTF8Pos(UTF8LowerString(SubStr), UTF8LowerString(S));
+end;
+
+function UTF8CharAt(S: String; Index: Integer): String;
+begin
+  Result:=UTF8Copy(S, Index, 1);
+end;
+
 { TDCLTextReport }
 
 procedure DeleteInString(var S: String; Index, Count: LongInt);
@@ -69,11 +79,11 @@ var
 begin
   T:=Index;
   t1:=T;
-  While (S[T]<>#10)and(T<=Length(S))and(T-t1<=Count-1) do
+  While (UTF8CharAt(S, T)<>#10)and(T<=UTF8Length(S))and(T-t1<=Count-1) do
   begin
     inc(T);
   end;
-  Delete(S, Index, T-t1);
+  UTF8Delete(S, Index, T-t1);
 end;
 
 procedure FillCopy(Source: String; var Dest: String; Start, FillLength, ReplaceLen: Cardinal;
@@ -82,21 +92,20 @@ var
   T, t1: Cardinal;
   tmpL: String;
 begin
-  DeleteInString(Dest, Start, ReplaceLen);
   tmpL:=Source;
-  t1:=Length(Source);
+  t1:=UTF8Length(Source);
   If PosEx('I', Align)<>0 Then
-    DeleteInString(Dest, Start, FillLength);
-
-  If PosEx('I', Align)=0 Then
+    DeleteInString(Dest, Start, FillLength)
+  else
   begin
+    DeleteInString(Dest, Start, ReplaceLen);
     If PosEx('L', Align)<>0 Then
       If FillLength>t1 Then
-        For T:=Length(tmpL)+1 to FillLength do
+        For T:=UTF8Length(tmpL)+1 to FillLength do
           tmpL:=tmpL+' ';
     If PosEx('R', Align)<>0 Then
       If FillLength>t1 Then
-        For T:=Length(tmpL)+1 to FillLength do
+        For T:=UTF8Length(tmpL)+1 to FillLength do
           tmpL:=' '+tmpL;
     If PosEx('M', Align)<>0 Then
     begin
@@ -109,7 +118,8 @@ begin
       end;
     end;
   end;
-  Insert(Copy(tmpL, 1, FillLength), Dest, Start);
+
+  UTF8Insert(UTF8Copy(tmpL, 1, FillLength), Dest, Start);
 end;
 
 procedure TDCLTextReport.GrabValListOnChange(Sender: TObject);
@@ -131,7 +141,7 @@ var
 begin
   If FVarsToControls.Count>(Sender as TDBLookupComboBox).Tag Then
   begin
-    If (Sender as TDBLookupComboBox).KeyValue={$IFDEF FPC}null{$ELSE}Unassigned{$ENDIF} Then
+    If (Sender as TDBLookupComboBox).KeyValue=Unassigned Then  // null
       Val:=''
     Else
       Val:=(Sender as TDBLookupComboBox).KeyValue;
@@ -175,36 +185,36 @@ begin
         If StartSel<>0 Then
           ParamValue:=TranslateRepParams(RepParams[StringNum]);
 
-        k:=StartSel+Length(RepParams[StringNum]);
+        k:=StartSel+UTF8Length(RepParams[StringNum]);
         k1:=k;
         ParamFill:=0;
         DopLength:=0;
         If BodyText<>'' Then
-          If BodyText[k]='(' Then
+          If UTF8CharAt(BodyText, k)='(' Then
           begin
-            While BodyText[k]<>')' do
+            While UTF8CharAt(BodyText, k)<>')' do
               inc(k);
-            TmpStr:=Copy(BodyText, k1+1, k-k1-1);
+            TmpStr:=UTF8Copy(BodyText, k1+1, k-k1-1);
             ParamFill:=StrToIntEx(TmpStr);
             ParamLen:=ParamFill;
             DopLength:=k-k1+1;
           end
           else
-            ParamLen:=Length(ParamValue);
+            ParamLen:=UTF8Length(ParamValue);
 
         If StartSel<>0 Then
           If ParamFill=0 Then
-            ParamFill:=Length(ParamValue);
-        If ParamFill>Length(ParamValue) then
+            ParamFill:=UTF8Length(ParamValue);
+        If ParamFill>UTF8Length(ParamValue) then
         Begin
-          ParamFill:=ParamFill-Length(ParamValue);
+          ParamFill:=ParamFill-UTF8Length(ParamValue);
         End;
 
         If PosEx('i', TmpStr)<>0 Then
         begin
           InsMode:=True;
-          Delete(BodyText, StartSel, Length(RepParams[StringNum])+DopLength);
-          CuteLen:=Length(RepParams[StringNum])+DopLength;
+          UTF8Delete(BodyText, StartSel, UTF8Length(RepParams[StringNum])+DopLength);
+          CuteLen:=UTF8Length(RepParams[StringNum])+DopLength;
         end
         Else
         begin
@@ -218,7 +228,7 @@ begin
           begin
             If ParamFill>0 Then
             begin
-              k3:=Length(ParamValue);
+              k3:=UTF8Length(ParamValue);
               For k:=1 to (ParamFill div 2)-(k3 div 2) do
                 ParamValue:=' '+ParamValue;
               For k:=(ParamFill div 2)-(k3 div 2)+k3+1 to ParamFill do
@@ -231,23 +241,23 @@ begin
               For k:=1 to ParamFill do
                 ParamValue:=ParamValue+' ';
           end;
-          Delete(BodyText, StartSel, Length(RepParams[StringNum])+DopLength);
+          UTF8Delete(BodyText, StartSel, UTF8Length(RepParams[StringNum])+DopLength);
         end;
 
         If not InsMode then
-          Insert(Copy(ParamValue, 1, ParamLen), BodyText, StartSel)
+          UTF8Insert(UTF8Copy(ParamValue, 1, ParamLen), BodyText, StartSel)
         Else
         Begin
           If CuteLen>=ParamFill then
           Begin
             For k:=1 to CuteLen-ParamFill do
               ParamValue:=ParamValue+' ';
-            Insert(ParamValue, BodyText, StartSel);
+            UTF8Insert(ParamValue, BodyText, StartSel);
           End
           Else
           Begin
             DeleteInString(BodyText, StartSel, ParamFill-CuteLen);
-            Insert(ParamValue, BodyText, StartSel);
+            UTF8Insert(ParamValue, BodyText, StartSel);
           End;
         End;
         StartSel:=PosEx(RepParams[StringNum], BodyText);
@@ -312,7 +322,7 @@ begin
       end;
     end;
 
-    ResultString:=Copy(ResultString, 1, Length(ResultString)-1);
+    ResultString:=UTF8Copy(ResultString, 1, UTF8Length(ResultString)-1);
     RePlaseVariables(ResultString);
 
     ParamsQuery.Close;
@@ -662,11 +672,12 @@ end;
 
 procedure TDCLTextReport.PrintReport;
 var
-  TmpStr, BodyText, BodyText1: String;
-  StartPos, LengthParam, DelLen: Cardinal;
-  FieldsCounter, NameLength, StartSel: Integer;
+  Value, BodyText, LastField: String;
+  StartPos, LengthParam: Cardinal;
+  StartSel, DelLen: Integer;
   Parser: TDCLValuseParser;
   Alig: String;
+  Field, Field2: TField;
 begin
   If FDialogRes=mrCancel Then
     Exit;
@@ -675,56 +686,67 @@ begin
 
   If Not FReportQuery.IsEmpty Then
   begin
-    For FieldsCounter:=0 to FReportQuery.FieldCount-1 do
+    For Field in FReportQuery.Fields do
     begin
-      NameLength:=Length(FReportQuery.Fields[FieldsCounter].FieldName);
-
-      StartSel:=PosEx(ParamPrefix+FReportQuery.Fields[FieldsCounter].FieldName, BodyText);
+      StartSel:=PosEx(ParamPrefix+Field.FieldName, BodyText);
       While StartSel<>0 do
       begin
         Alig:='L';
         If StartSel<>0 Then
         begin
-          If BodyText[StartSel+NameLength+1]='(' Then
+          LengthParam:=0;
+          LastField:='';
+          for Field2 in FReportQuery.Fields do
           begin
-            StartPos:=StartSel+NameLength+Length(ParamPrefix);
-            While BodyText[StartPos]<>')' do
-              inc(StartPos);
-            TmpStr:=Copy(BodyText, StartSel+NameLength+2, StartPos-StartSel-NameLength-2);
-            LengthParam:=StrToIntEx(TmpStr);
-            If PosEx('R', TmpStr)=0 Then
-              If PosEx('M', TmpStr)=0 Then
-                If PosEx('L', TmpStr)=0 Then
-                  If PosEx('I', TmpStr)=0 Then
-                    TmpStr:='L';
+            if (LengthParam<UTF8Length(Field2.FieldName)) and (PosEx(ParamPrefix+Field2.FieldName, BodyText)<>0) then
+            begin
+              StartSel:=PosEx(ParamPrefix+Field2.FieldName, BodyText);
+              LastField:=Field2.FieldName;
+              LengthParam:=UTF8Length(Field2.FieldName);
+            end;
+          end;
 
-            Alig:=TmpStr;
+          Value:=TrimRight(FReportQuery.FieldByName(LastField).AsString);
+
+          If UTF8CharAt(BodyText, StartSel+LengthParam+1)='(' Then
+          begin
+            StartPos:=StartSel+LengthParam+1;
+            While UTF8CharAt(BodyText, StartPos)<>')' do
+              inc(StartPos);
+            Alig:=UTF8Copy(BodyText, StartSel+LengthParam+2, StartPos-(StartSel+LengthParam+2));
+            LengthParam:=StrToIntEx(Alig);
+            If PosEx('R', Alig)=0 Then
+              If PosEx('M', Alig)=0 Then
+                If PosEx('L', Alig)=0 Then
+                  If PosEx('I', Alig)=0 Then
+                    Alig:='L';
+
             DelLen:=StartPos-StartSel+1;
 
             If LengthParam=0 Then
-              LengthParam:=Length(TrimRight(FReportQuery.Fields[FieldsCounter].AsString));
+              LengthParam:=UTF8Length(Value);
           end
           Else
           begin
-            DelLen:=NameLength+Length(ParamPrefix);
-            LengthParam:=Length(TrimRight(FReportQuery.Fields[FieldsCounter].AsString));
+            DelLen:=LengthParam+UTF8Length(ParamPrefix);
+            LengthParam:=UTF8Length(Value);
           end;
 
-          FillCopy(TrimRight(FReportQuery.Fields[FieldsCounter].AsString), BodyText, StartSel,
-            LengthParam, DelLen, Alig);
+          //UTF8Delete(BodyText, StartSel, DelLen);
+          FillCopy(Value, BodyText, StartSel, LengthParam, DelLen, Alig);
 
-          StartSel:=PosEx(ParamPrefix+FReportQuery.Fields[FieldsCounter].FieldName, BodyText);
+          StartSel:=PosEx(ParamPrefix+Field.FieldName, BodyText);
         end;
       end;
     end;
-    BodyText1:=Copy(BodyText, 1, Length(BodyText)-Length(LineEnding));
+    BodyText:=UTF8Copy(BodyText, 1, UTF8Length(BodyText)-UTF8Length(LineEnding));
   end
   Else
-    BodyText1:='';
+    BodyText:='';
 
   Parser:=TDCLValuseParser.Create(FNameSpace, FVariables);
-  Parser.RePlaceProc(BodyText1, nil);
-  Body.Append(BodyText1);
+  Parser.RePlaceProc(BodyText, nil);
+  Body.Append(BodyText);
 end;
 
 procedure TDCLTextReport.OpenReport(FileName: String; ViewMode: TReportViewMode
@@ -819,16 +841,16 @@ begin
 
   RePlaseVariables(FileName);
 
-  i:=Length(FileName);
+  i:=UTF8Length(FileName);
   While i<>0 do
   begin
     If (FileName[i]='"')or(FileName[i]=CrossDelim)or(FileName[i]='*')or(FileName[i]='?')or
       (FileName[i]='>')or(FileName[i]='<') Then
-      Delete(FileName, i, 1);
+      UTF8Delete(FileName, i, 1);
     Dec(i);
   end;
 
-  Report.SaveToFile(FileName{$IFDEF FPC}, TEncoding.UTF8{$ENDIF});
+  Report.SaveToFile(FileName, TEncoding.UTF8);
   Result:=FileName;
   FSaved:=True;
 
