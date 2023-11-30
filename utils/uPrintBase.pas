@@ -4,7 +4,7 @@ unit uPrintBase;
 interface
 
 uses
-  Classes, SysUtils,
+  Classes, SysUtils, DB, LazUTF8,
   uDCLDBAwareTypes;
 
 type
@@ -26,6 +26,9 @@ type
 
 implementation
 
+const
+  PixelPerChar=7;
+
 { TPrintBase }
 
 constructor TPrintBase.Create(Query: TDCLDialogQuery);
@@ -41,8 +44,9 @@ end;
 
 procedure TPrintBase.Print(Grid: TDCLDBGrid; Caption: String);
 var
-  SeparatorLength, k, FieldsCounter: Word;
+  SeparatorLength, k, i: Integer;
   Separator, S, S1, S2: String;
+  F: TField;
 begin
   PrintBox:=TStringList.Create;
   PrintBox.Append(Caption);
@@ -50,22 +54,21 @@ begin
   S:='|';
   If Not Assigned(Grid) Then
   begin
-    For FieldsCounter:=0 to FQuery.FieldCount-1 do
+    For F in FQuery.Fields do
     begin
       S1:='';
-      S2:=TrimRight(FQuery.Fields[FieldsCounter].FieldName);
-      If Length(S2)>FQuery.Fields[FieldsCounter].DataSize Then
-        SetLength(S2, FQuery.Fields[FieldsCounter].DataSize+1);
+      S2:=TrimRight(F.FieldName);
+      If UTF8Length(S2)>F.DataSize Then
+        SetLength(S2, F.DataSize+1);
       S:=S+S2;
-      For k:=Length(TrimRight(FQuery.Fields[FieldsCounter].FieldName)) to FQuery.Fields
-        [FieldsCounter].DataSize do
+      For k:=UTF8Length(TrimRight(F.FieldName)) to F.DataSize do
         S1:=S1+' ';
       S:=S+S1+'|';
     end;
     PrintBox.Append(S);
-    SeparatorLength:=Length(S)-1;
+    SeparatorLength:=UTF8Length(S)-1;
     Separator:='';
-    For FieldsCounter:=0 to SeparatorLength do
+    For k:=0 to SeparatorLength do
       Separator:=Separator+'-';
     PrintBox.Append(Separator);
 
@@ -73,15 +76,14 @@ begin
     While Not FQuery.Eof do
     begin
       S:='|';
-      For FieldsCounter:=0 to FQuery.FieldCount-1 do
+      For F in FQuery.Fields do
       begin
         S1:='';
-        S2:=TrimRight(FQuery.Fields[FieldsCounter].AsString);
-        If Length(S2)>FQuery.Fields[FieldsCounter].DataSize Then
-          SetLength(S2, FQuery.Fields[FieldsCounter].DataSize+1);
+        S2:=TrimRight(F.AsString);
+        If UTF8Length(S2)>F.DataSize Then
+          SetLength(S2, F.DataSize+1);
         S:=S+S2;
-        For k:=Length(TrimRight(FQuery.Fields[FieldsCounter].AsString)) to FQuery.Fields
-          [FieldsCounter].DataSize do
+        For k:=UTF8Length(TrimRight(F.AsString)) to F.DataSize do
           S1:=S1+' ';
         S:=S+S1+'|';
       end;
@@ -93,22 +95,23 @@ begin
   end
   Else
   begin
-    For FieldsCounter:=0 to Grid.Columns.Count-1 do
+    For i:=0 to Grid.Columns.Count-1 do
     begin
       S1:='';
-      S2:=TrimRight(Grid.Columns[FieldsCounter].Title.Caption);
-      If Length(S2)>(Grid.Columns[FieldsCounter].Width div 7) Then
-        SetLength(S2, (Grid.Columns[FieldsCounter].Width div 7)+1);
-      S:=S+S2;
-      For k:=Length(TrimRight(Grid.Columns[FieldsCounter].Title.Caption))
-        to (Grid.Columns[FieldsCounter].Width div 7) do
+      S2:=TrimRight(Grid.Columns[i].Title.Caption);
+      If UTF8Length(S2)>(Grid.Columns[i].Width div PixelPerChar) Then
+        S:=S+UTF8Copy(S2, 1, (Grid.Columns[i].Width div PixelPerChar)+1)
+      else
+        S:=S+S2;
+      For k:=UTF8Length(TrimRight(Grid.Columns[i].Title.Caption))
+        to (Grid.Columns[i].Width div PixelPerChar) do
         S1:=S1+' ';
       S:=S+S1+'|';
     end;
     PrintBox.Append(S);
-    SeparatorLength:=Length(S)-1;
+    SeparatorLength:=UTF8Length(S)-1;
     Separator:='';
-    For FieldsCounter:=0 to SeparatorLength do
+    For i:=0 to SeparatorLength do
       Separator:=Separator+'-';
     PrintBox.Append(Separator);
 
@@ -118,19 +121,20 @@ begin
     While Not FQuery.Eof do
     begin
       S:='|';
-      For FieldsCounter:=0 to Grid.Columns.Count-1 do
+      For i:=0 to Grid.Columns.Count-1 do
       begin
         S1:='';
         try
-          S2:=Grid.Columns[FieldsCounter].Field.AsString;
+          S2:=Grid.Columns[i].Field.AsString;
         Except
           S2:='[no field]';
         end;
-        If Length(S2)>(Grid.Columns[FieldsCounter].Width div 7) Then
-          SetLength(S2, (Grid.Columns[FieldsCounter].Width div 7)+1);
-        S:=S+S2;
-        For k:=Length(TrimRight(Grid.Columns[FieldsCounter].Field.AsString))
-          to (Grid.Columns[FieldsCounter].Width div 7) do
+        If UTF8Length(S2)>(Grid.Columns[i].Width div PixelPerChar) Then
+          S:=S+UTF8Copy(S2, 1, (Grid.Columns[i].Width div PixelPerChar)+1)
+        else
+          S:=S+S2;
+        For k:=UTF8Length(TrimRight(Grid.Columns[i].Field.AsString))
+          to (Grid.Columns[i].Width div PixelPerChar) do
           S1:=S1+' ';
         S:=S+S1+'|';
       end;
@@ -141,19 +145,17 @@ begin
     PrintBox.Append(Separator);
     Separator:='|'+IntToStr(FQuery.RecordCount);
   end;
-  For FieldsCounter:=Length(Separator) to SeparatorLength-1 do
+  For i:=Length(Separator) to SeparatorLength-1 do
     Separator:=Separator+' ';
   Separator:=Separator+'|';
   PrintBox.Append(Separator);
-
-  //ExecApp('"'+GPT.Viewer+'" "'+IncludeTrailingPathDelimiter(AppConfigDir)+'table.tmp"', '');
 end;
 
 procedure TPrintBase.Save(FileName: String);
 begin
   if Assigned(PrintBox) then
   begin
-    PrintBox.SaveToFile(FileName{$IFDEF FPC}, TEncoding.UTF8{$ENDIF});
+    PrintBox.SaveToFile(FileName, TEncoding.UTF8);
   end;
 end;
 

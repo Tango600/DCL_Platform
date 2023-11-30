@@ -311,7 +311,7 @@ type
 implementation
 
 uses
-  EditBtn, LCLProc, lcltype,
+  EditBtn, LCLProc, lcltype, uRunProgram,
   uDCLCommand, uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, uDCLForm,
   uPrintBase, uDCLGlobalVariables, uDCLMD5, uExpressionParser;
 
@@ -757,12 +757,19 @@ begin
 end;
 
 procedure TDCLGrid.Print(Sender: TObject);
+const
+  tmpFileName='table.tmp';
 var
   Print: TPrintBase;
 begin
   Print:=TPrintBase.Create(FQuery);
   Print.Print(FDBGrid, FForm.Caption);
-  Print.Save(AppConfigDir+'table.tmp');
+  Print.Save(AppConfigDir+tmpFileName);
+
+  if GPT.Viewer<>'' then
+    Run('"'+GPT.Viewer+'"', '"'+AppConfigDir+tmpFileName+'"', False)
+  else
+    OpenFile(AppConfigDir+tmpFileName);
 end;
 
 procedure TDCLGrid.ExecEvents(EventType: TEventsEnum);
