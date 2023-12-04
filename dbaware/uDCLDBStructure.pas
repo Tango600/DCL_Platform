@@ -49,6 +49,18 @@ const
 
   NotifycationsTable=DCL_TablePrefix+'NOTIFYCATIONS';
 
+  UpdatePackageTable=DCL_TablePrefix+'UPDATE_PACKAGES';
+  IDPackageField='PU_ID';
+  PackageNameField='PACKAGE_NAME';
+  PackageHashField='PACKAGE_HASH';
+  PackageUpdateState='STATE';
+  PackageLastUpdate='UPDATE_DATE';
+
+  UpdateScriptsTable=DCL_TablePrefix+'PACKAGE_SCRIPTS';
+  UpdateScriptIDField='PS_ID';
+  PackageIDField='PACKAGE_ID';
+  UpdateScriptNameField='SCRIPT_NAME';
+  UpdateScriptStateField='STATE';
 
 implementation
 

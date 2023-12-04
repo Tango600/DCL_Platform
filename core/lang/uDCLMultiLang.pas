@@ -16,7 +16,7 @@ uses
 type
   TLangName=String;
 
-  TTranscodeDataType=(tdtUTF8, tdtDOS, tdtTranslit);
+  TTranscodeDataType=(tdtUTF8, tdtTranslit);
   TStringMessages=(msNone, msClose, msOpen, msEdit, msDelete, msModified, msInputVulues, msInBegin,
     msInEnd, msPrior, msNext, msCancel, msRefresh, msInsert, msPost, msEmptyUserName, msPage, msApplay,
     msConnectDBError, msClearContent, msConnectionStringIncorrect, msNoField, msDeleteRecord,
@@ -25,7 +25,7 @@ type
     msPaths, msTheProduct, msProducer, msVersion, msStatus, msUser, msRole, msDataBase, msConfiguration,
     msDebugMode, msInformationAbout, msBuildOf, msOS, msLang, msUsers, msDoYouWontTerminate, msClearAllFind,
     msApplication, msDownloadInProgress, msFind, msFindCurrCell, msPrint, msCopy, msCut, msPast, msBookmark,
-    msStructure, msGotoBookmark, msOldFormat, msOldBookmarkFormat, msVersionsGap, msOldVersion, msDeleteTempFilter,
+    msStructure, msGotoBookmark, msOldFormat, msVersionsGap, msOldVersion, msDeleteTempFilter,
     msChangePassord, msOldM, msNewM, msPassword, msConfirm, msHashed, msToHashing, msToAll, msIn,
     msLogonToSystem, msUserName, msNoYes, msDenyMessageDev, msDenyMessageUsr, msAccessLevelsSet, msNotifyActionsSet,
     msCodePage, msLock, msUnLock, msChoose, msEditings, msData, msReset, msSettings, msFields,
@@ -40,7 +40,8 @@ type
     msResetFieldsSettings, msResetFieldsSettingsQ, msDeleteAllBookmarks, msDeleteAllBookmarksQ, msSaveFieldsSettings,
     msNotAllowOpenForm, msDeleteRecordQ, msNotAllowExecuteApps, msPathsNotSupported, msSaveEditings, msSaveEditingsQ,
     msDoYouWontTerminateApplicationQ, msConfigurationFileNotFound, msClearContentQ, msNotifycation, msForUser,
-    msLoading, msTimeToExit, msDSStateSet, msCloseDialogQuery, msNotFilter);
+    msLoading, msTimeToExit, msDSStateSet, msCloseDialogQuery, msNotFilter, msCantOpenForUpdatePackage,
+    msPackageSignNotValid);
 
 
 procedure LoadLangRes(Lang:TLangName; Path:String);
@@ -75,7 +76,7 @@ const
     'msPaths', 'msTheProduct', 'msProducer', 'msVersion', 'msStatus', 'msUser', 'msRole', 'msDataBase', 'msConfiguration',
     'msDebugMode', 'msInformationAbout', 'msBuildOf', 'msOS', 'msLang', 'msUsers', 'msDoYouWontTerminate', 'msClearAllFind',
     'msApplication', 'msDownloadInProgress', 'msFind', 'msFindCurrCell', 'msPrint', 'msCopy', 'msCut', 'msPast', 'msBookmark',
-    'msStructure', 'msGotoBookmark', 'msOldFormat', 'msOldBookmarkFormat', 'msVersionsGap', 'msOldVersion', 'msDeleteTempFilter',
+    'msStructure', 'msGotoBookmark', 'msOldFormat', 'msVersionsGap', 'msOldVersion', 'msDeleteTempFilter',
     'msChangePassord', 'msOldM', 'msNewM', 'msPassword', 'msConfirm', 'msHashed', 'msToHashing', 'msToAll', 'msIn',
     'msLogonToSystem', 'msUserName', 'msNoYes', 'msDenyMessageDev', 'msDenyMessageUsr', 'msAccessLevelsSet', 'msNotifyActionsSet',
     'msCodePage', 'msLock', 'msUnLock', 'msChoose', 'msEditings', 'msData', 'msReset', 'msSettings', 'msFields',
@@ -90,7 +91,8 @@ const
     'msResetFieldsSettings', 'msResetFieldsSettingsQ', 'msDeleteAllBookmarks', 'msDeleteAllBookmarksQ', 'msSaveFieldsSettings',
     'msNotAllowOpenForm', 'msDeleteRecordQ', 'msNotAllowExecuteApps', 'msPathsNotSupported', 'msSaveEditings', 'msSaveEditingsQ',
     'msDoYouWontTerminateApplicationQ', 'msConfigurationFileNotFound', 'msClearContentQ', 'msNotifycation', 'msForUser',
-    'msLoading', 'msTimeToExit', 'msDSStateSet', 'msCloseDialogQuery', 'msNotFilter');
+    'msLoading', 'msTimeToExit', 'msDSStateSet', 'msCloseDialogQuery', 'msNotFilter', 'msCantOpenForUpdatePackage',
+    'msPackageSignNotValid');
 
 type
   TCharToUTF8Table=array [0..255] of String;
@@ -103,11 +105,6 @@ type
   end;
 
 const
-  TranscodeToDOS:Array[0..3] of TTranscodeData=((CodeFrom1:168;CodeFrom2:168; TagertCode:Chr(72); TranscodeType:ttAdd),
-                                             (CodeFrom1:184;CodeFrom2:184; TagertCode:Chr(57); TranscodeType:ttAdd),
-                                             (CodeFrom1:192;CodeFrom2:239; TagertCode:Chr(64); TranscodeType:ttSub),
-                                             (CodeFrom1:240;CodeFrom2:255; TagertCode:Chr(16); TranscodeType:ttSub));
-
   TransliteSimbolsCount=68;
   RusTab: Array [0..TransliteSimbolsCount-1] Of String=('а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й',
     'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ы', 'ъ', 'ь',
@@ -530,8 +527,6 @@ begin
     Result:='Перейти к закладке';
     msOldFormat:
     Result:='Старый формат';
-    msOldBookmarkFormat:
-    Result:='Старый формат закладок, нет секции Title';
     msVersionsGap:
     Result:='Существенная разница в версиях. Всё может не работать.';
     msOldVersion:
@@ -563,7 +558,7 @@ begin
     msDenyMessageUsr:
     Result:='Вам не разрешён вход в систему.';
     msAccessLevelsSet:
-    Result:='Не определено,Отключен,Только чтение,Запись,Полные права,Уровень 1,Уровень 2,Уровень 3,Уровень 4,Оператор пакетов,Разработчик';
+    Result:='Не определено,Отключен,Только чтение,Запись,Полные права,Уровень 1,Уровень 2,Уровень 3,Уровень 4,Оператор обновления,Оператор пакетов,Разработчик';
     msNotifyActionsSet:
     Result:='Выполнено,Запуск скрипта,Сообщение,Запуск приложения с ожиданием,Запуск приложения,Выход по времени';
     msCodePage:
@@ -734,6 +729,10 @@ begin
     Result:='Исключение';
     msDeleteTempFilter:
     Result:='Убрать врем. фильтр';
+    msCantOpenForUpdatePackage:
+    Result:='Нельзя загрузить пакет для обновления.';
+    msPackageSignNotValid:
+    Result:='Подпись пакета не верна.';
     end;
   End;
 end;
@@ -828,7 +827,7 @@ begin
   If FileExists(FileName) then
   Begin
     LangResFile:=TStringList.Create;
-    LangResFile.LoadFromFile(FileName{$IFNDEF FPC}, TEncoding.UTF8{$ENDIF});
+    LangResFile.LoadFromFile(FileName, TEncoding.UTF8);
 
     For ii:=1 to LangResFile.Count do
     Begin
@@ -1042,7 +1041,7 @@ begin
   If FileExists(FileName) then
   Begin
     LangResFile:=TStringList.Create;
-    LangResFile.LoadFromFile(FileName{$IFNDEF FPC}, TEncoding.UTF8{$ENDIF});
+    LangResFile.LoadFromFile(FileName, TEncoding.UTF8);
 
     For i:=1 to LangResFile.Count do
     Begin
@@ -1115,15 +1114,6 @@ begin
   End;
 end;
 
-procedure SetDefaultTranscodeDOS;
-var
-  i:Integer;
-begin
-  SetLength(TranscodeData[tdtDOS], Length(TranscodeToDOS));
-  For i:=1 to Length(TranscodeToDOS) do
-    TranscodeData[tdtDOS][i-1]:=TranscodeToDOS[i-1];
-end;
-
 procedure SetDefaultTranslite;
 var
   i:Integer;
@@ -1143,8 +1133,6 @@ begin
   FileName:=IncludeTrailingPathDelimiter(DefaultLangDir)+'DCLTranslate.'+UpperCase(Lang);
 
   LoadLangFile(Path+FileName);
-  If not LoadTranscodeFile(tdtDOS, 'DCLTranscodeDOS', Lang) then
-    SetDefaultTranscodeDOS;
   If not LoadTranscodeFile(tdtUTF8, 'DCLTranscodeUTF8', Lang) then
     SetDefaultTranscodeUTF8;
   If not LoadTranscodeFile(tdtTranslit, 'DCLTranslite', Lang) then

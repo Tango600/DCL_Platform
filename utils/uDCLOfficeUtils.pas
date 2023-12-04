@@ -36,7 +36,7 @@ Function GetDocumentType(FileName: String): TOfficeDocumentFormat;
 implementation
 
 uses
-  uDCLOLE, uDCLMultiLang, uDCLMessages, uDCLUtils;
+  uDCLOLE, uDCLMultiLang, uDCLMessages;
 
 var
   WordRuning: Boolean;

@@ -27,6 +27,7 @@ type
     TCommandQuery=TIBQuery;
     TTransaction=TIBTransaction;
     TUpdateObj=TIBUpdateSQL;
+    TSQLScripter=TIBXScript;
   {$ENDIF}
   {$IFDEF ZEOS}
     TDBConnector=TZConnection;
@@ -38,6 +39,7 @@ type
     {$ENDIF}
     TUpdateObj=TZUpdateSQL;
     TCommandQuery=TZReadOnlyQuery;
+    TSQLScripter=TZSQLProcessor;
   {$ENDIF}
   {$IFDEF SQLdbFamily}
     TDCLDialogQuery=TSQLQuery;
@@ -45,6 +47,7 @@ type
     TCommandQuery=TSQLQuery;
     TTransaction=TSQLTransaction;
     TUpdateObj=TSQLQuery;
+    TSQLScripter=TSQLScript;
   {$IFDEF SQLdbIB}
     TDBConnector=TIBConnection;
     TDatabaseObject=TDatabase;

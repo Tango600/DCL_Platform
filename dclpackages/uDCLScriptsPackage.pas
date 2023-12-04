@@ -9,10 +9,16 @@ uses
 type
   TRunType=(rtNone, rtCommand, rtDialog);
 
+  { TPackageInfo }
+
   TPackageInfo=class
     Name, Sign, Hash, Version: String;
     RunOnStart, ForUpdate: Boolean;
+    Dependencies: TList<String>;
+    constructor Create;
   end;
+
+  { TDCLScriptItem }
 
   TDCLScriptItem=class
     SQL: Boolean;
@@ -20,11 +26,15 @@ type
     Id, Ident, Parent, Order: Integer;
     ScriptName, Command: String;
     ScriptText: TStringStream;
+    constructor Create;
   end;
   
+  { TPackage }
+
   TPackage=class
     PackageInfo: TPackageInfo;
     Scripts: TList<TDCLScriptItem>;
+    constructor Create;
   end;
 
   { TDCLScriptsPackage }
@@ -40,6 +50,7 @@ type
 
     procedure DisassemblyPackage(TextPackage: TStringList);
     procedure ParsePackageHeader(TextPackage: TStringList);
+    procedure ParseDependenciesSection(TextPackage: TStringList);
     function CalcPackageHash: String;
     function GetBase41Sequence: String;
   public
@@ -87,6 +98,7 @@ const
   PackageNameSection='Name';
   RunOnStartSection='RunOnStart';
   SignHashSection='Sign';
+  DependOnSection='DependOn';
 
 function GetDataHash(Data: TStream): String;
 var
@@ -112,6 +124,28 @@ begin
 
     Result:=MD5Print(MD5Buffer(Buffer[0], p));
   end;
+end;
+
+{ TPackageInfo }
+
+constructor TPackageInfo.Create;
+begin
+  Dependencies:=TList<String>.Create;
+end;
+
+{ TDCLScriptItem }
+
+constructor TDCLScriptItem.Create;
+begin
+  ScriptText:=TStringStream.Create('', TEncoding.UTF8);
+end;
+
+{ TPackage }
+
+constructor TPackage.Create;
+begin
+  PackageInfo:=TPackageInfo.Create;
+  Scripts:=TList<TDCLScriptItem>.Create;
 end;
 
 function TDCLScriptsPackage.GetPackageInfo: TPackageInfo;
@@ -151,7 +185,6 @@ constructor TDCLScriptsPackage.Create;
 begin
   FPackage:=TPackage.Create;
   FPackage.PackageInfo:=TPackageInfo.Create;
-  FPackage.Scripts:=TList<TDCLScriptItem>.Create;
 end;
 
 procedure TDCLScriptsPackage.ClearFiles;
@@ -166,7 +199,6 @@ begin
   si:=TDCLScriptItem.Create;
   si.ScriptName:=ExtractFileNameOnly(FileName);
   si.RunType:=RunType;
-  si.ScriptText:=TStringStream.Create('', TEncoding.UTF8);
   si.ScriptText.LoadFromFile(FileName);
 
   FPackage.Scripts.Add(si);
@@ -303,6 +335,11 @@ begin
     if FPackage.PackageInfo.ForUpdate then
       S:=S+ForUpdateSection+'=1;';
     TextPackage.Append('['+SignHashSection+'='+FPackage.PackageInfo.Sign+';Version='+PackagesVersion+';'+S+']');
+    if FPackage.PackageInfo.Dependencies.Count>0 then
+    begin
+      S:='['+DependOnSection+'='+S.Join(',', FPackage.PackageInfo.Dependencies.ToArray)+';]';
+      TextPackage.Append(S);
+    end;
 
     for I in FPackage.Scripts do
     begin
@@ -492,6 +529,7 @@ var
 begin
   FPackage.Scripts.Clear;
   ParsePackageHeader(TextPackage);
+  ParseDependenciesSection(TextPackage);
 
   HashKey:=Copy(FPackage.PackageInfo.Sign, 1, 6);
 
@@ -624,6 +662,27 @@ begin
       FPackage.PackageInfo.Name:=FindParam(PackageNameSection+'=', S);
       FPackage.PackageInfo.RunOnStart:=FindParam(RunOnStartSection+'=', S)='1';
       FPackage.PackageInfo.Version:=FindParam('Version=', S);
+      Break;
+    end;
+  end;
+end;
+
+procedure TDCLScriptsPackage.ParseDependenciesSection(TextPackage: TStringList);
+var
+  S, h: String;
+  hashes: Array of String;
+begin
+  for S in TextPackage do
+  begin
+    if PosEx('['+DependOnSection+'=', S)=1 then
+    begin
+      FPackage.PackageInfo.Dependencies.Clear;
+      hashes:=FindParam(DependOnSection+'=', S).Split(',');
+      for h in hashes do
+      begin
+        FPackage.PackageInfo.Dependencies.Add(h);
+      end;
+
       Break;
     end;
   end;

@@ -42,6 +42,9 @@ type
 
     function TestGlobalParamsTable: Boolean;
     procedure CreateImageList;
+
+    function LoadPackage(FileName: String): TDCLScriptsPackage;
+    procedure UpdateFromPackages(PackagePath: String);
   public
     constructor Create; overload;
     destructor Destroy; override;
@@ -85,7 +88,8 @@ implementation
 
 uses
   uDCLConfig, uDCLCommand, uDCLDBStructure, uDCLMultiLang, fAbout, uDBUtils,
-  uDCLGlobalVariables, uDCLUtils, uDCLMessages, uStringParams;
+  uDCLGlobalVariables, uDCLUtils, uDCLMessages, uStringParams,
+  uDCLUpdaterPackage;
 
 { TDCLMain }
 
@@ -120,7 +124,6 @@ end;
 
 procedure TDCLMain.LoadPackageFromFile(FileName: String; Run: Boolean);
 var
-  RawPackage: TFileStream;
   Package: TDCLScriptsPackage;
   I: TDCLScriptItem;
   RunItem: TDCLScriptItem;
@@ -151,46 +154,53 @@ begin
 
     if FileExists(fn) then
     begin
-      RawPackage:=TFileStream.Create(fn, fmOpenRead);
+      Package:=LoadPackage(fn);
 
-      Package:=TDCLScriptsPackage.Create;
-      Package.Load(RawPackage);
-      RawPackage.Free;
-
-      if CheckSigned(Package) then
+      if not Package.PackageInfo.ForUpdate then
       begin
-        if Package.PackageInfo.Name='' then
-          Package.PackageInfo.Name:=ExtractFileNameOnly(fn);
-
-        FPackages.Add(Package.PackageInfo);
-
-        for I in Package.Scripts do
+        if CheckSigned(Package) then
         begin
-          if not I.SQL then
-            FScripts.Add(I);
-        end;
+          if Package.PackageInfo.Name='' then
+            Package.PackageInfo.Name:=ExtractFileNameOnly(fn);
 
-        if Run then
-        begin
-          c:=FScripts.Count;
-          for RunItem in FScripts do
+          FPackages.Add(Package.PackageInfo);
+
+          for I in Package.Scripts do
           begin
-            if (Run or Package.PackageInfo.RunOnStart) and ((RunItem.RunType<>rtNone) or (c=1)) then
-            begin
-              if RunItem.RunType=rtCommand then
-              begin
-                Command:=TDCLCommand.Create(Self, Self, '', nil, nil);
-                Command.RunCommandScript(RunItem.ScriptName);
-              end
-              else
-              begin
-                OpenDialog(RunItem.ScriptName, False);
-              end;
+            if not I.SQL then
+              FScripts.Add(I);
+          end;
 
-              break;
+          if Run then
+          begin
+            c:=FScripts.Count;
+            for RunItem in FScripts do
+            begin
+              if (Run or Package.PackageInfo.RunOnStart) and ((RunItem.RunType<>rtNone) or (c=1)) then
+              begin
+                if RunItem.RunType=rtCommand then
+                begin
+                  Command:=TDCLCommand.Create(Self, Self, '', nil, nil);
+                  Command.RunCommandScript(RunItem.ScriptName);
+                end
+                else
+                begin
+                  OpenDialog(RunItem.ScriptName, False);
+                end;
+
+                break;
+              end;
             end;
           end;
+        end
+        else
+        begin
+          ShowErrorMessage(0, GetDCLMessageString(msPackageSignNotValid));
         end;
+      end
+      else
+      begin
+        ShowErrorMessage(0, GetDCLMessageString(msCantOpenForUpdatePackage));
       end;
 
       FreeAndNil(Package);
@@ -414,6 +424,71 @@ begin
   PictureAdd(ptGridFilter);
 end;
 
+function TDCLMain.LoadPackage(FileName: String): TDCLScriptsPackage;
+var
+  RawPackage: TFileStream;
+begin
+  Result:=nil;
+  if FileExists(FileName) then
+  begin
+    RawPackage:=TFileStream.Create(FileName, fmOpenRead);
+
+    Result:=TDCLScriptsPackage.Create;
+    Result.Load(RawPackage);
+    RawPackage.Free;
+  end;
+end;
+
+procedure TDCLMain.UpdateFromPackages(PackagePath: String);
+var
+  SRec: TSearchRec;
+  retval: Integer;
+
+  procedure Update(FileName: String);
+  var
+    Package: TPackage;
+    Packager: TDCLScriptsPackage;
+    UpdaterPackage: TDCLUpdaterPackage;
+    UpdResult: TPackageUpdateState;
+  begin
+    Packager:=LoadPackage(FileName);
+
+    if Package.PackageInfo.ForUpdate then
+    begin
+      if CheckSigned(Packager) then
+      begin
+        Package.PackageInfo:=Packager.PackageInfo;
+        Package.Scripts:=Packager.Scripts;
+
+        UpdaterPackage:=TDCLUpdaterPackage.Create(GetDBConnector);
+        UpdResult:=UpdaterPackage.Update(Package, True);
+
+        if UpdResult=pusDone then
+        begin
+          DeleteFile(FileName);
+        end;
+      end;
+    end;
+
+    FreeAndNil(UpdaterPackage);
+    FreeAndNil(Package);
+  end;
+
+begin
+  retval:=FindFirst(PackagePath+PathDelim+'*'+PackagesFileExt, faAnyFile, SRec);
+  While retval=0 Do
+  Begin
+    If (SRec.Name<>'.')and(SRec.Name<>'..') then
+    begin
+      If SRec.Attr<>faDirectory Then
+      begin
+        Update(SRec.Name);
+      end;
+    end;
+    retval:=FindNext(SRec);
+  end;
+end;
+
 constructor TDCLMain.Create;
 var
   FDCLConfig: TDCLConfig;
@@ -434,9 +509,7 @@ begin
   {$IFDEF ZEOS}
   GPT.DBType:=DefaultDBType;
   {$ENDIF}
-  {$IFDEF MSWINDOWS}
-  GPT.Viewer:='notepad';
-  {$ELSE}
+  {$IFnDEF MSWINDOWS}
   GPT.Viewer:='pluma';
   {$ENDIF}
   GPT.OfficeFormat:=ofMSO;
@@ -537,6 +610,18 @@ begin
 
   FormatSettings.ThousandSeparator:=GPT.ThousandSeparator;
   FormatSettings.DecimalSeparator:=GPT.DecimalSeparator;
+
+
+
+  if GPT.AccessLevel>=ulUpdater then
+  begin
+    if not DirectoryExists(AppConfigDir+'Updates') then
+      ForceDirectories(AppConfigDir+'Updates');
+
+    //UpdateFromPackages(AppConfigDir+'Updates');
+  end;
+
+
 end;
 
 destructor TDCLMain.Destroy;

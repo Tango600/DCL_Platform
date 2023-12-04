@@ -61,7 +61,7 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="libraries\uDCLScriptsPackage.pas"/>
+        <Filename Value="dclpackages\uDCLScriptsPackage.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
@@ -327,6 +327,10 @@
         <Filename Value="dbaware\uDCLDBAwareTypes.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="dclpackages\uDCLUpdaterPackage.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -337,7 +341,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="libraries;libraries\foreigners;data;utils;wrappers;dbaware;config;core;core\layoutmangers;core\variables;forms;resources;reports;reports\text;reports\office;core\lang;core\components"/>
+      <OtherUnitFiles Value="libraries;libraries\foreigners;dclpackages;data;utils;wrappers;dbaware;config;core;core\layoutmangers;core\variables;forms;resources;reports;reports\text;reports\office;core\lang;core\components"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
