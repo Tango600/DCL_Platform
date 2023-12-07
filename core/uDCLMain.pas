@@ -509,9 +509,6 @@ begin
   {$IFDEF ZEOS}
   GPT.DBType:=DefaultDBType;
   {$ENDIF}
-  {$IFnDEF MSWINDOWS}
-  GPT.Viewer:='pluma';
-  {$ENDIF}
   GPT.OfficeFormat:=ofMSO;
   GPT.OfficeDocumentFormat:=odfMSO2007;
 

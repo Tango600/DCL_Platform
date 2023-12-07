@@ -5,7 +5,7 @@ interface
 
 uses
 {$IFDEF MSWINDOWS}
-  Windows, Variants, ShlObj, ComObj,
+  Windows, ShlObj,
 {$ENDIF}
 {$IFDEF FPC}
   LConvEncoding,
@@ -14,7 +14,7 @@ uses
   InterfaceBase, LCLType,
 {$ENDIF}
 {$IFDEF UNIX}
-  cwstring, process, unix, lclintf,
+  cwstring, lclintf,
 {$ENDIF}
   Classes, Graphics, SysUtils;
 
