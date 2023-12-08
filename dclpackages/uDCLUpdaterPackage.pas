@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, DB, fgl,
-  uDCLDBAwareTypes, uDCLScriptsPackage;
+  uDCLDBAwareTypes, uDCLDBTransaction, uDCLScriptsPackage;
 
 type
   TScriptUpdateState=(susNone, susDone, susError);
@@ -15,7 +15,7 @@ type
 
   TDCLUpdaterPackage=class
   private
-    FReadTrans, FWriteTrans: TTransaction;
+    FReadTrans, FWriteTrans: TDCLDBTransaction;
     FQuery: TDCLSimlyQuery;
     FDBConnector: TDBConnector;
     SQLScript: TSQLScripter;
@@ -35,7 +35,7 @@ type
 implementation
 
 uses
-  uDCLDBStructure;
+  uDCLConst, uDCLDBStructure;
 
 { TDCLUpdaterPackage }
 
@@ -195,11 +195,16 @@ begin
       else if Script.SQL then
       begin
         Script.ScriptText.Position:=0;
-        ScriptText.LoadFromStream(Script.ScriptText);
 
         FWriteTrans.StartTransaction;
+        {$IFDEF IBX}
+        SQLScript.RunScript(Script.ScriptText);
+        {$ENDIF}
+        {$IFDEF SQLdbFamily}
+        ScriptText.LoadFromStream(Script.ScriptText);
         SQLScript.Script:=ScriptText;
         SQLScript.Execute;
+        {$ENDIF}
         FWriteTrans.Commit;
         IsSuccess:=True;
       end;
@@ -279,11 +284,8 @@ constructor TDCLUpdaterPackage.Create(DBConnector: TDBConnector);
 begin
   FDBConnector:=DBConnector;
 
-  FReadTrans:=TTransaction.Create(nil);
-  FReadTrans.DataBase:=DBConnector;
-
-  FWriteTrans:=TTransaction.Create(nil);
-  FWriteTrans.DataBase:=DBConnector;
+  FReadTrans:=TDCLDBTransaction.Create(DBConnector, trtRead);
+  FWriteTrans:=TDCLDBTransaction.Create(DBConnector, trtWrite);
 
   FQuery:=TDCLSimlyQuery.Create(nil);
   FQuery.DataBase:=DBConnector;
@@ -291,7 +293,10 @@ begin
   SQLScript:=TSQLScripter.Create(nil);
   SQLScript.DataBase:=DBConnector;
   SQLScript.Transaction:=FWriteTrans;
+
+  {$IFDEF SQLdbFamily}
   SQLScript.AutoCommit:=False;
+  {$ENDIF}
 end;
 
 function TDCLUpdaterPackage.Update(Package: TPackage; StopOnError: Boolean): TPackageUpdateState;

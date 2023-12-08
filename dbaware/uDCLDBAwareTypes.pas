@@ -7,7 +7,7 @@ uses
   DBGrids, DBExtCtrls, DBCtrls,
   {$IFDEF IBX}
   IBDatabase, IBTable, IBCustomDataSet, IBSQL, IBQuery,
-  IBUpdateSQL, //uIBUpdateSQLW,
+  IBUpdateSQL, ibxscript, //uIBUpdateSQLW,
   {$ENDIF}
   {$IFDEF ZEOS}
   ZConnection, ZDataset, ZSqlUpdate, ZAbstractConnection,

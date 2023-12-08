@@ -109,7 +109,7 @@ type
     procedure Delete; {$IFDEF FPC}override;{$ENDIF}
     procedure Post; override;
     procedure SetUpdateSQL(TableName, KeyField: String);
-    procedure ExecSQL; {$IFDEF FPC}override;{$ENDIF}
+    procedure ExecSQL; {$IFDEF SQLdbFamily}override;{$ENDIF}
 
     procedure SaveDB;
     procedure CancelDB;

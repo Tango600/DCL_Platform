@@ -19,12 +19,12 @@ uses
     ZDbcIntfs,
   {$ENDIF}
   {$IFDEF SQLdbFamily}
-    SQLDB, SQLDBLib,
+    SQLDB, {$IFDEF IBALL}SQLDBLib,{$ENDIF}
   {$ENDIF}
   {$IFDEF FPC}
     FileUtil, LazUTF8, LConvEncoding,
   {$ENDIF}
-  uDCLData, uDCLConst, uDCLDBAwareTypes, uDCLDebug, uDCLUtils, uSystemUtils;
+  uDCLData, uDCLConst, uDCLDBAwareTypes, uDCLDebug, uDCLUtils;
 
 type
   { TDCLDBConnector }
@@ -33,7 +33,9 @@ type
   private
     FErrorCode: Integer;
 {$IFDEF SQLdbFamily}
+  {$IFDEF IBALL}
     FSQLDBLibraryLoader: TSQLDBLibraryLoader;
+  {$ENDIF}
 {$ENDIF}
 {$IFDEF TRANSACTIONDB}
     UniversalTransaction: TTransaction;
@@ -54,10 +56,7 @@ type
 implementation
 
 uses
-  {$IFDEF TRANSACTIONDB}
-  uDCLDBTransaction,
-  {$ENDIF}
-  uDCLGlobalVariables, uStringParams;
+  uSystemUtils, uDCLGlobalVariables;
 
 { TDCLDBConnector }
 
@@ -250,7 +249,6 @@ begin
   end;
   {$ENDIF}
   {$IFDEF SQLdbIB}
-  ///DebugProc('Creating Connection...');
   Charset:='UTF8';
 
   if GPT.ServerCodePage='' then
