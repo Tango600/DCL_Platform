@@ -6,14 +6,20 @@ interface
 uses
   DBGrids, DBExtCtrls, DBCtrls,
   {$IFDEF IBX}
-    IBDatabase, IBTable, IBCustomDataSet, IBSQL, IBQuery,
-    IBUpdateSQL, //uIBUpdateSQLW,
+  IBDatabase, IBTable, IBCustomDataSet, IBSQL, IBQuery,
+  IBUpdateSQL, //uIBUpdateSQLW,
   {$ENDIF}
   {$IFDEF ZEOS}
-    ZConnection, ZDataset, ZSqlUpdate, ZAbstractConnection,
+  ZConnection, ZDataset, ZSqlUpdate, ZAbstractConnection,
   {$ENDIF}
   {$IFDEF SQLdbFamily}
-    IBConnection, sqldb, DB,
+  sqldb, DB,
+  {$IFDEF SQLdbIB}
+  IBConnection,
+  {$ENDIF}
+  {$IFDEF ODBC}
+  odbcconn,
+  {$ENDIF}
   {$ENDIF}
   Classes, SysUtils;
 
@@ -48,13 +54,15 @@ type
     TTransaction=TSQLTransaction;
     TUpdateObj=TSQLQuery;
     TSQLScripter=TSQLScript;
+    TDatabaseObject=TDataBase;
   {$IFDEF SQLdbIB}
     TDBConnector=TIBConnection;
-    TDatabaseObject=TDatabase;
   {$ENDIF}
   {$IFDEF SQLdb}
-    TDatabaseObject=TDataBase;
     TDBConnector=TSQLConnector;
+  {$ENDIF}
+  {$IFDEF ODBC}
+    TDBConnector=TODBCConnection;
   {$ENDIF}
   {$ENDIF}
 

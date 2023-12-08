@@ -43,6 +43,9 @@ const
 {$IFDEF SQLdb}
   DBEngineType='SQLdb (Universal)';
 {$ENDIF}
+{$IFDEF ODBC}
+  DBEngineType='SQLdb (ODBC)';
+{$ENDIF}
 {$IFDEF SQLdbFamily}
   AccessLibVersion=laz_version;
 {$ENDIF}

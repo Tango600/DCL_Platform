@@ -14,7 +14,7 @@ type
     OneCopy, Port: Integer;
     DateSeparator, TimeSeparator, ThousandSeparator, DecimalSeparator: Char;
     ServerCodePage, DateFormat, TimeFormat, Viewer, MainFormCaption,
-    DBPath, ServerName, DBType: String;
+    DataBaseName, DBPath, ServerName, DBType: String;
     SQLDialect: Byte;
     NoParamsTable, NoUsersTable, DisableLogOnWithoutUser: Boolean;
     DBUserName, DCLUserName, DCLUserPass, EnterPass, LongRoleName, GetValueSeparator,

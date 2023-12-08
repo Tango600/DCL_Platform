@@ -408,6 +408,56 @@ begin
     end;
   end;
   {$ENDIF}
+  {$IFDEF ODBC}
+  Charset:='UTF8';
+
+  if GPT.ServerCodePage='' then
+    GPT.ServerCodePage:='utf8';
+
+  GPT.IBAll:=True;
+  UniversalTransaction:=TTransaction.Create(Self);
+  UniversalTransaction.Params.Clear;
+  UniversalTransaction.Params.Append('nowait');
+  UniversalTransaction.Params.Append('read_committed');
+  UniversalTransaction.Params.Append('rec_version');
+  UniversalTransaction.Action:=caCommit;
+  UniversalTransaction.DataBase:=Self;
+  Transaction:=UniversalTransaction;
+
+  If GPT.DataBaseName<>'' Then
+  begin
+    DatabaseName:=GPT.DataBaseName;
+    DebugProc('  DSN: '+GPT.DataBaseName);
+
+    UserName:=GPT.DBUserName;
+    DebugProc('  USER NAME='+GPT.DBUserName);
+    If GPT.DBPassword<>'' Then
+    begin
+      Password:=GPT.DBPassword;
+      LoginPrompt:=False;
+    end
+    Else
+      LoginPrompt:=True;
+
+    If GPT.ServerCodePage='' Then
+      Charset:='utf8'
+    Else
+      Charset:=ReplaseCPtoWIN(GPT.ServerCodePage);
+
+    KeepConnection:=True;
+    try
+      DebugProc('Connected...');
+      Open;
+      FErrorCode:=0;
+      DebugProc('  ... OK');
+    Except
+      On E: Exception do
+      begin
+        DebugProc('  ... Fail');
+      end;
+    end;
+  end;
+  {$ENDIF}
 end;
 
 procedure TDCLDBConnector.SetConnector(Query: TDCLDialogQuery);

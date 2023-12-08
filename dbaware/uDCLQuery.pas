@@ -867,7 +867,6 @@ begin
   Result:='';
   If GPT.IBAll then
   Begin
-{$IFDEF IBALL}
     If (TableName<>'') and Assigned(ShadowQuery) then
     Begin
       if not Assigned(GetDBConnector(ShadowQuery)) then
@@ -912,7 +911,6 @@ begin
       If Result<>'' then
         Result:=Copy(Result, 1, Length(Result)-1);
     End;
-{$ENDIF}
   End;
 end;
 
@@ -923,7 +921,6 @@ begin
   Result:='';
   If GPT.IBAll then
   Begin
-{$IFDEF IBALL}
     If (TableName<>'') and Assigned(ShadowQuery) then
     Begin
       if not Assigned(GetDBConnector(ShadowQuery)) then
@@ -982,7 +979,6 @@ begin
       end;
       ShadowQuery.Close;
     End;
-{$ENDIF}
   End;
 end;
 

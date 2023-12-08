@@ -80,7 +80,7 @@ procedure TDCLConfig.GetParamsStructure;
 Var
   i: Integer;
   Parser: TDCLValuseParser;
-  cs: String;
+  cs, s: String;
 
 function IsParameter(ParamName, ParamLine: String): Boolean;
 begin
@@ -98,6 +98,11 @@ Begin
       Begin
         cs:=Params[i];
         Parser.RePlaseVariables('', cs, nil);
+
+{$IFDEF ODBC}
+        If IsParameter('DSN=', cs) then
+          GPT.DataBaseName:=FindParam('DSN=', cs);
+{$ENDIF}
 
 {$IFDEF SERVERDB}
         If IsParameter('UserName=', cs) then
@@ -190,13 +195,6 @@ Begin
           GPT.LibPath:=FindParam('LibPath_x64=', cs);
         End;
 {$ENDIF}
-        {If IsParameter('UseUTF8=', cs) then
-        Begin
-          If Trim(FindParam('UseUTF8=', cs))='1' then
-            DecodeBase:=True
-          Else
-            DecodeBase:=False;
-        End;}
 
         If IsParameter('DateFormat=', cs) then
         Begin
@@ -210,7 +208,9 @@ Begin
 
         If IsParameter('DateSeparator=', cs) then
         Begin
-          GPT.DateSeparator:=FindParam('DateSeparator=', cs)[1];
+          s:=FindParam('DateSeparator=', cs);
+          if s<>'' then
+            GPT.DateSeparator:=s[1];
         End;
 
         If IsParameter('TimeFormat=', cs) then
@@ -220,17 +220,23 @@ Begin
 
         If IsParameter('TimeSeparator=', cs) then
         Begin
-          GPT.TimeSeparator:=FindParam('TimeSeparator=', cs)[1];
+          s:=FindParam('TimeSeparator=', cs);
+          if s<>'' then
+            GPT.TimeSeparator:=s[1];
         End;
 
         If IsParameter('ThousandSeparator=', cs) then
         Begin
-          GPT.ThousandSeparator:=FindParam('ThousandSeparator=', cs)[1];
+          s:=FindParam('ThousandSeparator=', cs);
+          if s<>'' then
+            GPT.ThousandSeparator:=s[1];
         End;
 
         If IsParameter('DecimalSeparator=', cs) then
         Begin
-          GPT.DecimalSeparator:=FindParam('DecimalSeparator=', cs)[1];
+          s:=FindParam('DecimalSeparator=', cs);
+          if s<>'' then
+            GPT.DecimalSeparator:=s[1];
         End;
 
         {$IFDEF MSWINDOWS}
@@ -247,8 +253,7 @@ Begin
 
         If IsParameter('UserLocalProfile=', cs) then
         Begin
-          AppConfigDir:=Trim(FindParam('UserLocalProfile=', cs));
-          AppConfigDir:=IncludeTrailingPathDelimiter(AppConfigDir);
+          AppConfigDir:=IncludeTrailingPathDelimiter(Trim(FindParam('UserLocalProfile=', cs)));
         End;
 
         If IsParameter('WordOLEExtension=', cs) then
