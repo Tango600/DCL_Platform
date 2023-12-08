@@ -51,6 +51,8 @@ type
 
     procedure CloseAllDialogs;
 
+    procedure Update;
+
     function GetVariables: TVariables;
     function GetForms: TList<TForm>;
     function GetDBConnector: TDCLDBConnector;
@@ -452,37 +454,40 @@ var
     UpdResult: TPackageUpdateState;
   begin
     Packager:=LoadPackage(FileName);
-
-    if Package.PackageInfo.ForUpdate then
+    if Assigned(Packager) then
     begin
-      if CheckSigned(Packager) then
+      if Packager.PackageInfo.ForUpdate then
       begin
-        Package.PackageInfo:=Packager.PackageInfo;
-        Package.Scripts:=Packager.Scripts;
-
-        UpdaterPackage:=TDCLUpdaterPackage.Create(GetDBConnector);
-        UpdResult:=UpdaterPackage.Update(Package, True);
-
-        if UpdResult=pusDone then
+        if CheckSigned(Packager) then
         begin
-          DeleteFile(FileName);
+          Package:=TPackage.Create;
+          Package.PackageInfo:=Packager.PackageInfo;
+          Package.Scripts:=Packager.Scripts;
+
+          UpdaterPackage:=TDCLUpdaterPackage.Create(GetDBConnector);
+          UpdResult:=UpdaterPackage.Update(Package, True);
+          FreeAndNil(Package);
+          FreeAndNil(UpdaterPackage);
+
+          if UpdResult=pusDone then
+          begin
+            DeleteFile(FileName);
+          end;
         end;
       end;
     end;
-
-    FreeAndNil(UpdaterPackage);
-    FreeAndNil(Package);
+    FreeAndNil(Packager);
   end;
 
 begin
-  retval:=FindFirst(PackagePath+PathDelim+'*'+PackagesFileExt, faAnyFile, SRec);
+  retval:=FindFirst(PackagePath+'*'+PackagesFileExt, faAnyFile, SRec);
   While retval=0 Do
   Begin
     If (SRec.Name<>'.')and(SRec.Name<>'..') then
     begin
       If SRec.Attr<>faDirectory Then
       begin
-        Update(SRec.Name);
+        Update(PackagePath+SRec.Name);
       end;
     end;
     retval:=FindNext(SRec);
@@ -607,18 +612,6 @@ begin
 
   FormatSettings.ThousandSeparator:=GPT.ThousandSeparator;
   FormatSettings.DecimalSeparator:=GPT.DecimalSeparator;
-
-
-
-  if GPT.AccessLevel>=ulUpdater then
-  begin
-    if not DirectoryExists(AppConfigDir+'Updates') then
-      ForceDirectories(AppConfigDir+'Updates');
-
-    //UpdateFromPackages(AppConfigDir+'Updates');
-  end;
-
-
 end;
 
 destructor TDCLMain.Destroy;
@@ -644,6 +637,17 @@ begin
     end;
   End;
   FBusyMode:=False;
+end;
+
+procedure TDCLMain.Update;
+begin
+  if GPT.AccessLevel>=ulUpdater then
+  begin
+    if not DirectoryExists(AppConfigDir+'Updates') then
+      ForceDirectories(AppConfigDir+'Updates');
+
+    UpdateFromPackages(AppConfigDir+'Updates'+PathDelim);
+  end;
 end;
 
 function TDCLMain.GetVariables: TVariables;

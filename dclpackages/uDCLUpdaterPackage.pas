@@ -15,8 +15,10 @@ type
 
   TDCLUpdaterPackage=class
   private
-    FReadTrans, FWriteTrans: TDCLDBTransaction;
-    FQuery: TDCLSimlyQuery;
+    {$IFDEF TRANSACTIONDB}
+    FWriteTrans: TDCLDBTransaction;
+    {$ENDIF}
+    FReadQuery, FWriteQuery: TDCLSimlyQuery;
     FDBConnector: TDBConnector;
     SQLScript: TSQLScripter;
 
@@ -47,16 +49,24 @@ begin
   Result:=True;
   for D in Package.PackageInfo.Dependencies do
   begin
-    FWriteTrans.StartTransaction;
-    FQuery.Transaction:=FReadTrans;
-    FQuery.Params.Clear;
-    FQuery.SQL.Text:='select * from '+UpdatePackageTable+' where '+PackageHashField+' = :HASH and '+PackageUpdateState+' = :STATE';
-    FQuery.Params.ParamByName('HASH').AsString:=D;
-    FQuery.Params.ParamByName('STATE').AsInteger:=Ord(pusDone);
-    FQuery.Open;
-    Empty:=FQuery.IsEmpty;
-    FQuery.Close;
+    {$IFDEF TRANSACTIONDB}
+    if not FWriteTrans.Active then
+      FWriteTrans.StartTransaction;
+    {$ENDIF}
+    FReadQuery.Params.Clear;
+    FReadQuery.SQL.Text:='select * from '+UpdatePackageTable+' where '+PackageHashField+' = :HASH and '+PackageUpdateState+' = :STATE';
+    FReadQuery.Prepare;
+    FReadQuery.Params.ParamByName('HASH').AsString:=D;
+    FReadQuery.Params.ParamByName('STATE').AsInteger:=Ord(pusDone);
+    FReadQuery.Open;
+    Empty:=FReadQuery.IsEmpty;
+    FReadQuery.Close;
+    {$IFDEF TRANSACTIONDB}
     FWriteTrans.Commit;
+    {$IFDEF SQLdbFamily}
+    FWriteTrans.EndTransaction;
+    {$ENDIF}
+    {$ENDIF}
 
     if Empty then
     begin
@@ -78,19 +88,21 @@ begin
   sid:=-1;
   IsSuccess:=False;
 
-  FWriteTrans.StartTransaction;
-  FQuery.Transaction:=FReadTrans;
-  FQuery.Params.Clear;
-  FQuery.SQL.Text:='select * from '+UpdateScriptsTable+' where '+PackageIDField+' = :PID and '+UpdateScriptNameField+' = :PNAME';
-  FQuery.Params.ParamByName('PID').AsInteger:=PackageID;
-  FQuery.Params.ParamByName('PNAME').AsString:=Script.ScriptName;
-  FQuery.Open;
-  Empty:=FQuery.IsEmpty;
+  {$IFDEF TRANSACTIONDB}
+  if not FWriteTrans.Active then
+    FWriteTrans.StartTransaction;
+  {$ENDIF}
+  FReadQuery.Params.Clear;
+  FReadQuery.SQL.Text:='select * from '+UpdateScriptsTable+' where '+PackageIDField+' = :PID and '+UpdateScriptNameField+' = :PNAME';
+  FReadQuery.Prepare;
+  FReadQuery.Params.ParamByName('PID').AsInteger:=PackageID;
+  FReadQuery.Params.ParamByName('PNAME').AsString:=Script.ScriptName;
+  FReadQuery.Open;
+  Empty:=FReadQuery.IsEmpty;
   if not Empty then
-    sid:=FQuery.FieldByName(UpdateScriptIDField).AsInteger;
-  UpdateState:=TScriptUpdateState(FQuery.FieldByName(UpdateScriptStateField).AsInteger);
-  FQuery.Close;
-  FWriteTrans.Commit;
+    sid:=FReadQuery.FieldByName(UpdateScriptIDField).AsInteger;
+  UpdateState:=TScriptUpdateState(FReadQuery.FieldByName(UpdateScriptStateField).AsInteger);
+  FReadQuery.Close;
 
   if Empty or (UpdateState<>susDone) then
   begin
@@ -100,95 +112,84 @@ begin
     try
       if (not Script.SQL) and (Script.Ident=0) then
       begin
-        FWriteTrans.StartTransaction;
-        FQuery.Transaction:=FWriteTrans;
-        FQuery.Params.Clear;
-        FQuery.SQL.Text:='select * from '+DCLTable+' where lower('+DCLNameField+') = lower(:ScrName)';
-        FQuery.ParamByName('ScrName').AsString:=Script.ScriptName;
-        FQuery.Open;
-        if not FQuery.IsEmpty then
+        FWriteQuery.Params.Clear;
+        FWriteQuery.SQL.Text:='select * from '+DCLTable+' where lower('+DCLNameField+') = lower(:ScrName)';
+        FWriteQuery.Prepare;
+        FWriteQuery.ParamByName('ScrName').AsString:=Script.ScriptName;
+        FWriteQuery.Open;
+        if not FWriteQuery.IsEmpty then
         begin
-          id:=FQuery.FieldByName(IdField).AsInteger;
+          id:=FWriteQuery.FieldByName(IdField).AsInteger;
         end;
-        FQuery.Last;
-        r:=FQuery.RecordCount;
-        FQuery.Close;
-        FWriteTrans.Commit;
+        FWriteQuery.Last;
+        r:=FWriteQuery.RecordCount;
+        FWriteQuery.Close;
 
         Script.ScriptText.Position:=0;
         if r=1 then
         begin
-          FWriteTrans.StartTransaction;
-          FQuery.Transaction:=FWriteTrans;
-          FQuery.Params.Clear;
-          FQuery.SQL.Text:='update '+DCLTable+' set '+ScriptField+' = :DCLTEXT '+
+          FWriteQuery.Params.Clear;
+          FWriteQuery.SQL.Text:='update '+DCLTable+' set '+ScriptField+' = :DCLTEXT '+
             ' where '+IdField+' = :ID';
-          FQuery.ParamByName('DCLTEXT').LoadFromStream(Script.ScriptText, ftMemo);
-          FQuery.ParamByName('ID').AsInteger:=id;
-          FQuery.ExecSQL;
-          FWriteTrans.Commit;
+          FWriteQuery.Prepare;
+          FWriteQuery.ParamByName('DCLTEXT').LoadFromStream(Script.ScriptText, ftMemo);
+          FWriteQuery.ParamByName('ID').AsInteger:=id;
+          FWriteQuery.ExecSQL;
         end
         else if r=0 then
         begin
-          FWriteTrans.StartTransaction;
-          FQuery.SQL.Text:='insert into '+DCLTable+' ('+DCLNameField+', '+ScriptField+') '+
+          FWriteQuery.SQL.Text:='insert into '+DCLTable+' ('+DCLNameField+', '+ScriptField+') '+
             'values (:DCLNAME, :DCLTEXT)';
-          FQuery.ParamByName('DCLNAME').AsString:=Script.ScriptName;
-          FQuery.ParamByName('DCLTEXT').LoadFromStream(Script.ScriptText, ftMemo);
-          FQuery.ExecSQL;
-          FWriteTrans.Commit;
+          FWriteQuery.Prepare;
+          FWriteQuery.ParamByName('DCLNAME').AsString:=Script.ScriptName;
+          FWriteQuery.ParamByName('DCLTEXT').LoadFromStream(Script.ScriptText, ftMemo);
+          FWriteQuery.ExecSQL;
         end;
         IsSuccess:=True;
       end
       else if (not Script.SQL) and (Script.Ident<>0) then
       begin
-        FWriteTrans.StartTransaction;
-        FQuery.Transaction:=FWriteTrans;
-        FQuery.Params.Clear;
-        FQuery.SQL.Text:='select * from '+DCLTable+' where '+IdentifyField+' = :IDENT';
-        FQuery.ParamByName('IDENT').AsInteger:=Script.Ident;
-        FQuery.Open;
-        if not FQuery.IsEmpty then
+        FWriteQuery.Params.Clear;
+        FWriteQuery.SQL.Text:='select * from '+DCLTable+' where '+IdentifyField+' = :IDENT';
+        FWriteQuery.Prepare;
+        FWriteQuery.ParamByName('IDENT').AsInteger:=Script.Ident;
+        FWriteQuery.Open;
+        if not FWriteQuery.IsEmpty then
         begin
-          id:=FQuery.FieldByName(IdField).AsInteger;
+          id:=FWriteQuery.FieldByName(IdField).AsInteger;
         end;
-        FQuery.Last;
-        r:=FQuery.RecordCount;
-        FQuery.Close;
-        FWriteTrans.Commit;
+        FWriteQuery.Last;
+        r:=FWriteQuery.RecordCount;
+        FWriteQuery.Close;
 
         if r=1 then
         begin
-          FWriteTrans.StartTransaction;
-          FQuery.Transaction:=FWriteTrans;
-          FQuery.Params.Clear;
-          FQuery.SQL.Text:='update '+DCLTable+' set '+IdentifyField+' = :IDENT, '+
+          FWriteQuery.Params.Clear;
+          FWriteQuery.SQL.Text:='update '+DCLTable+' set '+IdentifyField+' = :IDENT, '+
             ParentField+' = :PARENT, '+CommandField+' = :COMMAND, '+
             DCLNameField+' = :SCRNAME '+
             'where '+IdField+' = :ID';
-          FQuery.ParamByName('DCLTEXT').LoadFromStream(Script.ScriptText, ftMemo);
-          FQuery.ParamByName('COMMAND').AsString:=Script.Command;
-          FQuery.ParamByName('SCRNAME').AsString:=Script.ScriptName;
-          FQuery.ParamByName('IDENT').AsInteger:=Script.Ident;
-          FQuery.ParamByName('PARENT').AsInteger:=Script.Parent;
-          FQuery.ParamByName('ID').AsInteger:=id;
-          FQuery.ExecSQL;
-          FWriteTrans.Commit;
+          FWriteQuery.Prepare;
+          FWriteQuery.ParamByName('DCLTEXT').LoadFromStream(Script.ScriptText, ftMemo);
+          FWriteQuery.ParamByName('COMMAND').AsString:=Script.Command;
+          FWriteQuery.ParamByName('SCRNAME').AsString:=Script.ScriptName;
+          FWriteQuery.ParamByName('IDENT').AsInteger:=Script.Ident;
+          FWriteQuery.ParamByName('PARENT').AsInteger:=Script.Parent;
+          FWriteQuery.ParamByName('ID').AsInteger:=id;
+          FWriteQuery.ExecSQL;
         end
         else if r=0 then
         begin
-          FWriteTrans.StartTransaction;
-          FQuery.Transaction:=FWriteTrans;
-          FQuery.Params.Clear;
-          FQuery.SQL.Text:='insert into '+DCLTable+'('+IdentifyField+', '+ParentField+', '+CommandField+', '+DCLNameField+') '+
+          FWriteQuery.Params.Clear;
+          FWriteQuery.SQL.Text:='insert into '+DCLTable+'('+IdentifyField+', '+ParentField+', '+CommandField+', '+DCLNameField+') '+
             'values(:IDENT, :PARENT, :COMMAND, :SCRNAME)';
-          FQuery.ParamByName('DCLTEXT').LoadFromStream(Script.ScriptText, ftMemo);
-          FQuery.ParamByName('COMMAND').AsString:=Script.Command;
-          FQuery.ParamByName('SCRNAME').AsString:=Script.ScriptName;
-          FQuery.ParamByName('IDENT').AsInteger:=Script.Ident;
-          FQuery.ParamByName('PARENT').AsInteger:=Script.Parent;
-          FQuery.ExecSQL;
-          FWriteTrans.Commit;
+          FWriteQuery.Prepare;
+          FWriteQuery.ParamByName('DCLTEXT').LoadFromStream(Script.ScriptText, ftMemo);
+          FWriteQuery.ParamByName('COMMAND').AsString:=Script.Command;
+          FWriteQuery.ParamByName('SCRNAME').AsString:=Script.ScriptName;
+          FWriteQuery.ParamByName('IDENT').AsInteger:=Script.Ident;
+          FWriteQuery.ParamByName('PARENT').AsInteger:=Script.Parent;
+          FWriteQuery.ExecSQL;
         end;
         IsSuccess:=True;
       end
@@ -196,7 +197,6 @@ begin
       begin
         Script.ScriptText.Position:=0;
 
-        FWriteTrans.StartTransaction;
         {$IFDEF IBX}
         SQLScript.RunScript(Script.ScriptText);
         {$ENDIF}
@@ -205,7 +205,6 @@ begin
         SQLScript.Script:=ScriptText;
         SQLScript.Execute;
         {$ENDIF}
-        FWriteTrans.Commit;
         IsSuccess:=True;
       end;
       Result:=susDone;
@@ -213,31 +212,44 @@ begin
       IsSuccess:=False;
       Result:=susError;
     end;
+    {$IFDEF TRANSACTIONDB}
+    if FWriteTrans.Active then
+      FWriteTrans.Commit;
+    {$ENDIF}
 
-    FWriteTrans.StartTransaction;
-    FQuery.Transaction:=FWriteTrans;
-    FQuery.Params.Clear;
+    {$IFDEF TRANSACTIONDB}
+    if not FWriteTrans.Active then
+      FWriteTrans.StartTransaction;
+    {$ENDIF}
+    FWriteQuery.Params.Clear;
 
     if Empty then
     begin
-      FQuery.SQL.Text:='insert into '+UpdateScriptsTable+'('+PackageIDField+', '+UpdateScriptNameField+', '+UpdateScriptStateField+') '+
+      FWriteQuery.SQL.Text:='insert into '+UpdateScriptsTable+'('+PackageIDField+', '+UpdateScriptNameField+', '+UpdateScriptStateField+') '+
         'values(:PID, :PNAME, :STATE)';
-      FQuery.Params.ParamByName('PID').AsInteger:=PackageID;
-      FQuery.Params.ParamByName('PNAME').AsString:=Script.ScriptName;
+      FWriteQuery.Prepare;
+      FWriteQuery.Params.ParamByName('PID').AsInteger:=PackageID;
+      FWriteQuery.Params.ParamByName('PNAME').AsString:=Script.ScriptName;
     end
     else
     begin
-      FQuery.SQL.Text:='update '+UpdateScriptsTable+' set '+UpdateScriptStateField+' = :STATE '+
+      FWriteQuery.SQL.Text:='update '+UpdateScriptsTable+' set '+UpdateScriptStateField+' = :STATE '+
         'where '+UpdateScriptIDField+' = :ID';
-      FQuery.Params.ParamByName('ID').AsInteger:=sid;
+      FWriteQuery.Params.ParamByName('ID').AsInteger:=sid;
     end;
 
     if not IsSuccess then
-      FQuery.Params.ParamByName('STATE').AsInteger:=Ord(susError)
+      FWriteQuery.Params.ParamByName('STATE').AsInteger:=Ord(susError)
     else
-      FQuery.Params.ParamByName('STATE').AsInteger:=Ord(Result);
-    FQuery.ExecSQL;
-    FWriteTrans.Commit;
+      FWriteQuery.Params.ParamByName('STATE').AsInteger:=Ord(Result);
+    FWriteQuery.ExecSQL;
+    {$IFDEF TRANSACTIONDB}
+    if FWriteTrans.Active then
+      FWriteTrans.Commit;
+    {$IFDEF SQLdbFamily}
+    FWriteTrans.EndTransaction;
+    {$ENDIF}
+    {$ENDIF}
 
     FreeAndNil(ScriptText);
   end;
@@ -284,15 +296,28 @@ constructor TDCLUpdaterPackage.Create(DBConnector: TDBConnector);
 begin
   FDBConnector:=DBConnector;
 
-  FReadTrans:=TDCLDBTransaction.Create(DBConnector, trtRead);
+  {$IFDEF TRANSACTIONDB}
+  //FReadTrans:=TDCLDBTransaction.Create(DBConnector, trtRead);
   FWriteTrans:=TDCLDBTransaction.Create(DBConnector, trtWrite);
+  {$ENDIF}
 
-  FQuery:=TDCLSimlyQuery.Create(nil);
-  FQuery.DataBase:=DBConnector;
+  FReadQuery:=TDCLSimlyQuery.Create(nil);
+  FReadQuery.DataBase:=DBConnector;
+  {$IFDEF TRANSACTIONDB}
+  FReadQuery.Transaction:=FWriteTrans;  ///FReadTrans;
+  {$ENDIF}
+
+  FWriteQuery:=TDCLSimlyQuery.Create(nil);
+  FWriteQuery.DataBase:=DBConnector;
+  {$IFDEF TRANSACTIONDB}
+  FWriteQuery.Transaction:=FWriteTrans;
+  {$ENDIF}
 
   SQLScript:=TSQLScripter.Create(nil);
   SQLScript.DataBase:=DBConnector;
+  {$IFDEF TRANSACTIONDB}
   SQLScript.Transaction:=FWriteTrans;
+  {$ENDIF}
 
   {$IFDEF SQLdbFamily}
   SQLScript.AutoCommit:=False;
@@ -310,50 +335,68 @@ begin
   begin
     if CheckDependencies(Package) then
     begin
-      FQuery.Transaction:=FReadTrans;
       UpdateState:=pusNone;
-      FQuery.Params.Clear;
-      FQuery.SQL.Text:='select * from '+UpdatePackageTable+' where '+PackageHashField+'=:PH';
-      FQuery.Params.ParamByName('PH').AsString:=Package.PackageInfo.Hash;
-      FQuery.Open;
+      {$IFDEF TRANSACTIONDB}
+      if not FWriteTrans.Active then
+        FWriteTrans.StartTransaction;
+      {$ENDIF}
+      FReadQuery.Params.Clear;
+      FReadQuery.SQL.Text:='select * from '+UpdatePackageTable+' where '+PackageHashField+'=:PH';
+      FReadQuery.Prepare;
+      FReadQuery.Params.ParamByName('PH').AsString:=Package.PackageInfo.Hash;
+      FReadQuery.Open;
 
-      Empty:=FQuery.IsEmpty;
-      UpdateState:=TPackageUpdateState(FQuery.FieldByName(PackageUpdateState).AsInteger);
-      PackageID:=FQuery.FieldByName(IDPackageField).AsInteger;
-      FQuery.Close;
+      Empty:=FReadQuery.IsEmpty;
+      UpdateState:=TPackageUpdateState(FReadQuery.FieldByName(PackageUpdateState).AsInteger);
+      PackageID:=FReadQuery.FieldByName(IDPackageField).AsInteger;
+      FReadQuery.Close;
 
       if Empty then
       begin
-        FWriteTrans.StartTransaction;
-        FQuery.Transaction:=FWriteTrans;
-        FQuery.Params.Clear;
-        FQuery.SQL.Text:='insert into '+UpdatePackageTable+' ('+PackageHashField+', '+PackageNameField+', '+PackageUpdateState+') '+
-          'values(:HASH, :NAME, :STATE) returning '+IDPackageField;
-        FQuery.Params.ParamByName('HASH').AsString:=Package.PackageInfo.Hash;
-        FQuery.Params.ParamByName('NAME').AsString:=Package.PackageInfo.Name;
-        FQuery.Params.ParamByName('STATE').AsInteger:=Ord(pusInProcess);
-        FQuery.Open;
-        PackageID:=FQuery.Fields[0].AsInteger;
-        FQuery.Close;
-        FWriteTrans.Commit;
+        FWriteQuery.Params.Clear;
+        FWriteQuery.SQL.Text:='insert into '+UpdatePackageTable+' ('+PackageHashField+', '+PackageNameField+', '+PackageUpdateState+') '+
+          'values(:HASH, :NAME, :STATE) returning ('+IDPackageField+')';
+        FWriteQuery.Prepare;
+        FWriteQuery.Params.ParamByName('HASH').AsString:=Package.PackageInfo.Hash;
+        FWriteQuery.Params.ParamByName('NAME').AsString:=Package.PackageInfo.Name;
+        FWriteQuery.Params.ParamByName('STATE').AsInteger:=Ord(pusInProcess);
+        FWriteQuery.ExecSQL;
+
+        FWriteQuery.SQL.Text:='select '+IDPackageField+' from '+UpdatePackageTable+' where '+PackageHashField+' = :HASH';
+        FWriteQuery.Prepare;
+        FWriteQuery.Params.ParamByName('HASH').AsString:=Package.PackageInfo.Hash;
+        FWriteQuery.Open;
+
+        PackageID:=FWriteQuery.Fields[0].AsInteger;
+        FWriteQuery.Close;
       end;
 
       if UpdateState<>pusDone then
       begin
         UpdateState:=UpdateFromPackage(PackageID, Package, StopOnError);
 
-        FWriteTrans.StartTransaction;
-        FQuery.Transaction:=FWriteTrans;
-        FQuery.Params.Clear;
-        FQuery.SQL.Text:='update '+UpdatePackageTable+' set '+PackageUpdateState+' = :STATE, '+
+        {$IFDEF TRANSACTIONDB}
+        if not FWriteTrans.Active then
+          FWriteTrans.StartTransaction;
+        {$ENDIF}
+        FWriteQuery.Params.Clear;
+        FWriteQuery.SQL.Text:='update '+UpdatePackageTable+' set '+PackageUpdateState+' = :STATE, '+
           PackageLastUpdate+' = :LAST_UPDATE where '+IDPackageField+' = :ID';
-        FQuery.Params.ParamByName('ID').AsInteger:=PackageID;
-        FQuery.Params.ParamByName('LAST_UPDATE').AsDateTime:=Now;
-        FQuery.Params.ParamByName('STATE').AsInteger:=Ord(pusDone);
-        FQuery.ExecSQL;
-        FWriteTrans.Commit;
+        FWriteQuery.Prepare;
+        FWriteQuery.Params.ParamByName('ID').AsInteger:=PackageID;
+        FWriteQuery.Params.ParamByName('LAST_UPDATE').AsDateTime:=Now;
+        FWriteQuery.Params.ParamByName('STATE').AsInteger:=Ord(pusDone);
+        FWriteQuery.ExecSQL;
         UpdateState:=pusDone;
       end;
+
+      {$IFDEF TRANSACTIONDB}
+      if FWriteTrans.Active then
+        FWriteTrans.Commit;
+      {$IFDEF SQLdbFamily}
+        FWriteTrans.EndTransaction;
+      {$ENDIF}
+      {$ENDIF}
     end
     else
       UpdateState:=pusNotDepend;
@@ -368,15 +411,24 @@ begin
   Result:=pusNone;
   if Package.PackageInfo.ForUpdate then
   begin
-    FQuery.Transaction:=FReadTrans;
-    FQuery.Params.Clear;
-    FQuery.SQL.Text:='select * from '+UpdatePackageTable+' where '+PackageHashField+'=:PH';
-    FQuery.Params.ParamByName('PH').AsString:=Package.PackageInfo.Hash;
-    FQuery.Open;
+    {$IFDEF TRANSACTIONDB}
+    FWriteTrans.StartTransaction;
+    {$ENDIF}
+    FReadQuery.Params.Clear;
+    FReadQuery.SQL.Text:='select * from '+UpdatePackageTable+' where '+PackageHashField+'=:PH';
+    FReadQuery.Prepare;
+    FReadQuery.Params.ParamByName('PH').AsString:=Package.PackageInfo.Hash;
+    FReadQuery.Open;
 
-    if not FQuery.IsEmpty then
-      Result:=TPackageUpdateState(FQuery.FieldByName(PackageUpdateState).AsInteger);
-    FQuery.Close;
+    if not FReadQuery.IsEmpty then
+      Result:=TPackageUpdateState(FReadQuery.FieldByName(PackageUpdateState).AsInteger);
+    FReadQuery.Close;
+    {$IFDEF TRANSACTIONDB}
+    FWriteTrans.Commit;
+    {$IFDEF SQLdbFamily}
+    FWriteTrans.EndTransaction;
+    {$ENDIF}
+    {$ENDIF}
   end;
 end;
 

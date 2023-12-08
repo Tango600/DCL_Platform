@@ -18,8 +18,9 @@
 
 //{$DEFINE ZEOS}
 //{$DEFINE SQLdb}
-  {$DEFINE SQLdbIB}
+{$DEFINE SQLdbIB}
 //{$DEFINE IBX}
+//{$DEFINE ODBC}
 
 //{$DEFINE ZVComponents}
 

@@ -98,6 +98,7 @@ begin
     end;
   end;
 
+  DCL.Update;
   MainForm.DCLMain:=DCL;
   r:=False;
   S:=FindPackageFileLoad;

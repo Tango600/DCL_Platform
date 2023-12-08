@@ -6,7 +6,7 @@ interface
 uses
   DBGrids, DBExtCtrls, DBCtrls,
   {$IFDEF IBX}
-  IBDatabase, IBTable, IBCustomDataSet, IBSQL, IBQuery,
+  IBDatabase, IBCustomDataSet, IBQuery,
   IBUpdateSQL, ibxscript, //uIBUpdateSQLW,
   {$ENDIF}
   {$IFDEF ZEOS}
