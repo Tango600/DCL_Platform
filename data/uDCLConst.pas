@@ -53,7 +53,6 @@ const
   JPEGCompressionQuality=85;
 
   ShowFormPanel=True;
-  CloseButton=True;
 
   PackagesFileExt='.dsp';
   PackagesVersion='1.4';

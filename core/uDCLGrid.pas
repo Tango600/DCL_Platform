@@ -61,7 +61,7 @@ type
     FDataControlType: TDataControlType;
     FGridStyle: TGridStyle;
     FReadFieldsMode, FMultiSelectMode, FReadOnly, FDataReadOnly, FNavigatorVisible,
-      FFlatNavig, FNoDataField, FNoButtonPanel, FindProcess, FPrintTool: Boolean;
+      FFlatNavig, FNoDataField, FNoButtonPanel, FindProcess, FPrintTool, CloseButton: Boolean;
     FTableParts, FLookupTables: TList<TDCLGrid>;
     FCurrentTablePart: TDCLGrid;
     FDCLFields: TList<TDCLField>;
@@ -1328,7 +1328,6 @@ begin
   If FGridStyle in TDataGrid Then
   begin
     Field.DCLEditComponent:=TDCLEdit.Create;
-    //Field.DataFieldType:=;
   end;
   If FGridStyle in TDataFields Then
   begin
@@ -2555,7 +2554,6 @@ begin
 
   Calendar.Control:=TDateTimePicker.Create(FFiltersPanel);
   Calendar.Control.Parent:=FFiltersPanel;
-  //Calendar.Control.DateOrder:=doDMY;
   Calendar.Control.DateFormat:=GPT.DateFormat;
 
   Calendar.Control.Top:=FTop;
@@ -2806,7 +2804,6 @@ var
 begin
   DateBox:=TDateTimePicker.Create(FFieldsPanel);
   DateBox.Parent:=FFieldsPanel;
-  //DateBox.DateOrder:=doDMY;
   DateBox.DateFormat:=GPT.DateFormat;
 
   If FindParam('ComponentName=', Scr)<>'' Then
@@ -3939,7 +3936,7 @@ end;
 constructor TDCLGrid.Create(IDCLMain: IDCLMain; NameSpace: String; Form: TForm; ParentControl: TWinControl;
   SurfType: TDataControlType; Query: TDCLQuery; Data: TDataSource);
 var
-  ChooseButton, ButtonClose: TDCLCommandButton;
+  ChooseButton: TDCLCommandButton;
 begin
   inherited Create(ParentControl);
   Self.Parent:=ParentControl;
@@ -3958,16 +3955,7 @@ begin
 
   FButtons:=TList<TDCLCommandButton>.Create;
 
-  if CloseButton and (SurfType=dctMainGrid) then
-  begin
-    ButtonClose:=TDCLCommandButton.Create(FDBConnector);
-    ButtonClose.Caption:=GetDCLMessageString(msClose);
-    ButtonClose.CloseButton:=True;
-    //ButtonClose.Command:='Close;';
-    //ButtonClose.Pict:='esc';
-    ButtonClose.Cancel:=True;
-    FButtons.Add(ButtonClose);
-  end;
+  CloseButton:=SurfType=dctMainGrid;
 
   if Assigned((FForm as TDCLForm).ReturnValueParams) then
   begin
@@ -4316,6 +4304,11 @@ begin
     FNoButtonPanel:=True;
   end;
 
+  If IsLexem('NoCloseButton;', ScrStr) then
+  begin
+    CloseButton:=False;
+  end;
+
   If IsLexem('PrintTool;', ScrStr) then
   begin
     FPrintTool:=True;
@@ -4356,8 +4349,19 @@ var
   btc: TDCLCommandButton;
   FieldsPos: TList<TGridFieldSetting>;
   FieldPos: TGridFieldSetting;
+  ButtonClose: TDCLCommandButton;
 begin
   CreateToolPanel;
+
+  if CloseButton and (FDataControlType=dctMainGrid) then
+  begin
+    ButtonClose:=TDCLCommandButton.Create(FDBConnector);
+    ButtonClose.Caption:=GetDCLMessageString(msClose);
+    ButtonClose.CloseButton:=True;
+    //ButtonClose.Pict:='esc';
+    ButtonClose.Cancel:=True;
+    FButtons.Insert(0, ButtonClose);
+  end;
 
   if not Assigned(FToolBar) then
   begin
