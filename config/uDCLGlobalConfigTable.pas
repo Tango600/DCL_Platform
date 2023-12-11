@@ -10,11 +10,11 @@ type
   // EnableSQLTrace,
     DebugMesseges, ExitCnf, UseMessages,
     DialogsSettings, DisableColors, DisableFieldsList,
-    DisableIniPasword, IBAll: Boolean;
+    DisableUnload, DisableLoad, EasyIdentMode, DisableIniPasword, IBAll: Boolean;
     OneCopy, Port: Integer;
     DateSeparator, TimeSeparator, ThousandSeparator, DecimalSeparator: Char;
     ServerCodePage, DateFormat, TimeFormat, Viewer, MainFormCaption,
-    DataBaseName, DBPath, ServerName, DBType: String;
+    DataBaseName, ScriptDir, DBPath, ServerName, DBType: String;
     SQLDialect: Byte;
     NoParamsTable, NoUsersTable, DisableLogOnWithoutUser: Boolean;
     DBUserName, DCLUserName, DCLUserPass, EnterPass, LongRoleName, GetValueSeparator,

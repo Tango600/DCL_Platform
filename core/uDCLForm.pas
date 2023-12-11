@@ -70,7 +70,7 @@ type
     procedure SaveFormPos;
   public
     constructor Create(IDCLMain: IDCLMain; DialogName, NameSpace: String; ParentForm: TDCLForm;
-      OPL: TStringList;
+      OPL: TStringList; UserLevel: TUserLevelsType;
       Query: TDCLQuery; Data: TDataSource; RetValueProc: IGetValue;
       ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False); overload;
     destructor Destroy; override;
@@ -262,7 +262,7 @@ procedure TDCLForm.TranslateVal(var Params: String; CheckParams: Boolean);
 var
   Parser: TDCLValuseParser;
 begin
-  Parser:=TDCLValuseParser.Create(FNameSpace, FVariables);
+  Parser:=TDCLValuseParser.Create(FNameSpace, FUserLevel, FVariables);
   if Assigned(FCurrentGrid) then
     Parser.RePlaseVariables(FNameSpace, Params, FCurrentGrid.Query)
   else
@@ -347,7 +347,7 @@ begin
 end;
 
 constructor TDCLForm.Create(IDCLMain: IDCLMain; DialogName, NameSpace: String; ParentForm: TDCLForm;
-  OPL: TStringList;
+  OPL: TStringList; UserLevel: TUserLevelsType;
   Query: TDCLQuery; Data: TDataSource; RetValueProc: IGetValue;
   ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False);
 var
@@ -373,7 +373,7 @@ begin
   FReturnValueParams:=ReturnValueParams;
   FParentForm:=ParentForm;
   FRetValueProc:=RetValueProc;
-  FUserLevel:=GPT.AccessLevel;
+  FUserLevel:=UserLevel;
   FCloseQuery:=False;
   CloseQueryText:='';
 
@@ -467,6 +467,19 @@ begin
     begin
       if Pos('//', SrcLine.Trim)=1 then
         Continue;
+
+      If IsLexem('SetAccessLevel=', SrcLine) then
+      begin
+        tmpS:=SrcLine;
+        TranslateVal(tmpS, True);
+        tmpS:=FindParam('SetAccessLevel=', tmpS);
+        Case GetStringDataType(tmpS) of
+        idDigit:
+        FUserLevel:=TranslateDigitToUserLevel(StrToIntEx(tmpS));
+        idUserLevel:
+        FUserLevel:=TranslateDigitToUserLevel(tmpS);
+        end;
+      end;
 
       If IsLexem('UserAccessRaight=', SrcLine) then
       begin

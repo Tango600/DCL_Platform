@@ -23,7 +23,7 @@ type
     FNameSpace: String;
     FVariables: TVariables;
     FParser: TDCLValuseParser;
-    FUserLevelLocal: TUserLevelsType;
+    FUserLevel: TUserLevelsType;
     MathParser: TMathParser;
     FDisableAutoRefresh: Boolean;
 
@@ -98,7 +98,7 @@ end;
 
 procedure TDCLCommand.TranslateVals(var S: String; Query: TDCLDialogQuery);
 begin
-  FParser:=TDCLValuseParser.Create(FNameSpace, FVariables);
+  FParser:=TDCLValuseParser.Create(FNameSpace, FUserLevel, FVariables);
   FParser.RePlaseParams(S, Query);
   FParser.RePlaseVariables(FNameSpace, S, Query);
   FParser.RePlaceProc(S, Query);
@@ -114,13 +114,19 @@ begin
   if Assigned(DCLForm) then
     FDCLForm:=(DCLForm as TDCLForm);
   FDCLGrid:=DCLGrid;
-  FUserLevelLocal:=GPT.AccessLevel;
+
   if Assigned(DCLGrid) then
-    FUserLevelLocal:=DCLGrid.RightsLevel;
+    FUserLevel:=DCLGrid.RightsLevel
+  else
+    if Assigned(DCLForm) then
+      FUserLevel:=(DCLForm as TDCLForm).RightsLevel
+    else
+      FUserLevel:=GPT.AccessLevel;
+
   FNameSpace:=NameSpace;
   FVariables:=FIDCLMain.GetVariables;
 
-  FParser:=TDCLValuseParser.Create(FNameSpace, FVariables);
+  FParser:=TDCLValuseParser.Create(FNameSpace, FUserLevel, FVariables);
   FParser.SetConnector(FDBConnector);
 
   MathParser:=TMathParser.Create;
@@ -569,7 +575,7 @@ end;
 
 function TDCLCommand.GetRaights: TUserLevelsType;
 begin
-  Result:=FUserLevelLocal;
+  Result:=FUserLevel;
 end;
 
 procedure TDCLCommand.RunTextReport(ScrLine: String; Query: TDCLDialogQuery; Grid: TDCLGrid);
@@ -1060,7 +1066,7 @@ begin
   {$IFDEF MSWINDOWS}
   If IsLexem('ReportOfficeSheet=', Command) then
   begin
-    Parser:=TDCLValuseParser.Create(FNameSpace, FVariables);
+    Parser:=TDCLValuseParser.Create(FNameSpace, FUserLevel, FVariables);
 
     SheetReportSelector:=TSheetOfficeReportSelector.Create(Command, FDBConnector, Parser);
     if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) and (FDCLGrid.Query.SQL.Text<>'') then
@@ -1072,7 +1078,7 @@ begin
 
   If IsLexem('ReportOfficeText=', Command) then
   begin
-    Parser:=TDCLValuseParser.Create(FNameSpace, FVariables);
+    Parser:=TDCLValuseParser.Create(FNameSpace, FUserLevel, FVariables);
 
     TextOfficeReportSelector:=TTextOfficeReportSelector.Create(Command, FDBConnector, Parser);
     if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) and (FDCLGrid.Query.SQL.Text<>'') then
@@ -1496,10 +1502,10 @@ begin
 
     if NoContext then
       lForm:=TDCLForm.Create(FIDCLMain, DialogName, NameSpace, ParentForm, DCL,
-        nil, nil, Self, ReturnValueParams, Modal)
+        FUserLevel, nil, nil, Self, ReturnValueParams, Modal)
     else
       lForm:=TDCLForm.Create(FIDCLMain, DialogName, NameSpace, ParentForm, DCL,
-        Grid.Query, Grid.Data, Self, ReturnValueParams, Modal);
+        FUserLevel, Grid.Query, Grid.Data, Self, ReturnValueParams, Modal);
 
     if not lForm.Reject then
     begin

@@ -88,7 +88,7 @@ type
 
     FFieldLayout: TDCLBaseLayoutManger<TDCLField>;
 
-    FUserLevel: TUserLevelsType;
+    Function GetUserLevel: TUserLevelsType;
 
     procedure ParseButton(ScrLine: String; Grid: TDCLGrid);
 
@@ -289,7 +289,7 @@ type
     property MasterValueVariableName: String read FMasterValueVariableName write FMasterValueVariableName;
     property NoDataField: Boolean read FNoDataField write FNoDataField;
     property MultiSelect: Boolean read FMultiSelectMode write SetMultiSelect;
-    property RightsLevel: TUserLevelsType read FUserLevel;
+    property RightsLevel: TUserLevelsType read GetUserLevel;
     property Seed: String read GetGridSeed;
     property PrintTool: Boolean read FPrintTool write FPrintTool;
     property SelectedRows: TBookmarkList read GetSelectedRows;
@@ -330,6 +330,11 @@ end;
 
 { TDCLGrid }
 
+function TDCLGrid.GetUserLevel: TUserLevelsType;
+begin
+  Result:=(FForm as TDCLForm).RightsLevel;
+end;
+
 procedure TDCLGrid.ParseButton(ScrLine: String; Grid: TDCLGrid);
 var
   ButtonParams: TDCLCommandButton;
@@ -347,8 +352,8 @@ begin
       flg:=False;
       DigitType:=GetStringDataType(tmpS);
       Case DigitType of
-        idDigit: flg:=TranslateDigitToUserLevel(StrToIntEx(FindParam('AccessLevel=', ScrLine)))<=FUserLevel;
-        idString: flg:=TranslateDigitToUserLevel(FindParam('AccessLevel=', ScrLine))<=FUserLevel;
+        idDigit: flg:=TranslateDigitToUserLevel(StrToIntEx(FindParam('AccessLevel=', ScrLine)))<=GetUserLevel;
+        idString: flg:=TranslateDigitToUserLevel(FindParam('AccessLevel=', ScrLine))<=GetUserLevel;
       end;
     end;
 
@@ -461,7 +466,7 @@ procedure TDCLGrid.TranslateVal(var Params: String; CheckParams: Boolean);
 var
   Parser: TDCLValuseParser;
 begin
-  Parser:=TDCLValuseParser.Create(FNameSpace, FVariables);
+  Parser:=TDCLValuseParser.Create(FNameSpace, GetUserLevel, FVariables);
   Parser.RePlaseVariables(FNameSpace, Params, FQuery);
   if CheckParams then
     Parser.RePlaseParams(Params, FQuery);
@@ -554,7 +559,7 @@ end;
 
 procedure TDCLGrid.AfterInsert(Data: TDataSet);
 begin
-  If FUserLevel<ulWrite Then
+  If GetUserLevel<ulWrite Then
     Data.Cancel
   Else
   begin
@@ -608,7 +613,7 @@ end;
 
 procedure TDCLGrid.AfterEdit(Data: TDataSet);
 begin
-  If FUserLevel<ulWrite Then
+  If GetUserLevel<ulWrite Then
     Data.Cancel;
 
   UpdateAllControls;
@@ -3939,9 +3944,8 @@ begin
   inherited Create(ParentControl);
   Self.Parent:=ParentControl;
   FIDCLMain:=IDCLMain;
-  FUserLevel:=(Form as TDCLForm).RightsLevel;
 
-  FMainPanel:=TPanel.Create(Parent); // Self);
+  FMainPanel:=TPanel.Create(Parent);
   FMainPanel.Parent:=Parent;
 
   FForm:=Form;
@@ -4716,7 +4720,7 @@ begin
     If IsButton('last', ButtonsExpr) Then
       NavigVisiButtonsVar[nbLast]:=[nbLast];
 
-    If FUserLevel>ulReadOnly Then
+    If GetUserLevel>ulReadOnly Then
     if AllowEdit then
     begin
       if not FindNotAllowedOperation(dsoInsert) then

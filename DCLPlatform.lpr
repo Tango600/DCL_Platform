@@ -23,22 +23,6 @@ var
   DCL: TDCLMain;
   TimeToTerm: Boolean;
 
-function FindCommandStrParam(Str: String): String;
-var
-  i: Byte;
-  s: String;
-begin
-  For i:=1 to ParamCount do
-  begin
-    s:=FindParam(Str+'=', ParamStr(i));
-    if s<>'' then
-    begin
-      Result:=s;
-      break;
-    end;
-  end;
-end;
-
 function FindFormCall: String;
 begin
   Result:=FindCommandStrParam('Form');

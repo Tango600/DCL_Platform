@@ -41,7 +41,7 @@ implementation
 
 uses
   IniFiles, uDCLGlobalVariables, uDCLMessages, uDCLMultiLang, uDCLVersion,
-  uStringParams;
+  uSystemUtils;
 
 {$R *.lfm}
 
@@ -90,22 +90,6 @@ begin
   if GPT.ExitCnf then
   begin
     CanClose:=ShowErrorMessage(10, GetDCLMessageString(msClose))=1;
-  end;
-end;
-
-function FindCommandStrParam(Str: String): String;
-var
-  i: Byte;
-  s: String;
-begin
-  For i:=1 to ParamCount do
-  begin
-    s:=FindParam(Str+'=', ParamStr(i));
-    if s<>'' then
-    begin
-      Result:=s;
-      break;
-    end;
   end;
 end;
 

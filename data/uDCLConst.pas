@@ -137,7 +137,6 @@ const
 Type
   TEventsEnum=(evtScroll, evtBeforeScroll, evtDelete, evtAfterOpen, evtAfterPost, evtCancel,
     evtInsert, evtLineDblClick, evtBeforePost, evtScrollPart, evtPostPart, evtClose);
-  TReliseStatus=(rsAlpha, rsBetta, rsPreRelase, rsUnstable, rsStable);
   TUserLevelsType=(ulUndefined, ulDeny, ulReadOnly, ulWrite, ulExecute, ulLevel1, ulLevel2, ulLevel3, ulLevel4,
     ulUpdater, ulSigner, ulDeveloper);
   TGridStyle=(gsFields, gsFieldsHorizontal, gsGrid);
@@ -178,10 +177,6 @@ Type
     ctBt, ctNotBt);
   TPairCondition=(pcNone, pcAnd, pcOr);
   TTransactionType=(trtWrite, trtRead, trtUniversal);
-
-const
-  ReleaseStatus=rsAlpha;
-  ReliseStatues:Array[TReliseStatus] of String=('Alpha', 'Betta', 'Pre relase', 'Unstable', 'Stable');
 
 implementation
 

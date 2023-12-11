@@ -5,25 +5,16 @@ interface
 
 uses
   Classes, SysUtils, Forms,
-  {$IFDEF FPC}
-    {$IFDEF IBX}
-      IB, IBDatabase, IBCustomDataSet,
-    {$ENDIF}
-  {$ELSE}
-    {$IFDEF IBX}
-      IBX.IBDatabase, IBX.IBTable, IBX.IBCustomDataSet, IBX.IBHeader, IBX.IBSQL, IBX.IBQuery,
-      IBX.IBVisualConst, IBX.IBXConst,
-    {$ENDIF}
+  {$IFDEF IBX}
+  IB, IBDatabase, IBCustomDataSet,
   {$ENDIF}
   {$IFDEF ZEOS}
-    ZDbcIntfs,
+  ZDbcIntfs,
   {$ENDIF}
   {$IFDEF SQLdbFamily}
-    SQLDB, {$IFDEF IBALL}SQLDBLib,{$ENDIF}
+  SQLDB, {$IFDEF IBALL}SQLDBLib,{$ENDIF}
   {$ENDIF}
-  {$IFDEF FPC}
-    FileUtil, LazUTF8, LConvEncoding,
-  {$ENDIF}
+  FileUtil, LazUTF8,
   uDCLData, uDCLConst, uDCLDBAwareTypes, uDCLDebug, uDCLUtils;
 
 type
@@ -225,9 +216,7 @@ begin
     Else
       LibraryLocation:=DefaultLibraryLocation;
 
-{$IFDEF FPC}
     GPT.ServerCodePage:=NormalizeEncoding(GPT.ServerCodePage);
-{$ENDIF}
     If GPT.ServerCodePage='' Then
     begin
       raise Exception.Create('Server code page not define!');
@@ -249,8 +238,6 @@ begin
   end;
   {$ENDIF}
   {$IFDEF SQLdbIB}
-  Charset:='UTF8';
-
   if GPT.ServerCodePage='' then
     GPT.ServerCodePage:='utf8';
 
@@ -321,8 +308,6 @@ begin
   {$ENDIF}
   {$IFDEF SQLdb}
   DebugProc('Creating Connection...');
-  Charset:='UTF8';
-
   If PosEx(DBTypeFirebird, GPT.DBType)>0 then
   Begin
     GPT.IBAll:=True;
@@ -407,17 +392,20 @@ begin
   end;
   {$ENDIF}
   {$IFDEF ODBC}
-  Charset:='UTF8';
-
   if GPT.ServerCodePage='' then
     GPT.ServerCodePage:='utf8';
 
-  GPT.IBAll:=True;
+  If PosEx(DBTypeFirebird, GPT.DBType)>0 then
+  Begin
+    GPT.IBAll:=True;
+    GPT.DBType:=DBTypeFirebird;
+  End;
   UniversalTransaction:=TTransaction.Create(Self);
   UniversalTransaction.Params.Clear;
   UniversalTransaction.Params.Append('nowait');
   UniversalTransaction.Params.Append('read_committed');
-  UniversalTransaction.Params.Append('rec_version');
+  If GPT.IBAll then
+    UniversalTransaction.Params.Append('rec_version');
   UniversalTransaction.Action:=caCommit;
   UniversalTransaction.DataBase:=Self;
   Transaction:=UniversalTransaction;

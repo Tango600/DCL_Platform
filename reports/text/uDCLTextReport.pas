@@ -161,7 +161,7 @@ procedure TDCLTextReport.RePlaseVariables(var VarsSet: String);
 var
   Parser: TDCLValuseParser;
 begin
-  Parser:=TDCLValuseParser.Create(FNameSpace, FVariables);
+  Parser:=TDCLValuseParser.Create(FNameSpace, ulUndefined, FVariables);
   Parser.TranslateVals(VarsSet, nil, False);
 end;
 
@@ -732,7 +732,6 @@ begin
             LengthParam:=UTF8Length(Value);
           end;
 
-          //UTF8Delete(BodyText, StartSel, DelLen);
           FillCopy(Value, BodyText, StartSel, LengthParam, DelLen, Alig);
 
           StartSel:=PosEx(ParamPrefix+Field.FieldName, BodyText);
@@ -744,7 +743,7 @@ begin
   Else
     BodyText:='';
 
-  Parser:=TDCLValuseParser.Create(FNameSpace, FVariables);
+  Parser:=TDCLValuseParser.Create(FNameSpace, ulUndefined, FVariables);
   Parser.RePlaceProc(BodyText, nil);
   Body.Append(BodyText);
 end;

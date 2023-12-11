@@ -19,6 +19,8 @@ uses
   Classes, Graphics, SysUtils;
 
 function ValidObject(const AObj: TObject): Boolean;
+function FindCommandStrParam(Str: String): String;
+
 Function KeyState(Key: Integer): Boolean;
 Function IsUNCPath(Path: String): Boolean;
 Function IsFullPath(Path: String): Boolean;
@@ -42,11 +44,27 @@ function GetSpecialPath(CSIDL: Word): string;
 implementation
 
 uses
-  uDCLData, uDCLGlobalVariables, uRunProgram;
+  uDCLData, uDCLGlobalVariables, uRunProgram, uStringParams;
 
 function ValidObject(const AObj: TObject): Boolean;
 begin
   Result:=Assigned(AObj){$IFDEF AUTOREFCOUNT}and(not AObj.Disposed){$ENDIF};
+end;
+
+function FindCommandStrParam(Str: String): String;
+var
+  i: Byte;
+  s: String;
+begin
+  For i:=1 to ParamCount do
+  begin
+    s:=FindParam(Str+'=', ParamStr(i));
+    if s<>'' then
+    begin
+      Result:=s;
+      break;
+    end;
+  end;
 end;
 
 function GetUserProfileDir: String;

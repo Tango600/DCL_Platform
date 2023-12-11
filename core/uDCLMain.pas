@@ -208,6 +208,7 @@ begin
       FreeAndNil(Package);
     end;
   end;
+  FreeAndNil(Files);
 end;
 
 function TDCLMain.CheckSigned(Package: TDCLScriptsPackage): Boolean;

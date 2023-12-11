@@ -90,7 +90,7 @@ end;
 Begin
   If Params.Count>0 Then
   begin
-    Parser:=TDCLValuseParser.Create('', nil);
+    Parser:=TDCLValuseParser.Create('', ulUndefined, nil);
 
     For i:=0 To Params.Count-1 Do
     Begin
@@ -265,6 +265,15 @@ Begin
         Begin
           GPT.ExcelOLEExtension:=Trim(FindParam('ExcelOLEExtension=', cs));
         End;
+
+        If IsParameter('DisableLoad=', cs) Then
+          GPT.DisableLoad:=FindParam('DisableLoad=', cs)='1';
+        If IsParameter('DisableUnload=', cs) Then
+          GPT.DisableUnload:=FindParam('DisableUnload=', cs)='1';
+        If IsParameter('ScriptDir=', cs) Then
+          GPT.ScriptDir:=FindParam('ScriptDir=', cs);
+        If IsParameter('EasyIdentMode=', cs) Then
+          GPT.EasyIdentMode:=FindParam('EasyIdentMode=', cs)='1';
       End;
     End;
   end;

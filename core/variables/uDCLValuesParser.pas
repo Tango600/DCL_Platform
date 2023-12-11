@@ -17,10 +17,11 @@ type
     FNameSpace: String;
     FVariables: TVariables;
     FDBConnector: TDCLDBConnector;
+    FUserLevel: TUserLevelsType;
 
     procedure ReplaseSysVars(var ValueSet: String; Query: TDCLDialogQuery);
   public
-    constructor Create(NameSpace: String; Variables: TVariables); overload;
+    constructor Create(NameSpace: String; UserLevel: TUserLevelsType; Variables: TVariables); overload;
 
     procedure RePlaseParams(var Params: String; Query: TDCLDialogQuery);
     procedure RePlaseVariables(const Namespace: String; var ValueSet: String; Query: TDCLDialogQuery);
@@ -39,14 +40,14 @@ uses
   uExpressionParser;
 
 const
-  MaxSysVars=33;
+  MaxSysVars=34;
   SysVarsSet: Array [1..MaxSysVars] of String=('_TIME_', '_TIMES_', '_DATE_', '_DATETIME_', // 4
     '_VERSION_', '_ISEMPTY_', '_USERNAME_', '_PASSWORD_', '_STRINGTYPECHAR_', '_ROLENAME_', // 10
     '_ROLEID_', '_USERPASS_', '_LONGROLENAME_', '_FOB_', '_EOB_', '_VALUESEPARATOR_', // 16
     '_APPPATH_', '_ENGINETYPE_', '_APPNAME_', '_DCL_USER_NAME_', '_USERID_', // 21
     '_USERNAMEACCESSLEVELS_', '_USERACCESSLEVEL_', '_NOTIFYACTIONS_', '_YESNO_', // 25
     '_YEAR_', '_DSSTATE_', '_DSSTATENAME_', '_APPDATAPATH_', '_OS_', '_USERPROFILE_', // 31
-    '_USERDOC_', '_DCLINI_'); // 33
+    '_USERDOC_', '_DCLINI_', '_ACCESSLEVEL_'); // 34
 
   ProcCount=24;
   ProcNames: Array [1..ProcCount] Of String=('ToFloat', 'DeleteNonFilesSimb', 'GetFileNameToTranslite', //3
@@ -181,6 +182,11 @@ begin
             Value:=GetUserDocumentsDir; // '_USERDOC_'
             33:
             Value:=GPT.IniFileName; // _DCLINI_
+            34:
+            if FUserLevel=ulUndefined then
+              Value:=IntToStr(Ord(GPT.AccessLevel))
+            else
+              Value:=IntToStr(Ord(FUserLevel));
             end;
 
             Delete(ValueSet, Pos, Length(LastVariable)+Length(VariablePrefix));
@@ -192,10 +198,11 @@ begin
   end;
 end;
 
-constructor TDCLValuseParser.Create(NameSpace: String; Variables: TVariables);
+constructor TDCLValuseParser.Create(NameSpace: String; UserLevel: TUserLevelsType; Variables: TVariables);
 begin
   FNameSpace:=NameSpace;
   FVariables:=Variables;
+  FUserLevel:=UserLevel;
 end;
 
 procedure TDCLValuseParser.RePlaseParams(var Params: String; Query: TDCLDialogQuery);
