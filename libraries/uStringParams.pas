@@ -162,9 +162,8 @@ end;
 Function ParamsCount(const ParamsSet: String; SeparateChar: String=DefaultValuesSeparator;
   ParamDelim: String=DefaultParamDelim): Integer;
 var
-  ParamCount, ParamLen, pv1: Integer;
-  StopSeparate: Boolean;
-  DelimLeft, DelimRight, CurrDelim: Char;
+  DelimLeft, DelimRight: Char;
+  pices: Array of String;
 begin
   if ParamDelim='' then
     ParamDelim:=DefaultParamDelim;
@@ -182,27 +181,9 @@ begin
 
   if SeparateChar='' then
     SeparateChar:=DefaultValuesSeparator;
-  ParamCount:=1;
-  pv1:=1;
-  ParamLen:=Length(ParamsSet);
-  StopSeparate:=False;
 
-  CurrDelim:=DelimLeft;
-  While ParamLen>=pv1 do
-  begin
-    if (Pos(ParamsSet[pv1], SeparateChar)<>0)and not StopSeparate then
-      Inc(ParamCount);
-    if ParamsSet[pv1]=CurrDelim then
-    begin
-      StopSeparate:=not StopSeparate;
-      if CurrDelim=DelimLeft then
-        CurrDelim:=DelimRight
-      Else if CurrDelim=DelimRight then
-        CurrDelim:=DelimLeft;
-    end;
-    Inc(pv1);
-  end;
-  Result:=ParamCount;
+  pices:=ParamsSet.Split(SeparateChar, DelimLeft, DelimRight, 0, TStringSplitOptions.None);
+  Result:=Length(pices);
 end;
 
 Function GetClearParam(const Param: String; ParamDelim: String=DefaultParamDelim): String;
@@ -230,11 +211,16 @@ end;
 Function GetParam(const ParamsSet: String; ParamNo: Integer;
   SeparateChar: String=DefaultValuesSeparator; ParamDelim: String=DefaultParamDelim): String;
 var
-  ParamCount, ParamLen, pv1, pv2: Integer;
-  StopSeparate: Boolean;
-  DelimLeft, DelimRight, CurrDelim: Char;
-  S: string;
+  l: Integer;
+  DelimLeft, DelimRight: Char;
+  pices: Array of String;
 begin
+  if ParamsSet='' then
+  Begin
+    Result:='';
+    Exit;
+  End;
+
   If ParamNo=0 then
   Begin
     Result:='';
@@ -257,52 +243,10 @@ begin
 
   if SeparateChar='' then
     SeparateChar:=DefaultValuesSeparator;
-  Dec(ParamNo);
-  ParamCount:=0;
-  pv1:=1;
-  StopSeparate:=False;
-  ParamLen:=Length(ParamsSet);
-  if ParamLen<>0 then
-  begin
-    CurrDelim:=DelimLeft;
-    While (ParamCount<>ParamNo)and(ParamLen+1<>pv1) do
-    begin
-      if (Pos(ParamsSet[pv1], SeparateChar)<>0)and not StopSeparate then
-        Inc(ParamCount);
-      if ParamsSet[pv1]=CurrDelim then
-      begin
-        StopSeparate:=not StopSeparate;
-        if CurrDelim=DelimLeft then
-          CurrDelim:=DelimRight
-        Else if CurrDelim=DelimRight then
-          CurrDelim:=DelimLeft;
-      end;
-      Inc(pv1);
-    end;
 
-    pv2:=pv1;
-    While (ParamLen>=pv2)and(ParamCount=ParamNo) do
-    begin
-      if (Pos(ParamsSet[pv2], SeparateChar)<>0)and not StopSeparate then
-        Inc(ParamCount);
-      if ParamsSet[pv2]=CurrDelim then
-      begin
-        StopSeparate:=not StopSeparate;
-        if CurrDelim=DelimLeft then
-          CurrDelim:=DelimRight
-        Else if CurrDelim=DelimRight then
-          CurrDelim:=DelimLeft;
-      end;
-      Inc(pv2);
-    end;
-    if (pv2-1=ParamLen)and(ParamCount=ParamNo) then
-      Inc(pv2);
-
-    S:=Trim(Copy(ParamsSet, pv1, pv2-pv1-1));
-    Result:=S;
-  end
-  Else
-    Result:='';
+  pices:=ParamsSet.Split(SeparateChar, DelimLeft, DelimRight, ParamNo, TStringSplitOptions.None);
+  l:=Length(pices);
+  Result:=pices[l-1];
 end;
 
 Function PosEx(const SubStr, S: String): Cardinal;
