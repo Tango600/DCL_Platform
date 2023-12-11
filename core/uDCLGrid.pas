@@ -353,7 +353,7 @@ begin
       DigitType:=GetStringDataType(tmpS);
       Case DigitType of
         idDigit: flg:=TranslateDigitToUserLevel(StrToIntEx(FindParam('AccessLevel=', ScrLine)))<=GetUserLevel;
-        idString: flg:=TranslateDigitToUserLevel(FindParam('AccessLevel=', ScrLine))<=GetUserLevel;
+        idUserLevel: flg:=TranslateDigitToUserLevel(FindParam('AccessLevel=', ScrLine))<=GetUserLevel;
       end;
     end;
 
