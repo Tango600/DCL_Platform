@@ -97,7 +97,7 @@ begin
   r:=FQuery.Fields[0].AsInteger;
   FQuery.Close;
 
-  if r=1 then
+  if r=0 then
   begin
     ScriptText:=TStringList.Create;
     ScriptText.Clear;
@@ -162,7 +162,6 @@ begin
             DCLNameField+' = :SCRNAME '+
             'where '+IdField+' = :ID';
           FQuery.Prepare;
-          FQuery.ParamByName('DCLTEXT').LoadFromStream(Script.ScriptText, ftMemo);
           FQuery.ParamByName('COMMAND').AsString:=Script.Command;
           FQuery.ParamByName('SCRNAME').AsString:=Script.ScriptName;
           FQuery.ParamByName('IDENT').AsInteger:=Script.Ident;
@@ -176,7 +175,6 @@ begin
           FQuery.SQL.Text:='insert into '+DCLTable+'('+IdentifyField+', '+ParentField+', '+CommandField+', '+DCLNameField+') '+
             'values(:IDENT, :PARENT, :COMMAND, :SCRNAME)';
           FQuery.Prepare;
-          FQuery.ParamByName('DCLTEXT').LoadFromStream(Script.ScriptText, ftMemo);
           FQuery.ParamByName('COMMAND').AsString:=Script.Command;
           FQuery.ParamByName('SCRNAME').AsString:=Script.ScriptName;
           FQuery.ParamByName('IDENT').AsInteger:=Script.Ident;
