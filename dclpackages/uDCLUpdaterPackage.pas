@@ -80,31 +80,24 @@ function TDCLUpdaterPackage.UpdateScript(PackageID: Integer;
   Script: TDCLScriptItem): TScriptUpdateState;
 var
   ScriptText: TStringList;
-  r, id, sid: Integer;
-  Empty, IsSuccess: Boolean;
-  UpdateState: TScriptUpdateState;
+  r, id: Integer;
 begin
   Result:=susNone;
-  sid:=-1;
-  IsSuccess:=False;
 
   {$IFDEF TRANSACTIONDB}
   if not FWriteTrans.Active then
     FWriteTrans.StartTransaction;
   {$ENDIF}
   FQuery.Params.Clear;
-  FQuery.SQL.Text:='select * from '+UpdateScriptsTable+' where '+PackageIDField+' = :PID and '+UpdateScriptNameField+' = :PNAME';
+  FQuery.SQL.Text:='select count(*) from '+UpdateScriptsTable+' where '+PackageIDField+' = :PID and lower('+UpdateScriptNameField+') = lower(:PNAME)';
   FQuery.Prepare;
   FQuery.Params.ParamByName('PID').AsInteger:=PackageID;
   FQuery.Params.ParamByName('PNAME').AsString:=Script.ScriptName;
   FQuery.Open;
-  Empty:=FQuery.IsEmpty;
-  if not Empty then
-    sid:=FQuery.FieldByName(UpdateScriptIDField).AsInteger;
-  UpdateState:=TScriptUpdateState(FQuery.FieldByName(UpdateScriptStateField).AsInteger);
+  r:=FQuery.Fields[0].AsInteger;
   FQuery.Close;
 
-  if Empty or (UpdateState<>susDone) then
+  if r=1 then
   begin
     ScriptText:=TStringList.Create;
     ScriptText.Clear;
@@ -145,7 +138,6 @@ begin
           FQuery.ParamByName('DCLTEXT').LoadFromStream(Script.ScriptText, ftMemo);
           FQuery.ExecSQL;
         end;
-        IsSuccess:=True;
       end
       else if (not Script.SQL) and (Script.Ident<>0) then
       begin
@@ -191,7 +183,6 @@ begin
           FQuery.ParamByName('PARENT').AsInteger:=Script.Parent;
           FQuery.ExecSQL;
         end;
-        IsSuccess:=True;
       end
       else if Script.SQL then
       begin
@@ -205,11 +196,9 @@ begin
         SQLScript.Script:=ScriptText;
         SQLScript.Execute;
         {$ENDIF}
-        IsSuccess:=True;
       end;
       Result:=susDone;
     except
-      IsSuccess:=False;
       Result:=susError;
     end;
     {$IFDEF TRANSACTIONDB}
@@ -217,39 +206,27 @@ begin
       FWriteTrans.Commit;
     {$ENDIF}
 
-    {$IFDEF TRANSACTIONDB}
-    if not FWriteTrans.Active then
-      FWriteTrans.StartTransaction;
-    {$ENDIF}
-    FQuery.Params.Clear;
-
-    if Empty then
+    if Result=susDone then
     begin
-      FQuery.SQL.Text:='insert into '+UpdateScriptsTable+'('+PackageIDField+', '+UpdateScriptNameField+', '+UpdateScriptStateField+') '+
-        'values(:PID, :PNAME, :STATE)';
+      {$IFDEF TRANSACTIONDB}
+      if not FWriteTrans.Active then
+        FWriteTrans.StartTransaction;
+      {$ENDIF}
+      FQuery.Params.Clear;
+      FQuery.SQL.Text:='insert into '+UpdateScriptsTable+'('+PackageIDField+', '+UpdateScriptNameField+') '+
+        'values(:PID, :PNAME)';
       FQuery.Prepare;
       FQuery.Params.ParamByName('PID').AsInteger:=PackageID;
       FQuery.Params.ParamByName('PNAME').AsString:=Script.ScriptName;
-    end
-    else
-    begin
-      FQuery.SQL.Text:='update '+UpdateScriptsTable+' set '+UpdateScriptStateField+' = :STATE '+
-        'where '+UpdateScriptIDField+' = :ID';
-      FQuery.Params.ParamByName('ID').AsInteger:=sid;
+      FQuery.ExecSQL;
+      {$IFDEF TRANSACTIONDB}
+      if FWriteTrans.Active then
+        FWriteTrans.Commit;
+      {$IFDEF SQLdbFamily}
+      FWriteTrans.EndTransaction;
+      {$ENDIF}
+      {$ENDIF}
     end;
-
-    if not IsSuccess then
-      FQuery.Params.ParamByName('STATE').AsInteger:=Ord(susError)
-    else
-      FQuery.Params.ParamByName('STATE').AsInteger:=Ord(Result);
-    FQuery.ExecSQL;
-    {$IFDEF TRANSACTIONDB}
-    if FWriteTrans.Active then
-      FWriteTrans.Commit;
-    {$IFDEF SQLdbFamily}
-    FWriteTrans.EndTransaction;
-    {$ENDIF}
-    {$ENDIF}
 
     FreeAndNil(ScriptText);
   end;
