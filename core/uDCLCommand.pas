@@ -1214,7 +1214,7 @@ begin
     end;
   end;
 
-  if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) and FDCLGrid.Query.Active then
+  if Assigned(FDCLForm) and Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) and FDCLGrid.Query.Active then
   begin
     If IsLexem('Refresh;', Command) then
     begin

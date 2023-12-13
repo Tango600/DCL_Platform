@@ -79,7 +79,7 @@ const
   CrossDelim='/';
   OSType='windows';
 {$ENDIF}
-  GridAlternateColor=$E0DDDD;
+  GridAlternateColor=$f8f9f9;
   MemFileName='DCL_Run_Unit_'+DBEngineType;
 
   EncodingUTF8='utf8';
