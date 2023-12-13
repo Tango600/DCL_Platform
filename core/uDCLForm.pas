@@ -19,7 +19,6 @@ type
     FReject, FFirstPage, FormCanClose, FCloseQuery: Boolean;
     FIDCLMain: IDCLMain;
     FDBConnector: TDCLDBConnector;
-    FFormCloseStatus: TDCLFormCloseAction;
     FNameSpace, FDialogName, CloseQueryText: String;
     FVariables: TVariables;
     FForms: TList<TForm>;
@@ -87,7 +86,6 @@ type
     procedure DeleteStatus(Num: Integer);
     procedure DeleteAllStatus;
 
-    property CloseAction: TDCLFormCloseAction read FFormCloseStatus;
     property Grids: TList<TDCLGrid> read FGrids;
     property CurrentGrid: TDCLGrid read FCurrentGrid;
     property DialogName: String read FDialogName;
@@ -314,7 +312,7 @@ begin
   end;
 
   SaveFormPos;
-  FFormCloseStatus:=fcaRelease;
+  FIDCLMain.ReleaseForm(Self);
 end;
 
 procedure TDCLForm.OnFormCloseQuery(Sender: TObject; var CanClose: Boolean);

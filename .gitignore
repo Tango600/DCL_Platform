@@ -19,3 +19,4 @@
 /reports/office/backup/
 /reports/text/backup/
 /core/lang/backup/*
+/core/components/backup/*

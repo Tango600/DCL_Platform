@@ -24,6 +24,8 @@ type
     procedure NotifyForms(Action: TFormsNotifyAction);
     procedure NotifyForm(Form: TForm; Action: TFormsNotifyAction);
 
+    procedure ReleaseForm(Form: TForm);
+
     procedure About;
     procedure ExitApp;
     function GetImageList: TImageList;

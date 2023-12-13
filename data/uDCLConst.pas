@@ -106,7 +106,6 @@ const
 
   StopSimbols=';( )[],=\/+-^<>.%:;&$#@*'#39#10#13;
 
-  KillerTimerInterval=400;
   IntervalTimeToInitScripts=700;
   IntervalTimeNotify=61007;
   TimeToTerminate=5000;
@@ -166,7 +165,6 @@ Type
   TNewQueryMode=(nqmNew, nqmFromGrid);
   TMessageType=(mbtError=0, mbtWarning=1, mbtInformation=9, mbtConfirmation=10);
   TSimplyFieldType=(sftNotDefine, sftString, sftDigit, sftFloat, sftDateTime, fstBlobMemo);
-  TDCLFormCloseAction=(fcaNone, fcaRelease);
   TFieldFormat=(fftNone, fftDigit, fftDate, fftTime, fftDateTime, fftTrim, fftFloat);
   TSheetFillStrategy=(sfsInsert, sfsReplace);
   TFieldParsingMode=(fpmNone, fpmCaption, fpmField);

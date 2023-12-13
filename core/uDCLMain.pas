@@ -24,18 +24,14 @@ type
     FDBConnector: TDCLDBConnector;
     FDCLMenu: TDCLMenu;
     LocalQuery: TDCLSimlyQuery;
-    KillerDog: TTimer;
-    FBusyMode: Boolean;
     FDCLNotifier: TDCLNotifier;
     FPackages: TList<TPackageInfo>;
     FScripts: TList<TDCLScriptItem>;
     FPicturesIndexes: TDictionary<TPicturesTypes, Integer>;
     FImages: TImageList;
 
-    procedure KillerForms(Sender: TObject);
     function GetScriptText(ScriptName: String): TStringList;
     procedure CloseForm(Form: TForm);
-    procedure ReleaseForm(Form: TForm);
 
     procedure WriteBaseID;
     function ReadBaseID: String;
@@ -48,6 +44,8 @@ type
   public
     constructor Create; overload;
     destructor Destroy; override;
+
+    procedure ReleaseForm(Form: TForm);
 
     procedure CloseAllDialogs;
 
@@ -274,27 +272,6 @@ begin
   end;
 end;
 
-procedure TDCLMain.KillerForms(Sender: TObject);
-var
-  ff: TForm;
-begin
-  FBusyMode:=True;
-  For ff in FForms do
-  Begin
-    If Assigned(ff) then
-    begin
-      if ff is TDCLForm then
-      begin
-        If (ff as TDCLForm).CloseAction=fcaRelease then
-        begin
-          ReleaseForm(ff);
-        end;
-      end;
-    end;
-  End;
-  FBusyMode:=False;
-end;
-
 procedure TDCLMain.CloseForm(Form: TForm);
 begin
   Form.Close;
@@ -304,7 +281,6 @@ procedure TDCLMain.ReleaseForm(Form: TForm);
 begin
   FForms.Remove(Form);
   Form.Release;
-  FreeAndNil(Form);
 end;
 
 function TDCLMain.GetScriptText(ScriptName: String): TStringList;
@@ -552,11 +528,6 @@ begin
   end;
   {$ENDIF}
 
-  KillerDog:=TTimer.Create(Self);
-  KillerDog.Interval:=KillerTimerInterval;
-  KillerDog.OnTimer:=KillerForms;
-  KillerDog.Enabled:=True;
-
   FDBConnector:=TDCLDBConnector.Create;
   if FDBConnector.Connected then
   begin
@@ -617,7 +588,6 @@ end;
 
 destructor TDCLMain.Destroy;
 begin
-  KillerDog.Enabled:=False;
   CloseAllDialogs;
   if Assigned(FDCLMenu) then
     FreeAndNil(FDCLMenu);
@@ -628,16 +598,14 @@ procedure TDCLMain.CloseAllDialogs;
 var
   ff: TForm;
 begin
-  FBusyMode:=True;
   For ff in FForms do
   Begin
-    If Assigned(ff) and ((ff as TDCLForm).CloseAction=fcaNone) then
+    If Assigned(ff) then
     begin
       CloseForm(ff);
       ReleaseForm(ff);
     end;
   End;
-  FBusyMode:=False;
 end;
 
 procedure TDCLMain.Update;
