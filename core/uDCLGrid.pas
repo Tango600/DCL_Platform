@@ -1571,6 +1571,7 @@ begin
 
   if Assigned(DCLCommand) then
   begin
+    ns:=FNameSpace;
     if DCLCommand.CloseButton then
     begin
       FForm.Close;
@@ -1590,7 +1591,6 @@ begin
           begin
             FQuery.GoToBookmark(Bookmark);
 
-            ns:=FNameSpace;
             if DCLCommand.Host then
             begin
               CreateGUID(guid);
@@ -1606,6 +1606,12 @@ begin
 
       if DCLCommand.ExecAfter<>'' then
       begin
+        if DCLCommand.Host then
+        begin
+          CreateGUID(guid);
+          ns:=GUIDToString(guid);
+        end;
+
         CommandObj:=TDCLCommand.Create(Self, FIDCLMain, ns, FForm, Self);
         CommandObj.SelectRunType(DCLCommand.ExecAfter);
       end;
@@ -1614,7 +1620,6 @@ begin
     end
     else
     begin
-      ns:=FNameSpace;
       if DCLCommand.Host then
       begin
         CreateGUID(guid);
