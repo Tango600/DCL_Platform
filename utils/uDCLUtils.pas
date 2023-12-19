@@ -428,7 +428,7 @@ Begin
   if not DirectoryExists(UserProfileDir) then
     ForceDirectories(UserProfileDir);
 
-  AppConfigDir:=UserProfileDir+DCLDir;
+  AppConfigDir:=UserProfileDir+DCLDir+PathDelim;
 End;
 
 /// ////////////////////////////////////////////////////////////

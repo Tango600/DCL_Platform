@@ -34,13 +34,13 @@ type
 
     procedure FindMenuItem(TagID: Integer; aItems: TMenuItem);
     procedure ClickMenu(Sender: TObject);
-
     procedure AddMainItem(Id: Integer; Capt: String);
     procedure AddSubItem(Id, ParentItemId: Integer; Capt: String);
-
     function ExistItemByIdent(var List: TFPGObjectList<TMenuConstructionItem>; Id: Integer): Boolean;
-
     procedure CreateMenuItems(var Query: TDCLSimlyQuery; Parent: Integer; UserID: String);
+
+    procedure RunFromPackage(IdentFrom, IdentTo: Integer);
+    procedure RunFromScripts(IdentFrom, IdentTo: Integer);
   public
     constructor Create(Main: IDCLMain; MainForm: TForm); overload;
     destructor Destroy; override;
@@ -62,65 +62,15 @@ begin
 end;
 
 procedure TDCLMenu.InitActions;
-var
-  I: TDCLScriptItem;
-  Scr: TStringList;
 begin
-  for I in FMain.GetLoadedScripts do
-  begin
-    if (I.Ident>=40001) and (I.Ident<=40100) then
-    begin
-      if Assigned(I.ScriptText) then
-      begin
-        Scr:=TStringList.Create;
-        I.ScriptText.Position:=0;
-        Scr.LoadFromStream(I.ScriptText);
-
-        FMain.RunCommandScript(Scr.Text);
-      end;
-    end;
-  end;
-
-  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 40001 and 40100', GPT.UserID);
-  LocalQuery.Open;
-  while not LocalQuery.EOF do
-  begin
-    FMain.RunCommandScript(LocalQuery.FieldByName(DCLNameField).AsString);
-
-    LocalQuery.Next;
-  end;
-  LocalQuery.Close;
+  RunFromPackage(40001, 40100);
+  RunFromScripts(40001, 40100);
 end;
 
 procedure TDCLMenu.CloseActions;
-var
-  I: TDCLScriptItem;
-  Scr: TStringList;
 begin
-  for I in FMain.GetLoadedScripts do
-  begin
-    if (I.Ident>=40101) and (I.Ident<=40200) then
-    begin
-      if Assigned(I.ScriptText) then
-      begin
-        Scr:=TStringList.Create;
-        I.ScriptText.Position:=0;
-        Scr.LoadFromStream(I.ScriptText);
-
-        FMain.RunCommandScript(Scr.Text);
-      end;
-    end;
-  end;
-
-  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 40101 and 40200', GPT.UserID);
-  LocalQuery.Open;
-  while not LocalQuery.EOF do
-  begin
-    FMain.RunCommandScript(LocalQuery.FieldByName(DCLNameField).AsString);
-
-    LocalQuery.Next;
-  end;
-  LocalQuery.Close;
+  RunFromPackage(40101, 40200);
+  RunFromScripts(40101, 40200);
 end;
 
 function TDCLMenu.GetMenuCommandById(Ident: Integer): String;
@@ -254,6 +204,7 @@ var
   I: TDCLScriptItem;
   ci: TMenuConstructionItem;
   ConstructionItems: TFPGObjectList<TMenuConstructionItem>;
+  ParentWhere: String;
 begin
   ConstructionItems:=TFPGObjectList<TMenuConstructionItem>.Create;
   for I in FMain.GetLoadedScripts do
@@ -269,9 +220,11 @@ begin
   end;
 
   if Parent=0 then
-    Query.SQL.Text:=GetRolesQueryText(IdentifyField+' between 1 and 20000 and '+ParentField+' is null', UserID)
+    ParentWhere:=' is null'
   else
-    Query.SQL.Text:=GetRolesQueryText(IdentifyField+' between 1 and 20000 and '+ParentField+' = '+IntToStr(Parent), UserID);
+    ParentWhere:=' = '+IntToStr(Parent);
+
+  Query.SQL.Text:=GetRolesQueryText(IdentifyField+' between 1 and 20000 and '+ParentField+ParentWhere, UserID);
 
   Query.Open;
   while not Query.EOF do
@@ -299,6 +252,39 @@ begin
       AddSubItem(ci.Id, ci.Parent, ci.Title);
     CreateMenuItems(Query, ci.Id, UserID);
   end;
+end;
+
+procedure TDCLMenu.RunFromPackage(IdentFrom, IdentTo: Integer);
+var
+  I: TDCLScriptItem;
+  Scr: TStringList;
+begin
+  for I in FMain.GetLoadedScripts do
+  begin
+    if (I.Ident>=IdentFrom) and (I.Ident<=IdentTo) then
+    begin
+      if Assigned(I.ScriptText) then
+      begin
+        Scr:=TStringList.Create;
+        I.ScriptText.Position:=0;
+        Scr.LoadFromStream(I.ScriptText);
+
+        FMain.RunCommandScript(Scr.Text);
+      end;
+    end;
+  end;
+end;
+
+procedure TDCLMenu.RunFromScripts(IdentFrom, IdentTo: Integer);
+begin
+  LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between '+IntToStr(IdentFrom)+' and '+IntToStr(IdentTo), GPT.UserID);
+  LocalQuery.Open;
+  while not LocalQuery.EOF do
+  begin
+    FMain.RunCommandScript(LocalQuery.FieldByName(DCLNameField).AsString);
+    LocalQuery.Next;
+  end;
+  LocalQuery.Close;
 end;
 
 constructor TDCLMenu.Create(Main: IDCLMain; MainForm: TForm);

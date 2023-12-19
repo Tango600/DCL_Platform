@@ -3156,9 +3156,9 @@ begin
       If not CheckStrFmtType(ExeplStr, GetSimplyFieldType(Filter.Field, FQuery)) then
       Begin
         ExeplStr:='';
+        Filter.FilterString:=ExeplStr;
       End;
     End;
-    Filter.FilterString:=ExeplStr;
 
     if Filter.VarName<>'' then
       FVariables.Variables[FNamespace, Filter.VarName]:=TrimRight(ExeplStr);
@@ -3947,8 +3947,8 @@ begin
   Self.Parent:=ParentControl;
   FIDCLMain:=IDCLMain;
 
-  FMainPanel:=TPanel.Create(Parent);
-  FMainPanel.Parent:=Parent;
+  FMainPanel:=TPanel.Create(Self);  // Parent);
+  FMainPanel.Parent:=ParentControl;  // Parent;
 
   FForm:=Form;
   FForms:=IDCLMain.GetForms;

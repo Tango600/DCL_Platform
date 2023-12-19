@@ -612,10 +612,10 @@ procedure TDCLMain.Update;
 begin
   if GPT.AccessLevel>=ulUpdater then
   begin
-    if not DirectoryExists(AppConfigDir+'Updates') then
-      ForceDirectories(AppConfigDir+'Updates');
+    if not DirectoryExists(AppConfigDir+UpdatesDir) then
+      ForceDirectories(AppConfigDir+UpdatesDir);
 
-    UpdateFromPackages(AppConfigDir+'Updates'+PathDelim);
+    UpdateFromPackages(AppConfigDir+UpdatesDir+PathDelim);
   end;
 end;
 
