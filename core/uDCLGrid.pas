@@ -2238,7 +2238,7 @@ begin
   DBLookupControl:=TDBLookupComboBox.Create(FFieldsPanel);
   DBLookupControl.Parent:=FFieldsPanel;
   DBLookupControl.Style:=csDropDownList;
-  DBLookupControl.DropDownRows:=20;
+  DBLookupControl.DropDownRows:=30;
 
   DBLookupControl.ShowHint:=True;
   DBLookupControl.Hint:=Field.Hint;
@@ -3156,8 +3156,8 @@ begin
       If not CheckStrFmtType(ExeplStr, GetSimplyFieldType(Filter.Field, FQuery)) then
       Begin
         ExeplStr:='';
-        Filter.FilterString:=ExeplStr;
       End;
+      Filter.FilterString:=ExeplStr;
     End;
 
     if Filter.VarName<>'' then
