@@ -85,7 +85,6 @@ type
     FStructureList: TCheckListBox;
     PopupGridMenu: TPopupMenu;
     FLocalBookmark: TBookmark;
-
     FFieldLayout: TDCLBaseLayoutManger<TDCLField>;
 
     Function GetUserLevel: TUserLevelsType;
@@ -302,8 +301,8 @@ type
     FIDCLMain: IDCLMain;
     FGrid: TDCLGrid;
   public
-    constructor Create(IDCLMain: IDCLMain; NameSpace: String; Form: TForm; Parent: TWinControl;
-      Query: TDCLQuery; Data: TDataSource); overload;
+    constructor Create(IDCLMain: IDCLMain; NameSpace: String; Form: IDCLForm;
+      ParentControl: TWinControl; Query: TDCLQuery; Data: TDataSource); overload;
 
     property DCLGrid: TDCLGrid read FGrid;
   end;
@@ -318,10 +317,10 @@ uses
 { TLookupTable }
 
 constructor TLookupTable.Create(IDCLMain: IDCLMain; NameSpace: String;
-  Form: TForm; Parent: TWinControl; Query: TDCLQuery; Data: TDataSource);
+  Form: IDCLForm; ParentControl: TWinControl; Query: TDCLQuery; Data: TDataSource);
 begin
-  inherited Create(Parent);
-  Self.Parent:=Parent;
+  inherited Create(ParentControl);
+  Self.Parent:=ParentControl;
   FIDCLMain:=IDCLMain;
 
   FGrid:=TDCLGrid.Create(FIDCLMain, NameSpace, Form, Self, dctLookupGrid,
@@ -4554,7 +4553,7 @@ begin
         end;
       end;
 
-      FDBGrid:=TDBGrid.Create(Self);  // FMainPanel);
+      FDBGrid:=TDBGrid.Create(FMainPanel);
       FDBGrid.Parent:=FMainPanel;
       if FMultiSelectMode then
       begin
