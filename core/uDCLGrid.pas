@@ -562,7 +562,7 @@ begin
     Data.Cancel
   Else
   begin
-    If (FDependField<>'') and Assigned(Data.FindField(FDependField)) Then
+    If (FDependField<>'') and Assigned(Data.FindField(FDependField)) then
     Begin
       if not FNoDataField then
       begin

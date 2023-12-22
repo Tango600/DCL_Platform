@@ -1357,9 +1357,11 @@ begin
             If tmpS1<>'' then
             begin
               v1:=StrToIntEx(tmpS1)-1;
+              if v1<0 then
+                v1:=FDCLForm.CurrentGrid.TableParts.IndexOf(FDCLForm.CurrentGrid.CurrentTablePart);
               If (v1>=0) and (FDCLForm.CurrentGrid.TableParts.Count>v1) and Assigned(FDCLForm.CurrentGrid.TableParts[v1]) then
               begin
-                if FDCLForm.CurrentGrid.TableParts[v1].Query.CanModify then
+                if FDCLForm.CurrentGrid.TableParts[v1].Query.CanModify and Assigned(FDCLForm.CurrentGrid.TableParts[v1].Query.FindField(tmpS3)) then
                 begin
                   If not (FDCLForm.CurrentGrid.TableParts[v1].Query.State in dsEditModes) then
                     FDCLForm.CurrentGrid.TableParts[v1].Query.Edit;
@@ -1372,7 +1374,7 @@ begin
             end
             else
             begin
-              if FDCLForm.CurrentGrid.Query.CanModify then
+              if FDCLForm.CurrentGrid.Query.CanModify and Assigned(FDCLForm.CurrentGrid.Query.FindField(tmpS3)) then
               begin
                 If not (FDCLForm.CurrentGrid.Query.State in dsEditModes) then
                   FDCLForm.CurrentGrid.Query.Edit;
