@@ -562,21 +562,21 @@ begin
     Data.Cancel
   Else
   begin
-    If FDependField<>'' Then
+    If (FDependField<>'') and Assigned(Data.FindField(FDependField)) Then
     Begin
       if not FNoDataField then
       begin
         If FMasterDataField<>'' Then
         begin
           Data.FieldByName(FDependField).AsString:=Data.DataSource.DataSet.FieldByName
-            (FMasterDataField).AsString;;
+            (FMasterDataField).AsString;
         end;
       end
       else
       begin
         if FMasterValueVariableName<>'' then
         begin
-          Data.FieldByName(DependField).AsString:=FVariables.Variables[FNamespace, FMasterValueVariableName];
+          Data.FieldByName(FDependField).AsString:=FVariables.Variables[FNamespace, FMasterValueVariableName];
         end;
       end;
     End;
