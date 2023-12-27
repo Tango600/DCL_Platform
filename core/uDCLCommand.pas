@@ -558,12 +558,11 @@ begin
       On ex: Exception do
         ShowErrorMessage( - 1110, 'SQL='+SQL+' / '+ex.Message);
     end;
+    FreeAndNil(SQLCommand);
     {$IFDEF TRANSACTIONDB}
     tmp_Transaction.Commit;
     FreeAndNil(tmp_Transaction);
     {$ENDIF}
-
-    FreeAndNil(SQLCommand);
 
     if not FDisableAutoRefresh then
     if Assigned(FDCLForm) then
