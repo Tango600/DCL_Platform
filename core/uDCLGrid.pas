@@ -301,7 +301,7 @@ type
     FIDCLMain: IDCLMain;
     FGrid: TDCLGrid;
   public
-    constructor Create(IDCLMain: IDCLMain; NameSpace: String; Form: IDCLForm;
+    constructor Create(IDCLMain: IDCLMain; NameSpace: String; Form: TForm;
       ParentControl: TWinControl; Query: TDCLQuery; Data: TDataSource); overload;
 
     property DCLGrid: TDCLGrid read FGrid;
@@ -317,7 +317,7 @@ uses
 { TLookupTable }
 
 constructor TLookupTable.Create(IDCLMain: IDCLMain; NameSpace: String;
-  Form: IDCLForm; ParentControl: TWinControl; Query: TDCLQuery; Data: TDataSource);
+  Form: TForm; ParentControl: TWinControl; Query: TDCLQuery; Data: TDataSource);
 begin
   inherited Create(ParentControl);
   Self.Parent:=ParentControl;

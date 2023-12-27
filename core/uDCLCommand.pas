@@ -477,6 +477,7 @@ begin
       tmp2:=TrimRight(DCLQuery.FieldByName(ReturnField).AsString);
       TranslateVals(tmp2);
       DCLQuery.Close;
+      FreeAndNil(DCLQuery);
 
       FVariables.NewVariable(FNamespace, tmp1, tmp2);
 
@@ -484,7 +485,6 @@ begin
       tmp_Transaction.Commit;
       FreeAndNil(tmp_Transaction);
       {$ENDIF}
-      FreeAndNil(DCLQuery);
     end;
   end;
 
