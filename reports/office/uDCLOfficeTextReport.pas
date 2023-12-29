@@ -171,7 +171,7 @@ begin
           BookmarckName:=MsWord.ActiveDocument.BookMarks.Item(BookmarckNum+1).Name;
 
         StV:='';
-        If FieldExists(BookmarckName, DCLQuery) Then
+        If FieldExists(DCLQuery, BookmarckName) Then
         begin
           If ToWrite Then
             StV:=MoneyToString(DCLQuery.FieldByName(BookmarckName).AsCurrency, True, False)
@@ -402,7 +402,7 @@ begin
           Else
             BookMarkName:=BookmarksSupplier.getByIndex(BookmarckNum).getName;
 
-          If FieldExists(BookMarkName, DCLQuery) Then
+          If FieldExists(DCLQuery, BookMarkName) Then
           begin
             BookMark:=BookmarksSupplier.getByIndex(BookmarckNum).getAnchor;
             If ToWrite Then

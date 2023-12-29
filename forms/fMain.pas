@@ -133,7 +133,8 @@ begin
   end
   else
   begin
-    BorderIcons:=BorderIcons-[biMaximize];
+    if GPT.MenuType=mtClassic then
+      BorderIcons:=BorderIcons-[biMaximize];
   end;
 end;
 

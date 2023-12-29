@@ -9,19 +9,14 @@ uses
 {$ENDIF}
   Classes, SysUtils, Controls, Forms, DB, Generics.Collections, ToolWin,
   ComCtrls, StdCtrls, ExtCtrls, Graphics, DBCtrls, DBGrids, Grids,
-  CheckLst, Menus, ClipBrd, DBExtCtrls,
+  CheckLst, Menus, ClipBrd, DBExtCtrls, LCLType,
   uDCLData, uDCLTypes, uDCLConst, uDCLVariables, uStringParams, uIDCLMain,
   uDCLDBConnector, uDCLQuery, uDCLMeasurements, uDBUtils, uDCLMultiLang,
   uDCLCommandButton, uDCLField, uDCLMessages, uDCLImages, cMediaFieldGroup,
   uDCLBaseLayoutManger, uDCLHorizontalFieldLayoutManger, uDCLDBAwareTypes,
-  uDCLVerticalFieldLayoutManger;
+  uIDCLGrid, uIDCLForm, uDCLVerticalFieldLayoutManger;
 
 type
-  TGridFieldSetting=class
-    FieldName: String;
-    Index, Width: Integer;
-  end;
-
   TStructureField=class
     FieldName: String;
   end;
@@ -33,13 +28,13 @@ type
 
   { TDCLGrid }
 
-  TDCLGrid=class(TWinControl)
+  TDCLGrid=class(TWinControl, IDCLGrid)
   private
     FIDCLMain: IDCLMain;
     FNameSpace, FDependField, FMasterDataField, FMasterValueVariableName,
       FSummFieldsSet, FNavigButtonsExpr, FSeed, FDialogName: String;
-    FForms: TList<TForm>;
-    FForm: TForm;
+    FForms: TList<IDCLForm>;
+    FForm: IDCLForm;
     FVariables: TVariables;
     FDBGrid: TDBGrid;
     FFieldsCount, FToolPanelHeight, FFilterPanelHeight: Integer;
@@ -62,8 +57,8 @@ type
     FGridStyle: TGridStyle;
     FReadFieldsMode, FMultiSelectMode, FReadOnly, FDataReadOnly, FNavigatorVisible,
       FFlatNavig, FNoDataField, FNoButtonPanel, FindProcess, FPrintTool, CloseButton: Boolean;
-    FTableParts, FLookupTables: TList<TDCLGrid>;
-    FCurrentTablePart: TDCLGrid;
+    FTableParts, FLookupTables: TList<IDCLGrid>;
+    FCurrentTablePart: IDCLGrid;
     FDCLFields: TList<TDCLField>;
     FCurrentField: TDCLField;
     FFieldParsingMode: TFieldParsingMode;
@@ -72,7 +67,6 @@ type
     FToolBarSplitter, FToolBarButtonPrint, FToolBarButtonStruct, FToolBarButtonFind: TToolButton;
     PartSplitter: TSplitter;
     FTablePartsPages: TPageControl;
-    FTablePartsTabs: TTabSheet;
     FFilters: TList<TDBFilter>;
     FCalendars: TList<TDCLCalendar>;
     FOrdersFields: TList<TSortField>;
@@ -87,9 +81,18 @@ type
     FLocalBookmark: TBookmark;
     FFieldLayout: TDCLBaseLayoutManger<TDCLField>;
 
+    function GetDependField: String;
+    procedure SetDependField(Value: String);
+
+    function GetMasterDataField: String;
+    procedure SetMasterDataField(Value: String);
+
+    function GetMasterValueVariableName: String;
+    procedure SetMasterValueVariableName(Value: String);
+
     Function GetUserLevel: TUserLevelsType;
 
-    procedure ParseButton(ScrLine: String; Grid: TDCLGrid);
+    procedure ParseButton(ScrLine: String; Grid: IDCLGrid);
 
     function FindDCLFieldByName(FieldName: String): TDCLField;
     function GetFieldsCount: Integer;
@@ -99,13 +102,17 @@ type
 
     procedure TranslateVal(var Params: String; CheckParams: Boolean);
 
+    function GetFlatNavigator: Boolean;
+    procedure SetFlatNavigator(Value: Boolean);
+    function GetNavigatorVisible: Boolean;
+    procedure SetNavigatorVisible(Value: Boolean);
     procedure ClickNavigator(Sender: TObject; Button: TNavigateBtn);
 
     procedure SetDataStatus(Status: TDataStatus);
     procedure UpdateAllControls;
 
     procedure SetQueryEvents(Query: TDCLQuery);
-    procedure ParseEvents(ScrStr: String; Grid: TDCLGrid);
+    procedure ParseEvents(ScrStr: String; Grid: IDCLGrid);
     procedure ExecEvents(EventType: TEventsEnum);
 
     // DataEvents
@@ -124,6 +131,10 @@ type
     procedure OnDelete(Data: TDataSet);
     // End DataEvents
 
+    function GetQuery: TDCLQuery;
+    function GetData: TDataSource;
+    function GetTableParts: TList<IDCLGrid>;
+
     procedure Find(Sender: TObject);
     procedure FindGridOnSelectCell(Sender: TObject; aCol, aRow: Integer;
       var CanSelect: Boolean);
@@ -132,6 +143,8 @@ type
 
     procedure GridDblClick(Sender: TObject);
     procedure GridColumnClick(Column: TColumn);
+    procedure GridKeyPress(Sender: TObject; var UTF8Key: TUTF8Char);
+    procedure Grid1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 
     function SortDB(var SQL: String): String;
     procedure ReDrawColumns;
@@ -209,6 +222,12 @@ type
     procedure Choose;
 
     procedure SetMultiSelect(Value: Boolean);
+    function GetMultiSelectMode: Boolean;
+
+    procedure SetGridStyle(Value: TGridStyle);
+    function GetGridStyle: TGridStyle;
+
+    function GetCurrentTablePart: IDCLGrid;
 
     function GetSQLFromStorage: String;
 
@@ -225,6 +244,12 @@ type
 
     function CalculateSeed: String;
     function GetGridSeed: String;
+
+    procedure SetNoDataField(Value: Boolean);
+    function GetNoDataField: Boolean;
+
+    procedure SetPrintTool(Value: Boolean);
+    function GetPrintTool: Boolean;
 
     procedure Structure(Sender: TObject);
     function IsGridColumnExists(FieldName: String): Boolean;
@@ -244,7 +269,7 @@ type
     procedure Cut;
     procedure Paste;
   public
-    constructor Create(IDCLMain: IDCLMain; NameSpace: String; Form: TForm; ParentControl: TWinControl;
+    constructor Create(IDCLMain: IDCLMain; NameSpace: String; Form: IDCLForm; ParentControl: TWinControl;
       SurfType: TDataControlType; Query: TDCLQuery; Data: TDataSource); overload;
     destructor Destroy; override;
 
@@ -275,23 +300,25 @@ type
 
     procedure ResetFieldsSettings;
 
-    property Query: TDCLQuery read FQuery;
-    property Data: TDataSource read FData;
+    property Query: TDCLQuery read GetQuery;
+    property Data: TDataSource read GetData;
     property Edits: TList<TDCLEdit> read GetEdits;
     property FieldsCount: Integer read GetFieldsCount;
-    property TableParts: TList<TDCLGrid> read FTableParts;
-    property CurrentTablePart: TDCLGrid read FCurrentTablePart;
-    property Style: TGridStyle read FGridStyle write FGridStyle;
+    property TableParts: TList<IDCLGrid> read GetTableParts;
+    property CurrentTablePart: IDCLGrid read GetCurrentTablePart;
+    property Style: TGridStyle read GetGridStyle write SetGridStyle;
     property ReadOnly: Boolean read FReadOnly write FReadOnly;
-    property DependField: String read FDependField write FDependField;
-    property MasterDataField: String read FMasterDataField write FMasterDataField;
-    property MasterValueVariableName: String read FMasterValueVariableName write FMasterValueVariableName;
-    property NoDataField: Boolean read FNoDataField write FNoDataField;
-    property MultiSelect: Boolean read FMultiSelectMode write SetMultiSelect;
+    property DependField: String read GetDependField write SetDependField;
+    property MasterDataField: String read GetMasterDataField write SetMasterDataField;
+    property MasterValueVariableName: String read GetMasterValueVariableName write SetMasterValueVariableName;
+    property NoDataField: Boolean read GetNoDataField write SetNoDataField;
+    property MultiSelect: Boolean read GetMultiSelectMode write SetMultiSelect;
     property RightsLevel: TUserLevelsType read GetUserLevel;
     property Seed: String read GetGridSeed;
-    property PrintTool: Boolean read FPrintTool write FPrintTool;
+    property PrintTool: Boolean read GetPrintTool write SetPrintTool;
     property SelectedRows: TBookmarkList read GetSelectedRows;
+    property NavigatorVisible: Boolean read GetNavigatorVisible write SetNavigatorVisible;
+    property FlatNavigator: Boolean read GetFlatNavigator write SetFlatNavigator;
   end;
 
   { TLookupTable }
@@ -301,7 +328,7 @@ type
     FIDCLMain: IDCLMain;
     FGrid: TDCLGrid;
   public
-    constructor Create(IDCLMain: IDCLMain; NameSpace: String; Form: TForm;
+    constructor Create(IDCLMain: IDCLMain; NameSpace: String; Form: IDCLForm;
       ParentControl: TWinControl; Query: TDCLQuery; Data: TDataSource); overload;
 
     property DCLGrid: TDCLGrid read FGrid;
@@ -310,14 +337,14 @@ type
 implementation
 
 uses
-  EditBtn, LCLProc, lcltype, uRunProgram,
-  uDCLCommand, uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, uDCLForm,
+  EditBtn, LCLProc, uRunProgram, uReturnFormValue,
+  uDCLCommand, uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, LazUTF8,
   uPrintBase, uDCLGlobalVariables, uDCLMD5, uExpressionParser;
 
 { TLookupTable }
 
 constructor TLookupTable.Create(IDCLMain: IDCLMain; NameSpace: String;
-  Form: TForm; ParentControl: TWinControl; Query: TDCLQuery; Data: TDataSource);
+  Form: IDCLForm; ParentControl: TWinControl; Query: TDCLQuery; Data: TDataSource);
 begin
   inherited Create(ParentControl);
   Self.Parent:=ParentControl;
@@ -329,12 +356,42 @@ end;
 
 { TDCLGrid }
 
-function TDCLGrid.GetUserLevel: TUserLevelsType;
+function TDCLGrid.GetDependField: String;
 begin
-  Result:=(FForm as TDCLForm).RightsLevel;
+  Result:=FDependField;
 end;
 
-procedure TDCLGrid.ParseButton(ScrLine: String; Grid: TDCLGrid);
+procedure TDCLGrid.SetDependField(Value: String);
+begin
+  FDependField:=Value;
+end;
+
+function TDCLGrid.GetMasterDataField: String;
+begin
+  Result:=FMasterDataField;
+end;
+
+procedure TDCLGrid.SetMasterDataField(Value: String);
+begin
+  FMasterDataField:=Value;
+end;
+
+function TDCLGrid.GetMasterValueVariableName: String;
+begin
+  Result:=FMasterValueVariableName;
+end;
+
+procedure TDCLGrid.SetMasterValueVariableName(Value: String);
+begin
+  FMasterValueVariableName:=Value;
+end;
+
+function TDCLGrid.GetUserLevel: TUserLevelsType;
+begin
+  Result:=FForm.RightsLevel;
+end;
+
+procedure TDCLGrid.ParseButton(ScrLine: String; Grid: IDCLGrid);
 var
   ButtonParams: TDCLCommandButton;
   flg: Boolean;
@@ -472,6 +529,26 @@ begin
   Parser.RePlaceProc(Params, FQuery);
 end;
 
+function TDCLGrid.GetFlatNavigator: Boolean;
+begin
+  Result:=FFlatNavig;
+end;
+
+procedure TDCLGrid.SetFlatNavigator(Value: Boolean);
+begin
+  FFlatNavig:=Value;
+end;
+
+function TDCLGrid.GetNavigatorVisible: Boolean;
+begin
+  Result:=FNavigatorVisible;
+end;
+
+procedure TDCLGrid.SetNavigatorVisible(Value: Boolean);
+begin
+  FNavigatorVisible:=Value;
+end;
+
 procedure TDCLGrid.SetQueryEvents(Query: TDCLQuery);
 begin
   Query.AfterInsert:=AfterInsert;
@@ -498,12 +575,12 @@ procedure TDCLGrid.SetDataStatus(Status: TDataStatus);
 begin
   if Status=dssChanged then
   begin
-    (FForm as TDCLForm).SetDBStatus(GetDCLMessageString(msModified));
+    FForm.SetDBStatus(GetDCLMessageString(msModified));
     //BaseChanged:=True;
   end;
   if Status=dssSaved then
   begin
-    (FForm as TDCLForm).SetDBStatus('');
+    FForm.SetDBStatus('');
     //BaseChanged:=False;
   end;
 end;
@@ -521,14 +598,14 @@ begin
       begin
         If (Edit.DCLEditComponent.EditType in [fbtOutBox, fbtEditBox]) and not Edit.NoDataField Then
         begin
-          If FieldExists(Edit.FieldName, FQuery) Then
+          If FieldExists(FQuery, Edit.FieldName) Then
             (Edit.DCLEditComponent.Control as TEdit).Text:=TrimRight(FQuery.FieldByName(Edit.FieldName).AsString);
         end;
       end;
 
       if Edit.DCLEditComponent.Control is TCheckBox then
       begin
-        If (not Edit.NoDataField) and FieldExists(Edit.FieldName, FQuery) Then
+        If (not Edit.NoDataField) and FieldExists(FQuery, Edit.FieldName) Then
         begin
           S:=TrimRight(FQuery.FieldByName(Edit.FieldName).AsString);
           If (S='0') or (S='') Then
@@ -539,13 +616,13 @@ begin
       end;
 
       if Edit.DCLEditComponent.Control is TDateTimePicker then
-      If (not Edit.NoDataField) and FieldExists(Edit.FieldName, FQuery) then
+      If (not Edit.NoDataField) and FieldExists(FQuery, Edit.FieldName) then
       begin
         (Edit.DCLEditComponent.Control as TDateTimePicker).Date:=FQuery.FieldByName(Edit.FieldName).AsDateTime;
       end;
 
       if Edit.DCLEditComponent.Control is TComboBox then
-        If (not Edit.NoDataField) and FieldExists(Edit.FieldName, FQuery) Then
+        If (not Edit.NoDataField) and FieldExists(FQuery, Edit.FieldName) Then
         begin
           If GetStringDataType(FQuery.FieldByName(Edit.FieldName).AsString)=idDigit then
             (Edit.DCLEditComponent.Control as TComboBox).ItemIndex:=FQuery.FieldByName(Edit.FieldName).AsInteger
@@ -593,7 +670,7 @@ procedure TDCLGrid.ScrollDB(Data: TDataSet);
 begin
   ExecEvents(evtScroll);
   if Assigned(FQuery) and FQuery.Active then
-    (FForm as TDCLForm).SetRecordsStatus(FQuery.RecNo, FQuery.RecordCount);
+    FForm.SetRecordsStatus(FQuery.RecNo, FQuery.RecordCount);
 
   UpdateAllControls;
 end;
@@ -671,6 +748,21 @@ procedure TDCLGrid.OnDelete(Data: TDataSet);
 begin
   ExecEvents(evtDelete);
   UpdateAllControls;
+end;
+
+function TDCLGrid.GetQuery: TDCLQuery;
+begin
+  Result:=FQuery;
+end;
+
+function TDCLGrid.GetData: TDataSource;
+begin
+  Result:=FData;
+end;
+
+function TDCLGrid.GetTableParts: TList<IDCLGrid>;
+begin
+  Result:=FTableParts;
 end;
 
 procedure TDCLGrid.Find(Sender: TObject);
@@ -952,6 +1044,65 @@ begin
     OpenQuery(tmpSQL);
 
     ReDrawColumns;
+  end;
+end;
+
+procedure TDCLGrid.GridKeyPress(Sender: TObject; var UTF8Key: TUTF8Char);
+var
+  col: Integer;
+begin
+  col:=(Sender as TDBGrid).SelectedColumn.Index+1;
+  if FReadOnly then
+  begin
+    if UTF8Key>=#32 then
+    begin
+      if not FindProcess then
+      begin
+        Find(Sender);
+        (Sender as TDBGrid).SetFocus;
+        (Sender as TDBGrid).SelectedIndex:=col-1;
+      end;
+
+      if FindProcess then
+        FindGrid.Cells[col, 0]:=FindGrid.Cells[col, 0]+UTF8Key;
+    end;
+  end;
+end;
+
+procedure TDCLGrid.Grid1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState
+  );
+var
+  col: Integer;
+begin
+  col:=(Sender as TDBGrid).SelectedColumn.Index+1;
+  if FReadOnly then
+  begin
+    if Key=46 then
+    begin
+      if Assigned(FindGrid) and (FindGrid.Cells[col, 0]<>'') then
+      begin
+        if not FindProcess then
+          Find(Sender);
+        FindGrid.Cells[col, 0]:='';
+        (Sender as TDBGrid).SetFocus;
+        (Sender as TDBGrid).SelectedIndex:=col-1;
+        Find(Sender);
+      end;
+    end;
+
+    if Key=8 then
+    begin
+      if FindProcess then
+      if FindGrid.Cells[col, 0]<>'' then
+        FindGrid.Cells[col, 0]:=UTF8Copy(FindGrid.Cells[col, 0], 1, UTF8Length(FindGrid.Cells[col, 0])-1);
+    end;
+
+    if Key=13 then
+    begin
+      Find(Sender);
+      (Sender as TDBGrid).SetFocus;
+      (Sender as TDBGrid).SelectedIndex:=col-2;
+    end;
   end;
 end;
 
@@ -1332,7 +1483,7 @@ begin
   begin
     DropList:=TComboBox.Create(FFieldsPanel);
     DropList.Parent:=FFieldsPanel;
-
+    DropList.DropDownCount:=DropDownRows;
     DropList.OnSelect:=DropListOnSelectItem;
 
     DropList.Clear;
@@ -1427,7 +1578,7 @@ begin
 
     If (not Field.NoDataField) and FQuery.Active then
     begin
-      if FieldExists(Field.FieldName, FQuery) then
+      if FieldExists(FQuery, Field.FieldName) then
       begin
         if Field.UseIndex then
         begin
@@ -1495,7 +1646,7 @@ end;
 
 procedure TDCLGrid.AddDBEdit(Field: TDCLField);
 begin
-  if FieldExist(FQuery, Field.FieldName) then
+  if FieldExists(FQuery, Field.FieldName) then
   begin
     Field.DCLEditComponent:=TDCLEdit.Create;
 
@@ -1633,6 +1784,7 @@ end;
 
 function TDCLGrid.AddTablePartObject(Title: String; Data: TDataSource; Style: TGridStyle): TDCLGrid;
 var
+  FTablePartsTabs: TTabSheet;
   grid: TDCLGrid;
   pc: Integer;
 begin
@@ -1715,8 +1867,8 @@ begin
 
     If FindParam('Navigator=', Line)='1' then
     begin
-      FCurrentTablePart.FNavigatorVisible:=True;
-      FCurrentTablePart.FFlatNavig:=Self.FFlatNavig;
+      FCurrentTablePart.NavigatorVisible:=True;
+      FCurrentTablePart.FlatNavigator:=Self.FlatNavigator;
 
       ButtonsSet:=FindParam('NavigatorButtons=', Line);
       If ButtonsSet='' then
@@ -1968,13 +2120,13 @@ begin
     Begin
       If FindParam('_ValueIfNull=', Scr)<>'' Then
       Begin
-        If FieldExists(Field.FieldName, FQuery) Then
+        If FieldExists(FQuery, Field.FieldName) Then
           if FQuery.FieldByName(Field.FieldName).IsNull then
             NeedValue:=4;
       End;
       If FindParam('_ValueIfNotNull=', Scr)<>'' Then
       Begin
-        If FieldExists(Field.FieldName, FQuery) Then
+        If FieldExists(FQuery, Field.FieldName) Then
           if not FQuery.FieldByName(Field.FieldName).IsNull then
             NeedValue:=5;
       End;
@@ -1989,7 +2141,7 @@ begin
   0:
   if not Field.NoDataField then
   If FQuery.Active Then
-    If FieldExists(Field.FieldName, FQuery) Then
+    If FieldExists(FQuery, Field.FieldName) Then
       S:=TrimRight(FQuery.FieldByName(Field.FieldName).AsString);
   1:
   begin
@@ -2011,7 +2163,7 @@ begin
     Else
       FieldName:=ShadowQuery.Fields[0].FieldName;
     DeleteNonPrintSimb(FieldName);
-    If FieldExists(FieldName, ShadowQuery) Then
+    If FieldExists(ShadowQuery, FieldName) Then
       S:=TrimRight(ShadowQuery.FieldByName(FieldName).AsString)
     Else
       S:='';
@@ -2237,7 +2389,7 @@ begin
   DBLookupControl:=TDBLookupComboBox.Create(FFieldsPanel);
   DBLookupControl.Parent:=FFieldsPanel;
   DBLookupControl.Style:=csDropDownList;
-  DBLookupControl.DropDownRows:=30;
+  DBLookupControl.DropDownRows:=DropDownRows;
 
   DBLookupControl.ShowHint:=True;
   DBLookupControl.Hint:=Field.Hint;
@@ -2246,7 +2398,7 @@ begin
   begin
     If not Field.NoDataField Then
     begin
-      If FieldExists(Field.FieldName, FQuery) Then
+      If FieldExists(FQuery, Field.FieldName) Then
       begin
         //If Not FForm.Showing Then FForm.Show;
         NoDataField:=False;
@@ -2463,6 +2615,7 @@ begin
       begin
         Filter.Control:=TComboBox.Create(FFiltersPanel);
         (Filter.Control as TComboBox).Style:=TComboBoxStyle.csDropDownList;
+        (Filter.Control as TComboBox).DropDownCount:=DropDownRows;
         Filter.Control.Parent:=FFiltersPanel;
         Filter.Control.Left:=FFilterLeft;
         Filter.Control.Top:=FTop;
@@ -2610,7 +2763,7 @@ end;
 
 procedure TDCLGrid.AddCheckBox(Field: TDCLField; Scr: String);
 begin
-  If (not Field.NoDataField) and FQuery.Active and FieldExists(Field.FieldName, FQuery) Then
+  If (not Field.NoDataField) and FQuery.Active and FieldExists(FQuery, Field.FieldName) Then
     AddDBCheckBox(Field, Scr)
   Else
     AddSimplyCheckBox(Field, Scr);
@@ -2787,7 +2940,7 @@ begin
       FieldWidthStr:=Copy(KeyField, Pos('/', KeyField)+1, Length(KeyField));
       if FieldWidthStr<>'' then
         FieldWidth:=StrToIntEx(FieldWidthStr);
-      If FieldExists(FieldName, FSumQuery) Then
+      If FieldExists(FSumQuery, FieldName) Then
       begin
         FSummGrid.Columns.Add.FieldName:=FieldName;
         if FieldWidth>0 then
@@ -2843,7 +2996,7 @@ begin
     Begin
       If FindParam('_ValueIfNull=', Scr)<>'' Then
       Begin
-        If FieldExists(Field.FieldName, FQuery) Then
+        If FieldExists(FQuery, Field.FieldName) Then
           if FQuery.FieldByName(Field.FieldName).IsNull then
             NeedValue:=4;
       End;
@@ -2855,7 +3008,7 @@ begin
   0:
   If FQuery.Active Then
   begin
-    If FieldExists(Field.FieldName, FQuery) Then
+    If FieldExists(FQuery, Field.FieldName) Then
       S:=TrimRight(FQuery.FieldByName(Field.FieldName).AsString);
   end
   Else
@@ -2877,7 +3030,7 @@ begin
       KeyField:=ShadowQuery.Fields[0].FieldName;
 
     DeleteNonPrintSimb(KeyField);
-    If FieldExists(KeyField, ShadowQuery) Then
+    If FieldExists(ShadowQuery, KeyField) Then
       S:=TrimRight(ShadowQuery.FieldByName(KeyField).AsString)
     Else
       S:=DateToStr(Date);
@@ -2935,7 +3088,7 @@ begin
       Begin
         If FQuery.Active then
         begin
-          If FieldExists(Field.FieldName, FQuery) then
+          If FieldExists(FQuery, Field.FieldName) then
           begin
             if FQuery.CanModify then
             begin
@@ -3154,7 +3307,7 @@ begin
   begin
     ExeplStr:=(Sender as TEdit).Text;
 
-    If FQuery.Active and FieldExists(Filter.Field, FQuery) then
+    If FQuery.Active and FieldExists(FQuery, Filter.Field) then
     Begin
       If not CheckStrFmtType(ExeplStr, GetSimplyFieldType(Filter.Field, FQuery)) then
       Begin
@@ -3282,7 +3435,7 @@ begin
   if not Field.NoDataField then
   If FQuery.Active then
     If LookupTable.DCLGrid.MasterDataField='' then
-      if FieldExists(LookupTable.DCLGrid.MasterDataField, FQuery) then
+      if FieldExists(FQuery, LookupTable.DCLGrid.MasterDataField) then
         LookupTable.DCLGrid.MasterDataField:=Field.FieldName;
 
   TempStr:=FindParam('Columns=', Scr);
@@ -3301,7 +3454,7 @@ begin
       end;
 
       FFieldColumn:=TDCLField.Create;
-      If FieldExists(FieldName, LookupTable.DCLGrid.Query) Then
+      If FieldExists(LookupTable.DCLGrid.Query, FieldName) Then
       begin
         FFieldColumn.FieldName:=FieldName;
         FFieldColumn.Caption:=Copy(TmpStr, Pos('/', TmpStr)+1, Length(TmpStr)-1);
@@ -3324,7 +3477,7 @@ end;
 
 procedure TDCLGrid.ReFreshData;
 var
-  tpc: TDCLGrid;
+  tpc: IDCLGrid;
 begin
   If FQuery.Active Then
   Begin
@@ -3353,14 +3506,13 @@ var
   Bookmark: TBookmark;
   CommandObj: TDCLCommand;
 begin
-  if Assigned((FForm as TDCLForm).ReturnValueParams) then
+  if Assigned(FForm.ReturnValueParams) then
   begin
-    ReturnValueParams:=(FForm as TDCLForm).ReturnValueParams;
-    if Assigned(FQuery) and FQuery.Active and FieldExists(ReturnValueParams.KeyField, FQuery) and
-      ((ReturnValueParams.ValueField='') or FieldExists(ReturnValueParams.ValueField, FQuery)) then
+    ReturnValueParams:=FForm.ReturnValueParams;
+    if Assigned(FQuery) and FQuery.Active and FieldExists(FQuery, ReturnValueParams.KeyField) and
+      ((ReturnValueParams.ValueField='') or FieldExists(FQuery, ReturnValueParams.ValueField)) then
     begin
       ReturnValue:=TReturnFormValue.Create;
-      ReturnValue.DestinationForm:=FForm;
       ReturnValue.KeyModifyField:=ReturnValueParams.KeyModifyField;
       ReturnValue.ValueModifyField:=ReturnValueParams.ValueModifyField;
       ReturnValue.KeyEditName:=ReturnValueParams.KeyEditName;
@@ -3400,10 +3552,7 @@ begin
 
         ReturnValue.Values.Add(ValueItem);
       end;
-      (FForm as TDCLForm).ReturnValue:=ReturnValue;
-
-      if Assigned((FForm as TDCLForm).RetValueMethod) then
-        (FForm as TDCLForm).RetValueMethod.GetValueProc(ReturnValue);
+      FForm.GetValueProc(ReturnValue);
 
       if ReturnValueParams.Mode=cmChooseAndClose then
       begin
@@ -3418,6 +3567,26 @@ begin
   FMultiSelectMode:=Value;
 end;
 
+function TDCLGrid.GetMultiSelectMode: Boolean;
+begin
+  Result:=FMultiSelectMode;
+end;
+
+procedure TDCLGrid.SetGridStyle(Value: TGridStyle);
+begin
+  FGridStyle:=Value;
+end;
+
+function TDCLGrid.GetGridStyle: TGridStyle;
+begin
+  Result:=FGridStyle;
+end;
+
+function TDCLGrid.GetCurrentTablePart: IDCLGrid;
+begin
+  Result:=FCurrentTablePart;
+end;
+
 function TDCLGrid.GetSQLFromStorage: String;
 begin
   Result:='';
@@ -3425,7 +3594,7 @@ begin
     Result:=FQueryes[qtMain].QueryStr;
 end;
 
-procedure TDCLGrid.ParseEvents(ScrStr: String; Grid: TDCLGrid);
+procedure TDCLGrid.ParseEvents(ScrStr: String; Grid: IDCLGrid);
 var
   S: String;
 begin
@@ -3568,7 +3737,7 @@ begin
 
         for CondItem in Expressions do
         begin
-          if FieldExist(FQuery, CondItem.FieldNameLeft) then
+          if FieldExists(FQuery, CondItem.FieldNameLeft) then
           begin
             CondItem.FieldNameLeft:=FQuery.FieldByName(CondItem.FieldNameLeft).AsString;
           end;
@@ -3650,6 +3819,26 @@ begin
   if FSeed='' then
     FSeed:=CalculateSeed;
   Result:=FSeed;
+end;
+
+procedure TDCLGrid.SetNoDataField(Value: Boolean);
+begin
+  FNoDataField:=Value;
+end;
+
+function TDCLGrid.GetNoDataField: Boolean;
+begin
+  Result:=FNoDataField;
+end;
+
+procedure TDCLGrid.SetPrintTool(Value: Boolean);
+begin
+  FPrintTool:=Value;
+end;
+
+function TDCLGrid.GetPrintTool: Boolean;
+begin
+  Result:=FPrintTool;
 end;
 
 procedure TDCLGrid.Structure(Sender: TObject);
@@ -3941,7 +4130,7 @@ begin
     FDBGrid.SelectedField.AsString:=Clipboard.AsText;
 end;
 
-constructor TDCLGrid.Create(IDCLMain: IDCLMain; NameSpace: String; Form: TForm; ParentControl: TWinControl;
+constructor TDCLGrid.Create(IDCLMain: IDCLMain; NameSpace: String; Form: IDCLForm; ParentControl: TWinControl;
   SurfType: TDataControlType; Query: TDCLQuery; Data: TDataSource);
 var
   ChooseButton: TDCLCommandButton;
@@ -3952,11 +4141,12 @@ begin
 
   FMainPanel:=TPanel.Create(Self);  // Parent);
   FMainPanel.Parent:=ParentControl;  // Parent;
+  FMainPanel.Align:=alClient;      //
 
   FForm:=Form;
   FForms:=IDCLMain.GetForms;
 
-  FDialogName:=(Form as TDCLForm).DialogName;
+  FDialogName:=Form.DialogName;
   FDBConnector:=IDCLMain.GetDBConnector;
   FNameSpace:=NameSpace;
   FVariables:=IDCLMain.GetVariables;
@@ -3965,7 +4155,7 @@ begin
 
   CloseButton:=SurfType=dctMainGrid;
 
-  if Assigned((FForm as TDCLForm).ReturnValueParams) then
+  if Assigned(FForm.ReturnValueParams) then
   begin
     ChooseButton:=TDCLCommandButton.Create(FDBConnector);
     ChooseButton.ChoiceButton:=True;
@@ -3975,8 +4165,8 @@ begin
     FButtons.Add(ChooseButton);
   end;
 
-  FTableParts:=TList<TDCLGrid>.Create;
-  FLookupTables:=TList<TDCLGrid>.Create;
+  FTableParts:=TList<IDCLGrid>.Create;
+  FLookupTables:=TList<IDCLGrid>.Create;
   FDCLFields:=TList<TDCLField>.Create;
   FFilters:=TList<TDBFilter>.Create;
   FCalendars:=TList<TDCLCalendar>.Create;
@@ -4353,7 +4543,7 @@ end;
 procedure TDCLGrid.Prepeare;
 var
   DCLField: TDCLField;
-  Grid: TDCLGrid;
+  Grid: IDCLGrid;
   btc: TDCLCommandButton;
   FieldsPos: TList<TGridFieldSetting>;
   FieldPos: TGridFieldSetting;
@@ -4489,7 +4679,7 @@ begin
 
       if not Assigned(DCLField.DCLEditComponent) and FQuery.Active then
       begin
-        if FieldExists(DCLField.FieldName, FQuery) then
+        if FieldExists(FQuery, DCLField.FieldName) then
         begin
           FieldWidth(DCLField, FQuery.FieldByName(DCLField.FieldName).DataType);
           case FQuery.FieldByName(DCLField.FieldName).DataType of
@@ -4565,7 +4755,7 @@ begin
       end;
       if FReadOnly then
       begin
-        FDBGrid.Options:=FDBGrid.Options+[dgRowSelect];
+        //FDBGrid.Options:=FDBGrid.Options+[dgRowSelect];
         FDBGrid.Options:=FDBGrid.Options-[dgEditing];
         FDBGrid.Options:=FDBGrid.Options+[dgDisableDelete];
         FDBGrid.Options:=FDBGrid.Options+[dgDisableInsert];
@@ -4577,6 +4767,8 @@ begin
       FDBGrid.TitleImageList:=FIDCLMain.GetImageList;
       FDBGrid.OnDblClick:=GridDblClick;
       FDBGrid.OnTitleClick:=GridColumnClick;
+      FDBGrid.OnUTF8KeyPress:=GridKeyPress;
+      FDBGrid.OnKeyUp:=Grid1KeyUp;
 
       PopupGridMenu:=TPopupMenu.Create(FDBGrid);
       PopupGridMenu.Parent:=FDBGrid;
@@ -4663,7 +4855,7 @@ begin
   If Assigned(FQuery) then
     FQuery.NotAllowOperations:=FNotAllowedOperations.ToArray;
 
-  FMainPanel.Align:=alClient;
+///  FMainPanel.Align:=alClient;
 
   AdjustToolPanel;
 
@@ -4908,7 +5100,7 @@ end;
 procedure TDCLGrid.ResetFieldsSettings;
 var
   DCLField: TDCLField;
-  Grid: TDCLGrid;
+  Grid: IDCLGrid;
 begin
   if Assigned(FDBGrid) then
   begin

@@ -1,43 +1,43 @@
-unit uDCLMenu;
+unit uDCLBaseMenu;
 {$mode Delphi}
 
 interface
 
 uses
-  Classes, SysUtils, Forms, Menus, ComCtrls, Controls, fgl,
-  uDCLConst, uDCLDBConnector, uDBUtils, uDCLMeasurements, uIDCLMain, uDCLDBAwareTypes,
-  uDCLDBStructure;
+  Classes, SysUtils, Forms, Menus, ComCtrls, Controls, fgl, ExtCtrls, Buttons,
+  LCLClasses,
+  uDCLConst, uDCLDBConnector, uDBUtils, uDCLMeasurements, uIDCLMain,
+  uDCLDBAwareTypes, uDCLDBStructure;
 
 type
   TMenuConstructionItem=class
     Id, Parent: Integer;
-    Title: String;
+    Command, Title: String;
   end;
 
-  { TDCLMenu }
+  { TDCLBaseMenu }
 
-  TDCLMenu=class(TComponent)
+  TDCLBaseMenu=class(TComponent)
   private
     FMain: IDCLMain;
-    FMainMenu: TMainMenu;
     FMainForm: TForm;
     FDBConnector: TDCLDBConnector;
-    LocalQuery: TDCLSimlyQuery;
     FormBar: TToolBar;
-    findItemFlg: TMenuItem;
     FImages: TImageList;
-
+  protected
+    FMainMenu: TMainMenu;
+    LocalQuery: TDCLSimlyQuery;
+    procedure CreateMenuControls(var Query: TDCLSimlyQuery; Items: TFPGObjectList<TMenuConstructionItem>; ParentControl: TLCLComponent); virtual; abstract;
+  published
     procedure InitActions;
     procedure CloseActions;
 
     function GetMenuCommandById(Ident: Integer): String;
 
-    procedure FindMenuItem(TagID: Integer; aItems: TMenuItem);
     procedure ClickMenu(Sender: TObject);
-    procedure AddMainItem(Id: Integer; Capt: String);
-    procedure AddSubItem(Id, ParentItemId: Integer; Capt: String);
     function ExistItemByIdent(var List: TFPGObjectList<TMenuConstructionItem>; Id: Integer): Boolean;
-    procedure CreateMenuItems(var Query: TDCLSimlyQuery; Parent: Integer; UserID: String);
+
+    procedure CreateMenu(var Query: TDCLSimlyQuery; ParentControl: TLCLComponent; ParentID: Integer);
 
     procedure RunFromPackage(IdentFrom, IdentTo: Integer);
     procedure RunFromScripts(IdentFrom, IdentTo: Integer);
@@ -56,24 +56,24 @@ uses
 
 { TDCLMenu }
 
-procedure TDCLMenu.About;
+procedure TDCLBaseMenu.About;
 begin
   FMain.About;
 end;
 
-procedure TDCLMenu.InitActions;
+procedure TDCLBaseMenu.InitActions;
 begin
   RunFromPackage(40001, 40100);
   RunFromScripts(40001, 40100);
 end;
 
-procedure TDCLMenu.CloseActions;
+procedure TDCLBaseMenu.CloseActions;
 begin
   RunFromPackage(40101, 40200);
   RunFromScripts(40101, 40200);
 end;
 
-function TDCLMenu.GetMenuCommandById(Ident: Integer): String;
+function TDCLBaseMenu.GetMenuCommandById(Ident: Integer): String;
 var
   I: TDCLScriptItem;
 begin
@@ -96,25 +96,7 @@ begin
   LocalQuery.Close;
 end;
 
-procedure TDCLMenu.FindMenuItem(TagID: Integer; aItems: TMenuItem);
-var
-  I: TMenuItem;
-begin
-  for I in aItems do
-  begin
-    if I.Tag=TagID then
-    begin
-      findItemFlg:=I;
-      Exit;
-    end
-    else
-    begin
-      FindMenuItem(TagID, I);
-    end;
-  end;
-end;
-
-procedure TDCLMenu.ClickMenu(Sender: TObject);
+procedure TDCLBaseMenu.ClickMenu(Sender: TObject);
 var
   IdentID, p: Integer;
   DialogName: String;
@@ -145,36 +127,7 @@ begin
   end;
 end;
 
-procedure TDCLMenu.AddMainItem(Id: Integer; Capt: String);
-var
-  ItemMenu: TMenuItem;
-begin
-  ItemMenu:=TMenuItem.Create(FMainMenu);
-  ItemMenu.Tag:=Id;
-  ItemMenu.Caption:=Capt;
-  ItemMenu.OnClick:=ClickMenu;
-  FMainMenu.Items.Add(ItemMenu);
-end;
-
-procedure TDCLMenu.AddSubItem(Id, ParentItemId: Integer; Capt: String);
-var
-  ItemMenu: TMenuItem;
-begin
-  findItemFlg:=nil;
-  FindMenuItem(ParentItemId, FMainMenu.Items);
-
-  if Assigned(findItemFlg) then
-  begin
-    ItemMenu:=TMenuItem.Create(findItemFlg);
-    ItemMenu.Tag:=Id;
-    ItemMenu.Caption:=Capt;
-    ItemMenu.OnClick:=ClickMenu;
-    findItemFlg.OnClick:=nil;
-    findItemFlg.Insert(findItemFlg.Count, ItemMenu);
-  end;
-end;
-
-function TDCLMenu.ExistItemByIdent(var List: TFPGObjectList<TMenuConstructionItem>; Id: Integer): Boolean;
+function TDCLBaseMenu.ExistItemByIdent(var List: TFPGObjectList<TMenuConstructionItem>; Id: Integer): Boolean;
 var
   I: TMenuConstructionItem;
 begin
@@ -199,7 +152,7 @@ begin
     Result:=0;
 end;
 
-procedure TDCLMenu.CreateMenuItems(var Query: TDCLSimlyQuery; Parent: Integer; UserID: String);
+procedure TDCLBaseMenu.CreateMenu(var Query: TDCLSimlyQuery; ParentControl: TLCLComponent; ParentID: Integer);
 var
   I: TDCLScriptItem;
   ci: TMenuConstructionItem;
@@ -210,21 +163,22 @@ begin
   for I in FMain.GetLoadedScripts do
   begin
     if (I.Ident>=1) and (I.Ident<=20000) then
-    if ((Parent=0) and (I.Parent=0)) or (I.Parent=Parent) then
+    if ((ParentID=0) and (I.Parent=0)) or (I.Parent=ParentID) then
     begin
       ci:=TMenuConstructionItem.Create;
       ci.Id:=I.Ident;
       ci.Title:=I.ScriptName;
+      ci.Command:=I.Command;
       ConstructionItems.Add(ci);
     end;
   end;
 
-  if Parent=0 then
+  if ParentID=0 then
     ParentWhere:=' is null'
   else
-    ParentWhere:=' = '+IntToStr(Parent);
+    ParentWhere:=' = '+IntToStr(ParentID);
 
-  Query.SQL.Text:=GetRolesQueryText(IdentifyField+' between 1 and 20000 and '+ParentField+ParentWhere, UserID);
+  Query.SQL.Text:=GetRolesQueryText(IdentifyField+' between 1 and 20000 and '+ParentField+ParentWhere, GPT.UserID);
 
   Query.Open;
   while not Query.EOF do
@@ -235,6 +189,7 @@ begin
       ci.Id:=Query.FieldByName(IdentifyField).AsInteger;
       ci.Parent:=Query.FieldByName(ParentField).AsInteger;
       ci.Title:=Query.FieldByName(DCLNameField).AsString;
+      ci.Command:=Query.FieldByName(CommandField).AsString;
       ConstructionItems.Add(ci);
     end;
 
@@ -244,17 +199,10 @@ begin
 
   ConstructionItems.Sort(CompareTopItems);
 
-  for ci in ConstructionItems do
-  begin
-    if Parent=0 then
-      AddMainItem(ci.Id, ci.Title)
-    else
-      AddSubItem(ci.Id, ci.Parent, ci.Title);
-    CreateMenuItems(Query, ci.Id, UserID);
-  end;
+  CreateMenuControls(Query, ConstructionItems, ParentControl);
 end;
 
-procedure TDCLMenu.RunFromPackage(IdentFrom, IdentTo: Integer);
+procedure TDCLBaseMenu.RunFromPackage(IdentFrom, IdentTo: Integer);
 var
   I: TDCLScriptItem;
   Scr: TStringList;
@@ -275,7 +223,7 @@ begin
   end;
 end;
 
-procedure TDCLMenu.RunFromScripts(IdentFrom, IdentTo: Integer);
+procedure TDCLBaseMenu.RunFromScripts(IdentFrom, IdentTo: Integer);
 begin
   LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between '+IntToStr(IdentFrom)+' and '+IntToStr(IdentTo), GPT.UserID);
   LocalQuery.Open;
@@ -287,7 +235,7 @@ begin
   LocalQuery.Close;
 end;
 
-constructor TDCLMenu.Create(Main: IDCLMain; MainForm: TForm);
+constructor TDCLBaseMenu.Create(Main: IDCLMain; MainForm: TForm);
 var
   S: String;
 begin
@@ -297,13 +245,6 @@ begin
 
   LocalQuery:=TDCLSimlyQuery.Create(Self);
   FDBConnector.SetConnector(LocalQuery);
-
-  FMainMenu:=TMainMenu.Create(FMainForm);
-  if not TableExist(FDBConnector, DCLTable) then
-  begin
-    CreateAboutItem;
-    Exit;
-  end;
 
   FImages:=TImageList.Create(Self);
   FImages.Add(DrawBMPButton(ptFormDotNew), nil);
@@ -324,6 +265,7 @@ begin
   end;
 
   InitActions;
+  FMainMenu:=TMainMenu.Create(MainForm);
 
   LocalQuery.SQL.Text:=GetOutRolesQueryText(IdentifyField+'=0');
   LocalQuery.Open;
@@ -332,15 +274,12 @@ begin
   FMainForm.Caption:=S;
   LocalQuery.Close;
 
-  CreateMenuItems(LocalQuery, 0, GPT.UserID);
-
   S:=FMainForm.Caption;
   LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between 20051 and 20100', GPT.UserID);
   LocalQuery.Open;
   while not LocalQuery.EOF do
   begin
     S:=S+TrimRight(LocalQuery.FieldByName(DCLNameField).AsString);
-
     LocalQuery.Next;
   end;
   LocalQuery.Close;
@@ -353,22 +292,21 @@ begin
   FMainForm.Caption:=S;
 end;
 
-destructor TDCLMenu.Destroy;
+destructor TDCLBaseMenu.Destroy;
 begin
   CloseActions;
   inherited Destroy;
-  FMain:=nil;
 end;
 
-procedure TDCLMenu.CreateAboutItem;
+procedure TDCLBaseMenu.CreateAboutItem;
+var
+  ItemMenu: TMenuItem;
 begin
-  findItemFlg:=nil;
-  FindMenuItem(-999, FMainMenu.Items);
-
-  if not Assigned(findItemFlg) then
-  begin
-    AddMainItem(-999, 'О ...');
-  end;
+  ItemMenu:=TMenuItem.Create(FMainMenu);
+  ItemMenu.Tag:=-999;
+  ItemMenu.Caption:='О...';
+  ItemMenu.OnClick:=ClickMenu;
+  FMainMenu.Items.Add(ItemMenu);
 end;
 
 end.

@@ -81,22 +81,6 @@ type
     Center:Boolean;
   End;
 
-  TGetValueItem=class
-    Key, Value: String;
-  end;
-
-  { TReturnFormValue }
-
-  TReturnFormValue=class
-    KeyModifyField, ValueModifyField, KeyVar, ValueVar, KeyEditName, ValueEditName,
-      InitScript, BatchScript, FinishScript: String;
-    Multiselect: Boolean;
-    Values: TList<TGetValueItem>;
-    DestinationForm: TForm;
-
-    constructor Create;
-  end;
-
   TVirtualScript=Record
     ScriptName, ScrCommand, ScrText:string;
   End;
@@ -128,6 +112,11 @@ type
     constructor Create;
   end;
 
+  TGridFieldSetting=class
+    FieldName: String;
+    Index, Width: Integer;
+  end;
+
 var
   TDataGrid: set of TGridStyle;
   TDataFields: set of TGridStyle;
@@ -138,13 +127,6 @@ var
   TDateTimeTypedFields: set of TFieldType;
 
 implementation
-
-{ TReturnFormValue }
-
-constructor TReturnFormValue.Create;
-begin
-  Values:=TList<TGetValueItem>.Create;
-end;
 
 { TReturnValueParams }
 

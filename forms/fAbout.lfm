@@ -2,20 +2,20 @@ object AboutForm: TAboutForm
   Left = 522
   Height = 353
   Top = 273
-  Width = 401
+  Width = 424
   BorderStyle = bsDialog
   Caption = 'О ...'
   ClientHeight = 353
-  ClientWidth = 401
-  Position = poScreenCenter
-  LCLVersion = '3.99.0.0'
+  ClientWidth = 424
   OnCreate = FormCreate
   OnResize = FormResize
+  Position = poScreenCenter
+  LCLVersion = '3.0.0.3'
   object PageControl1: TPageControl
     Left = 0
     Height = 353
     Top = 0
-    Width = 401
+    Width = 424
     ActivePage = TabSheet1
     Align = alClient
     TabIndex = 0
@@ -24,16 +24,16 @@ object AboutForm: TAboutForm
       BorderWidth = 1
       Caption = 'Version'
       ClientHeight = 325
-      ClientWidth = 393
+      ClientWidth = 416
       object GroupBox1: TGroupBox
         Left = 1
         Height = 323
         Top = 1
-        Width = 391
+        Width = 414
         Align = alClient
         BorderSpacing.Around = 1
         ClientHeight = 303
-        ClientWidth = 387
+        ClientWidth = 410
         ParentBackground = False
         ParentColor = False
         TabOrder = 0
@@ -43,7 +43,7 @@ object AboutForm: TAboutForm
           AnchorSideRight.Side = asrBottom
           AnchorSideBottom.Control = GroupBox1
           AnchorSideBottom.Side = asrBottom
-          Left = 136
+          Left = 146
           Height = 25
           Top = 266
           Width = 75
@@ -62,6 +62,7 @@ object AboutForm: TAboutForm
           Top = 10
           Width = 90
           AutoSize = True
+          OnClick = ImageLogoClick
           Picture.Data = {
             1754506F727461626C654E6574776F726B47726170686963F306000089504E47
             0D0A1A0A0000000D494844520000005A0000005A0802000000B7CAD655000000
@@ -124,7 +125,6 @@ object AboutForm: TAboutForm
           Proportional = True
           Stretch = True
           Transparent = True
-          OnClick = ImageLogoClick
         end
         object lbProduct: TLabel
           Left = 120
@@ -243,7 +243,7 @@ object AboutForm: TAboutForm
           Left = 10
           Height = 58
           Top = 112
-          Width = 366
+          Width = 390
           Color = clForm
           ReadOnly = True
           TabOrder = 1
@@ -262,28 +262,44 @@ object AboutForm: TAboutForm
           Width = 15
           Caption = '0.1'
         end
+        object Label8: TLabel
+          Left = 290
+          Height = 15
+          Top = 64
+          Width = 47
+          Caption = 'Ревизия:'
+        end
+        object lbRevision: TLabel
+          Left = 344
+          Height = 15
+          Top = 64
+          Width = 19
+          Caption = 'rev'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
       end
     end
     object TabSheet2: TTabSheet
       BorderWidth = 1
       Caption = 'Other info'
       ClientHeight = 325
-      ClientWidth = 393
+      ClientWidth = 416
       object GroupBox2: TGroupBox
         Left = 1
         Height = 323
         Top = 1
-        Width = 391
+        Width = 414
         Align = alClient
         BorderSpacing.Around = 1
         ClientHeight = 303
-        ClientWidth = 387
+        ClientWidth = 410
         TabOrder = 0
         object lbPackagesList: TListBox
           Left = 10
           Height = 120
-          Top = 48
-          Width = 360
+          Top = 32
+          Width = 383
           Anchors = [akTop, akLeft, akRight]
           ItemHeight = 0
           PopupMenu = pmPackages
@@ -292,7 +308,7 @@ object AboutForm: TAboutForm
         object Label7: TLabel
           Left = 10
           Height = 15
-          Top = 24
+          Top = 8
           Width = 123
           Caption = 'Загруженные пакеты :'
         end
@@ -300,8 +316,8 @@ object AboutForm: TAboutForm
     end
   end
   object pmPackages: TPopupMenu
-    Left = 237
-    Top = 134
+    Left = 344
+    Top = 296
     object miCopy: TMenuItem
       Caption = 'Copy'
       OnClick = miCopyClick

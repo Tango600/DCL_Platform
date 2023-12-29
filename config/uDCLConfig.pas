@@ -266,6 +266,11 @@ Begin
           GPT.ExcelOLEExtension:=Trim(FindParam('ExcelOLEExtension=', cs));
         End;
 
+        If IsParameter('MenuType=', cs) then
+        Begin
+          GPT.MenuType:=TMenuType(StrToInt(Trim(FindParam('MenuType=', cs))));
+        End;
+
         If IsParameter('DisableLoad=', cs) Then
           GPT.DisableLoad:=FindParam('DisableLoad=', cs)='1';
         If IsParameter('DisableUnload=', cs) Then

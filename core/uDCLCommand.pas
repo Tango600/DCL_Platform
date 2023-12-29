@@ -5,21 +5,21 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections, Forms, Controls, StdCtrls, DB, Dialogs,
-  uDCLData, uDCLDBAwareTypes, uDCLConst, uDCLGrid, uDCLForm, uDCLVariables, uIDCLMain,
-  uDCLUtils, uStringParams, uDCLDBConnector, uDCLDBStructure, uDBUtils,
-  uDCLValuesParser, uIGetValue, MathParser;
+  uDCLData, uDCLDBAwareTypes, uDCLConst, uDCLGrid, uDCLVariables,
+  uIDCLMain, uIDCLForm, uIDCLGrid, uDCLUtils, uStringParams, uDCLDBConnector,
+  uDCLDBStructure, uDCLValuesParser, MathParser;
 
 type
 
   { TDCLCommand }
 
-  TDCLCommand=class(TComponent, IGetValue)
+  TDCLCommand=class(TComponent)
   private
     FIDCLMain: IDCLMain;
     FDBConnector: TDCLDBConnector;
-    FForms: TList<TForm>;
-    FDCLForm: TDCLForm;
-    FDCLGrid: TDCLGrid;
+    FForms: TList<IDCLForm>;
+    FDCLForm: IDCLForm;
+    FDCLGrid: IDCLGrid;
     FNameSpace: String;
     FVariables: TVariables;
     FParser: TDCLValuseParser;
@@ -37,22 +37,16 @@ type
     procedure RunTextReport(ScrLine: String; Query: TDCLDialogQuery; Grid: TDCLGrid);
 
     procedure DialogCommand(ScrStr: String);
-    function CreateForm(NameSpace, DialogName: String; NoContext: Boolean;
-      ParentForm: TDCLForm; Grid: TDCLGrid;
-      ReturnValueParams: TReturnValueParams; Modal: Boolean): TDCLForm;
   public
     constructor Create(Parent: TComponent; IDCLMain: IDCLMain; NameSpace: String;
-      DCLForm: TForm; DCLGrid: TDCLGrid); overload;
+      DCLForm: IDCLForm; DCLGrid: IDCLGrid); overload;
     destructor Destroy; override;
 
-    procedure OpenDialog(DialogName: String);
     function RunCommandScript(CommandName: String): Boolean;
     procedure RunCommand(Command: String);
     procedure SelectRunType(Command: String);
 
     procedure About;
-
-    procedure GetValueProc(ReturnValue: TReturnFormValue);
 
     property DisableAutoRefresh: Boolean read FDisableAutoRefresh write FDisableAutoRefresh;
   end;
@@ -105,21 +99,21 @@ begin
 end;
 
 constructor TDCLCommand.Create(Parent: TComponent; IDCLMain: IDCLMain; NameSpace: String;
-  DCLForm: TForm; DCLGrid: TDCLGrid);
+  DCLForm: IDCLForm; DCLGrid: IDCLGrid);
 begin
   inherited Create(Parent);
   FIDCLMain:=IDCLMain;
   FDBConnector:=FIDCLMain.GetDBConnector;
   FForms:=FIDCLMain.GetForms;
   if Assigned(DCLForm) then
-    FDCLForm:=(DCLForm as TDCLForm);
+    FDCLForm:=DCLForm;
   FDCLGrid:=DCLGrid;
 
   if Assigned(DCLGrid) then
     FUserLevel:=DCLGrid.RightsLevel
   else
     if Assigned(DCLForm) then
-      FUserLevel:=(DCLForm as TDCLForm).RightsLevel
+      FUserLevel:=DCLForm.RightsLevel
     else
       FUserLevel:=GPT.AccessLevel;
 
@@ -136,11 +130,6 @@ end;
 destructor TDCLCommand.Destroy;
 begin
   inherited Destroy;
-end;
-
-procedure TDCLCommand.OpenDialog(DialogName: String);
-begin
-  CreateForm(FNameSpace, DialogName, True, nil, nil, nil, False);
 end;
 
 function TDCLCommand.RunCommandScript(CommandName: String): Boolean;
@@ -376,12 +365,12 @@ procedure TDCLCommand.SetValue(S: String);
 var
   tmp1, tmp2, VarName, SQLText, ReturnField, KeyField: String;
   sv_v2, v2: Integer;
-  Grid, PartGrid: TDCLGrid;
+  Grid, PartGrid: IDCLGrid;
   DCLQuery: TDCLDialogQuery;
   {$IFDEF TRANSACTIONDB}
   tmp_Transaction: TDCLDBTransaction;
   {$ENDIF}
-  Form: TForm;
+  Form: IDCLForm;
   Edit: TDCLEdit;
 begin
   tmp2:=FindParam('SetValue=', S);
@@ -492,7 +481,7 @@ begin
   begin
     If Assigned(Form) Then
     begin
-      For Grid in (Form as TDCLForm).Grids do
+      For Grid in Form.Grids do
       begin
         If Assigned(Grid) Then
         begin
@@ -674,8 +663,7 @@ var
   tmpS, tmpS1, tmpS2, tmpS3: String;
   v1, v2: Integer;
   Wait, Flg1, Flg2: Boolean;
-  tmpDCLForm: TDCLForm;
-  vForm: TForm;
+  tmpDCLForm, vForm: IDCLForm;
   {$IFDEF MSWINDOWS}
   SheetReportSelector: TSheetOfficeReportSelector;
   TextOfficeReportSelector: TTextOfficeReportSelector;
@@ -830,7 +818,7 @@ begin
 
     for vForm in FForms do
     begin
-      tmpDCLForm:=vForm as TDCLForm;
+      tmpDCLForm:=vForm;
       if DCLCompareString(tmpDCLForm.DialogName, tmpS1) then
       begin
         If DCLCompareString(tmpS2, 'hide') then
@@ -838,7 +826,11 @@ begin
         If DCLCompareString(tmpS2, 'show') then
           tmpDCLForm.SetFocus;
         If DCLCompareString(tmpS2, 'close') then
-          tmpDCLForm.Close;
+        begin
+          FDCLForm:=FIDCLMain.CloseForm(tmpDCLForm, True);
+          if Assigned(FDCLForm) then
+            FDCLGrid:=FDCLForm.CurrentGrid;
+        end;
         If DCLCompareString(tmpS2, 'refresh') then
           tmpDCLForm.RefreshForm;
         If DCLCompareString(tmpS2, 'top') then
@@ -1094,9 +1086,13 @@ begin
     begin
       If Assigned(FDCLForm) then
       Begin
-        tmpDCLForm:=FDCLForm.ParentForm;
-        FDCLForm.ForceClose;
-        FDCLForm:=tmpDCLForm;
+        FDCLForm:=FIDCLMain.CloseForm(FDCLForm, True);
+        if Assigned(FDCLForm) then
+          FDCLGrid:=FDCLForm.GetCurrentGrid;
+
+        {if FIDCLMain.CloseDialog(FDCLForm, True) then
+          if Assigned(FDCLForm) then
+            FDCLGrid:=FDCLForm.GetCurrentGrid;}
       End;
     end;
 
@@ -1187,7 +1183,7 @@ begin
 
     If IsLexem('Report=', Command) then
     begin
-      RunTextReport(Command, FDCLGrid.Query, FDCLGrid);
+      RunTextReport(Command, FDCLGrid.Query, FDCLGrid as TDCLGrid);
     end;
   end;
 
@@ -1487,48 +1483,13 @@ begin
   About.Release;
 end;
 
-function TDCLCommand.CreateForm(NameSpace, DialogName: String; NoContext: Boolean;
-  ParentForm: TDCLForm; Grid: TDCLGrid; ReturnValueParams: TReturnValueParams;
-  Modal: Boolean): TDCLForm;
-var
-  DCL: TStringList;
-  lForm: TDCLForm;
-begin
-  Result:=nil;
-  DCL:=FIDCLMain.GetScriptText(DialogName);
-  if DCL.Count>0 then
-  begin
-    if PosEx('script type=command', DCL[0])<>0 then
-      Exit;
-
-    if NoContext then
-      lForm:=TDCLForm.Create(FIDCLMain, DialogName, NameSpace, ParentForm, DCL,
-        FUserLevel, nil, nil, Self, ReturnValueParams, Modal)
-    else
-      lForm:=TDCLForm.Create(FIDCLMain, DialogName, NameSpace, ParentForm, DCL,
-        FUserLevel, Grid.Query, Grid.Data, Self, ReturnValueParams, Modal);
-
-    if not lForm.Reject then
-    begin
-      FForms.Add(lForm);
-      Result:=lForm;
-    end
-    else
-    begin
-      lForm.Release;
-      FreeAndNil(lForm);
-    end;
-  end;
-  FreeAndNil(DCL);
-end;
-
 procedure TDCLCommand.DialogCommand(ScrStr: String);
 var
   TmpStr, DialogName: String;
   ModalOpen, NoContext: Boolean;
   v1: Integer;
   ReturnValueParams: TReturnValueParams;
-  lDCLForm: TDCLForm;
+  lDCLForm: IDCLForm;
 begin
   DialogName:=FindParam('Dialog=', ScrStr);
   ModalOpen:=FindParam('ModalOpen=', ScrStr)='1';
@@ -1556,13 +1517,13 @@ begin
     Begin
       v1:=StrToIntEx(TmpStr)-1;
       If Assigned(FDCLForm.CurrentGrid.TableParts[v1]) Then
-        lDCLForm:=CreateForm(FNameSpace, DialogName, NoContext, FDCLForm,
-          FDCLForm.CurrentGrid.TableParts[v1], ReturnValueParams, ModalOpen);
+        lDCLForm:=FIDCLMain.CreateDialog(FNameSpace, DialogName, NoContext, FDCLForm,
+          FDCLForm.CurrentGrid.TableParts[v1], FUserLevel,  ReturnValueParams, ModalOpen);
     End;
   end
   Else
-    lDCLForm:=CreateForm(FNameSpace, DialogName, NoContext, FDCLForm, FDCLGrid,
-      ReturnValueParams, ModalOpen);
+    lDCLForm:=FIDCLMain.CreateDialog(FNameSpace, DialogName, NoContext, FDCLForm, FDCLGrid,
+      FUserLevel, ReturnValueParams, ModalOpen);
 
   If Assigned(lDCLForm) Then
   begin
@@ -1573,95 +1534,7 @@ begin
       lDCLForm.ShowModal;
     end;
     FDCLForm:=lDCLForm;
-  end;
-end;
-
-procedure TDCLCommand.GetValueProc(ReturnValue: TReturnFormValue);
-var
-  ReturnValueItem: TGetValueItem;
-  Edit: TDCLEdit;
-  lDCLForm: TDCLForm;
-begin
-  If Assigned(ReturnValue) and (ReturnValue.Values.Count>0) Then
-  begin
-    lDCLForm:=(ReturnValue.DestinationForm as TDCLForm).ParentForm;
-
-    for ReturnValueItem in ReturnValue.Values do
-    begin
-      If FieldExists(ReturnValue.KeyModifyField, lDCLForm.CurrentGrid.Query) Then
-      begin
-        If lDCLForm.CurrentGrid.Query.Active then
-        begin
-          if lDCLForm.CurrentGrid.Query.CanModify then
-          begin
-            if not (lDCLForm.CurrentGrid.Query.State in dsEditModes) then
-              lDCLForm.CurrentGrid.Query.Edit;
-            lDCLForm.CurrentGrid.Query.FieldByName(ReturnValue.KeyModifyField).AsString:=ReturnValueItem.Key;
-          end;
-        end;
-      end;
-
-      If FieldExists(ReturnValue.ValueModifyField, lDCLForm.CurrentGrid.Query) Then
-      begin
-        If lDCLForm.CurrentGrid.Query.Active Then
-        begin
-          If lDCLForm.CurrentGrid.Query.CanModify Then
-          begin
-            if not (lDCLForm.CurrentGrid.Query.State in dsEditModes) then
-              lDCLForm.CurrentGrid.Query.Edit;
-            lDCLForm.CurrentGrid.Query.FieldByName(ReturnValue.ValueModifyField).AsString:=ReturnValueItem.Value;
-          end;
-        end;
-      end;
-
-      If ReturnValue.KeyEditName<>'' Then
-      begin
-        For Edit in lDCLForm.CurrentGrid.Edits do
-        begin
-          If DCLCompareString(ReturnValue.KeyEditName, Edit.Control.Name) Then
-          begin
-            (Edit.Control as TEdit).Text:=ReturnValueItem.Key;
-            break;
-          end;
-        end;
-      end;
-
-      If ReturnValue.ValueEditName<>'' Then
-      begin
-        For Edit in lDCLForm.CurrentGrid.Edits do
-        begin
-          If DCLCompareString(ReturnValue.ValueEditName, Edit.Control.Name) Then
-          begin
-            (Edit.Control as TEdit).Text:=ReturnValueItem.Value;
-            break;
-          end;
-        end;
-      end;
-
-      if ReturnValue.KeyVar<>'' then
-      begin
-        FVariables.NewVariableWithTest(FNamespace, ReturnValue.KeyVar);
-        FVariables.Variables[FNamespace, ReturnValue.KeyVar]:=ReturnValueItem.Key;
-      end;
-
-      if ReturnValue.ValueVar<>'' then
-      begin
-        FVariables.NewVariableWithTest(FNamespace, ReturnValue.ValueVar);
-        FVariables.Variables[FNamespace, ReturnValue.ValueVar]:=ReturnValueItem.Value;
-      end;
-
-      if ReturnValue.BatchScript<>'' then
-      begin
-        RunCommandScript(ReturnValue.BatchScript);
-      end;
-    end;
-
-    if ReturnValue.FinishScript<>'' then
-    begin
-      RunCommandScript(ReturnValue.FinishScript);
-    end;
-
-    FDCLForm:=lDCLForm;
+    FDCLGrid:=lDCLForm.CurrentGrid;
   end;
 end;
 

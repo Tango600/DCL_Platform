@@ -50,6 +50,8 @@ const
   AccessLibVersion=laz_version;
 {$ENDIF}
 
+{$I revision.inc}
+
   JPEGCompressionQuality=85;
 
   ShowFormPanel=True;
@@ -152,7 +154,7 @@ Type
   TDataStatus=(dssChanged, dssSaved);
   TNotifyActionsType=(naDone, naScriptRun, naMessage, naExecAndWait, naExec, naExitToTime);
   TQueryType=(qtMain, qtFind, qtDefault);
-  TFilterType=(ftNone, ftDBFilter, ftContextFilter, ftComboFilter, ftTempFilter);
+  TFilterType=(ftNone, ftDBFilter, ftContextFilter, ftComboFilter, ftTempFilter, ftGridFilter);
   TOfficeFormat=(ofNone, ofMSO, ofOO, ofPossible);
   TOfficeDocumentFormat=(odfNone, odfMSO97, odfMSO2007, odfOO, odfPossible);
   TDocumentType=(dtNone, dtSheet, dtText);
@@ -175,6 +177,7 @@ Type
     ctBt, ctNotBt);
   TPairCondition=(pcNone, pcAnd, pcOr);
   TTransactionType=(trtWrite, trtRead, trtUniversal);
+  TMenuType=(mtClassic, mtPanels);
 
 implementation
 

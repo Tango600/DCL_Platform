@@ -11,8 +11,9 @@ uses
   {$IFDEF FPC}
   Interfaces, lcltype,
   {$ENDIF}
-  Classes, Forms, Controls, SysUtils, uDCLMain, uSystemUtils, uStringParams,
-  fMain, fDCLLoginForm, fAbout
+  Classes, Forms, Controls, SysUtils, uDCLMain, uDCLBaseMenu, uDCLMenuSelector,
+  uDCLMenuPanels, uDCLMenuClassic, uIDCLForm, uIDCLGrid, uSystemUtils,
+  uStringParams, fMain, fDCLLoginForm, fAbout
   ;
 
 {$R *.res}
@@ -117,6 +118,9 @@ begin
 end;
 
 begin
+  {$IFDEF heaptrc}
+  SetHeapTraceOutput('heaptrace.trc');
+  {$ENDIF}
   RequireDerivedFormResource:=False;
   Application.Scaled:=True;
   Application.Initialize;

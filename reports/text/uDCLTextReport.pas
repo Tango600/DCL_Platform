@@ -6,7 +6,7 @@ interface
 uses
   Classes, SysUtils, Controls, Forms, ComCtrls, StdCtrls, Buttons, ExtCtrls,
   DBCtrls, DB, Generics.Collections, LazUTF8,
-  uDCLDBAwareTypes, uDCLConst, uIDCLMain, uDCLData, uDCLDBConnector, uDCLGrid,
+  uDCLDBAwareTypes, uDCLConst, uIDCLMain, uDCLData, uDCLDBConnector, uIDCLGrid,
   uDCLTypes, uDCLVariables;
 
 type
@@ -19,7 +19,7 @@ type
     FNameSpace: String;
     FDBConnector: TDCLDBConnector;
     FDialogRes: TModalResult;
-    FDCLGrid: TDCLGrid;
+    FDCLGrid: IDCLGrid;
     FScrypt: TStringList;
     FParamsSetID: Integer;
     FMode: TNewQueryMode;
@@ -40,7 +40,7 @@ type
     function TranslateRepParams(ParamName: String): String;
   public
     constructor Create(const NameSpace: String; DCLMain: IDCLMain;
-      DCLGrid: TDCLGrid; Scrypt: TStringList; ParamsSetID: Integer);
+      DCLGrid: IDCLGrid; Scrypt: TStringList; ParamsSetID: Integer);
 
     procedure InitReport(Mode: TNewQueryMode);
 
@@ -338,7 +338,7 @@ begin
 end;
 
 constructor TDCLTextReport.Create(const NameSpace: String; DCLMain: IDCLMain;
-      DCLGrid: TDCLGrid; Scrypt: TStringList; ParamsSetID: Integer);
+      DCLGrid: IDCLGrid; Scrypt: TStringList; ParamsSetID: Integer);
 begin
   FNameSpace:=NameSpace;
   FDCLMain:=DCLMain;

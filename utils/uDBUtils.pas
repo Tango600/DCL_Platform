@@ -7,15 +7,13 @@ uses
   Classes, SysUtils, DB,
   uDCLDBAwareTypes, uDCLData, uDCLConst, uDCLDBConnector, uDCLField, uDCLMeasurements;
 
-  function TableExist(DBConnector: TDBConnector; TableName: String): Boolean;
-  function FieldExist(DBConnector: TDCLDBConnector; TableName, FieldName: String): Boolean; overload;
-  function FieldExist(Query: TDCLDialogQuery; FieldName: String): Boolean; overload;
+  function TableExists(DBConnector: TDBConnector; TableName: String): Boolean;
+  function FieldExists(DBConnector: TDCLDBConnector; TableName, FieldName: String): Boolean; overload;
+  function FieldExists(Query: TDCLDialogQuery; FieldName: String): Boolean; overload;
   Function NormalizeFieldName(Const FieldName: String): String;
   Function GetDelimiter(Const FieldName: String; Query: TDCLDialogQuery): String;
   Function GetSimplyFieldType(Const FieldName: String; Query: TDCLDialogQuery): TSimplyFieldType; overload;
   Function GetSimplyFieldType(Const FieldType:TFieldType): TSimplyFieldType; overload;
-
-  Function FieldExists(Const FieldName: String; Query: TDCLDialogQuery): Boolean;
 
   Function QueryIsEmpty(Query: TDCLDialogQuery): Boolean;
   function GetFieldFromParam(Param: String; Query: TDCLDialogQuery): TField;
@@ -101,7 +99,7 @@ Begin
   end;
 End;
 
-function TableExist(DBConnector: TDBConnector; TableName: String): Boolean;
+function TableExists(DBConnector: TDBConnector; TableName: String): Boolean;
 var
   Tables: TStrings;
   t: String;
@@ -123,10 +121,9 @@ begin
   end;
 end;
 
-function FieldExist(DBConnector: TDCLDBConnector; TableName, FieldName: String): Boolean;
+function FieldExists(DBConnector: TDCLDBConnector; TableName, FieldName: String): Boolean;
 var
   Q: TDCLDialogQuery;
-  Field: TField;
 begin
   Result:=False;
   try
@@ -134,60 +131,18 @@ begin
     DBConnector.SetConnector(Q);
     Q.SQL.Text:='select * from '+TableName+' where 1=0';
     Q.Open;
-    for Field in Q.Fields do
-    begin
-      if Field.FieldName.ToLower.Contains(FieldName.ToLower) then
-      begin
-        Result:=True;
-        break;
-      end;
-    end;
+    Result:=Assigned(Q.FindField(FieldName));
   finally
     Q.Close;
   end;
 end;
 
-function FieldExist(Query: TDCLDialogQuery; FieldName: String): Boolean;
-var
-  FieldNames: TStringList;
-  Field: String;
-begin
-  Result:=False;
-  FieldNames:=TStringList.Create;
-  Query.GetFieldNames(FieldNames);
-  if Assigned(FieldNames) then
-  begin
-    for Field in FieldNames do
-    begin
-      if Field.ToLower.Contains(FieldName.ToLower) then
-      begin
-        Result:=True;
-        break;
-      end;
-    end;
-  end;
-  FreeAndNil(FieldNames);
-end;
-
-Function FieldExists(Const FieldName: String; Query: TDCLDialogQuery): Boolean;
+function FieldExists(Query: TDCLDialogQuery; FieldName: String): Boolean;
 Var
-  v1FieldNum: Word;
   tmpFieldName: string;
 Begin
-  Result:=False;
   tmpFieldName:=NormalizeFieldName(FieldName);
-
-  If Assigned(Query) then
-  Begin
-    If tmpFieldName<>'' then
-      If Query.FieldCount<>0 Then
-        For v1FieldNum:=0 To Query.FieldCount-1 Do
-          If UpperCase(Trim(tmpFieldName))=UpperCase(Query.Fields[v1FieldNum].FieldName) Then
-          Begin
-            Result:=True;
-            Break;
-          End;
-  End;
+  Result:=Assigned(Query) and Query.Active and Assigned(Query.FindField(tmpFieldName))
 End;
 
 Function QueryIsEmpty(Query: TDCLDialogQuery): Boolean;
@@ -219,7 +174,7 @@ Begin
     End;
     If Query.Active then
     Begin
-      If FieldExists(FieldName, Query) then
+      If FieldExists(Query, FieldName) then
         Result:=Query.FieldByName(FieldName);
     End;
   end;

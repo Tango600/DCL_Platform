@@ -4,9 +4,6 @@ unit uDCLSQLMonitor;
 interface
 
 uses
-{$IFDEF FPC}
-  LConvEncoding,
-{$ENDIF}
   Classes, DB, uDCLTypes, uDCLData, uDCLConst, uStringParams, SysUtils;
 
 type

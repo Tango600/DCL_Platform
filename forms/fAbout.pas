@@ -23,6 +23,8 @@ type
     Label5: TLabel;
     Label6: TLabel;
     Label7: TLabel;
+    Label8: TLabel;
+    lbRevision: TLabel;
     lbBuildDate: TLabel;
     lbBuildType: TLabel;
     lbCompillerName: TLabel;
@@ -154,6 +156,7 @@ begin
   lbVersion.Caption:=DCLVersion;
   lbDBLib.Caption:=DBEngineType;
   lbDBLibVersion.Caption:=AccessLibVersion;
+  lbRevision.Caption:=RevisionStr;
 
   lbCompillerName.Caption:=InternalAppNameSuffix{$IFDEF FPC}+' '+fpcVersion{$ENDIF};
   lbBuildType.Caption:=TargetOS+'_'+TargetCPU;

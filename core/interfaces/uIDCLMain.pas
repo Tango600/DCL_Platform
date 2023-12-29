@@ -4,12 +4,13 @@ interface
 
 uses
   Forms, Classes, Generics.Collections, Controls,
-  uDCLConst, uDCLVariables, uDCLDBConnector, uDCLImages, uDCLScriptsPackage;
+  uDCLConst, uIDCLForm, uIDCLGrid, uDCLVariables, uDCLDBConnector, uDCLImages,
+  uDCLData, uDCLScriptsPackage, uReturnFormValue;
 
 type
   IDCLMain=interface
     function GetDBConnector: TDCLDBConnector;
-    function GetForms: TList<TForm>;
+    function GetForms: TList<IDCLForm>;
     procedure CloseAllDialogs;
     procedure CreateMenu(MainForm: TForm);
 
@@ -22,9 +23,15 @@ type
     function GetPackages: TList<TPackageInfo>;
 
     procedure NotifyForms(Action: TFormsNotifyAction);
-    procedure NotifyForm(Form: TForm; Action: TFormsNotifyAction);
+    procedure NotifyForm(Form: IDCLForm; Action: TFormsNotifyAction);
 
-    procedure ReleaseForm(Form: TForm);
+    function CreateDialog(NameSpace, DialogName: String; NoContext: Boolean;
+      ParentForm: IDCLForm; Grid: IDCLGrid; UserLevel: TUserLevelsType;
+      ReturnValueParams: TReturnValueParams; Modal: Boolean): IDCLForm;
+    function CloseForm(Form: IDCLForm; Force: Boolean): IDCLForm;
+    function CloseDialog(var Form: IDCLForm; Force: Boolean): Boolean;
+    procedure ReleaseForm(Form: IDCLForm);
+    procedure GetValueProc(NameSpace: String; Form: IDCLForm; ReturnValue: TReturnFormValue);
 
     procedure About;
     procedure ExitApp;

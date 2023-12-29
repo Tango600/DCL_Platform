@@ -203,18 +203,6 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="core\uDCLMenu.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
-        <Filename Value="core\uIDCLMain.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
-        <Filename Value="core\uIGetValue.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
         <Filename Value="core\uDCLCommandButton.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
@@ -334,6 +322,38 @@
         <Filename Value="dclpackages\uDCLUpdaterPackage.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="data\uReturnFormValue.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="core\interfaces\uIDCLGrid.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="core\interfaces\uIDCLForm.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="core\interfaces\uIDCLMain.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="core\menu\uDCLBaseMenu.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="core\menu\uDCLMenuSelector.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="core\menu\uDCLMenuPanels.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="core\menu\uDCLMenuClassic.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -344,7 +364,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="libraries;libraries\foreigners;dclpackages;data;utils;wrappers;dbaware;config;core;core\layoutmangers;core\variables;forms;resources;reports;reports\text;reports\office;core\lang;core\components"/>
+      <OtherUnitFiles Value="libraries;libraries\foreigners;dclpackages;data;utils;wrappers;dbaware;config;core;core\layoutmangers;core\variables;forms;resources;reports;reports\text;reports\office;core\lang;core\components;core\interfaces;core\menu"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
@@ -367,6 +387,9 @@
       <CompilerMessages>
         <IgnoredMessages idx6058="True"/>
       </CompilerMessages>
+      <ExecuteBefore>
+        <Command Value="$(LazarusDir)\tools\svn2revisioninc$(ExeExt) $(ProjPath) $(ProjPath)\data\revision.inc"/>
+      </ExecuteBefore>
     </Other>
   </CompilerOptions>
   <Debugging>

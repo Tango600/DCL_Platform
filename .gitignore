@@ -20,3 +20,6 @@
 /reports/text/backup/
 /core/lang/backup/*
 /core/components/backup/*
+/core/interfaces/backup/*
+/core/layoutmangers/backup/*
+/core/menu/backup/

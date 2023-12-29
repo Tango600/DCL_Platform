@@ -8,39 +8,59 @@ uses
   Controls, ComCtrls, Graphics, Menus,
   uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uStringParams, uDCLQuery, uIDCLMain,
   uDCLMeasurements, uDCLDBConnector, uDCLUtils, uDCLVariables, uDCLMultiLang,
-  uDCLImages, uIGetValue;
+  uReturnFormValue, uIDCLForm, uIDCLGrid, uDCLImages;
 
 type
 
   { TDCLForm }
 
-  TDCLForm=class(TForm)
+  TDCLForm=class(TForm, IDCLForm)
   private
     FReject, FFirstPage, FormCanClose, FCloseQuery: Boolean;
     FIDCLMain: IDCLMain;
     FDBConnector: TDCLDBConnector;
     FNameSpace, FDialogName, CloseQueryText: String;
     FVariables: TVariables;
-    FForms: TList<TForm>;
-    FParentForm: TDCLForm;
-    FRetValueProc: IGetValue;
+    FForms: TList<IDCLForm>;
+    FParentForm: IDCLForm;
     FOPL: TStringList;
     FormBar: TToolBar;
     TB: TFormPanelButton;
-    FGrids: TList<TDCLGrid>;
+    FGrids: TList<IDCLGrid>;
     FFormMenu: TMainMenu;
     FMainItemMenu: TMenuItem;
 
     FParentPanel: TWinControl;
     FPages: TPageControl;
     FTab: TTabSheet;
-    FCurrentGrid: TDCLGrid;
+    FCurrentGrid: IDCLGrid;
     FStatusBar: TStatusBar;
-    FReturnValue: TReturnFormValue;
     FReturnValueParams: TReturnValueParams;
     FUserLevel: TUserLevelsType;
     FIsSingle: Boolean;
+    FStackLevel: Integer;
 
+    //region TForm
+    procedure SetWindowState(Value : TWindowState);
+    function GetWindowState: TWindowState;
+    function GetShowing: Boolean;
+    function GetCapt: String;
+    procedure SetCapt(Value: String);
+    function GetModalResult: TModalResult;
+    procedure SetModalResult(Value: TModalResult);
+    function GetFormStyle: TFormStyle;
+    procedure SetFormStyle(Value: TFormStyle);
+    //end region
+
+    function GetStackLevel: Integer;
+    procedure SetStackLevel(Value: Integer);
+    function GetIsSingle: Boolean;
+
+    function GetGrids: TList<IDCLGrid>;
+    function IsReject: Boolean;
+    function GetUserLevel: TUserLevelsType;
+
+    function GetParentDialog: IDCLForm;
     procedure ToolButtonClick(Sender: TObject);
 
     procedure PageChange(Sender: TObject);
@@ -54,6 +74,9 @@ type
     procedure AddCloseFormItem;
     procedure AddSplitter;
 
+    procedure SetReturnValueParams(Value: TReturnValueParams);
+    function GetReturnValueParams: TReturnValueParams;
+
     procedure ResetFieldsSettings(Sender: TObject);
     procedure CloseDialogCommand(Sender: TObject);
 
@@ -66,11 +89,13 @@ type
 
     procedure SetRecordsStatus(Str: String); overload;
 
+    function GetCurrentGrid: IDCLGrid;
+    function GetDialogName: String;
     procedure SaveFormPos;
   public
-    constructor Create(IDCLMain: IDCLMain; DialogName, NameSpace: String; ParentForm: TDCLForm;
+    constructor Create(IDCLMain: IDCLMain; DialogName, NameSpace: String; ParentForm: IDCLForm;
       OPL: TStringList; UserLevel: TUserLevelsType;
-      Query: TDCLQuery; Data: TDataSource; RetValueProc: IGetValue;
+      Query: TDCLQuery; Data: TDataSource;
       ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False); overload;
     destructor Destroy; override;
 
@@ -86,24 +111,113 @@ type
     procedure DeleteStatus(Num: Integer);
     procedure DeleteAllStatus;
 
-    property Grids: TList<TDCLGrid> read FGrids;
-    property CurrentGrid: TDCLGrid read FCurrentGrid;
-    property DialogName: String read FDialogName;
-    property IsSingle: Boolean read FIsSingle;
-    property ReturnValue: TReturnFormValue read FReturnValue write FReturnValue;
-    property ReturnValueParams: TReturnValueParams read FReturnValueParams write FReturnValueParams;
-    property RetValueMethod: IGetValue read FRetValueProc;
-    property ParentForm: TDCLForm read FParentForm;
-    property Reject: Boolean read FReject;
-    property RightsLevel: TUserLevelsType read FUserLevel;
+    procedure GetValueProc(Value: TReturnFormValue);
+
+    property Grids: TList<IDCLGrid> read GetGrids;
+    property CurrentGrid: IDCLGrid read GetCurrentGrid;
+    property DialogName: String read GetDialogName;
+    property IsSingle: Boolean read GetIsSingle;
+    property ReturnValueParams: TReturnValueParams read GetReturnValueParams write SetReturnValueParams;
+    property ParentDialog: IDCLForm read GetParentDialog;
+    property Reject: Boolean read IsReject;
+    property RightsLevel: TUserLevelsType read GetUserLevel;
+    property StackLevel: Integer read GetStackLevel write SetStackLevel;
+  public
+    //region TForm
+    property WindowState: TWindowState read GetWindowState write SetWindowState
+                                   default wsNormal;
+    property FormStyle: TFormStyle read GetFormStyle write SetFormStyle default fsNormal;
+    property Caption: String read GetCapt write SetCapt;
+    //end region
   end;
 
 implementation
 
 uses
-  uDCLCommand, uDCLValuesParser, uDCLMessages, uDCLGlobalVariables, IniFiles;
+  IniFiles,
+  uDCLCommand, uDCLValuesParser, uDCLMessages, uDCLGlobalVariables;
 
 { TDCLForm }
+
+procedure TDCLForm.SetWindowState(Value: TWindowState);
+begin
+  inherited WindowState:=Value;
+end;
+
+function TDCLForm.GetWindowState: TWindowState;
+begin
+  Result:=inherited WindowState;
+end;
+
+function TDCLForm.GetShowing: Boolean;
+begin
+  Result:=Self.Showing;
+end;
+
+function TDCLForm.GetCapt: String;
+begin
+  Result:=inherited Caption;
+end;
+
+procedure TDCLForm.SetCapt(Value: String);
+begin
+  inherited Caption:=Value;
+end;
+
+function TDCLForm.GetModalResult: TModalResult;
+begin
+  Result:=inherited ModalResult;
+end;
+
+procedure TDCLForm.SetModalResult(Value: TModalResult);
+begin
+  inherited ModalResult:=Value;
+end;
+
+function TDCLForm.GetFormStyle: TFormStyle;
+begin
+  Result:=inherited FormStyle;
+end;
+
+procedure TDCLForm.SetFormStyle(Value: TFormStyle);
+begin
+  inherited FormStyle:=Value;
+end;
+
+function TDCLForm.GetStackLevel: Integer;
+begin
+  Result:=FStackLevel;
+end;
+
+procedure TDCLForm.SetStackLevel(Value: Integer);
+begin
+  FStackLevel:=Value;
+end;
+
+function TDCLForm.GetIsSingle: Boolean;
+begin
+  Result:=FIsSingle;
+end;
+
+function TDCLForm.GetGrids: TList<IDCLGrid>;
+begin
+  Result:=FGrids;
+end;
+
+function TDCLForm.IsReject: Boolean;
+begin
+  Result:=FReject;
+end;
+
+function TDCLForm.GetUserLevel: TUserLevelsType;
+begin
+  Result:=FUserLevel;
+end;
+
+function TDCLForm.GetParentDialog: IDCLForm;
+begin
+  Result:=FParentForm;
+end;
 
 procedure TDCLForm.ToolButtonClick(Sender: TObject);
 begin
@@ -241,6 +355,16 @@ begin
   end;
 end;
 
+procedure TDCLForm.SetReturnValueParams(Value: TReturnValueParams);
+begin
+  FReturnValueParams:=Value;
+end;
+
+function TDCLForm.GetReturnValueParams: TReturnValueParams;
+begin
+  Result:=FReturnValueParams;
+end;
+
 procedure TDCLForm.ResetFieldsSettings(Sender: TObject);
 begin
   If ShowErrorMessage(10, GetDCLMessageString(msResetFieldsSettingsQ))=1 Then
@@ -283,6 +407,8 @@ begin
       Section:='Position';
       if Self.FormStyle=fsMDIChild then
         Section:=Section+'MDI';
+      if Assigned(FReturnValueParams) then
+        Section:=Section+'Choose';
 
       Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
       Self.Top:=Settings.ReadInteger(Section, 'Top', Self.Top);
@@ -297,13 +423,13 @@ end;
 
 procedure TDCLForm.OnFormClose(Sender: TObject; var CloseAction: TCloseAction);
 var
-  Grid: TDCLGrid;
-  F: TForm;
+  Grid: IDCLGrid;
+  F: IDCLForm;
 begin
   for F in FForms do
   begin
-    if (F as TDCLForm).ParentForm=Self then
-      F.Close;
+    if (F.ParentDialog as TDCLForm)=Self then
+      F.ForceClose;
   end;
 
   for Grid in FGrids do
@@ -336,6 +462,16 @@ begin
   FStatusBar.Panels[StatusRecords].Text:=Str;
 end;
 
+function TDCLForm.GetCurrentGrid: IDCLGrid;
+begin
+  Result:=FCurrentGrid;
+end;
+
+function TDCLForm.GetDialogName: String;
+begin
+  Result:=FDialogName;
+end;
+
 procedure TDCLForm.SetRecordsStatus(RecNo, RecordCount: LongInt);
 begin
   if RecordCount>0 then
@@ -344,15 +480,15 @@ begin
     SetRecordsStatus(IntToStr(RecNo));
 end;
 
-constructor TDCLForm.Create(IDCLMain: IDCLMain; DialogName, NameSpace: String; ParentForm: TDCLForm;
+constructor TDCLForm.Create(IDCLMain: IDCLMain; DialogName, NameSpace: String; ParentForm: IDCLForm;
   OPL: TStringList; UserLevel: TUserLevelsType;
-  Query: TDCLQuery; Data: TDataSource; RetValueProc: IGetValue;
+  Query: TDCLQuery; Data: TDataSource;
   ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False);
 var
   Command: TDCLCommand;
   SrcLine, tmpS, tmpS1: String;
-  ff: TForm;
-  g: TDCLGrid;
+  ff: IDCLForm;
+  g: IDCLGrid;
   OnTop: Boolean;
   FieldsCount: Integer;
   UserLevelLocal: TUserLevelsType;
@@ -370,7 +506,6 @@ begin
   FFirstPage:=True;
   FReturnValueParams:=ReturnValueParams;
   FParentForm:=ParentForm;
-  FRetValueProc:=RetValueProc;
   FUserLevel:=UserLevel;
   FCloseQuery:=False;
   CloseQueryText:='';
@@ -379,7 +514,7 @@ begin
   For ff in FForms do
   begin
     If Assigned(ff) Then
-      If (ff as TDCLForm).IsSingle and ((ff as TDCLForm).DialogName=DialogName) Then
+      If ff.IsSingle and (ff.DialogName=DialogName) Then
       begin
         FReject:=True;
         Exit;
@@ -390,7 +525,7 @@ begin
   For ff in FForms do
   begin
     If Assigned(ff) Then
-      If (ff as TDCLForm).FormStyle=fsStayOnTop Then
+      If ff.FormStyle=fsStayOnTop Then
       begin
         OnTop:=True;
         break;
@@ -400,7 +535,7 @@ begin
   FNameSpace:=NameSpace;
   FVariables:=FIDCLMain.GetVariables;
   FOPL:=OPL;
-  FGrids:=TList<TDCLGrid>.Create;
+  FGrids:=TList<IDCLGrid>.Create;
 
   Height:=DefaultFormHeight;
   Width:=DefaultFormWidth;
@@ -577,14 +712,20 @@ begin
 end;
 
 destructor TDCLForm.Destroy;
+var
+  i: Integer;
 begin
-  FRetValueProc:=nil;
+  if Assigned(FGrids) then
+  if FGrids.Count>0 then
+  for i:=0 to FGrids.Count-1 do
+    FGrids[i]:=nil;
+
   inherited Destroy;
 end;
 
 procedure TDCLForm.RefreshForm;
 var
-  Grid: TDCLGrid;
+  Grid: IDCLGrid;
 begin
   for Grid in FGrids do
   begin
@@ -596,7 +737,7 @@ procedure TDCLForm.OnActivateForm(Sender: TObject);
 var
   i: Integer;
   TB: TFormPanelButton;
-  ff: TForm;
+  ff: IDCLForm;
 begin
   If ShowFormPanel and Assigned(FormBar) Then
   begin
@@ -609,7 +750,7 @@ begin
           TB:=nil;
           for i:=1 to FormBar.ControlCount do
           begin
-            if FormBar.Controls[i-1].Owner=ff then
+            if FormBar.Controls[i-1].Owner=ff as TForm then
             begin
               TB:=FormBar.Controls[i-1] as TFormPanelButton;
               break;
@@ -618,7 +759,7 @@ begin
 
           If Assigned(TB) Then
           begin
-            If ff=Screen.ActiveForm Then
+            If Screen.ActiveForm=ff as TForm Then
             begin
               TB.ImageIndex:=ActiveDialogImage;
               TB.Font.Style:=[fsBold];
@@ -689,6 +830,12 @@ begin
   end;
 end;
 
+procedure TDCLForm.GetValueProc(Value: TReturnFormValue);
+begin
+  if Assigned(Self.ParentDialog) and Assigned(Value) then
+    FIDCLMain.GetValueProc(FNameSpace, Self.ParentDialog, Value);
+end;
+
 procedure TDCLForm.SetDBStatus(Str: String);
 begin
   FStatusBar.Panels[StatusDB].Text:=Str;
@@ -708,6 +855,8 @@ begin
     Section:='Position';
     if Self.FormStyle=fsMDIChild then
       Section:=Section+'MDI';
+    if Assigned(FReturnValueParams) then
+      Section:=Section+'Choose';
 
     Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
     Settings.WriteInteger(Section, 'Top', Self.Top);

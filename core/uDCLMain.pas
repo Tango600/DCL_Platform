@@ -8,9 +8,10 @@ uses
   Windows,
   {$ENDIF}
   Classes, SysUtils, Generics.Collections, Forms, ExtCtrls, LazFileUtils,
-  Controls,
-  uDCLDBAwareTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenu, uDCLNotifier,
-  uIDCLMain, uDCLConst, uDCLScriptsPackage, uDCLImages;
+  Controls, StdCtrls, DB,
+  uDCLDBAwareTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenuSelector, uDCLNotifier,
+  uIDCLMain, uIDCLForm, uIDCLGrid, uReturnFormValue, uDCLData, uDCLConst,
+  uDCLScriptsPackage, uDCLImages;
 
 type
 
@@ -19,10 +20,10 @@ type
   TDCLMain=class(TComponent, IDCLMain)
   private
     FMainForm: TForm;
-    FForms: TList<TForm>;
+    FForms: TList<IDCLForm>;
     FVariables: TVariables;
     FDBConnector: TDCLDBConnector;
-    FDCLMenu: TDCLMenu;
+    FDCLMenuSelector: TDCLMenuSelector;
     LocalQuery: TDCLSimlyQuery;
     FDCLNotifier: TDCLNotifier;
     FPackages: TList<TPackageInfo>;
@@ -31,7 +32,6 @@ type
     FImages: TImageList;
 
     function GetScriptText(ScriptName: String): TStringList;
-    procedure CloseForm(Form: TForm);
 
     procedure WriteBaseID;
     function ReadBaseID: String;
@@ -45,14 +45,14 @@ type
     constructor Create; overload;
     destructor Destroy; override;
 
-    procedure ReleaseForm(Form: TForm);
+    procedure ReleaseForm(Form: IDCLForm);
 
     procedure CloseAllDialogs;
 
     procedure Update;
 
     function GetVariables: TVariables;
-    function GetForms: TList<TForm>;
+    function GetForms: TList<IDCLForm>;
     function GetDBConnector: TDCLDBConnector;
 
     procedure CreateMenu(MainForm: TForm);
@@ -69,7 +69,15 @@ type
     function IsNeedLogin: Boolean;
 
     procedure NotifyForms(Action: TFormsNotifyAction);
-    procedure NotifyForm(Form: TForm; Action: TFormsNotifyAction);
+    procedure NotifyForm(Form: IDCLForm; Action: TFormsNotifyAction);
+
+    function CreateDialog(NameSpace, DialogName: String; NoContext: Boolean;
+      ParentForm: IDCLForm; Grid: IDCLGrid; UserLevel: TUserLevelsType;
+      ReturnValueParams: TReturnValueParams; Modal: Boolean): IDCLForm;
+    function CloseForm(Form: IDCLForm; Force: Boolean): IDCLForm;
+    function CloseDialog(var Form: IDCLForm; Force: Boolean): Boolean;
+    procedure GetValueProc(NameSpace: String; Form: IDCLForm; ReturnValue: TReturnFormValue);
+    function HasChildForm(Form: IDCLForm): Boolean;
 
     procedure LoadPackageFromFile(FileName: String; Run: Boolean);
     function CheckSigned(Package: TDCLScriptsPackage): Boolean;
@@ -80,7 +88,7 @@ type
     property DBConnector: TDCLDBConnector read FDBConnector;
     property Variables: TVariables read FVariables;
     property MainForm: TForm read FMainForm write FMainForm;
-    property Forms: TList<TForm> read FForms;
+    property Forms: TList<IDCLForm> read FForms;
     property ImageList: TImageList read FImages;
   end;
 
@@ -248,21 +256,21 @@ end;
 
 procedure TDCLMain.NotifyForms(Action: TFormsNotifyAction);
 var
-  F: TForm;
+  F: IDCLForm;
 begin
   for F in FForms do
   begin
-    NotifyForm(F as TDCLForm, Action);
+    NotifyForm(F, Action);
   end;
 end;
 
-procedure TDCLMain.NotifyForm(Form: TForm; Action: TFormsNotifyAction);
+procedure TDCLMain.NotifyForm(Form: IDCLForm; Action: TFormsNotifyAction);
 begin
   case Action of
   fnaMinimize: Form.WindowState:=wsMinimized;
   fnaMaximaze: Form.WindowState:=wsMaximized;
-  fnaRefresh: (Form as TDCLForm).RefreshForm;
-  fnaClose: Form.Close;
+  fnaRefresh: Form.RefreshForm;
+  fnaClose: Form.ForceClose;
   fnaHide: Form.Hide;
   fnaShow: begin
     if not Form.Showing then
@@ -272,15 +280,259 @@ begin
   end;
 end;
 
-procedure TDCLMain.CloseForm(Form: TForm);
+function TDCLMain.CreateDialog(NameSpace, DialogName: String; NoContext: Boolean;
+  ParentForm: IDCLForm; Grid: IDCLGrid; UserLevel: TUserLevelsType;
+  ReturnValueParams: TReturnValueParams; Modal: Boolean): IDCLForm;
+var
+  DCL: TStringList;
+  lForm, F: IDCLForm;
+  level: Integer;
 begin
-  Form.Close;
+  Result:=nil;
+  DCL:=GetScriptText(DialogName);
+  if DCL.Count>0 then
+  begin
+    if PosEx('script type=command', DCL[0])<>0 then
+      Exit;
+
+    if NoContext or not Assigned(Grid) then
+      lForm:=TDCLForm.Create(Self, DialogName, NameSpace, ParentForm, DCL,
+        UserLevel, nil, nil, ReturnValueParams, Modal)
+    else
+      lForm:=TDCLForm.Create(Self, DialogName, NameSpace, ParentForm, DCL,
+        UserLevel, Grid.Query, Grid.Data, ReturnValueParams, Modal);
+
+    if not lForm.Reject then
+    begin
+      level:=0;
+      for F in FForms do
+      begin
+        if level<F.StackLevel then
+        begin
+          level:=F.StackLevel;
+        end;
+      end;
+      lForm.StackLevel:=level+1;
+
+      FForms.Add(lForm);
+      Result:=lForm;
+    end
+    else
+    begin
+      lForm.Release;
+    end;
+  end;
+  FreeAndNil(DCL);
 end;
 
-procedure TDCLMain.ReleaseForm(Form: TForm);
+procedure TDCLMain.GetValueProc(NameSpace: String; Form: IDCLForm; ReturnValue: TReturnFormValue);
+var
+  ReturnValueItem: TGetValueItem;
+  Edit: TDCLEdit;
+  lDCLForm: IDCLForm;
+  lDCLGrid: IDCLGrid;
+  Command: TDCLCommand;
+begin
+  If Assigned(ReturnValue) and (ReturnValue.Values.Count>0) Then
+  begin
+    lDCLForm:=Form;
+    lDCLGrid:=lDCLForm.CurrentGrid;
+
+    Command:=TDCLCommand.Create(Self, Self, NameSpace, lDCLForm, lDCLGrid);
+    for ReturnValueItem in ReturnValue.Values do
+    begin
+      If FieldExists(lDCLForm.CurrentGrid.Query, ReturnValue.KeyModifyField) Then
+      begin
+        If lDCLForm.CurrentGrid.Query.Active then
+        begin
+          if lDCLForm.CurrentGrid.Query.CanModify then
+          begin
+            if not (lDCLForm.CurrentGrid.Query.State in dsEditModes) then
+              lDCLForm.CurrentGrid.Query.Edit;
+            lDCLForm.CurrentGrid.Query.FieldByName(ReturnValue.KeyModifyField).AsString:=ReturnValueItem.Key;
+          end;
+        end;
+      end;
+
+      If FieldExists(lDCLForm.CurrentGrid.Query, ReturnValue.ValueModifyField) Then
+      begin
+        If lDCLForm.CurrentGrid.Query.Active Then
+        begin
+          If lDCLForm.CurrentGrid.Query.CanModify Then
+          begin
+            if not (lDCLForm.CurrentGrid.Query.State in dsEditModes) then
+              lDCLForm.CurrentGrid.Query.Edit;
+            lDCLForm.CurrentGrid.Query.FieldByName(ReturnValue.ValueModifyField).AsString:=ReturnValueItem.Value;
+          end;
+        end;
+      end;
+
+      If ReturnValue.KeyEditName<>'' Then
+      begin
+        For Edit in lDCLForm.CurrentGrid.Edits do
+        begin
+          If DCLCompareString(ReturnValue.KeyEditName, Edit.Control.Name) Then
+          begin
+            (Edit.Control as TEdit).Text:=ReturnValueItem.Key;
+            break;
+          end;
+        end;
+      end;
+
+      If ReturnValue.ValueEditName<>'' Then
+      begin
+        For Edit in lDCLForm.CurrentGrid.Edits do
+        begin
+          If DCLCompareString(ReturnValue.ValueEditName, Edit.Control.Name) Then
+          begin
+            (Edit.Control as TEdit).Text:=ReturnValueItem.Value;
+            break;
+          end;
+        end;
+      end;
+
+      if ReturnValue.KeyVar<>'' then
+      begin
+        FVariables.NewVariableWithTest(Namespace, ReturnValue.KeyVar);
+        FVariables.Variables[Namespace, ReturnValue.KeyVar]:=ReturnValueItem.Key;
+      end;
+
+      if ReturnValue.ValueVar<>'' then
+      begin
+        FVariables.NewVariableWithTest(Namespace, ReturnValue.ValueVar);
+        FVariables.Variables[Namespace, ReturnValue.ValueVar]:=ReturnValueItem.Value;
+      end;
+
+      if ReturnValue.BatchScript<>'' then
+      begin
+        Command.RunCommandScript(ReturnValue.BatchScript);
+      end;
+    end;
+
+    if ReturnValue.FinishScript<>'' then
+    begin
+      Command.RunCommandScript(ReturnValue.FinishScript);
+    end;
+
+    FreeAndNil(Command);
+  end;
+end;
+
+function TDCLMain.HasChildForm(Form: IDCLForm): Boolean;
+var
+  F: IDCLForm;
+  G, G2: IDCLGrid;
+begin
+  Result:=False;
+  for F in FForms do
+  begin
+    if Form<>F then
+    for G in F.Grids do
+    begin
+      for G2 in Form.Grids do
+      begin
+        if G2.Data=G.Query.DataSource then
+        begin
+          Result:=True;
+          Exit;
+        end;
+      end;
+    end;
+  end;
+end;
+
+function TDCLMain.CloseForm(Form: IDCLForm; Force: Boolean): IDCLForm;
+var
+  level, l: Integer;
+  Parent, F, C: IDCLForm;
+  Cancel: Boolean;
+begin
+  Cancel:=False;
+  if Force then
+    Cancel:=HasChildForm(Form);
+
+  if Cancel then
+  begin
+    Result:=Form;
+  end
+  else
+  begin
+    Parent:=Form.ParentDialog;
+    if Assigned(Parent) then
+    begin
+      Result:=Parent
+    end
+    else
+    begin
+      level:=Form.StackLevel;
+      l:=0;
+      C:=nil;
+      for F in FForms do
+      begin
+        if F.StackLevel<level then
+        if l<F.StackLevel then
+        begin
+          l:=F.StackLevel;
+          C:=F;
+        end;
+      end;
+      Result:=C;
+    end;
+
+    if Force then
+      Form.ForceClose
+    else
+      Form.Close;
+  end;
+end;
+
+function TDCLMain.CloseDialog(var Form: IDCLForm; Force: Boolean): Boolean;
+var
+  NewForm: IDCLForm;
+  level, l: Integer;
+  Parent, F, C: IDCLForm;
+begin
+  Result:=True;
+  if Force then
+    Result:=not HasChildForm(Form);
+
+  if Result then
+  begin
+    Parent:=Form.ParentDialog;
+    if Assigned(Parent) then
+    begin
+      NewForm:=Parent
+    end
+    else
+    begin
+      level:=Form.StackLevel;
+      l:=0;
+      C:=nil;
+      for F in FForms do
+      begin
+        if F.StackLevel<level then
+        if l<F.StackLevel then
+        begin
+          l:=F.StackLevel;
+          C:=F;
+        end;
+      end;
+      NewForm:=C;
+    end;
+
+    if Force then
+      Form.ForceClose
+    else
+      Form.Close;
+
+    Form:=NewForm;
+  end;
+end;
+
+procedure TDCLMain.ReleaseForm(Form: IDCLForm);
 begin
   FForms.Remove(Form);
-  Form.Release;
+  (Form as TForm).Release;
 end;
 
 function TDCLMain.GetScriptText(ScriptName: String): TStringList;
@@ -364,7 +616,7 @@ end;
 
 function TDCLMain.TestGlobalParamsTable: Boolean;
 begin
-  Result:=FDBConnector.Connected and not TableExist(FDBConnector, GPTTableName);
+  Result:=FDBConnector.Connected and not TableExists(FDBConnector, GPTTableName);
 end;
 
 procedure TDCLMain.CreateImageList;
@@ -482,6 +734,7 @@ begin
   {$ELSE}
   GPT.IBAll:=False;
   {$ENDIF}
+  GPT.MenuType:=mtClassic;
   GPT.DebugMesseges:=False;
   GPT.OneCopy:=0;
   GPT.ExitCnf:=False;
@@ -505,7 +758,7 @@ begin
   InitGetAppConfigDir;
   FDCLConfig:=TDCLConfig.Create;
   FVariables:=TVariables.Create;
-  FForms:=TList<TForm>.Create;
+  FForms:=TList<IDCLForm>.Create;
 
   GPT.AccessLevel:=ulExecute;
 
@@ -589,20 +842,20 @@ end;
 destructor TDCLMain.Destroy;
 begin
   CloseAllDialogs;
-  if Assigned(FDCLMenu) then
-    FreeAndNil(FDCLMenu);
+  if Assigned(FDCLMenuSelector) then
+    FreeAndNil(FDCLMenuSelector);
   inherited Destroy;
 end;
 
 procedure TDCLMain.CloseAllDialogs;
 var
-  ff: TForm;
+  ff: IDCLForm;
 begin
   For ff in FForms do
   Begin
     If Assigned(ff) then
     begin
-      CloseForm(ff);
+      CloseForm(ff, True);
       ReleaseForm(ff);
     end;
   End;
@@ -624,7 +877,7 @@ begin
   Result:=FVariables;
 end;
 
-function TDCLMain.GetForms: TList<TForm>;
+function TDCLMain.GetForms: TList<IDCLForm>;
 begin
   Result:=FForms;
 end;
@@ -638,7 +891,7 @@ procedure TDCLMain.CreateMenu(MainForm: TForm);
 begin
   FMainForm:=MainForm;
 
-  FDCLMenu:=TDCLMenu.Create(Self, FMainForm);
+  FDCLMenuSelector:=TDCLMenuSelector.Create(Self, FMainForm);
 
   {$IFNDEF NODCLMESSAGES}
   If GPT.UseMessages then
@@ -647,11 +900,8 @@ begin
 end;
 
 procedure TDCLMain.OpenDialog(DialogName: String; Host: Boolean);
-var
-  Command: TDCLCommand;
 begin
-  Command:=TDCLCommand.Create(Self, Self, '', nil, nil);
-  Command.OpenDialog(DialogName);
+  CreateDialog('', DialogName, True, nil, nil, GPT.AccessLevel, nil, False);
 end;
 
 procedure TDCLMain.RunCommandScript(CommandName: String);

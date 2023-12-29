@@ -26,6 +26,7 @@ type
     OfficeDocumentFormat: TOfficeDocumentFormat;
     OfficeFormat: TOfficeFormat;
     AccessLevel: TUserLevelsType;
+    MenuType: TMenuType;
   end;
 
 implementation

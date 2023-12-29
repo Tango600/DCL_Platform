@@ -75,6 +75,10 @@ const
   StatusInfo=2;
   StatusCustom=3;
 
+  PanelMenuButtonWidth=200;
+
+  DropDownRows=30;
+
   ToolPanelName='FormBar';
 
   NewDialogImage=0;
