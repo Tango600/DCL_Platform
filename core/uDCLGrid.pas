@@ -2508,7 +2508,11 @@ begin
     Filter.NotCheck.Top:=FTop;
     Filter.NotCheck.Left:=FFilterLeft;
     Filter.NotCheck.Width:=Filter.Width;
-    Filter.NotCheck.Caption:=GetDCLMessageString(msNotFilter);
+    if Filter.Width>80 then
+      Filter.NotCheck.Caption:=GetDCLMessageString(msNotFilter)
+    else
+      Filter.NotCheck.Caption:=UTF8Copy(GetDCLMessageString(msNotFilter), 1, 3)+'.';
+
     Filter.NotCheck.OnClick:=OnFilterNotCheckClick;
     Inc(FTop, Filter.NotCheck.Height);
   end;
