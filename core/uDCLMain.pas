@@ -532,7 +532,7 @@ end;
 procedure TDCLMain.ReleaseForm(Form: IDCLForm);
 begin
   FForms.Remove(Form);
-  (Form as TForm).Release;
+  Form.Release;
 end;
 
 function TDCLMain.GetScriptText(ScriptName: String): TStringList;
@@ -809,6 +809,7 @@ begin
       ReadBaseID;
     end;
   end;
+  FreeAndNil(FDCLConfig);
 
   {$IFDEF MSWINDOWS}
   If GPT.OneCopy=2 Then
@@ -837,6 +838,11 @@ begin
 
   FormatSettings.ThousandSeparator:=GPT.ThousandSeparator;
   FormatSettings.DecimalSeparator:=GPT.DecimalSeparator;
+
+  {$IFNDEF NODCLMESSAGES}
+  If GPT.UseMessages then
+    FDCLNotifier:=TDCLNotifier.Create(Self);
+  {$ENDIF}
 end;
 
 destructor TDCLMain.Destroy;
@@ -890,13 +896,7 @@ end;
 procedure TDCLMain.CreateMenu(MainForm: TForm);
 begin
   FMainForm:=MainForm;
-
   FDCLMenuSelector:=TDCLMenuSelector.Create(Self, FMainForm);
-
-  {$IFNDEF NODCLMESSAGES}
-  If GPT.UseMessages then
-    FDCLNotifier:=TDCLNotifier.Create(Self);
-  {$ENDIF}
 end;
 
 procedure TDCLMain.OpenDialog(DialogName: String; Host: Boolean);

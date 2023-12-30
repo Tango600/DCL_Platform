@@ -24,9 +24,9 @@ var
   DCL: TDCLMain;
   TimeToTerm: Boolean;
 
-function FindFormCall: String;
+function FindDialogCall: String;
 begin
-  Result:=FindCommandStrParam('Form');
+  Result:=FindCommandStrParam('Dialog');
 end;
 
 function FindScriptName: String;
@@ -44,9 +44,9 @@ begin
   Result:=FindCommandStrParam('LoadPackage');
 end;
 
-function FindMainMenu: Boolean;
+function FindMainMenuDesabled: Boolean;
 begin
-  Result:=FindCommandStrParam('MainMenu')='1';
+  Result:=FindCommandStrParam('MainMenu')='0';
 end;
 
 function FindVariablesParams: String;
@@ -95,26 +95,20 @@ begin
   If S<>'' then
     DCL.LoadPackageFromFile(S, r);
 
-  DialogName:=FindFormCall;
-  if DialogName='' then
+  ScriptName:=FindScriptName;
+  if ScriptName<>'' then
   begin
-    ScriptName:=FindScriptName;
-    if ScriptName='' then
-    begin
-      DCL.CreateMenu(MainForm);
-    end
-    else
-    begin
-      DCL.RunCommandScript(ScriptName);
-    end;
-  end
-  Else
-  begin
-    if FindMainMenu then
-      DCL.CreateMenu(MainForm);
+    DCL.RunCommandScript(ScriptName);
+  end;
 
+  DialogName:=FindDialogCall;
+  if DialogName<>'' then
+  begin
     DCL.OpenDialog(DialogName, False);
   end;
+
+  if not FindMainMenuDesabled then
+    DCL.CreateMenu(MainForm);
 end;
 
 begin
