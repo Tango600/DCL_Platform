@@ -29,20 +29,24 @@ Function GetSimplyFieldType(Const FieldName: String; Query: TDCLDialogQuery): TS
 var
   tmpFieldName:string;
 Begin
+  Result:=sftNotDefine;
   tmpFieldName:=NormalizeFieldName(FieldName);
-  If Query.FieldByName(tmpFieldName).DataType in TStringTypedFields then
-    Result:=sftString
-  Else
-    If Query.FieldByName(tmpFieldName).DataType in TIntegerTypedFields then
-      Result:=sftDigit
+  if Query.Active and Assigned(Query.FindField(tmpFieldName)) then
+  begin
+    If Query.FieldByName(tmpFieldName).DataType in TStringTypedFields then
+      Result:=sftString
     Else
-      If Query.FieldByName(tmpFieldName).DataType in TFloatTypedFields then
-        Result:=sftFloat
+      If Query.FieldByName(tmpFieldName).DataType in TIntegerTypedFields then
+        Result:=sftDigit
       Else
-        If Query.FieldByName(tmpFieldName).DataType in TDateTimeTypedFields then
-          Result:=sftDateTime
+        If Query.FieldByName(tmpFieldName).DataType in TFloatTypedFields then
+          Result:=sftFloat
         Else
-          Result:=sftString;
+          If Query.FieldByName(tmpFieldName).DataType in TDateTimeTypedFields then
+            Result:=sftDateTime
+          Else
+            Result:=sftString;
+  end;
 End;
 
 Function GetSimplyFieldType(Const FieldType:TFieldType): TSimplyFieldType; overload;

@@ -189,7 +189,7 @@ begin
     Delim:=GetDelimiter(Filter.Field, Query);
     case Filter.FilterType of
       ftDBFilter, ftComboFilter: begin
-        if Filter.FilterString<>'-1' then
+        if Filter.FilterString<>IntToStr(FilterResetValue) then
         begin
           if Assigned(LastFilter) and LastFilter.Between then
           begin

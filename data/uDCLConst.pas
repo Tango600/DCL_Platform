@@ -98,6 +98,7 @@ const
   MaskPassChar='#';
   ParamDelim='"';
   TabSize=2;
+  FilterResetValue=-1;
 
   PAGSignatureSize=3;
   PAGSignature=$474150;

@@ -5,7 +5,7 @@ interface
 
 Uses
   Controls, ExtCtrls, StdCtrls, ComCtrls, Buttons, cMeDateEdit,
-  Forms;
+  Forms, DBCtrls, cMyDBLookupCombo;
 
 type
   TDialogButton=TBitBtn;
@@ -15,6 +15,8 @@ type
   TDCLButtonPanel=TScrollBox;
   TToolBarPanel=TToolBar;
   TDialogLabel=TLabel;
+  TDCLDBLookupCombo=TDBMyLookupCombo;
+  //TDCLDBLookupCombo=TDBLookupComboBox;
 
   TDialogSpeedButton=TSpeedButton;
   TFormPanelButton=TSpeedButton;

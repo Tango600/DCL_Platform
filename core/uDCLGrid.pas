@@ -337,7 +337,7 @@ type
 implementation
 
 uses
-  EditBtn, LCLProc, uRunProgram, uReturnFormValue,
+  EditBtn, LCLProc, uRunProgram, uReturnFormValue, cMyDBLookupCombo,
   uDCLCommand, uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, LazUTF8,
   uPrintBase, uDCLGlobalVariables, uDCLMD5, uExpressionParser;
 
@@ -2545,37 +2545,38 @@ begin
         ShowErrorMessage( - 1116, 'SQL='+Filter.SQL);
       end;
 
-      Filter.Control:=TDBLookupComboBox.Create(FFiltersPanel);
+      Filter.Control:=TDCLDBLookupCombo.Create(FFiltersPanel);
       Filter.Control.Parent:=FFiltersPanel;
-      (Filter.Control as TDBLookupComboBox).Style:=csDropDownList;
+      (Filter.Control as TDCLDBLookupCombo).Style:=csDropDownList;
       Filter.Control.Top:=FTop;
       Inc(FTop, Filter.Control.Height+CompenentTopStep);
 
       Filter.Control.Left:=FFilterLeft;
-      (Filter.Control as TDBLookupComboBox).ListField:=Filter.ListField;
-      (Filter.Control as TDBLookupComboBox).KeyField:=Filter.KeyField;
+      (Filter.Control as TDCLDBLookupCombo).ListField:=Filter.ListField;
+      (Filter.Control as TDCLDBLookupCombo).KeyField:=Filter.KeyField;
 
       If Filter.VarName<>'' Then
         FVariables.Variables[FNamespace, Filter.VarName]:=
-          TrimRight(Filter.FilterQuery.FieldByName((Filter.Control as TDBLookupComboBox).KeyField).AsString);
+          TrimRight(Filter.FilterQuery.FieldByName((Filter.Control as TDCLDBLookupCombo).KeyField).AsString);
 
-      (Filter.Control as TDBLookupComboBox).ListSource:=Filter.FilterData;
-      Filter.FilterKey:=(Filter.Control as TDBLookupComboBox).KeyField;
-      (Filter.Control as TDBLookupComboBox).ListField:=Filter.ListField+';'+Filter.KeyField;
+      (Filter.Control as TDCLDBLookupCombo).ListSource:=Filter.FilterData;
+      Filter.FilterKey:=(Filter.Control as TDCLDBLookupCombo).KeyField;
 
       Filter.Control.Width:=Filter.Width;
 
-  {$IFDEF FPC}
-      (Filter.Control as TDBLookupComboBox).OnSelect:=ExecFilter;
-  {$ELSE}
-      (Filter.Control as TDBLookupComboBox).OnClick:=ExecFilter;
-  {$ENDIF}
+      (Filter.Control as TDCLDBLookupCombo).OnSelect:=ExecFilter;
+
+      if TDCLDBLookupCombo=TDBMyLookupCombo then
+      begin
+        (Filter.Control as TDCLDBLookupCombo).FilterResetValue:=FilterResetValue;
+        (Filter.Control as TDCLDBLookupCombo).AddResetValue:=True;
+      end;
 
       If Filter.KeyValue<>'' Then
       begin
         try
-          (Filter.Control as TDBLookupComboBox).KeyValue:=Filter.KeyValue;
-          ExecFilter((Filter.Control as TDBLookupComboBox));
+          (Filter.Control as TDCLDBLookupCombo).KeyValue:=Filter.KeyValue;
+          ExecFilter((Filter.Control as TDCLDBLookupCombo));
         Except
           //
         end;
@@ -2583,7 +2584,7 @@ begin
       Else
       begin
         try
-          (Filter.Control as TDBLookupComboBox).KeyValue:='-1';
+          (Filter.Control as TDCLDBLookupCombo).KeyValue:=FilterResetValue;
         Except
           //
         end;
@@ -3272,7 +3273,7 @@ begin
   begin
     case Filter.FilterType of
     ftDBFilter: begin
-      Filter.FilterString:=TrimRight((Sender as TDBLookupComboBox).KeyValue);
+      Filter.FilterString:=TrimRight((Sender as TDCLDBLookupCombo).KeyValue);
     end;
     ftComboFilter: begin
       cbx:=Sender as TComboBox;
