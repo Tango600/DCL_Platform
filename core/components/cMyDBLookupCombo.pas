@@ -9,7 +9,6 @@ uses
 
 type
   TDBLookupItem = class
-  public
     Key, Value: Variant;
   end;
 
@@ -33,7 +32,7 @@ type
     function GetKeyValue: Variant;
     procedure SetKeyValue(Value: Variant);
     function GetStyle: TComboBoxStyle;
-    procedure SetStyle(Value: TComboBoxStyle);
+    procedure SetStyle(Value: TComboBoxStyle); override;
     function GetAddResetValue: Boolean;
     procedure SetAddResetValue(Value: Boolean);
   public
@@ -58,8 +57,26 @@ uses
 
 procedure TDBMyLookupCombo.KeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
+var
+  i: TDBLookupItem;
 begin
   FilterItems(Self.Text);
+  if (Self.Text='') and not VarIsEmpty(FResetValue) then
+  begin
+    for i in FShadowItems do
+    begin
+      if i.Key=FResetValue then
+      begin
+        FValueObject:=i;
+        Text:=i.Value;
+        FilterItems('');
+        if Assigned(OnSelect) then
+          OnSelect(Self);
+
+        Exit;
+      end;
+    end;
+  end;
 end;
 
 procedure TDBMyLookupCombo.UpdateItems;
@@ -231,7 +248,7 @@ constructor TDBMyLookupCombo.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
   FShadowItems:=TFPGObjectList<TDBLookupItem>.Create;
-  inherited OnKeyUp:=KeyUp;
+  OnKeyUp:=KeyUp;
 end;
 
 destructor TDBMyLookupCombo.Destroy;
