@@ -4,9 +4,9 @@
 interface
 
 uses
-  Classes, SysUtils, Forms, DB, Generics.Collections,
-  Controls, ComCtrls, Graphics, Menus,
-  uDCLData, uDCLTypes, uDCLConst, uDCLGrid, uStringParams, uDCLQuery, uIDCLMain,
+  Classes, SysUtils, Forms, DB, Generics.Collections, Controls, ComCtrls,
+  Graphics, Menus,
+  uDCLData, uDCLTypes, uDCLConst, uStringParams, uDCLQuery, uIDCLMain,
   uDCLMeasurements, uDCLDBConnector, uDCLUtils, uDCLVariables, uDCLMultiLang,
   uReturnFormValue, uIDCLForm, uIDCLGrid, uDCLImages;
 
@@ -21,7 +21,6 @@ type
     FDBConnector: TDCLDBConnector;
     FNameSpace, FDialogName, CloseQueryText: String;
     FVariables: TVariables;
-    FForms: TList<IDCLForm>;
     FParentForm: IDCLForm;
     FOPL: TStringList;
     FormBar: TToolBar;
@@ -66,8 +65,8 @@ type
     procedure PageChange(Sender: TObject);
 
     procedure AddMainPage(Query: TDCLQuery; Data: TDataSource);
-    function AddGrid(ParentControl: TWinControl; SurfType: TDataControlType; Query: TDCLQuery;
-      Data: TDataSource): TDCLGrid;
+    function AddGrid(ParentControl: TWinControl; SurfType: TDataControlType;
+      Query: TDCLQuery; Data: TDataSource): IDCLGrid;
 
     procedure AddMainItem(Caption: String; Action: TNotifyEvent);
     procedure AddSubItem(Caption: String; Pict: TPicturesTypes; Action: TNotifyEvent);
@@ -135,7 +134,7 @@ implementation
 
 uses
   IniFiles,
-  uDCLCommand, uDCLValuesParser, uDCLMessages, uDCLGlobalVariables;
+  uDCLGrid, uDCLCommand, uDCLValuesParser, uDCLMessages, uDCLGlobalVariables;
 
 { TDCLForm }
 
@@ -286,9 +285,9 @@ begin
 end;
 
 function TDCLForm.AddGrid(ParentControl: TWinControl; SurfType: TDataControlType;
-  Query: TDCLQuery; Data: TDataSource): TDCLGrid;
+  Query: TDCLQuery; Data: TDataSource): IDCLGrid;
 var
-  grid: TDCLGrid;
+  grid: IDCLGrid;
 begin
   grid:=TDCLGrid.Create(FIDCLMain, FNameSpace, Self, ParentControl, SurfType, Query, Data);
   FGrids.Add(grid);
@@ -426,7 +425,7 @@ var
   Grid: IDCLGrid;
   F: IDCLForm;
 begin
-  for F in FForms do
+  for F in FIDCLMain.GetForms do
   begin
     if (F.ParentDialog as TDCLForm)=Self then
       F.ForceClose;
@@ -500,7 +499,6 @@ begin
   Self.OnShow:=FormShow;
   Self.OnClose:=OnFormClose;
   Self.OnCloseQuery:=OnFormCloseQuery;
-  FForms:=FIDCLMain.GetForms;
   FDialogName:=DialogName;
   FDBConnector:=FIDCLMain.GetDBConnector;
   FFirstPage:=True;
@@ -511,7 +509,7 @@ begin
   CloseQueryText:='';
 
   FReject:=False;
-  For ff in FForms do
+  For ff in FIDCLMain.GetForms do
   begin
     If Assigned(ff) Then
       If ff.IsSingle and (ff.DialogName=DialogName) Then
@@ -522,7 +520,7 @@ begin
       end;
   end;
 
-  For ff in FForms do
+  For ff in FIDCLMain.GetForms do
   begin
     If Assigned(ff) Then
       If ff.FormStyle=fsStayOnTop Then
@@ -712,15 +710,9 @@ begin
 end;
 
 destructor TDCLForm.Destroy;
-var
-  i: Integer;
 begin
-  if Assigned(FGrids) then
-  if FGrids.Count>0 then
-  for i:=0 to FGrids.Count-1 do
-    FGrids[i]:=nil;
-
   inherited Destroy;
+  FreeAndNil(FGrids);
 end;
 
 procedure TDCLForm.RefreshForm;
@@ -743,7 +735,7 @@ begin
   begin
     if FormBar.ControlCount>0 then
     begin
-      For ff in FForms do
+      For ff in FIDCLMain.GetForms do
       begin
         If Assigned(ff) Then
         begin

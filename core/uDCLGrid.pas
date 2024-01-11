@@ -4140,9 +4140,9 @@ begin
   Self.Parent:=ParentControl;
   FIDCLMain:=IDCLMain;
 
-  FMainPanel:=TPanel.Create(Self);  // Parent);
-  FMainPanel.Parent:=ParentControl;  // Parent;
-  FMainPanel.Align:=alClient;      //
+  FMainPanel:=TPanel.Create(Self);
+  FMainPanel.Parent:=ParentControl;
+  FMainPanel.Align:=alClient;
 
   FForm:=Form;
   FForms:=IDCLMain.GetForms;
