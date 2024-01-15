@@ -44,10 +44,6 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="uDCLGlobalVariables.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
         <Filename Value="libraries\FileBuffer.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
@@ -356,6 +352,10 @@
       </Unit>
       <Unit>
         <Filename Value="core\interfaces\uIDCLCommand.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="data\uDCLGlobalVariables.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
     </Units>

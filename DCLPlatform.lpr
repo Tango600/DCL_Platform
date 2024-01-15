@@ -11,9 +11,9 @@ uses
   {$IFDEF FPC}
   Interfaces, lcltype,
   {$ENDIF}
-  Classes, Forms, Controls, SysUtils, uDCLMain, uDCLBaseMenu, uDCLMenuSelector,
+  Classes, Forms, Controls, SysUtils, uIDCLMain, uDCLBaseMenu, uDCLMenuSelector,
   uDCLMenuPanels, uDCLMenuClassic, uIDCLForm, uIDCLGrid, uSystemUtils,
-  uStringParams, fMain, fDCLLoginForm, fAbout, uIDCLCommand
+  uStringParams, fMain, fDCLLoginForm, fAbout, uDCLMain
   ;
 
 {$R *.res}
@@ -21,7 +21,7 @@ uses
 var
   MainForm: TMainForm;
   LoginForm: TLoginForm;
-  DCL: TDCLMain;
+  DCL: IDCLMain;
   TimeToTerm: Boolean;
 
 function FindDialogCall: String;
@@ -77,7 +77,7 @@ begin
           v:=Copy(S, p+1, Length(S));
 
           if vn<>'' then
-            DCL.Variables.NewVariable('', Trim(vn), v);
+            DCL.GetVariables.NewVariable('', Trim(vn), v);
         end;
       end;
     end;
@@ -123,7 +123,7 @@ begin
   DCL:=TDCLMain.Create;
   if DCL.IsNeedLogin or KeyState(vk_Shift) then
   begin
-    LoginForm:=TLoginForm.Create(DCL.DBConnector);
+    LoginForm:=TLoginForm.Create(DCL.GetDBConnector);
 
     if LoginForm.ShowModal=mrOK then
     begin

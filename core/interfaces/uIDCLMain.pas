@@ -13,6 +13,7 @@ type
     function GetForms: TList<IDCLForm>;
     procedure CloseAllDialogs;
     procedure CreateMenu(MainForm: TForm);
+    function IsNeedLogin: Boolean;
 
     function GetVariables: TVariables;
 
@@ -32,6 +33,8 @@ type
     function CloseDialog(var Form: IDCLForm; Force: Boolean): Boolean;
     procedure ReleaseForm(const Form: IDCLForm);
     procedure GetValueProc(NameSpace: String; Form: IDCLForm; ReturnValue: TReturnFormValue);
+
+    procedure Update;
 
     procedure About;
     procedure ExitApp;
