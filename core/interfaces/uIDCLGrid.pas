@@ -63,6 +63,7 @@ type
     procedure SetFlatNavigator(Value: Boolean);
     function GetSelectedRows: TBookmarkList;
     procedure Show;
+    function GetComponent: TWinControl;
 
     property Query: TDCLQuery read GetQuery;
     property Data: TDataSource read GetData;

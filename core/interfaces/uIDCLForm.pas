@@ -11,6 +11,7 @@ type
   IDCLForm=interface
     procedure ForceClose;
     procedure RefreshForm;
+    function GetForm: TForm;
 
     procedure SetRecordsStatus(RecNo, RecordCount: LongInt); overload;
     procedure SetDBStatus(Str: String);
@@ -62,7 +63,6 @@ type
     procedure ShowOnTop;
     function ShowModal: Integer;
     procedure SetFocus; override;
-    procedure Release;
     procedure Close;
 
     property WindowState: TWindowState read GetWindowState write SetWindowState default wsNormal;

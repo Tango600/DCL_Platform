@@ -8,14 +8,15 @@ uses
   Graphics, Menus,
   uDCLData, uDCLTypes, uDCLConst, uStringParams, uDCLQuery, uIDCLMain,
   uDCLMeasurements, uDCLDBConnector, uDCLUtils, uDCLVariables, uDCLMultiLang,
-  uReturnFormValue, uIDCLForm, uIDCLGrid, uDCLImages;
+  uIDCLCommand, uReturnFormValue, uIDCLForm, uIDCLGrid, uDCLImages;
 
 type
 
   { TDCLForm }
 
-  TDCLForm=class(TForm, IDCLForm)
+  TDCLForm=class(TInterfacedObject, IDCLForm)
   private
+    FForm: TForm;
     FReject, FFirstPage, FormCanClose, FCloseQuery: Boolean;
     FIDCLMain: IDCLMain;
     FDBConnector: TDCLDBConnector;
@@ -64,9 +65,9 @@ type
 
     procedure PageChange(Sender: TObject);
 
-    procedure AddMainPage(Query: TDCLQuery; Data: TDataSource);
-    function AddGrid(ParentControl: TWinControl; SurfType: TDataControlType;
-      Query: TDCLQuery; Data: TDataSource): IDCLGrid;
+    procedure AddMainPage(const Query: TDCLQuery; const Data: TDataSource);
+    function AddGrid(const ParentControl: TWinControl; SurfType: TDataControlType;
+      const Query: TDCLQuery; const Data: TDataSource): IDCLGrid;
 
     procedure AddMainItem(Caption: String; Action: TNotifyEvent);
     procedure AddSubItem(Caption: String; Pict: TPicturesTypes; Action: TNotifyEvent);
@@ -92,11 +93,13 @@ type
     function GetDialogName: String;
     procedure SaveFormPos;
   public
-    constructor Create(IDCLMain: IDCLMain; DialogName, NameSpace: String; ParentForm: IDCLForm;
+    constructor Create(const IDCLMain: IDCLMain; DialogName, NameSpace: String; const ParentForm: IDCLForm;
       OPL: TStringList; UserLevel: TUserLevelsType;
-      Query: TDCLQuery; Data: TDataSource;
+      const Query: TDCLQuery; const Data: TDataSource;
       ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False); overload;
     destructor Destroy; override;
+
+    function GetForm: TForm;
 
     procedure ForceClose;
     procedure RefreshForm;
@@ -123,6 +126,13 @@ type
     property StackLevel: Integer read GetStackLevel write SetStackLevel;
   public
     //region TForm
+    procedure Hide;
+    procedure Show;
+    procedure ShowOnTop;
+    function ShowModal: Integer;
+    procedure SetFocus;
+    procedure Close;
+
     property WindowState: TWindowState read GetWindowState write SetWindowState
                                    default wsNormal;
     property FormStyle: TFormStyle read GetFormStyle write SetFormStyle default fsNormal;
@@ -134,53 +144,53 @@ implementation
 
 uses
   IniFiles,
-  uDCLGrid, uDCLCommand, uDCLValuesParser, uDCLMessages, uDCLGlobalVariables;
+  uDCLCommand, uDCLGrid, uDCLValuesParser, uDCLMessages, uDCLGlobalVariables;
 
 { TDCLForm }
 
 procedure TDCLForm.SetWindowState(Value: TWindowState);
 begin
-  inherited WindowState:=Value;
+  FForm.WindowState:=Value;
 end;
 
 function TDCLForm.GetWindowState: TWindowState;
 begin
-  Result:=inherited WindowState;
+  Result:=FForm.WindowState;
 end;
 
 function TDCLForm.GetShowing: Boolean;
 begin
-  Result:=Self.Showing;
+  Result:=FForm.Showing;
 end;
 
 function TDCLForm.GetCapt: String;
 begin
-  Result:=inherited Caption;
+  Result:=FForm.Caption;
 end;
 
 procedure TDCLForm.SetCapt(Value: String);
 begin
-  inherited Caption:=Value;
+  FForm.Caption:=Value;
 end;
 
 function TDCLForm.GetModalResult: TModalResult;
 begin
-  Result:=inherited ModalResult;
+  Result:=FForm.ModalResult;
 end;
 
 procedure TDCLForm.SetModalResult(Value: TModalResult);
 begin
-  inherited ModalResult:=Value;
+  FForm.ModalResult:=Value;
 end;
 
 function TDCLForm.GetFormStyle: TFormStyle;
 begin
-  Result:=inherited FormStyle;
+  Result:=FForm.FormStyle;
 end;
 
 procedure TDCLForm.SetFormStyle(Value: TFormStyle);
 begin
-  inherited FormStyle:=Value;
+  FForm.FormStyle:=Value;
 end;
 
 function TDCLForm.GetStackLevel: Integer;
@@ -223,7 +233,7 @@ begin
   If WindowState=wsMinimized Then
     WindowState:=wsNormal;
   Show;
-  BringToFront;
+  FForm.BringToFront;
 end;
 
 procedure TDCLForm.PageChange(Sender: TObject);
@@ -240,24 +250,24 @@ begin
       for i:=1 to tab.ControlCount do
       begin
         c:=tab.Controls[i-1];
-        if c is TDCLGrid then
+        {if c is TDCLGrid then
         begin
           FCurrentGrid:=c as TDCLGrid;
           break;
-        end;
+        end;}
       end;
     end;
   end;
 end;
 
-procedure TDCLForm.AddMainPage(Query: TDCLQuery; Data: TDataSource);
+procedure TDCLForm.AddMainPage(const Query: TDCLQuery; const Data: TDataSource);
 var
   pc: Integer;
 begin
   If Not Assigned(FPages) Then
   begin
-    FPages:=TPageControl.Create(Self);
-    FPages.Parent:=Self;
+    FPages:=TPageControl.Create(FForm);
+    FPages.Parent:=FForm;
     FPages.Name:='Pages_'+FDialogName;
     FPages.Align:=alClient;
     FPages.OnChange:=PageChange;
@@ -273,7 +283,7 @@ begin
   FTab.Parent:=FPages;
   FTab.Caption:=GetDCLMessageString(msPage)+' '+IntToStr(pc+1);
   FTab.Name:='Page_'+IntToStr(pc+1);
-  FTab.PageControl:=FPages;
+  //FTab.PageControl:=FPages;
 
   FPages.ActivePage.Align:=alClient;
   FParentPanel:=FTab.PageControl.Pages[pc];
@@ -284,8 +294,8 @@ begin
   FPages.ActivePageIndex:=pc;
 end;
 
-function TDCLForm.AddGrid(ParentControl: TWinControl; SurfType: TDataControlType;
-  Query: TDCLQuery; Data: TDataSource): IDCLGrid;
+function TDCLForm.AddGrid(const ParentControl: TWinControl; SurfType: TDataControlType;
+  const Query: TDCLQuery; const Data: TDataSource): IDCLGrid;
 var
   grid: IDCLGrid;
 begin
@@ -410,11 +420,10 @@ begin
         Section:=Section+'Choose';
 
       Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
-      Self.Top:=Settings.ReadInteger(Section, 'Top', Self.Top);
-      Self.Left:=Settings.ReadInteger(Section, 'Left', Self.Left);
-      Self.Height:=Settings.ReadInteger(Section, 'Height', Self.Height);
-      Self.Width:=Settings.ReadInteger(Section, 'Width', Self.Width);
-
+      FForm.Top:=Settings.ReadInteger(Section, 'Top', FForm.Top);
+      FForm.Left:=Settings.ReadInteger(Section, 'Left', FForm.Left);
+      FForm.Height:=Settings.ReadInteger(Section, 'Height', FForm.Height);
+      FForm.Width:=Settings.ReadInteger(Section, 'Width', FForm.Width);
       FreeAndNil(Settings);
     end;
   end;
@@ -479,12 +488,12 @@ begin
     SetRecordsStatus(IntToStr(RecNo));
 end;
 
-constructor TDCLForm.Create(IDCLMain: IDCLMain; DialogName, NameSpace: String; ParentForm: IDCLForm;
+constructor TDCLForm.Create(const IDCLMain: IDCLMain; DialogName, NameSpace: String; const ParentForm: IDCLForm;
   OPL: TStringList; UserLevel: TUserLevelsType;
-  Query: TDCLQuery; Data: TDataSource;
+  const Query: TDCLQuery; const Data: TDataSource;
   ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False);
 var
-  Command: TDCLCommand;
+  Command: IDCLCommand;
   SrcLine, tmpS, tmpS1: String;
   ff: IDCLForm;
   g: IDCLGrid;
@@ -492,13 +501,14 @@ var
   FieldsCount: Integer;
   UserLevelLocal: TUserLevelsType;
 begin
-  inherited Create(Application);
+  inherited Create;
   FIDCLMain:=IDCLMain;
-  FormCanClose:=True;
-  Self.OnActivate:=OnActivateForm;
-  Self.OnShow:=FormShow;
-  Self.OnClose:=OnFormClose;
-  Self.OnCloseQuery:=OnFormCloseQuery;
+
+  FForm:=TForm.Create(Application);
+  FForm.OnActivate:=OnActivateForm;
+  FForm.OnShow:=FormShow;
+  FForm.OnClose:=OnFormClose;
+  FForm.OnCloseQuery:=OnFormCloseQuery;
   FDialogName:=DialogName;
   FDBConnector:=FIDCLMain.GetDBConnector;
   FFirstPage:=True;
@@ -507,6 +517,7 @@ begin
   FUserLevel:=UserLevel;
   FCloseQuery:=False;
   CloseQueryText:='';
+  FormCanClose:=True;
 
   FReject:=False;
   For ff in FIDCLMain.GetForms do
@@ -535,9 +546,9 @@ begin
   FOPL:=OPL;
   FGrids:=TList<IDCLGrid>.Create;
 
-  Height:=DefaultFormHeight;
-  Width:=DefaultFormWidth;
-  Position:=poScreenCenter;
+  FForm.Height:=DefaultFormHeight;
+  FForm.Width:=DefaultFormWidth;
+  FForm.Position:=poScreenCenter;
   FIsSingle:=False;
 
   {$IFNDEF EMBEDDED}
@@ -546,7 +557,7 @@ begin
       FormStyle:=fsMDIChild;
   {$ENDIF}
 
-  FFormMenu:=TMainMenu.Create(Self);
+  FFormMenu:=TMainMenu.Create(FForm);
   FFormMenu.Images:=FIDCLMain.GetImageList;
 
   AddMainItem(InitCap(GetDCLMessageString(msSettings)), nil);
@@ -560,7 +571,7 @@ begin
     FormBar:=Application.MainForm.FindComponent(ToolPanelName) as TToolBar;
     if Assigned(FormBar) then
     begin
-      TB:=TFormPanelButton.Create(Self);
+      TB:=TFormPanelButton.Create(FForm);
       TB.Parent:=FormBar;
       TB.Images:=FormBar.Images;
       TB.Alignment:=taLeftJustify;
@@ -568,7 +579,7 @@ begin
       TB.OnClick:=ToolButtonClick;
       TB.Constraints.MinWidth:=100;
       TB.Constraints.MaxWidth:=FormPanelButtonWidth;
-      TB.Tag:=Tag;
+      TB.Tag:=FForm.Tag;
       TB.Margin:=PanelButtonTextRight;
       TB.ImageIndex:=NewDialogImage;
       TB.Font.Style:=[fsItalic];
@@ -576,9 +587,9 @@ begin
     end;
   end;
 
-  FStatusBar:=TStatusBar.Create(Self);
+  FStatusBar:=TStatusBar.Create(FForm);
   FStatusBar.SimplePanel:=False;
-  FStatusBar.Parent:=Self;
+  FStatusBar.Parent:=FForm;
   FStatusBar.Panels.Add;
   FStatusBar.Panels.Add;
   FStatusBar.Panels.Add;
@@ -589,11 +600,11 @@ begin
 
   if Assigned(OPL) then
   begin
-    Command:=TDCLCommand.Create(Self, FIDCLMain, FNameSpace, Self, FCurrentGrid);
+    Command:=TDCLCommand.Create(FIDCLMain, FNameSpace, Self, FCurrentGrid);
     if Assigned(ReturnValueParams) and ReturnValueParams.Multiselect then
       FCurrentGrid.MultiSelect:=True;
 
-    Show;
+    ///Show;
     for SrcLine in OPL do
     begin
       if Pos('//', SrcLine.Trim)=1 then
@@ -695,8 +706,8 @@ begin
   end;
   if FieldsCount>0 then
   begin
-    Self.Height:=(56*8)+110;
-    Self.Width:=((FieldsCount div 8)+1)*280;
+    FForm.Height:=(56*8)+110;
+    FForm.Width:=((FieldsCount div 8)+1)*280;
   end;
 
   {$IFNDEF NOONTOP}
@@ -705,14 +716,29 @@ begin
   {$ENDIF}
   if not Assigned(FReturnValueParams) and not Modal then
   begin
-    Self.Show;
+    Show;
   end;
 end;
 
 destructor TDCLForm.Destroy;
+var
+  i: Integer;
 begin
-  inherited Destroy;
+  for i:=1 to FGrids.Count do
+  begin
+    FGrids[i-1]:=nil;
+  end;
   FreeAndNil(FGrids);
+  FParentForm:=nil;
+  FParentPanel:=nil;
+  FCurrentGrid:=nil;
+  FForm.Release;
+  inherited Destroy;
+end;
+
+function TDCLForm.GetForm: TForm;
+begin
+  Result:=FForm;
 end;
 
 procedure TDCLForm.RefreshForm;
@@ -742,7 +768,7 @@ begin
           TB:=nil;
           for i:=1 to FormBar.ControlCount do
           begin
-            if FormBar.Controls[i-1].Owner=ff as TForm then
+            if FormBar.Controls[i-1].Owner=ff.GetForm then
             begin
               TB:=FormBar.Controls[i-1] as TFormPanelButton;
               break;
@@ -751,7 +777,7 @@ begin
 
           If Assigned(TB) Then
           begin
-            If Screen.ActiveForm=ff as TForm Then
+            If Screen.ActiveForm=ff.GetForm Then
             begin
               TB.ImageIndex:=ActiveDialogImage;
               TB.Font.Style:=[fsBold];
@@ -828,6 +854,36 @@ begin
     FIDCLMain.GetValueProc(FNameSpace, Self.ParentDialog, Value);
 end;
 
+procedure TDCLForm.Hide;
+begin
+  FForm.Hide;
+end;
+
+procedure TDCLForm.Show;
+begin
+  FForm.Show;
+end;
+
+procedure TDCLForm.ShowOnTop;
+begin
+  FForm.ShowOnTop;
+end;
+
+function TDCLForm.ShowModal: Integer;
+begin
+  Result:=FForm.ShowModal;
+end;
+
+procedure TDCLForm.SetFocus;
+begin
+  FForm.SetFocus;
+end;
+
+procedure TDCLForm.Close;
+begin
+  FForm.Release;
+end;
+
 procedure TDCLForm.SetDBStatus(Str: String);
 begin
   FStatusBar.Panels[StatusDB].Text:=Str;
@@ -851,11 +907,10 @@ begin
       Section:=Section+'Choose';
 
     Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
-    Settings.WriteInteger(Section, 'Top', Self.Top);
-    Settings.WriteInteger(Section, 'Left', Self.Left);
-    Settings.WriteInteger(Section, 'Height', Self.Height);
-    Settings.WriteInteger(Section, 'Width', Self.Width);
-
+    Settings.WriteInteger(Section, 'Top', FForm.Top);
+    Settings.WriteInteger(Section, 'Left', FForm.Left);
+    Settings.WriteInteger(Section, 'Height', FForm.Height);
+    Settings.WriteInteger(Section, 'Width', FForm.Width);
     FreeAndNil(Settings);
   end;
 end;

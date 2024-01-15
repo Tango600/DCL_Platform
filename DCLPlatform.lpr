@@ -13,7 +13,7 @@ uses
   {$ENDIF}
   Classes, Forms, Controls, SysUtils, uDCLMain, uDCLBaseMenu, uDCLMenuSelector,
   uDCLMenuPanels, uDCLMenuClassic, uIDCLForm, uIDCLGrid, uSystemUtils,
-  uStringParams, fMain, fDCLLoginForm, fAbout
+  uStringParams, fMain, fDCLLoginForm, fAbout, uIDCLCommand
   ;
 
 {$R *.res}
@@ -145,6 +145,6 @@ begin
     Application.Run;
   end;
 
-  FreeAndNil(DCL);
+  DCL:=nil;
 end.
 

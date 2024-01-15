@@ -14,7 +14,7 @@ uses
   uDCLDBConnector, uDCLQuery, uDCLMeasurements, uDBUtils, uDCLMultiLang,
   uDCLCommandButton, uDCLField, uDCLMessages, uDCLImages, cMediaFieldGroup,
   uDCLBaseLayoutManger, uDCLHorizontalFieldLayoutManger, uDCLDBAwareTypes,
-  uIDCLGrid, uIDCLForm, uDCLVerticalFieldLayoutManger;
+  uIDCLCommand, uIDCLGrid, uIDCLForm, uDCLVerticalFieldLayoutManger;
 
 type
   TStructureField=class
@@ -28,9 +28,11 @@ type
 
   { TDCLGrid }
 
-  TDCLGrid=class(TWinControl, IDCLGrid)
+  TDCLGrid=class(TInterfacedObject, IDCLGrid)
   private
     FIDCLMain: IDCLMain;
+    FParentControl: TWinControl;
+    FBasePanel: TPanel;
     FNameSpace, FDependField, FMasterDataField, FMasterValueVariableName,
       FSummFieldsSet, FNavigButtonsExpr, FSeed, FDialogName: String;
     FForms: TList<IDCLForm>;
@@ -92,7 +94,7 @@ type
 
     Function GetUserLevel: TUserLevelsType;
 
-    procedure ParseButton(ScrLine: String; Grid: IDCLGrid);
+    procedure ParseButton(ScrLine: String; const Grid: IDCLGrid);
 
     function FindDCLFieldByName(FieldName: String): TDCLField;
     function GetFieldsCount: Integer;
@@ -112,7 +114,7 @@ type
     procedure UpdateAllControls;
 
     procedure SetQueryEvents(Query: TDCLQuery);
-    procedure ParseEvents(ScrStr: String; Grid: IDCLGrid);
+    procedure ParseEvents(ScrStr: String; const Grid: IDCLGrid);
     procedure ExecEvents(EventType: TEventsEnum);
 
     // DataEvents
@@ -206,9 +208,9 @@ type
     procedure AddDateBox(Field: TDCLField; Scr: String);
     procedure OnChangeDateBox(Sender: TObject);
 
-    procedure ParseDBFilter(ScrLine: String; Grid: TDCLGrid);
-    procedure ParseContextFilter(ScrLine: String; Grid: TDCLGrid);
-    procedure ParseComboFilter(ScrLine: String; Grid: TDCLGrid);
+    procedure ParseDBFilter(ScrLine: String; const Grid: TDCLGrid);
+    procedure ParseContextFilter(ScrLine: String; const Grid: TDCLGrid);
+    procedure ParseComboFilter(ScrLine: String; const Grid: TDCLGrid);
     procedure OnFilterNotCheckClick(Sender: TObject);
     procedure ExecFilter(Sender: TObject);
     procedure OnContextFilter(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -269,12 +271,14 @@ type
     procedure Cut;
     procedure Paste;
   public
-    constructor Create(IDCLMain: IDCLMain; NameSpace: String; Form: IDCLForm; ParentControl: TWinControl;
-      SurfType: TDataControlType; Query: TDCLQuery; Data: TDataSource); overload;
+    constructor Create(const IDCLMain: IDCLMain; NameSpace: String; const Form: IDCLForm; const ParentControl: TWinControl;
+      SurfType: TDataControlType; const Query: TDCLQuery; const Data: TDataSource); overload;
     destructor Destroy; override;
 
     procedure AddField(Field: TDCLField);
 
+    function GetComponent: TWinControl;
+    procedure Show;
     procedure Open;
     procedure Close;
     procedure CloseComponent;
@@ -338,8 +342,8 @@ implementation
 
 uses
   EditBtn, LCLProc, uRunProgram, uReturnFormValue, cMyDBLookupCombo,
-  uDCLCommand, uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, LazUTF8,
-  uPrintBase, uDCLGlobalVariables, uDCLMD5, uExpressionParser;
+  uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, LazUTF8,
+  uPrintBase, uDCLGlobalVariables, uDCLMD5, uExpressionParser, uDCLCommand;
 
 { TLookupTable }
 
@@ -391,7 +395,7 @@ begin
   Result:=FForm.RightsLevel;
 end;
 
-procedure TDCLGrid.ParseButton(ScrLine: String; Grid: IDCLGrid);
+procedure TDCLGrid.ParseButton(ScrLine: String; const Grid: IDCLGrid);
 var
   ButtonParams: TDCLCommandButton;
   flg: Boolean;
@@ -871,7 +875,7 @@ end;
 procedure TDCLGrid.ExecEvents(EventType: TEventsEnum);
 var
   Event: TDCLEvent;
-  CommandObj: TDCLCommand;
+  CommandObj: IDCLCommand;
   IsExist: Boolean;
 begin
   IsExist:=False;
@@ -886,7 +890,7 @@ begin
 
   if IsExist then
   begin
-    CommandObj:=TDCLCommand.Create(Self, FIDCLMain, FNameSpace, FForm, Self);
+    CommandObj:=TDCLCommand.Create(FIDCLMain, FNameSpace, FForm, Self);
     for Event in FEvents do
     begin
       if Event.EventType=EventType then
@@ -1498,7 +1502,7 @@ begin
     tmpSQL1:=FindParam('SQL=', Scr);
     If tmpSQL1<>'' Then
     begin
-      ShadowQuery:=TDCLDialogQuery.Create(Self);
+      ShadowQuery:=TDCLDialogQuery.Create(Self.GetComponent);
       ShadowQuery.Name:='DropBoxQ_'+IntToStr(UpTime);
       FDBConnector.SetConnector(ShadowQuery);
 
@@ -1690,7 +1694,7 @@ end;
 
 procedure TDCLGrid.SetNewQuery(Data: TDataSource);
 begin
-  FQuery:=TDCLQuery.Create(Self);
+  FQuery:=TDCLQuery.Create(Self.GetComponent);
   FDBConnector.SetConnector(FQuery);
   SetQueryEvents(FQuery);
 
@@ -1701,7 +1705,7 @@ end;
 
 procedure TDCLGrid.ClickCommandButton(Sender: TObject);
 var
-  CommandObj: TDCLCommand;
+  CommandObj: IDCLCommand;
   DCLCommand, c: TDCLCommandButton;
   guid: TGUID;
   ns: String;
@@ -1747,7 +1751,7 @@ begin
               ns:=GUIDToString(guid);
             end;
 
-            CommandObj:=TDCLCommand.Create(Self, FIDCLMain, ns, FForm, Self);
+            CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
             CommandObj.DisableAutoRefresh:=True;
             CommandObj.SelectRunType(DCLCommand.Command);
           end;
@@ -1762,7 +1766,7 @@ begin
           ns:=GUIDToString(guid);
         end;
 
-        CommandObj:=TDCLCommand.Create(Self, FIDCLMain, ns, FForm, Self);
+        CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
         CommandObj.SelectRunType(DCLCommand.ExecAfter);
       end;
 
@@ -1776,7 +1780,7 @@ begin
         ns:=GUIDToString(guid);
       end;
 
-      CommandObj:=TDCLCommand.Create(Self, FIDCLMain, ns, FForm, Self);
+      CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
       CommandObj.SelectRunType(DCLCommand.Command);
     end;
   end;
@@ -1931,11 +1935,11 @@ begin
       for i:=0 to tab.ControlCount-1 do
       begin
         c:=tab.Controls[i];
-        if c is TDCLGrid then
+        {if c is TDCLGrid then
         begin
           FCurrentTablePart:=c as TDCLGrid;
           break;
-        end;
+        end;}
       end;
     end;
   end;
@@ -1975,7 +1979,7 @@ var
   f: TDCLField;
   b, Button: TContextFieldButton;
   flg: Boolean;
-  Command: TDCLCommand;
+  Command: IDCLCommand;
 begin
   flg:=False;
   for f in FDCLFields do
@@ -1998,7 +2002,7 @@ begin
 
   if Assigned(Button) then
   begin
-    Command:=TDCLCommand.Create(Self, FIDCLMain, FNameSpace, FForm, Self);
+    Command:=TDCLCommand.Create(FIDCLMain, FNameSpace, FForm, Self);
     Command.SelectRunType(Button.Command);
   end;
 end;
@@ -2153,7 +2157,7 @@ begin
   end;
   2:
   begin
-    ShadowQuery:=TDCLDialogQuery.Create(Self);
+    ShadowQuery:=TDCLDialogQuery.Create(Self.GetComponent);
     FDBConnector.SetConnector(ShadowQuery);
     S:=FindParam('SQL=', Scr);
     ShadowQuery.SQL.Text:=S;
@@ -2367,7 +2371,7 @@ begin
   TempStr:=FindParam('SQL=', Scr);
   If TempStr<>'' Then
   begin
-    Field.LookupData.LookupQuery:=TDCLDialogQuery.Create(Self);
+    Field.LookupData.LookupQuery:=TDCLDialogQuery.Create(Self.GetComponent);
     FDBConnector.SetConnector(Field.LookupData.LookupQuery);
     TranslateVal(TempStr, False);
     Field.LookupData.LookupQuery.SQL.Text:=TempStr;
@@ -2378,7 +2382,7 @@ begin
     Except
       ShowErrorMessage( - 1115, 'SQL='+TempStr);
     end;
-    Field.LookupData.LookupDS:=TDataSource.Create(Self);
+    Field.LookupData.LookupDS:=TDataSource.Create(Self.GetComponent);
     Field.LookupData.LookupDS.DataSet:=Field.LookupData.LookupQuery;
   end
   Else
@@ -2531,9 +2535,9 @@ begin
       Filter.NotLike:=True;
       Filter.FilterString:='';
 
-      Filter.FilterQuery:=TDCLDialogQuery.Create(Self);
+      Filter.FilterQuery:=TDCLDialogQuery.Create(Self.GetComponent);
       FDBConnector.SetConnector(Filter.FilterQuery);
-      Filter.FilterData:=TDataSource.Create(Self);
+      Filter.FilterData:=TDataSource.Create(Self.GetComponent);
       Filter.FilterData.DataSet:=Filter.FilterQuery;
       Filter.FilterQuery.SQL.Text:=Filter.SQL;
 
@@ -2911,11 +2915,11 @@ var
   ColumnsStr, KeyField, FieldName, FieldWidthStr: String;
   FieldWidth, ParamCounts, v2: Integer;
 begin
-  FSumQuery:=TDCLDialogQuery.Create(Self);
+  FSumQuery:=TDCLDialogQuery.Create(Self.GetComponent);
   FSummFieldsSet:=FindParam('SummQuery=', ScrLine);
   FSumQuery.SQL.Text:=GetSummQuery;
   FDBConnector.SetConnector(FSumQuery);
-  FSumData:=TDataSource.Create(Self);
+  FSumData:=TDataSource.Create(Self.GetComponent);
   FSumData.DataSet:=FSumQuery;
   FSumQuery.Open;
 
@@ -3020,7 +3024,7 @@ begin
   end;
   2:
   begin
-    ShadowQuery:=TDCLDialogQuery.Create(Self);
+    ShadowQuery:=TDCLDialogQuery.Create(Self.GetComponent);
     FDBConnector.SetConnector(ShadowQuery);
     S:=FindParam('SQL=', Scr);
     ShadowQuery.SQL.Text:=S;
@@ -3103,7 +3107,7 @@ begin
   end;
 end;
 
-procedure TDCLGrid.ParseDBFilter(ScrLine: String; Grid: TDCLGrid);
+procedure TDCLGrid.ParseDBFilter(ScrLine: String; const Grid: TDCLGrid);
 var
   FFilter: TDBFilter;
   tmpS: String;
@@ -3144,7 +3148,7 @@ begin
   end;
 end;
 
-procedure TDCLGrid.ParseContextFilter(ScrLine: String; Grid: TDCLGrid);
+procedure TDCLGrid.ParseContextFilter(ScrLine: String; const Grid: TDCLGrid);
 var
   FFilter: TDBFilter;
   tmpS: String;
@@ -3199,7 +3203,7 @@ begin
   Grid.AddFilter(FFilter);
 end;
 
-procedure TDCLGrid.ParseComboFilter(ScrLine: String; Grid: TDCLGrid);
+procedure TDCLGrid.ParseComboFilter(ScrLine: String; const Grid: TDCLGrid);
 var
   FFilter: TDBFilter;
   tmpS: String;
@@ -3230,7 +3234,7 @@ begin
     FFilter.KeyValue:=tmpS;
   end;
 
-  AddFilter(FFilter);
+  Grid.AddFilter(FFilter);
 end;
 
 procedure TDCLGrid.OnFilterNotCheckClick(Sender: TObject);
@@ -3505,7 +3509,7 @@ var
   ReturnValue: TReturnFormValue;
   ValueItem: TGetValueItem;
   Bookmark: TBookmark;
-  CommandObj: TDCLCommand;
+  CommandObj: IDCLCommand;
 begin
   if Assigned(FForm.ReturnValueParams) then
   begin
@@ -3526,7 +3530,7 @@ begin
 
       if ReturnValueParams.InitScript<>'' then
       begin
-        CommandObj:=TDCLCommand.Create(Self, FIDCLMain, FNameSpace, FForm, Self);
+        CommandObj:=TDCLCommand.Create(FIDCLMain, FNameSpace, FForm, Self);
         CommandObj.RunCommandScript(ReturnValueParams.InitScript);
       end;
 
@@ -3595,7 +3599,7 @@ begin
     Result:=FQueryes[qtMain].QueryStr;
 end;
 
-procedure TDCLGrid.ParseEvents(ScrStr: String; Grid: IDCLGrid);
+procedure TDCLGrid.ParseEvents(ScrStr: String; const Grid: IDCLGrid);
 var
   S: String;
 begin
@@ -4131,17 +4135,21 @@ begin
     FDBGrid.SelectedField.AsString:=Clipboard.AsText;
 end;
 
-constructor TDCLGrid.Create(IDCLMain: IDCLMain; NameSpace: String; Form: IDCLForm; ParentControl: TWinControl;
-  SurfType: TDataControlType; Query: TDCLQuery; Data: TDataSource);
+constructor TDCLGrid.Create(const IDCLMain: IDCLMain; NameSpace: String; const Form: IDCLForm; const ParentControl: TWinControl;
+  SurfType: TDataControlType; const Query: TDCLQuery; const Data: TDataSource);
 var
   ChooseButton: TDCLCommandButton;
 begin
-  inherited Create(ParentControl);
-  Self.Parent:=ParentControl;
+  inherited Create;
+  FParentControl:=ParentControl;
   FIDCLMain:=IDCLMain;
 
-  FMainPanel:=TPanel.Create(Self);
-  FMainPanel.Parent:=ParentControl;
+  FBasePanel:=TPanel.Create(ParentControl);
+  FBasePanel.Parent:=ParentControl;
+  FBasePanel.Align:=alClient;
+
+  FMainPanel:=TPanel.Create(FBasePanel);
+  FMainPanel.Parent:=FBasePanel;
   FMainPanel.Align:=alClient;
 
   FForm:=Form;
@@ -4203,7 +4211,7 @@ begin
   if Assigned(Query) then
     FQuery:=Query;
 
-  FData:=TDataSource.Create(Self);
+  FData:=TDataSource.Create(Self.GetComponent);
   if Assigned(Query) then
     FData.DataSet:=Query;
 end;
@@ -4212,6 +4220,7 @@ destructor TDCLGrid.Destroy;
 var
   FieldsPos: TStringList;
   ConfigPath, Seed: String;
+  i: Integer;
 begin
   If Assigned(FQuery) Then
   begin
@@ -4251,12 +4260,36 @@ begin
 
     FreeAndNil(FieldsPos);
   end;
+  FreeAndNil(FDCLFields);
+  FreeAndNil(FFilters);
+  for i:=1 to FTableParts.Count do
+  begin
+    FTableParts[i-1]:=nil;
+  end;
+  for i:=1 to FLookupTables.Count do
+  begin
+    FLookupTables[i-1]:=nil;
+  end;
+  FreeAndNil(FTableParts);
+  FreeAndNil(FLookupTables);
+
   inherited Destroy;
 end;
 
 procedure TDCLGrid.AddField(Field: TDCLField);
 begin
   FDCLFields.Add(Field);
+end;
+
+function TDCLGrid.GetComponent: TWinControl;
+begin
+  Result:=FBasePanel;
+end;
+
+procedure TDCLGrid.Show;
+begin
+  if Assigned(FBasePanel) then
+    FBasePanel.Show;
 end;
 
 procedure TDCLGrid.Open;
@@ -4579,8 +4612,6 @@ begin
   begin
     if FNavigatorVisible then
     begin
-      CreateToolPanel;
-
       FNavig:=TDBNavigator.Create(FToolsPanel);
       FNavig.Parent:=FToolsPanel;
       FNavig.Align:=alBottom;
@@ -4615,8 +4646,8 @@ begin
   begin
     if not Assigned(FButtonPanel) then
     begin
-      FButtonPanel:=TDCLButtonPanel.Create(Self);
-      FButtonPanel.Parent:=Parent;
+      FButtonPanel:=TDCLButtonPanel.Create(Self.GetComponent);
+      FButtonPanel.Parent:=GetComponent;
       FButtonPanel.AutoSize:=True;
 
       FButtonFlowPanel:=TFlowPanel.Create(FButtonPanel);

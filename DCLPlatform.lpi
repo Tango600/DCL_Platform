@@ -354,6 +354,10 @@
         <Filename Value="core\menu\uDCLMenuClassic.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="core\interfaces\uIDCLCommand.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

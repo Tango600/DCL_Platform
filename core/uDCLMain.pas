@@ -11,13 +11,13 @@ uses
   Controls, StdCtrls, DB,
   uDCLDBAwareTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenuSelector, uDCLNotifier,
   uIDCLMain, uIDCLForm, uIDCLGrid, uReturnFormValue, uDCLData, uDCLConst,
-  uDCLScriptsPackage, uDCLImages;
+  uIDCLCommand, uDCLScriptsPackage, uDCLImages;
 
 type
 
   { TDCLMain }
 
-  TDCLMain=class(TComponent, IDCLMain)
+  TDCLMain=class(TInterfacedObject, IDCLMain)
   private
     FMainForm: TForm;
     FForms: TList<IDCLForm>;
@@ -45,7 +45,7 @@ type
     constructor Create; overload;
     destructor Destroy; override;
 
-    procedure ReleaseForm(Form: IDCLForm);
+    procedure ReleaseForm(const Form: IDCLForm);
 
     procedure CloseAllDialogs;
 
@@ -78,6 +78,7 @@ type
     function CloseDialog(var Form: IDCLForm; Force: Boolean): Boolean;
     procedure GetValueProc(NameSpace: String; Form: IDCLForm; ReturnValue: TReturnFormValue);
     function HasChildForm(Form: IDCLForm): Boolean;
+    function HasParentForm(Form: IDCLForm): Boolean;
 
     procedure LoadPackageFromFile(FileName: String; Run: Boolean);
     function CheckSigned(Package: TDCLScriptsPackage): Boolean;
@@ -95,9 +96,9 @@ type
 implementation
 
 uses
-  uDCLConfig, uDCLCommand, uDCLDBStructure, uDCLMultiLang, fAbout, uDBUtils,
+  uDCLConfig, uDCLDBStructure, uDCLMultiLang, fAbout, uDBUtils,
   uDCLGlobalVariables, uDCLUtils, uDCLMessages, uStringParams,
-  uDCLUpdaterPackage;
+  uDCLUpdaterPackage, uDCLCommand;
 
 { TDCLMain }
 
@@ -135,7 +136,7 @@ var
   Package: TDCLScriptsPackage;
   I: TDCLScriptItem;
   RunItem: TDCLScriptItem;
-  Command: TDCLCommand;
+  Command: IDCLCommand;
   c: Integer;
   Files: TStringList;
   S, fn: String;
@@ -188,7 +189,7 @@ begin
               begin
                 if RunItem.RunType=rtCommand then
                 begin
-                  Command:=TDCLCommand.Create(Self, Self, '', nil, nil);
+                  Command:=TDCLCommand.Create(Self, '', nil, nil);
                   Command.RunCommandScript(RunItem.ScriptName);
                 end
                 else
@@ -319,7 +320,7 @@ begin
     end
     else
     begin
-      lForm.Release;
+      lForm.Close;
     end;
   end;
   FreeAndNil(DCL);
@@ -331,14 +332,14 @@ var
   Edit: TDCLEdit;
   lDCLForm: IDCLForm;
   lDCLGrid: IDCLGrid;
-  Command: TDCLCommand;
+  Command: IDCLCommand;
 begin
   If Assigned(ReturnValue) and (ReturnValue.Values.Count>0) Then
   begin
     lDCLForm:=Form;
     lDCLGrid:=lDCLForm.CurrentGrid;
 
-    Command:=TDCLCommand.Create(Self, Self, NameSpace, lDCLForm, lDCLGrid);
+    Command:=TDCLCommand.Create(Self, NameSpace, lDCLForm, lDCLGrid);
     for ReturnValueItem in ReturnValue.Values do
     begin
       If FieldExists(lDCLForm.CurrentGrid.Query, ReturnValue.KeyModifyField) Then
@@ -413,8 +414,6 @@ begin
     begin
       Command.RunCommandScript(ReturnValue.FinishScript);
     end;
-
-    FreeAndNil(Command);
   end;
 end;
 
@@ -437,6 +436,21 @@ begin
           Exit;
         end;
       end;
+    end;
+  end;
+end;
+
+function TDCLMain.HasParentForm(Form: IDCLForm): Boolean;
+var
+  F: IDCLForm;
+begin
+  Result:=False;
+  for F in FForms do
+  begin
+    if Assigned(F.GetParentDialog) and (F.GetParentDialog=Form) then
+    begin
+      Result:=True;
+      Exit;
     end;
   end;
 end;
@@ -529,10 +543,31 @@ begin
   end;
 end;
 
-procedure TDCLMain.ReleaseForm(Form: IDCLForm);
+procedure TDCLMain.ReleaseForm(const Form: IDCLForm);
+
+  procedure CloseChild(const F: IDCLForm);
+  var
+    Form, FF: IDCLForm;
+  begin
+    Form:=FForms.Extract(F);
+    while HasParentForm(Form) do
+    begin
+      for FF in FForms do
+      begin
+        if Assigned(FF.GetParentDialog) and (FF.GetParentDialog=Form) then
+        begin
+          CloseChild(FF);
+          break;
+        end;
+      end;
+    end;
+
+    Form.Close;
+    Form:=nil;
+  end;
+
 begin
-  FForms.Remove(Form);
-  Form.Release;
+  CloseChild(Form);
 end;
 
 function TDCLMain.GetScriptText(ScriptName: String): TStringList;
@@ -627,7 +662,7 @@ procedure TDCLMain.CreateImageList;
 begin
   FPicturesIndexes:=TDictionary<TPicturesTypes, Integer>.Create;
 
-  FImages:=TImageList.Create(Self);
+  FImages:=TImageList.Create(Application);
   FImages.Scaled:=True;
   FImages.RegisterResolutions([16, 24, 48]);
 
@@ -784,7 +819,7 @@ begin
   FDBConnector:=TDCLDBConnector.Create;
   if FDBConnector.Connected then
   begin
-    LocalQuery:=TDCLSimlyQuery.Create(Self);
+    LocalQuery:=TDCLSimlyQuery.Create(nil);
     FDBConnector.SetConnector(LocalQuery);
 
     GPT.NoParamsTable:=TestGlobalParamsTable;
@@ -850,6 +885,7 @@ begin
   CloseAllDialogs;
   if Assigned(FDCLMenuSelector) then
     FreeAndNil(FDCLMenuSelector);
+  FreeAndNil(LocalQuery);
   inherited Destroy;
 end;
 
@@ -906,9 +942,9 @@ end;
 
 procedure TDCLMain.RunCommandScript(CommandName: String);
 var
-  Command: TDCLCommand;
+  Command: IDCLCommand;
 begin
-  Command:=TDCLCommand.Create(Self, Self, '', nil, nil);
+  Command:=TDCLCommand.Create(Self, '', nil, nil);
   Command.RunCommandScript(CommandName);
 end;
 

@@ -30,7 +30,7 @@ type
       ReturnValueParams: TReturnValueParams; Modal: Boolean): IDCLForm;
     function CloseForm(Form: IDCLForm; Force: Boolean): IDCLForm;
     function CloseDialog(var Form: IDCLForm; Force: Boolean): Boolean;
-    procedure ReleaseForm(Form: IDCLForm);
+    procedure ReleaseForm(const Form: IDCLForm);
     procedure GetValueProc(NameSpace: String; Form: IDCLForm; ReturnValue: TReturnFormValue);
 
     procedure About;

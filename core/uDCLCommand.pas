@@ -7,13 +7,13 @@ uses
   Classes, SysUtils, Generics.Collections, Forms, Controls, StdCtrls, DB, Dialogs,
   uDCLData, uDCLDBAwareTypes, uDCLConst, uDCLGrid, uDCLVariables,
   uIDCLMain, uIDCLForm, uIDCLGrid, uDCLUtils, uStringParams, uDCLDBConnector,
-  uDCLDBStructure, uDCLValuesParser, MathParser;
+  uDCLDBStructure, uDCLValuesParser, MathParser, uIDCLCommand;
 
 type
 
   { TDCLCommand }
 
-  TDCLCommand=class(TComponent)
+  TDCLCommand=class(TInterfacedObject, IDCLCommand)
   private
     FIDCLMain: IDCLMain;
     FDBConnector: TDCLDBConnector;
@@ -37,18 +37,21 @@ type
     procedure RunTextReport(ScrLine: String; Query: TDCLDialogQuery; Grid: TDCLGrid);
 
     procedure DialogCommand(ScrStr: String);
+
+    function GetDisableAutoRefresh: Boolean;
+    procedure SetDisableAutoRefresh(Value: Boolean);
   public
-    constructor Create(Parent: TComponent; IDCLMain: IDCLMain; NameSpace: String;
-      DCLForm: IDCLForm; DCLGrid: IDCLGrid); overload;
+    constructor Create(const IDCLMain: IDCLMain; NameSpace: String;
+      const DCLForm: IDCLForm; const DCLGrid: IDCLGrid); overload;
     destructor Destroy; override;
 
-    function RunCommandScript(CommandName: String): Boolean;
+    function RunCommandScript(const CommandName: String): Boolean;
     procedure RunCommand(Command: String);
-    procedure SelectRunType(Command: String);
+    procedure SelectRunType(const Command: String);
 
     procedure About;
 
-    property DisableAutoRefresh: Boolean read FDisableAutoRefresh write FDisableAutoRefresh;
+    property DisableAutoRefresh: Boolean read GetDisableAutoRefresh write SetDisableAutoRefresh;
   end;
 
 implementation
@@ -98,10 +101,10 @@ begin
   FParser.RePlaceProc(S, Query);
 end;
 
-constructor TDCLCommand.Create(Parent: TComponent; IDCLMain: IDCLMain; NameSpace: String;
-  DCLForm: IDCLForm; DCLGrid: IDCLGrid);
+constructor TDCLCommand.Create(const IDCLMain: IDCLMain; NameSpace: String;
+  const DCLForm: IDCLForm; const DCLGrid: IDCLGrid);
 begin
-  inherited Create(Parent);
+  inherited Create;
   FIDCLMain:=IDCLMain;
   FDBConnector:=FIDCLMain.GetDBConnector;
   FForms:=FIDCLMain.GetForms;
@@ -129,10 +132,12 @@ end;
 
 destructor TDCLCommand.Destroy;
 begin
+  FreeAndNil(MathParser);
+  FreeAndNil(FParser);
   inherited Destroy;
 end;
 
-function TDCLCommand.RunCommandScript(CommandName: String): Boolean;
+function TDCLCommand.RunCommandScript(const CommandName: String): Boolean;
 var
   DCL: TStringList;
   LineNum: Integer;
@@ -436,7 +441,7 @@ begin
     TranslateVals(SQLText);
     If IsReturningQuery(SQLText) Then
     begin
-      DCLQuery:=TDCLDialogQuery.Create(Self);
+      DCLQuery:=TDCLDialogQuery.Create(nil);
       FDBConnector.SetConnector(DCLQuery);
 
       {$IFDEF TRANSACTIONDB}
@@ -529,7 +534,7 @@ var
 begin
   If GetRaights>ulWrite then
   begin
-    SQLCommand:=TCommandQuery.Create(Self);
+    SQLCommand:=TCommandQuery.Create(nil);
     SQLCommand.SQL.Text:=SQL;
     FDBConnector.SetConnector(TDCLDialogQuery(SQLCommand));
     {$IFDEF TRANSACTIONDB}
@@ -575,7 +580,7 @@ var
   TextReport: TDCLTextReport;
 begin
   tmpDCL:=TStringList.Create;
-  DCLQuery:=TDCLSimlyQuery.Create(Self);
+  DCLQuery:=TDCLSimlyQuery.Create(nil);
   FDBConnector.SetConnector(DCLQuery);
 
   RepIdParams:=0;
@@ -1452,7 +1457,7 @@ begin
   end;
 end;
 
-procedure TDCLCommand.SelectRunType(Command: String);
+procedure TDCLCommand.SelectRunType(const Command: String);
 var
   Empty: Boolean;
   DCL: TStringList;
@@ -1478,7 +1483,7 @@ procedure TDCLCommand.About;
 var
   About: TAboutForm;
 begin
-  About:=TAboutForm.Create(Self, FIDCLMain);
+  About:=TAboutForm.Create(Application, FIDCLMain);
   About.ShowModal;
   About.Release;
 end;
@@ -1491,6 +1496,7 @@ var
   ReturnValueParams: TReturnValueParams;
   lDCLForm: IDCLForm;
 begin
+  lDCLForm:=nil;
   DialogName:=FindParam('Dialog=', ScrStr);
   ModalOpen:=FindParam('ModalOpen=', ScrStr)='1';
   ReturnValueParams:=nil;
@@ -1536,6 +1542,16 @@ begin
     FDCLForm:=lDCLForm;
     FDCLGrid:=lDCLForm.CurrentGrid;
   end;
+end;
+
+function TDCLCommand.GetDisableAutoRefresh: Boolean;
+begin
+  Result:=FDisableAutoRefresh;
+end;
+
+procedure TDCLCommand.SetDisableAutoRefresh(Value: Boolean);
+begin
+  FDisableAutoRefresh:=Value;
 end;
 
 end.
