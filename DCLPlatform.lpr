@@ -12,7 +12,7 @@ uses
   Interfaces, lcltype,
   {$ENDIF}
   Classes, Forms, Controls, SysUtils, uIDCLMain, uDCLBaseMenu, uDCLMenuSelector,
-  uDCLMenuPanels, uDCLMenuClassic, uIDCLForm, uIDCLGrid, uSystemUtils,
+  uDCLMenuPanels, uDCLMenuClassic, uSystemUtils,
   uStringParams, fMain, fDCLLoginForm, fAbout, uDCLMain
   ;
 
