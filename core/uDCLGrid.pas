@@ -1926,6 +1926,7 @@ var
   i: Integer;
   tab: TTabSheet;
   c: TControl;
+  g: IDCLGrid;
 begin
   tab:=(Sender as TPageControl).ActivePage;
   if Assigned(tab) then
@@ -1935,11 +1936,14 @@ begin
       for i:=0 to tab.ControlCount-1 do
       begin
         c:=tab.Controls[i];
-        {if c is TDCLGrid then
+        for g in FTableParts do
         begin
-          FCurrentTablePart:=c as TDCLGrid;
-          break;
-        end;}
+          if g.GetComponent=c then
+          begin
+            FCurrentTablePart:=g;
+            break;
+          end;
+        end;
       end;
     end;
   end;

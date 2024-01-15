@@ -241,6 +241,7 @@ var
   tab: TTabSheet;
   i: Integer;
   c: TControl;
+  g: IDCLGrid;
 begin
   tab:=(Sender as TPageControl).ActivePage;
   if Assigned(tab) then
@@ -250,11 +251,14 @@ begin
       for i:=1 to tab.ControlCount do
       begin
         c:=tab.Controls[i-1];
-        {if c is TDCLGrid then
+        for g in FGrids do
         begin
-          FCurrentGrid:=c as TDCLGrid;
-          break;
-        end;}
+          if g.GetComponent=c then
+          begin
+            FCurrentGrid:=g;
+            break;
+          end;
+        end;
       end;
     end;
   end;
