@@ -8,13 +8,12 @@ uses
   Windows,
   {$ENDIF}
   Classes, SysUtils, Generics.Collections, Forms, ExtCtrls, LazFileUtils,
-  Controls, StdCtrls, DB,
-  uDCLDBAwareTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenuSelector, uDCLNotifier,
-  uIDCLMain, uIDCLForm, uIDCLGrid, uReturnFormValue, uDCLData, uDCLConst,
-  uIDCLCommand, uDCLScriptsPackage, uDCLImages;
+  Controls, StdCtrls, DB, fMain, fDCLLoginForm,
+  uDCLDBAwareTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenuSelector,
+  uDCLNotifier, uIDCLMain, uIDCLForm, uIDCLGrid, uReturnFormValue, uDCLData,
+  uDCLConst, uDCLTypes, uIDCLCommand, uDCLScriptsPackage, uDCLImages;
 
 type
-
   { TDCLMain }
 
   TDCLMain=class(TInterfacedObject, IDCLMain)
@@ -44,6 +43,9 @@ type
   public
     constructor Create; overload;
     destructor Destroy; override;
+
+    function Start: Boolean;
+    procedure RunInterface;
 
     procedure ReleaseForm(const Form: IDCLForm);
 
@@ -96,7 +98,7 @@ type
 implementation
 
 uses
-  uDCLConfig, uDCLDBStructure, uDCLMultiLang, fAbout, uDBUtils,
+  uDCLConfig, uDCLDBStructure, uDCLMultiLang, fAbout, uDBUtils, uSystemUtils,
   uDCLGlobalVariables, uDCLUtils, uDCLMessages, uStringParams,
   uDCLUpdaterPackage, uDCLCommand;
 
@@ -570,6 +572,92 @@ begin
   CloseChild(Form);
 end;
 
+procedure TDCLMain.RunInterface;
+var
+  i, p:Integer;
+  r: Boolean;
+  S, vn, v, DialogName, ScriptName, Variables: String;
+
+  function FindDialogCall: String;
+  begin
+    Result:=FindCommandStrParam('Dialog');
+  end;
+
+  function FindScriptName: String;
+  begin
+    Result:=FindCommandStrParam('Script');
+  end;
+
+  function FindPackageFileRun: String;
+  begin
+    Result:=FindCommandStrParam('RunPackage');
+  end;
+
+  function FindVariablesParams: String;
+  begin
+    Result:=FindCommandStrParam('Variables');
+  end;
+
+  function FindPackageFileLoad: String;
+  begin
+    Result:=FindCommandStrParam('LoadPackage');
+  end;
+
+  function FindMainMenuDesabled: Boolean;
+  begin
+    Result:=FindCommandStrParam('MainMenu')='0';
+  end;
+
+begin
+  Variables:=FindVariablesParams;
+  if Variables<>'' then
+  begin
+    for i:=1 to ParamsCount(Variables) do
+    begin
+      S:=GetParam(Variables, i);
+      if S<>'' then
+      begin
+        p:=Pos('=', S);
+        if p<>0 then
+        begin
+          vn:=Copy(S, 1, p-1);
+          v:=Copy(S, p+1, Length(S));
+
+          if vn<>'' then
+            GetVariables.NewVariable('', Trim(vn), v);
+        end;
+      end;
+    end;
+  end;
+
+  Update;
+  (Application.MainForm as TMainForm).SetDCLMain(Self);
+  r:=False;
+  S:=FindPackageFileLoad;
+  if S='' then
+  begin
+    S:=FindPackageFileRun;
+    r:=True;
+  end;
+  If S<>'' then
+    LoadPackageFromFile(S, r);
+
+  ScriptName:=FindScriptName;
+  if ScriptName<>'' then
+  begin
+    RunCommandScript(ScriptName);
+  end;
+
+  DialogName:=FindDialogCall;
+  if DialogName<>'' then
+  begin
+    OpenDialog(DialogName, False);
+  end;
+
+  if not FindMainMenuDesabled then
+    CreateMenu(Application.MainForm);
+end;
+
 function TDCLMain.GetScriptText(ScriptName: String): TStringList;
 var
   RunItem: TDCLScriptItem;
@@ -887,6 +975,26 @@ begin
     FreeAndNil(FDCLMenuSelector);
   FreeAndNil(LocalQuery);
   inherited Destroy;
+end;
+
+function TDCLMain.Start: Boolean;
+var
+  LoginForm: TLoginForm;
+  TimeToTerm: Boolean;
+begin
+  TimeToTerm:=False;
+  if IsNeedLogin or KeyState(vk_Shift) then
+  begin
+    LoginForm:=TLoginForm.Create(GetDBConnector);
+
+    if LoginForm.ShowModal<>mrOK then
+    begin
+      TimeToTerm:=True;
+    end;
+    LoginForm.Release;
+  end;
+
+  Result:=TimeToTerm;
 end;
 
 procedure TDCLMain.CloseAllDialogs;

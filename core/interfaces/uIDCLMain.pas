@@ -12,6 +12,8 @@ type
     function GetDBConnector: TDCLDBConnector;
     function GetForms: TList<IDCLForm>;
     procedure CloseAllDialogs;
+    function Start: Boolean;
+    procedure RunInterface;
     procedure CreateMenu(MainForm: TForm);
     function IsNeedLogin: Boolean;
 

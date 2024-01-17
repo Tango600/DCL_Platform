@@ -8,7 +8,7 @@ uses
   Windows, Messages, LazUTF8,
   {$ENDIF}
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  uDCLConst, uDCLData, uIDCLMain;
+  uDCLConst, uIDCLMain;
 
 type
 
@@ -28,7 +28,7 @@ type
     procedure WMSysCommand(var message: TWMSysCommand); message WM_SysCommand;
     {$ENDIF}
   public
-    property DCLMain: IDCLMain write FIMain;
+    procedure SetDCLMain(DCLMain: IDCLMain);
   end;
 
 {$IFDEF MSWINDOWS}
@@ -57,6 +57,11 @@ begin
   End;
 end;
 {$ENDIF}
+
+procedure TMainForm.SetDCLMain(DCLMain: IDCLMain);
+begin
+  FIMain:=DCLMain;
+end;
 
 procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 var
