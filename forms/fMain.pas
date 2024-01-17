@@ -34,7 +34,6 @@ type
 {$IFDEF MSWINDOWS}
 Const
   AboutMenuItem=WM_USER+1;
-  LockMenuItem=AboutMenuItem+1;
 {$ENDIF}
 
 implementation
@@ -138,8 +137,10 @@ begin
   end
   else
   begin
-    if GPT.MenuType=mtClassic then
-      BorderIcons:=BorderIcons-[biMaximize];
+    case GPT.MenuType of
+    mtClassic: BorderIcons:=BorderIcons-[biMaximize];
+    mtPanels: Height:=600;
+    end;
   end;
 end;
 
