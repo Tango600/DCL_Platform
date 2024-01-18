@@ -134,6 +134,8 @@ destructor TDCLCommand.Destroy;
 begin
   FreeAndNil(MathParser);
   FreeAndNil(FParser);
+  FDCLGrid:=nil;
+  FDCLForm:=nil;
   inherited Destroy;
 end;
 

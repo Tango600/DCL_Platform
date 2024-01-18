@@ -552,19 +552,21 @@ procedure TDCLMain.ReleaseForm(const Form: IDCLForm);
     Form, FF: IDCLForm;
   begin
     Form:=FForms.Extract(F);
-    while HasParentForm(Form) do
+    if Assigned(Form) then
     begin
-      for FF in FForms do
+      while HasParentForm(Form) do
       begin
-        if Assigned(FF.GetParentDialog) and (FF.GetParentDialog=Form) then
+        for FF in FForms do
         begin
-          CloseChild(FF);
-          break;
+          if Assigned(FF.GetParentDialog) and (FF.GetParentDialog=Form) then
+          begin
+            CloseChild(FF);
+            break;
+          end;
         end;
       end;
     end;
 
-    Form.Close;
     Form:=nil;
   end;
 

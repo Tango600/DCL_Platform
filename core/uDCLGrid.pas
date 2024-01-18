@@ -35,9 +35,7 @@ type
     FBasePanel: TPanel;
     FNameSpace, FDependField, FMasterDataField, FMasterValueVariableName,
       FSummFieldsSet, FNavigButtonsExpr, FSeed, FDialogName: String;
-    FForms: TList<IDCLForm>;
     FForm: IDCLForm;
-    FVariables: TVariables;
     FDBGrid: TDBGrid;
     FFieldsCount, FToolPanelHeight, FFilterPanelHeight: Integer;
     FToolsPanel: TPanel;
@@ -526,7 +524,7 @@ procedure TDCLGrid.TranslateVal(var Params: String; CheckParams: Boolean);
 var
   Parser: TDCLValuseParser;
 begin
-  Parser:=TDCLValuseParser.Create(FNameSpace, GetUserLevel, FVariables);
+  Parser:=TDCLValuseParser.Create(FNameSpace, GetUserLevel, FIDCLMain.GetVariables);
   Parser.RePlaseVariables(FNameSpace, Params, FQuery);
   if CheckParams then
     Parser.RePlaseParams(Params, FQuery);
@@ -657,7 +655,7 @@ begin
       begin
         if FMasterValueVariableName<>'' then
         begin
-          Data.FieldByName(FDependField).AsString:=FVariables.Variables[FNamespace, FMasterValueVariableName];
+          Data.FieldByName(FDependField).AsString:=FIDCLMain.GetVariables.Variables[FNamespace, FMasterValueVariableName];
         end;
       end;
     End;
@@ -1496,7 +1494,7 @@ begin
     begin
       tmpStr1:=FindParam('VariableName=', Scr);
       Field.Variable:=tmpStr1;
-      FVariables.NewVariableWithTest(FNamespace, tmpStr1);
+      FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, tmpStr1);
     end;
 
     tmpSQL1:=FindParam('SQL=', Scr);
@@ -1611,9 +1609,9 @@ begin
 
     If Field.Variable<>'' Then
       if Field.UseIndex then
-        FVariables.Variables[FNamespace, Field.Variable]:=IntToStr(ItemIndex)
+        FIDCLMain.GetVariables.Variables[FNamespace, Field.Variable]:=IntToStr(ItemIndex)
       else
-        FVariables.Variables[FNamespace, Field.Variable]:=ItemName;
+        FIDCLMain.GetVariables.Variables[FNamespace, Field.Variable]:=ItemName;
   end;
 end;
 
@@ -1729,6 +1727,7 @@ begin
     if DCLCommand.CloseButton then
     begin
       FForm.Close;
+      FForm:=nil;
     end
     else if DCLCommand.ChoiceButton then
     begin
@@ -2192,10 +2191,10 @@ begin
   begin
     FieldName:=FindParam('VariableName=', Scr);
 
-    FVariables.NewVariableWithTest(FNamespace, FieldName);
+    FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, FieldName);
 
     Field.Variable:=FieldName;
-    FVariables.Variables[FNamespace, FieldName]:=S;
+    FIDCLMain.GetVariables.Variables[FNamespace, FieldName]:=S;
   end;
   Edit.Text:=S;
 
@@ -2285,7 +2284,7 @@ begin
 
     if inFormat then
     // Update variables
-      FVariables.Variables[FNamespace, Field.Variable]:=EdText;
+      FIDCLMain.GetVariables.Variables[FNamespace, Field.Variable]:=EdText;
   end;
 end;
 
@@ -2434,7 +2433,7 @@ begin
   TempStr:=FindParam('VariableName=', Scr);
   If TempStr<>'' Then
   begin
-    FVariables.NewVariableWithTest(FNamespace, TempStr);
+    FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, TempStr);
     Field.Variable:=TempStr;
   end;
 
@@ -2509,7 +2508,7 @@ begin
     if DCLLookup.Variable<>'' then
     begin
       tmpSQL1:=(DCLLookup.DCLEditComponent.Control as TDBLookupComboBox).KeyValue;
-      FVariables.Variables[FNamespace, DCLLookup.Variable]:=tmpSQL1;
+      FIDCLMain.GetVariables.Variables[FNamespace, DCLLookup.Variable]:=tmpSQL1;
     end;
   end;
 end;
@@ -2564,7 +2563,7 @@ begin
       (Filter.Control as TDCLDBLookupCombo).KeyField:=Filter.KeyField;
 
       If Filter.VarName<>'' Then
-        FVariables.Variables[FNamespace, Filter.VarName]:=
+        FIDCLMain.GetVariables.Variables[FNamespace, Filter.VarName]:=
           TrimRight(Filter.FilterQuery.FieldByName((Filter.Control as TDCLDBLookupCombo).KeyField).AsString);
 
       (Filter.Control as TDCLDBLookupCombo).ListSource:=Filter.FilterData;
@@ -2732,7 +2731,7 @@ begin
 
   Calendar.Control.Date:=Calendar.Value;
   If Calendar.Variable<>'' Then
-    FVariables.NewVariable(FNamespace, Calendar.Variable, DateToStr(Calendar.Control.Date));
+    FIDCLMain.GetVariables.NewVariable(FNamespace, Calendar.Variable, DateToStr(Calendar.Control.Date));
 
   Calendar.Control.OnChange:=CalendarOnChange;
   Inc(FFilterLeft, FieldsStepLeft+Calendar.Control.Width);
@@ -2761,7 +2760,7 @@ begin
     if (Calendar.ParamName<>'') and Assigned(FQuery.ParamByName(Calendar.ParamName)) then
       FQuery.ParamByName(Calendar.ParamName).AsDate:=Calendar.Value
     else if Calendar.Variable<>'' then
-      FVariables.Variables[FNamespace, Calendar.Variable]:=DateToStr(Calendar.Value);
+      FIDCLMain.GetVariables.Variables[FNamespace, Calendar.Variable]:=DateToStr(Calendar.Value);
 
     If Calendar.ReOpen Then
     begin
@@ -2798,11 +2797,11 @@ begin
   State:=False;
   If Field.Variable<>'' Then
   begin
-    FVariables.NewVariableWithTest(FNamespace, Field.Variable);
+    FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, Field.Variable);
   end
   Else
   begin
-    FVariables.NewVariableWithTest(FNamespace, 'CheckBox_'+Field.FieldName);
+    FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, 'CheckBox_'+Field.FieldName);
     Field.Variable:='CheckBox_'+Field.FieldName;
   end;
 
@@ -2824,9 +2823,9 @@ begin
 
   Case CheckBox.Checked of
   True:
-  FVariables.Variables[FNamespace, Field.Variable]:='1';
+  FIDCLMain.GetVariables.Variables[FNamespace, Field.Variable]:='1';
   False:
-  FVariables.Variables[FNamespace, Field.Variable]:='0';
+  FIDCLMain.GetVariables.Variables[FNamespace, Field.Variable]:='0';
   end;
 
   Field.DCLEditComponent:=TDCLEdit.Create;
@@ -2879,13 +2878,13 @@ begin
 
   if Assigned(Field) then
   begin
-    If FVariables.Exists(FNamespace, Field.Variable) then
+    If FIDCLMain.GetVariables.Exists(FNamespace, Field.Variable) then
     begin
       Case (Sender as TCheckbox).Checked of
       True:
-      FVariables.Variables[FNamespace, Field.Variable]:='1';
+      FIDCLMain.GetVariables.Variables[FNamespace, Field.Variable]:='1';
       False:
-      FVariables.Variables[FNamespace, Field.Variable]:='0';
+      FIDCLMain.GetVariables.Variables[FNamespace, Field.Variable]:='0';
       end;
     end;
   end;
@@ -3053,12 +3052,12 @@ begin
 
   If FindParam('VariableName=', Scr)<>'' Then
   begin
-    FVariables.NewVariable(FNamespace, FindParam('VariableName=', Scr), S);
+    FIDCLMain.GetVariables.NewVariable(FNamespace, FindParam('VariableName=', Scr), S);
     KeyField:=FindParam('VariableName=', Scr);
   end
   Else
   begin
-    FVariables.NewVariable(FNamespace, 'DateBox_'+Field.FieldName, S);
+    FIDCLMain.GetVariables.NewVariable(FNamespace, 'DateBox_'+Field.FieldName, S);
     KeyField:='DateBox_'+Field.FieldName;
   end;
 
@@ -3089,7 +3088,7 @@ begin
   begin
     // Update variables
     Value:=DateToStr((f.DCLEditComponent.Control as TDateTimePicker).Date);
-    FVariables.Variables[FNamespace, Field.Variable]:=Value;
+    FIDCLMain.GetVariables.Variables[FNamespace, Field.Variable]:=Value;
 
     If not Field.ReadOnly then
     begin
@@ -3139,7 +3138,7 @@ begin
     If FindParam('VariableName=', ScrLine)<>'' then
     begin
       FFilter.VarName:=FindParam('VariableName=', ScrLine);
-      FVariables.NewVariableWithTest(FNamespace, FFilter.VarName);
+      FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, FFilter.VarName);
     end;
 
     tmpS:=FindParam('KeyValue=', ScrLine);
@@ -3172,7 +3171,7 @@ begin
   If FindParam('VariableName=', ScrLine)<>'' Then
   begin
     FFilter.VarName:=FindParam('VariableName=', ScrLine);
-    FVariables.NewVariableWithTest(FNamespace, FFilter.VarName);
+    FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, FFilter.VarName);
   end;
 
   If FindParam('MaxLength=', ScrLine)<>'' Then
@@ -3229,7 +3228,7 @@ begin
   If FindParam('VariableName=', ScrLine)<>'' then
   begin
     FFilter.VarName:=FindParam('VariableName=', ScrLine);
-    FVariables.NewVariableWithTest(FNamespace, FFilter.VarName);
+    FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, FFilter.VarName);
   end;
 
   tmpS:=FindParam('KeyValue=', ScrLine);
@@ -3290,7 +3289,7 @@ begin
     end;
     end;
     if Filter.VarName<>'' then
-      FVariables.Variables[FNameSpace, Filter.VarName]:=Filter.FilterString;
+      FIDCLMain.GetVariables.Variables[FNameSpace, Filter.VarName]:=Filter.FilterString;
 
     OpenQuery(QueryBuilder);
   end;
@@ -3326,7 +3325,7 @@ begin
     End;
 
     if Filter.VarName<>'' then
-      FVariables.Variables[FNamespace, Filter.VarName]:=TrimRight(ExeplStr);
+      FIDCLMain.GetVariables.Variables[FNamespace, Filter.VarName]:=TrimRight(ExeplStr);
 
     If Filter.WaitForKey<>0 Then
     begin
@@ -4157,12 +4156,10 @@ begin
   FMainPanel.Align:=alClient;
 
   FForm:=Form;
-  FForms:=IDCLMain.GetForms;
 
   FDialogName:=Form.DialogName;
   FDBConnector:=IDCLMain.GetDBConnector;
   FNameSpace:=NameSpace;
-  FVariables:=IDCLMain.GetVariables;
 
   FButtons:=TList<TDCLCommandButton>.Create;
 
@@ -4276,6 +4273,7 @@ begin
   end;
   FreeAndNil(FTableParts);
   FreeAndNil(FLookupTables);
+  FForm:=nil;
 
   inherited Destroy;
 end;

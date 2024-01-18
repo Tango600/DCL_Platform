@@ -33,12 +33,11 @@ type
     FParentPanel: TWinControl;
     FPages: TPageControl;
     FTab: TTabSheet;
-    FCurrentGrid: IDCLGrid;
     FStatusBar: TStatusBar;
     FReturnValueParams: TReturnValueParams;
     FUserLevel: TUserLevelsType;
     FIsSingle: Boolean;
-    FStackLevel: Integer;
+    FStackLevel, FCurrentGridIndex: Integer;
 
     //region TForm
     procedure SetWindowState(Value : TWindowState);
@@ -65,7 +64,7 @@ type
 
     procedure PageChange(Sender: TObject);
 
-    procedure AddMainPage(const Query: TDCLQuery; const Data: TDataSource);
+    function AddMainPage(const Query: TDCLQuery; const Data: TDataSource): IDCLGrid;
     function AddGrid(const ParentControl: TWinControl; SurfType: TDataControlType;
       const Query: TDCLQuery; const Data: TDataSource): IDCLGrid;
 
@@ -80,12 +79,13 @@ type
     procedure ResetFieldsSettings(Sender: TObject);
     procedure CloseDialogCommand(Sender: TObject);
 
-    procedure TranslateVal(var Params: String; CheckParams: Boolean);
+    procedure TranslateVal(var Params: String; const Grid: IDCLGrid; CheckParams: Boolean);
 
     procedure FormShow(Sender: TObject);
     procedure OnActivateForm(Sender: TObject);
     procedure OnFormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure OnFormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure OnDestroyForm(Sender: TObject);
 
     procedure SetRecordsStatus(Str: String); overload;
 
@@ -239,7 +239,7 @@ end;
 procedure TDCLForm.PageChange(Sender: TObject);
 var
   tab: TTabSheet;
-  i: Integer;
+  i, j: Integer;
   c: TControl;
   g: IDCLGrid;
 begin
@@ -251,11 +251,12 @@ begin
       for i:=1 to tab.ControlCount do
       begin
         c:=tab.Controls[i-1];
-        for g in FGrids do
+        for j:=0 to FGrids.Count-1 do
         begin
+          g:=FGrids[j];
           if g.GetComponent=c then
           begin
-            FCurrentGrid:=g;
+            FCurrentGridIndex:=j;
             break;
           end;
         end;
@@ -264,7 +265,7 @@ begin
   end;
 end;
 
-procedure TDCLForm.AddMainPage(const Query: TDCLQuery; const Data: TDataSource);
+function TDCLForm.AddMainPage(const Query: TDCLQuery; const Data: TDataSource): IDCLGrid;
 var
   pc: Integer;
 begin
@@ -292,7 +293,7 @@ begin
   FPages.ActivePage.Align:=alClient;
   FParentPanel:=FTab.PageControl.Pages[pc];
 
-  FCurrentGrid:=AddGrid(FParentPanel, dctMainGrid, Query, Data);
+  Result:=AddGrid(FParentPanel, dctMainGrid, Query, Data);
 
   FPages.ActivePage:=FPages.Pages[pc];
   FPages.ActivePageIndex:=pc;
@@ -382,8 +383,9 @@ procedure TDCLForm.ResetFieldsSettings(Sender: TObject);
 begin
   If ShowErrorMessage(10, GetDCLMessageString(msResetFieldsSettingsQ))=1 Then
   begin
-    if Assigned(FCurrentGrid) then
-      FCurrentGrid.ResetFieldsSettings;
+    if FGrids.Count>FCurrentGridIndex+1 then
+    if Assigned(FGrids[FCurrentGridIndex]) then
+      FGrids[FCurrentGridIndex].ResetFieldsSettings;
   end;
 end;
 
@@ -393,18 +395,18 @@ begin
     Close;
 end;
 
-procedure TDCLForm.TranslateVal(var Params: String; CheckParams: Boolean);
+procedure TDCLForm.TranslateVal(var Params: String; const Grid: IDCLGrid; CheckParams: Boolean);
 var
   Parser: TDCLValuseParser;
 begin
   Parser:=TDCLValuseParser.Create(FNameSpace, FUserLevel, FVariables);
-  if Assigned(FCurrentGrid) then
-    Parser.RePlaseVariables(FNameSpace, Params, FCurrentGrid.Query)
+  if Assigned(Grid) then
+    Parser.RePlaseVariables(FNameSpace, Params, Grid.Query)
   else
     Parser.RePlaseVariables(FNameSpace, Params, nil);
   if CheckParams then
-  if Assigned(FCurrentGrid) then
-    Parser.RePlaseParams(Params, FCurrentGrid.Query);
+  if Assigned(Grid) then
+    Parser.RePlaseParams(Params, Grid.Query);
 end;
 
 procedure TDCLForm.FormShow(Sender: TObject);
@@ -438,19 +440,20 @@ var
   Grid: IDCLGrid;
   F: IDCLForm;
 begin
+  for Grid in FGrids do
+  begin
+    Grid.CloseComponent;
+  end;
+
   for F in FIDCLMain.GetForms do
   begin
     if (F.ParentDialog as TDCLForm)=Self then
       F.ForceClose;
   end;
 
-  for Grid in FGrids do
-  begin
-    Grid.CloseComponent;
-  end;
-
   SaveFormPos;
-  FIDCLMain.ReleaseForm(Self);
+
+  CloseAction:=caFree;
 end;
 
 procedure TDCLForm.OnFormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -469,6 +472,18 @@ begin
   End;
 end;
 
+procedure TDCLForm.OnDestroyForm(Sender: TObject);
+var
+  i: Integer;
+begin
+  for i:=1 to FGrids.Count do
+  begin
+    FGrids[i-1]:=nil;
+  end;
+
+  FIDCLMain.ReleaseForm(Self);
+end;
+
 procedure TDCLForm.SetRecordsStatus(Str: String);
 begin
   FStatusBar.Panels[StatusRecords].Text:=Str;
@@ -476,7 +491,7 @@ end;
 
 function TDCLForm.GetCurrentGrid: IDCLGrid;
 begin
-  Result:=FCurrentGrid;
+  Result:=FGrids[FCurrentGridIndex];
 end;
 
 function TDCLForm.GetDialogName: String;
@@ -504,6 +519,7 @@ var
   OnTop: Boolean;
   FieldsCount: Integer;
   UserLevelLocal: TUserLevelsType;
+  FCurrentGrid: IDCLGrid;
 begin
   inherited Create;
   FIDCLMain:=IDCLMain;
@@ -513,6 +529,7 @@ begin
   FForm.OnShow:=FormShow;
   FForm.OnClose:=OnFormClose;
   FForm.OnCloseQuery:=OnFormCloseQuery;
+  FForm.OnDestroy:=OnDestroyForm;
   FDialogName:=DialogName;
   FDBConnector:=FIDCLMain.GetDBConnector;
   FFirstPage:=True;
@@ -522,6 +539,7 @@ begin
   FCloseQuery:=False;
   CloseQueryText:='';
   FormCanClose:=True;
+  FCurrentGridIndex:=0;
 
   FReject:=False;
   For ff in FIDCLMain.GetForms do
@@ -600,7 +618,7 @@ begin
   FStatusBar.Panels[0].Width:=100;
   FStatusBar.Panels[1].Width:=80;
 
-  AddMainPage(Query, Data);
+  FCurrentGrid:=AddMainPage(Query, Data);
 
   if Assigned(OPL) then
   begin
@@ -617,7 +635,7 @@ begin
       If IsLexem('SetAccessLevel=', SrcLine) then
       begin
         tmpS:=SrcLine;
-        TranslateVal(tmpS, True);
+        TranslateVal(tmpS, FCurrentGrid, True);
         tmpS:=FindParam('SetAccessLevel=', tmpS);
         Case GetStringDataType(tmpS) of
         idDigit:
@@ -630,7 +648,7 @@ begin
       If IsLexem('UserAccessRaight=', SrcLine) then
       begin
         tmpS:=SrcLine;
-        TranslateVal(tmpS, True);
+        TranslateVal(tmpS, FCurrentGrid, True);
         tmpS:=FindParam('UserAccessRaight=', tmpS);
         Case GetStringDataType(tmpS) of
         idDigit:
@@ -656,7 +674,7 @@ begin
       if IsLexem('Title=', SrcLine) then
       begin
         tmpS:=SrcLine;
-        TranslateVal(tmpS, True);
+        TranslateVal(tmpS, FCurrentGrid, True);
         tmpS:=FindParam('Title=', tmpS);
         FPages.ActivePage.Caption:=tmpS;
       end;
@@ -670,7 +688,7 @@ begin
       if IsLexem('Caption=', SrcLine) then
       begin
         tmpS:=SrcLine;
-        TranslateVal(tmpS, True);
+        TranslateVal(tmpS, FCurrentGrid, True);
         tmpS1:=FindParam('Caption=', tmpS);
         if Assigned(TB) then
           TB.Caption:=tmpS1;
@@ -683,7 +701,7 @@ begin
       If IsLexem('OnTop=', SrcLine) then
       begin
         tmpS:=SrcLine;
-        TranslateVal(tmpS, True);
+        TranslateVal(tmpS, FCurrentGrid, True);
         tmpS:=FindParam('OnTop=', tmpS);
         OnTop:=tmpS='1';
       end;
@@ -718,7 +736,7 @@ begin
   If OnTop then  // Мешает отладки
     FormStyle:=fsStayOnTop;
   {$ENDIF}
-  if not Assigned(FReturnValueParams) and not Modal then
+  if {not Assigned(FReturnValueParams) and} not Modal then
   begin
     Show;
   end;
@@ -735,8 +753,6 @@ begin
   FreeAndNil(FGrids);
   FParentForm:=nil;
   FParentPanel:=nil;
-  FCurrentGrid:=nil;
-  FForm.Release;
   inherited Destroy;
 end;
 
@@ -885,7 +901,7 @@ end;
 
 procedure TDCLForm.Close;
 begin
-  FForm.Release;
+  FForm.Close;
 end;
 
 procedure TDCLForm.SetDBStatus(Str: String);
