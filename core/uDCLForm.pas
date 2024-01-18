@@ -736,7 +736,7 @@ begin
   If OnTop then  // Мешает отладки
     FormStyle:=fsStayOnTop;
   {$ENDIF}
-  if {not Assigned(FReturnValueParams) and} not Modal then
+  if not Modal then
   begin
     Show;
   end;
