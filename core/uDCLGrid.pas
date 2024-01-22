@@ -37,9 +37,9 @@ type
       FSummFieldsSet, FNavigButtonsExpr, FSeed, FDialogName: String;
     FForm: IDCLForm;
     FDBGrid: TDBGrid;
-    FFieldsCount, FToolPanelHeight, FFilterPanelHeight: Integer;
+    FFieldsCount, FToolPanelHeight, FFilterPanelHeight,
+    FToolButtonsCount, FCurrentTablePartIndex, FFilterLeft: Integer;
     FToolsPanel: TPanel;
-    FFilterLeft: Integer;
     FNavig: TDBNavigator;
     FindFields: TStringList;
     FMainPanel: TPanel;
@@ -58,12 +58,10 @@ type
     FReadFieldsMode, FMultiSelectMode, FReadOnly, FDataReadOnly, FNavigatorVisible,
       FFlatNavig, FNoDataField, FNoButtonPanel, FindProcess, FPrintTool, CloseButton: Boolean;
     FTableParts, FLookupTables: TList<IDCLGrid>;
-    FCurrentTablePart: IDCLGrid;
     FDCLFields: TList<TDCLField>;
     FCurrentField: TDCLField;
     FFieldParsingMode: TFieldParsingMode;
     FToolBar: TToolBar;
-    FToolButtonsCount: Integer;
     FToolBarSplitter, FToolBarButtonPrint, FToolBarButtonStruct, FToolBarButtonFind: TToolButton;
     PartSplitter: TSplitter;
     FTablePartsPages: TPageControl;
@@ -1812,10 +1810,9 @@ begin
     FTablePartsTabs.Caption:=InitCap(Title);
 
   grid:=TDCLGrid.Create(FIDCLMain, FNameSpace, FForm, FTablePartsTabs, dctTablePart, nil, Data);
-  FCurrentTablePart:=grid;
   grid.Style:=Style;
   grid.PrintTool:=FPrintTool;
-  FTableParts.Add(grid);
+  FCurrentTablePartIndex:=FTableParts.Add(grid);
   Result:=grid;
 end;
 
@@ -1843,35 +1840,35 @@ begin
     AddTablePartObject(FindParam('Title=', Line), FData, tmpStyle);
 
     if (FindParam('UpdateTable=', Line)<>'') and (FindParam('KeyFields=', Line)<>'') then
-      FCurrentTablePart.Query.SetUpdateSQL
+      FTableParts[FCurrentTablePartIndex].Query.SetUpdateSQL
         (FindParam('UpdateTable=', Line), FindParam('KeyFields=', Line));
 
-    FCurrentTablePart.SetSQL(tSQL);
-    FCurrentTablePart.NoDataField:=FindParam('NoDataField=', Line)='1';
-    FCurrentTablePart.PrintTool:=FPrintTool;
-    FCurrentTablePart.MultiSelect:=FindParam('MultiSelect=', Line)='1';
+    FTableParts[FCurrentTablePartIndex].SetSQL(tSQL);
+    FTableParts[FCurrentTablePartIndex].NoDataField:=FindParam('NoDataField=', Line)='1';
+    FTableParts[FCurrentTablePartIndex].PrintTool:=FPrintTool;
+    FTableParts[FCurrentTablePartIndex].MultiSelect:=FindParam('MultiSelect=', Line)='1';
 
     If FindParam('DependField=', Line)<>'' Then
     begin
-      FCurrentTablePart.DependField:=FindParam('DependField=', Line);
+      FTableParts[FCurrentTablePartIndex].DependField:=FindParam('DependField=', Line);
     end;
 
-    FCurrentTablePart.Query.open;
+    FTableParts[FCurrentTablePartIndex].Query.open;
 
     If FindParam('MasterDataField=', Line)<>'' then
     begin
-      FCurrentTablePart.MasterDataField:=FindParam('MasterDataField=', Line);
+      FTableParts[FCurrentTablePartIndex].MasterDataField:=FindParam('MasterDataField=', Line);
     end;
 
     If FindParam('VariableName=', Line)<>'' then
     begin
-      FCurrentTablePart.MasterValueVariableName:=FindParam('VariableName=', Line);
+      FTableParts[FCurrentTablePartIndex].MasterValueVariableName:=FindParam('VariableName=', Line);
     end;
 
     If FindParam('Navigator=', Line)='1' then
     begin
-      FCurrentTablePart.NavigatorVisible:=True;
-      FCurrentTablePart.FlatNavigator:=Self.FlatNavigator;
+      FTableParts[FCurrentTablePartIndex].NavigatorVisible:=True;
+      FTableParts[FCurrentTablePartIndex].FlatNavigator:=Self.FlatNavigator;
 
       ButtonsSet:=FindParam('NavigatorButtons=', Line);
       If ButtonsSet='' then
@@ -1879,14 +1876,14 @@ begin
 
       If ButtonsSet<>'' then
       begin
-        FCurrentTablePart.SetNavigatorButtonsSet(ButtonsSet);
+        FTableParts[FCurrentTablePartIndex].SetNavigatorButtonsSet(ButtonsSet);
       end;
     end;
 
     S:=Trim(FindParam('ReadOnly=', Line));
     If StrToIntEx(S)=1 then
     begin
-      FCurrentTablePart.ExecScriptLine('ReadOnly=1');
+      FTableParts[FCurrentTablePartIndex].ExecScriptLine('ReadOnly=1');
     end;
 
     S:=FindParam('Columns=', Line);
@@ -1914,7 +1911,7 @@ begin
         FFieldColumn.Caption:=Copy(S2, p2+1, Length(S2)-1);
         FFieldColumn.Width:=v2;
 
-        FCurrentTablePart.AddField(FFieldColumn);
+        FTableParts[FCurrentTablePartIndex].AddField(FFieldColumn);
       end;
     end;
   end;
@@ -1922,7 +1919,7 @@ end;
 
 procedure TDCLGrid.ChangePartTabPage(Sender: TObject);
 var
-  i: Integer;
+  i, j: Integer;
   tab: TTabSheet;
   c: TControl;
   g: IDCLGrid;
@@ -1935,11 +1932,12 @@ begin
       for i:=0 to tab.ControlCount-1 do
       begin
         c:=tab.Controls[i];
-        for g in FTableParts do
+        for j:=0 to FTableParts.Count-1 do
         begin
+          g:=FTableParts[j];
           if g.GetComponent=c then
           begin
-            FCurrentTablePart:=g;
+            FCurrentTablePartIndex:=j;
             break;
           end;
         end;
@@ -3592,7 +3590,9 @@ end;
 
 function TDCLGrid.GetCurrentTablePart: IDCLGrid;
 begin
-  Result:=FCurrentTablePart;
+  Result:=nil;
+  if (FCurrentTablePartIndex>=0) and (FTableParts.Count>FCurrentTablePartIndex) then
+    Result:=FTableParts[FCurrentTablePartIndex];
 end;
 
 function TDCLGrid.GetSQLFromStorage: String;
@@ -4199,6 +4199,7 @@ begin
   FFlatNavig:=False;
   FPrintTool:=False;
   FGridStyle:=gsGrid;
+  FCurrentTablePartIndex:=0;
 
   FMultiSelectMode:=False;
   FFilterLeft:=BeginStepLeft;
@@ -4877,7 +4878,7 @@ begin
     PartSplitter.Parent:=FMainPanel;
     PartSplitter.Align:=alBottom;
 
-    FCurrentTablePart:=FTableParts[0];
+    FCurrentTablePartIndex:=0;
   end;
 
   if Assigned(FDBGrid) then
@@ -4888,8 +4889,6 @@ begin
   FSeed:=CalculateSeed;
   If Assigned(FQuery) then
     FQuery.NotAllowOperations:=FNotAllowedOperations.ToArray;
-
-///  FMainPanel.Align:=alClient;
 
   AdjustToolPanel;
 
