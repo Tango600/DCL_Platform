@@ -917,6 +917,8 @@ end;
 function TDCLQuery.GetGeneratorName(TableName: String): String;
 var
   Empty: Boolean;
+  Triggers: TList<String>;
+  Trigger: String;
 begin
   Result:='';
   If GPT.IBAll then
@@ -927,7 +929,7 @@ begin
         SetDCLDBConnector(ShadowQuery);
 
       ShadowQuery.Params.Clear;
-      ShadowQuery.SQL.Text:='select 1 from RDB$DEPENDENCIES dp, RDB$TRIGGERS tr where dp.rdb$dependent_name=tr.rdb$trigger_name and '+
+      ShadowQuery.SQL.Text:='select first 1 1 from RDB$DEPENDENCIES dp, RDB$TRIGGERS tr where dp.rdb$dependent_name=tr.rdb$trigger_name and '+
         'tr.rdb$relation_name=dp.rdb$depended_on_name and dp.rdb$dependent_type=2 and '+
         'dp.rdb$depended_on_name=upper(:TABLENAME) and dp.rdb$field_name=(select RDB$FIELD_NAME '+
                 'from RDB$RELATION_CONSTRAINTS C, RDB$INDICES I, RDB$INDEX_SEGMENTS S '+
@@ -945,6 +947,7 @@ begin
 
       if Empty then
       begin
+        ShadowQuery.Params.Clear;
         ShadowQuery.SQL.Text:='select ff.rdb$generator_name from RDB$RELATION_FIELDS ff where ff.rdb$relation_name = upper(:TABLENAME) and ff.rdb$field_name=(select RDB$FIELD_NAME '+
           'from RDB$RELATION_CONSTRAINTS C, RDB$INDICES I, RDB$INDEX_SEGMENTS S '+
           'where upper(C.RDB$RELATION_NAME) = upper(:TABLENAME) and '+
@@ -956,12 +959,14 @@ begin
         try
           ShadowQuery.Open;
           Result:=Trim(ShadowQuery.Fields[0].AsString);
-        except
+        finally
+          ShadowQuery.Close;
         end;
       end
       else
       begin
-        ShadowQuery.SQL.Text:='select ge.rdb$generator_name from RDB$DEPENDENCIES dp, RDB$TRIGGERS tr, rdb$generators ge where dp.rdb$dependent_name=(select tr.rdb$trigger_name from RDB$DEPENDENCIES dp, RDB$TRIGGERS tr where dp.rdb$dependent_name=tr.rdb$trigger_name and '+
+        ShadowQuery.Params.Clear;
+        ShadowQuery.SQL.Text:='select tr.rdb$trigger_name from RDB$DEPENDENCIES dp, RDB$TRIGGERS tr where dp.rdb$dependent_name=tr.rdb$trigger_name and '+
           'tr.rdb$relation_name=dp.rdb$depended_on_name and dp.rdb$dependent_type=2 and '+
           'dp.rdb$depended_on_name=upper(:TABLENAME) and dp.rdb$field_name=(select RDB$FIELD_NAME '+
                   'from RDB$RELATION_CONSTRAINTS C, RDB$INDICES I, RDB$INDEX_SEGMENTS S '+
@@ -971,13 +976,32 @@ begin
                         'C.RDB$RELATION_NAME = I.RDB$RELATION_NAME and '+
                         'I.RDB$INDEX_NAME = C.RDB$INDEX_NAME and '+
                         'S.RDB$INDEX_NAME = I.RDB$INDEX_NAME) and '+
-          'dp.rdb$depended_on_type=0 and tr.rdb$system_flag = 0 and tr.rdb$trigger_inactive = 0) and '+
-          'ge.rdb$generator_name = dp.rdb$depended_on_name and '+
-          'dp.rdb$dependent_name=tr.rdb$trigger_name';
+          'dp.rdb$depended_on_type=0 and tr.rdb$system_flag = 0 and tr.rdb$trigger_inactive = 0';
         ShadowQuery.Open;
-        Result:=Trim(ShadowQuery.Fields[0].AsString);
+
+        Triggers:=TList<String>.Create;
+        while not ShadowQuery.EOF do
+        begin
+          Triggers.Add(Trim(ShadowQuery.Fields[0].AsString));
+          ShadowQuery.Next;
+        end;
+        ShadowQuery.Close;
+
+        for Trigger in Triggers do
+        begin
+          ShadowQuery.Params.Clear;
+          ShadowQuery.SQL.Text:='select ge.rdb$generator_name from RDB$DEPENDENCIES dp, RDB$TRIGGERS tr, rdb$generators ge where '+
+                                  'dp.rdb$dependent_name=:GEN_NAME and '+
+                                  'ge.rdb$generator_name = dp.rdb$depended_on_name and '+
+                                  'dp.rdb$dependent_name=tr.rdb$trigger_name';
+          ShadowQuery.ParamByName('GEN_NAME').AsString:=Trigger;
+          ShadowQuery.Open;
+
+          Result:=Trim(ShadowQuery.Fields[0].AsString);
+          ShadowQuery.Close;
+          if Result<>'' then break;
+        end;
       end;
-      ShadowQuery.Close;
     End;
   End;
 end;
