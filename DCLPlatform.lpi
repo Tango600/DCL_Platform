@@ -401,6 +401,29 @@
         <Filename Value="data\uDCLGlobalVariables.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="core\protect\uDCLProtectionEngine.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="core\protect\uDCLHardwareKeys.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="core\protect\fDCLProtectionForm.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="ProtectionForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit>
+      <Unit>
+        <Filename Value="core\protect\uIDCLProtectionEngine.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="libraries\foreigners\hddinfo.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -411,7 +434,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="libraries;libraries\foreigners;dclpackages;data;utils;wrappers;dbaware;config;core;core\layoutmangers;core\variables;forms;resources;reports;reports\text;reports\office;core\lang;core\components;core\interfaces;core\menu"/>
+      <OtherUnitFiles Value="libraries;libraries\foreigners;dclpackages;data;utils;wrappers;dbaware;config;core;core\layoutmangers;core\variables;forms;resources;reports;reports\text;reports\office;core\lang;core\components;core\interfaces;core\menu;core\protect"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
@@ -419,11 +442,6 @@
         <SyntaxMode Value="Delphi"/>
       </SyntaxOptions>
     </Parsing>
-    <CodeGeneration>
-      <TargetProcessor Value="pentium2"/>
-      <TargetCPU Value="i386"/>
-      <TargetOS Value="win32"/>
-    </CodeGeneration>
     <Linking>
       <Debugging>
         <DebugInfoType Value="dsDwarf3"/>

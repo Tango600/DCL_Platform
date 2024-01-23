@@ -8,10 +8,10 @@ uses
   Windows,
   {$ENDIF}
   Classes, SysUtils, Generics.Collections, Forms, ExtCtrls, LazFileUtils,
-  Controls, StdCtrls, DB, fMain, fDCLLoginForm,
+  Controls, StdCtrls, DB, fMain, fDCLLoginForm, fDCLProtectionForm,
   uDCLDBAwareTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenuSelector,
   uDCLNotifier, uIDCLMain, uIDCLForm, uIDCLGrid, uReturnFormValue, uDCLData,
-  uDCLConst, uDCLTypes, uIDCLCommand, uDCLScriptsPackage, uDCLImages;
+  uDCLConst, uIDCLCommand, uDCLScriptsPackage, uDCLImages;
 
 type
   { TDCLMain }
@@ -28,6 +28,7 @@ type
     FPackages: TList<TPackageInfo>;
     FScripts: TList<TDCLScriptItem>;
     FPicturesIndexes: TDictionary<TPicturesTypes, Integer>;
+    ProtectionForm: TProtectionForm;
     FImages: TImageList;
 
     function GetScriptText(ScriptName: String): TStringList;
@@ -99,8 +100,8 @@ implementation
 
 uses
   uDCLConfig, uDCLDBStructure, uDCLMultiLang, fAbout, uDBUtils, uSystemUtils,
-  uDCLGlobalVariables, uDCLUtils, uDCLMessages, uStringParams,
-  uDCLUpdaterPackage, uDCLCommand;
+  uDCLGlobalVariables, uDCLUtils, uDCLMessages, uStringParams, uDCLCommand,
+  uIDCLProtectionEngine, uDCLProtectionEngine, uDCLUpdaterPackage;
 
 { TDCLMain }
 
@@ -579,6 +580,7 @@ var
   i, p:Integer;
   r: Boolean;
   S, vn, v, DialogName, ScriptName, Variables: String;
+  IProtectionEngine: IDCLProtectionEngine;
 
   function FindDialogCall: String;
   begin
@@ -611,53 +613,65 @@ var
   end;
 
 begin
-  Variables:=FindVariablesParams;
-  if Variables<>'' then
-  begin
-    for i:=1 to ParamsCount(Variables) do
-    begin
-      S:=GetParam(Variables, i);
-      if S<>'' then
-      begin
-        p:=Pos('=', S);
-        if p<>0 then
-        begin
-          vn:=Copy(S, 1, p-1);
-          v:=Copy(S, p+1, Length(S));
+  (Application.MainForm as TMainForm).SetDCLMain(Self);
 
-          if vn<>'' then
-            GetVariables.NewVariable('', Trim(vn), v);
+  IProtectionEngine:=TDCLProtectionEngine.Create;
+  if IProtectionEngine.GetProtectionStatus then
+  begin
+    r:=False;
+    Variables:=FindVariablesParams;
+    if Variables<>'' then
+    begin
+      for i:=1 to ParamsCount(Variables) do
+      begin
+        S:=GetParam(Variables, i);
+        if S<>'' then
+        begin
+          p:=Pos('=', S);
+          if p<>0 then
+          begin
+            vn:=Copy(S, 1, p-1);
+            v:=Copy(S, p+1, Length(S));
+
+            if vn<>'' then
+              GetVariables.NewVariable('', Trim(vn), v);
+          end;
         end;
       end;
     end;
-  end;
 
-  Update;
-  (Application.MainForm as TMainForm).SetDCLMain(Self);
-  r:=False;
-  S:=FindPackageFileLoad;
-  if S='' then
+    Update;
+    S:=FindPackageFileLoad;
+    if S='' then
+    begin
+      S:=FindPackageFileRun;
+      r:=True;
+    end;
+    If S<>'' then
+      LoadPackageFromFile(S, r);
+
+    ScriptName:=FindScriptName;
+    if ScriptName<>'' then
+    begin
+      RunCommandScript(ScriptName);
+    end;
+
+    DialogName:=FindDialogCall;
+    if DialogName<>'' then
+    begin
+      OpenDialog(DialogName, False);
+    end;
+
+    if not FindMainMenuDesabled then
+      CreateMenu(Application.MainForm);
+  end
+  else
   begin
-    S:=FindPackageFileRun;
-    r:=True;
-  end;
-  If S<>'' then
-    LoadPackageFromFile(S, r);
+    ProtectionForm:=TProtectionForm.Create(Application, IProtectionEngine, Self);
+    ProtectionForm.ShowModal;
 
-  ScriptName:=FindScriptName;
-  if ScriptName<>'' then
-  begin
-    RunCommandScript(ScriptName);
+    Application.Terminate;
   end;
-
-  DialogName:=FindDialogCall;
-  if DialogName<>'' then
-  begin
-    OpenDialog(DialogName, False);
-  end;
-
-  if not FindMainMenuDesabled then
-    CreateMenu(Application.MainForm);
 end;
 
 function TDCLMain.GetScriptText(ScriptName: String): TStringList;

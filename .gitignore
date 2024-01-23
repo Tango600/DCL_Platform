@@ -24,3 +24,4 @@
 /core/layoutmangers/backup/*
 /core/menu/backup/
 /data/revision.inc
+/core/protect/backup/
