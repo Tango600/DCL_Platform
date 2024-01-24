@@ -5,7 +5,12 @@ interface
 
 uses
   Classes, SysUtils,
-  hddinfo;
+{$IFDEF MSWINDOWS}
+  hddinfo
+{$ENDIF}
+{$IFDEF LINUX}
+{$ENDIF}
+  ;
 
 type
 
@@ -13,7 +18,11 @@ type
 
   TDCLHardwareKeys = class
   private
+    {$IFDEF MSWINDOWS}
     FHDDInfoWin: THDDInfo;
+    {$ENDIF}
+    {$IFDEF LINUX}
+    {$ENDIF}
     FHWData: String;
   public
     constructor Create;
@@ -28,13 +37,21 @@ implementation
 
 constructor TDCLHardwareKeys.Create;
 begin
+{$IFDEF MSWINDOWS}
   FHDDInfoWin:=THDDInfo.Create;
   FHWData:=FHDDInfoWin.SerialNumber;
+{$ENDIF}
+{$IFDEF LINUX}
+{$ENDIF}
 end;
 
 destructor TDCLHardwareKeys.Destroy;
 begin
+{$IFDEF MSWINDOWS}
   FreeAndNil(FHDDInfoWin);
+{$ENDIF}
+{$IFDEF LINUX}
+{$ENDIF}
   inherited Destroy;
 end;
 

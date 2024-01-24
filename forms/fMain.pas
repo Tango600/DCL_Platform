@@ -71,7 +71,7 @@ begin
 
   if GPT.DialogsSettings and (Self.WindowState=wsNormal) then
   begin
-    ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim;
+    ConfigPath:=AppConfigDir+FormConfigDir+PathDelim+'Base_'+GPT.BaseID+PathDelim;
     if not DirectoryExists(ConfigPath) then
       ForceDirectories(ConfigPath);
 
@@ -151,7 +151,7 @@ var
 begin
   if GPT.DialogsSettings then
   begin
-    ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim;
+    ConfigPath:=AppConfigDir+FormConfigDir+PathDelim+'Base_'+GPT.BaseID+PathDelim;
     if DirectoryExists(ConfigPath) and FileExists(ConfigPath+'MainForm.ini') then
     begin
       Settings:=TIniFile.Create(ConfigPath+'MainForm.ini', TEncoding.UTF8);

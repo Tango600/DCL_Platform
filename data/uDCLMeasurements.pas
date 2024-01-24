@@ -3,6 +3,9 @@ unit uDCLMeasurements;
 
 interface
 
+uses
+  DBGrids;
+
 const
   EditWidth=230;
   DigitEditWidth=80;
@@ -84,6 +87,8 @@ const
   NewDialogImage=0;
   ActiveDialogImage=1;
   InActiveDialogImage=2;
+
+  IndicatorWidth=DEFINDICATORCOLWIDTH;
 
 implementation
 

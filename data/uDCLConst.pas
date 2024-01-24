@@ -12,7 +12,7 @@ uses
 {$IFDEF ZEOS}
   ZClasses,
 {$ENDIF}
-  DBCtrls, DBGrids, LazVersion, SysUtils;
+  LazVersion;
 
 const
 {$IFDEF MSWINDOWS}
@@ -67,7 +67,6 @@ const
   UserLevelsSet='Undefined,Deny,ReadOnly,Write,Execute,Level1,Level2,Level3,Level4,Updater,Signer,Developer';
 
   InternalAppNameSuffix='FPC';
-  IndicatorWidth=DEFINDICATORCOLWIDTH;
 
   AppBuildDate={$I %DATE%};
   fpcVersion={$I %FPCVERSION%};
@@ -117,14 +116,11 @@ const
 
   MainFormName='MainForm';
 
-  NavigatorEditButtons=[nbEdit, nbDelete, nbInsert, nbPost, nbCancel];
-  NavigatorNavigateButtons=[nbFirst, nbLast, nbRefresh];
-
   DefaultNavigButtonsSet='First,Last,Edit,Delete,Insert,Post,Cancel,Refresh';
 
   UpdatesDir='Updates';
   DCLDir='DCL5';
-  FormConfigDir='Dialogs'+PathDelim;
+  FormConfigDir='Dialogs';
   DefaultTimeSeparator=':';
   DefaultDateSeparator='.';
   DefaultDateFormat='dd'+DefaultDateSeparator+'mm'+DefaultDateSeparator+'yyyy';

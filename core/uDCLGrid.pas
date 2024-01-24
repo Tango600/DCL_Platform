@@ -4249,7 +4249,7 @@ begin
   if not GPT.DisableFieldsList then
   if (Style=gsGrid) and Assigned(FDBGrid) then
   begin
-    ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim+'Grids'+PathDelim;
+    ConfigPath:=AppConfigDir+FormConfigDir+PathDelim+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim+'Grids'+PathDelim;
     if not DirectoryExists(ConfigPath) then
       ForceDirectories(ConfigPath);
 
@@ -5098,7 +5098,7 @@ begin
   if Assigned(FDBGrid) and (Style=gsGrid) and not GPT.DisableFieldsList then
   begin
     S:=GetGridSeed;
-    ConfigPath:=AppConfigDir+FormConfigDir+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim+'Grids'+PathDelim;
+    ConfigPath:=AppConfigDir+FormConfigDir+PathDelim+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim+'Grids'+PathDelim;
     if DirectoryExists(ConfigPath) and FileExists(ConfigPath+S+'.ini') then
     begin
       FieldsPos:=TStringList.Create;

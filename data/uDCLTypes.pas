@@ -23,6 +23,10 @@ type
 
   TDateTimePicker={$IFDEF ZVComponents}TZVDateTimePicker{$ELSE}TMyDateEdit{$ENDIF};
 
+const
+  NavigatorEditButtons=[nbEdit, nbDelete, nbInsert, nbPost, nbCancel];
+  NavigatorNavigateButtons=[nbFirst, nbLast, nbRefresh];
+
 implementation
 
 
