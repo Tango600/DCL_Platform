@@ -616,7 +616,7 @@ begin
   (Application.MainForm as TMainForm).SetDCLMain(Self);
 
   IProtectionEngine:=TDCLProtectionEngine.Create;
-  if IProtectionEngine.GetProtectionStatus then
+  if {$IFDEF PROTECTION}IProtectionEngine.GetProtectionStatus{$ELSE}True{$ENDIF} then
   begin
     r:=False;
     Variables:=FindVariablesParams;

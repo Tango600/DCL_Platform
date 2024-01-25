@@ -56,6 +56,7 @@ var
   i: Byte;
   s: String;
 begin
+  Result:='';
   For i:=1 to ParamCount do
   begin
     s:=FindParam(Str+'=', ParamStr(i));
