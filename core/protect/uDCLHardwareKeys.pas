@@ -9,6 +9,7 @@ uses
   hddinfo
 {$ENDIF}
 {$IFDEF LINUX}
+  uDiskPartInfo
 {$ENDIF}
   ;
 
@@ -22,6 +23,7 @@ type
     FHDDInfoWin: THDDInfo;
     {$ENDIF}
     {$IFDEF LINUX}
+    FPartsInfo: TDiskPartInfo;
     {$ENDIF}
     FHWData: String;
   public
@@ -42,6 +44,8 @@ begin
   FHWData:=FHDDInfoWin.SerialNumber;
 {$ENDIF}
 {$IFDEF LINUX}
+  FPartsInfo:=TDiskPartInfo.Create;
+  FHWData:=FPartsInfo.PartitionID;
 {$ENDIF}
 end;
 
@@ -51,6 +55,7 @@ begin
   FreeAndNil(FHDDInfoWin);
 {$ENDIF}
 {$IFDEF LINUX}
+  FreeAndNil(FPartsInfo);
 {$ENDIF}
   inherited Destroy;
 end;

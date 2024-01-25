@@ -30,7 +30,7 @@ type
 implementation
 
 uses
-  DateUtils;
+   DateUtils;
 
 const
   KeyFileName='protection.key';
@@ -74,15 +74,15 @@ function TDCLProtectionEngine.GetProtectionKey: String;
 var
   S: String;
 begin
-  S:=MD5String(KeyFolder+PathDelim+MD5String(HWKeyEngine.GetKey)+PathDelim+OSType);
-  Result:=MD5String(S+KeyFolder+OSType);
+  S:=MD5String(KeyFolder+'\'+MD5String(HWKeyEngine.GetKey)+'\windows');
+  Result:=MD5String(S+KeyFolder+'windows');
 end;
 
 function TDCLProtectionEngine.GetSoftwareKey: String;
 var
   FS: TStream;
 begin
-  ProgDataDir:=GetAppConfigDir(True);
+  ProgDataDir:=GetAppConfigDir({$IFDEF UNIX}False{$ELSE}True{$ENDIF});
   ProgDataDir:=ExtractFileDir(ExcludeTrailingPathDelimiter(ProgDataDir))+PathDelim+KeyFolder+PathDelim;
 
   Result:='';
@@ -128,7 +128,7 @@ begin
   S:=GetProtectionKey;
   for i:=0 to 7 do
   begin
-    S:=MD5String(S+KeyFolder+PathDelim+S+PathDelim);
+    S:=MD5String(S+KeyFolder+'\'+S+'\');
   end;
 
   Result:=S.ToLowerInvariant=Key.ToLowerInvariant;
@@ -142,7 +142,7 @@ begin
         S:=GetProtectionKey+';'+Periods[p]+';'+AddChar('0', IntToStr(YearOf(IncDay(Today, -d))-2020), 2)+CharsTab[MonthOf(IncDay(Today, -d))]+CharsTab[DayOf(IncDay(Today, -d))];
         for i:=0 to 7 do
         begin
-          S:=MD5String(S+KeyFolder+PathDelim+S+PathDelim);
+          S:=MD5String(S+KeyFolder+'\'+S+'\');
         end;
 
         if S.ToLowerInvariant=Key.ToLowerInvariant then
