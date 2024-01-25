@@ -90,7 +90,7 @@ begin
   begin
     if FileExists(ProgDataDir+KeyFileName) then
     begin
-      FS:=TFileStream.Create(ProgDataDir+KeyFileName, fmOpenRead);
+      FS:=TFileStream.Create(ProgDataDir+KeyFileName, fmOpenRead or fmShareDenyWrite);
       Result:=GetFileData(FS);
       FreeAndNil(FS);
     end;
