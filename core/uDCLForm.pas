@@ -469,7 +469,9 @@ begin
     DlgRes:=ShowErrorMessage(10, S);
     CanClose:=DlgRes=1;
     FormCanClose:=CanClose;
-  End;
+  End
+  Else
+    CanClose:=True;
 end;
 
 procedure TDCLForm.OnDestroyForm(Sender: TObject);

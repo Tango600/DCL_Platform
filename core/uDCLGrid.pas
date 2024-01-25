@@ -1725,7 +1725,6 @@ begin
     if DCLCommand.CloseButton then
     begin
       FForm.Close;
-      FForm:=nil;
     end
     else if DCLCommand.ChoiceButton then
     begin
