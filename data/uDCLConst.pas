@@ -86,6 +86,7 @@ const
   EncodingUTF8='utf8';
   AppTitle='DCL Platform';
   InternalAppName='DCLPlatform_'+InternalAppNameSuffix;
+  SelfAppName='DCL5';
 
   ParamPrefix=':';
   FieldObjectPrefix='$';

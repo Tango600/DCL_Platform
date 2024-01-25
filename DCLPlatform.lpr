@@ -11,10 +11,15 @@ uses
   {$IFDEF FPC}
   Interfaces,
   {$ENDIF}
-  Classes, Forms, Controls, SysUtils, uIDCLMain, fMain, uDCLMain
+  Classes, Forms, SysUtils, uIDCLMain, fMain, uDCLMain, uDCLConst
   ;
 
 {$R *.res}
+
+function GetAppName: String;
+begin
+  Result:=SelfAppName;
+end;
 
 var
   MainForm: TMainForm;
@@ -25,6 +30,7 @@ begin
   {$ENDIF}
   RequireDerivedFormResource:=False;
   Application.Scaled:=True;
+  OnGetApplicationName:=GetAppName;
   Application.Initialize;
 
   DCL:=TDCLMain.Create;
