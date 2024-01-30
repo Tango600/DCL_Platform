@@ -7,10 +7,9 @@ object AboutForm: TAboutForm
   Caption = 'О ...'
   ClientHeight = 353
   ClientWidth = 424
+  Position = poScreenCenter
   OnCreate = FormCreate
   OnResize = FormResize
-  Position = poScreenCenter
-  LCLVersion = '3.0.0.3'
   object PageControl1: TPageControl
     Left = 0
     Height = 353
@@ -62,7 +61,6 @@ object AboutForm: TAboutForm
           Top = 10
           Width = 90
           AutoSize = True
-          OnClick = ImageLogoClick
           Picture.Data = {
             1754506F727461626C654E6574776F726B47726170686963F306000089504E47
             0D0A1A0A0000000D494844520000005A0000005A0802000000B7CAD655000000
@@ -125,6 +123,7 @@ object AboutForm: TAboutForm
           Proportional = True
           Stretch = True
           Transparent = True
+          OnClick = ImageLogoClick
         end
         object lbProduct: TLabel
           Left = 120
@@ -278,6 +277,40 @@ object AboutForm: TAboutForm
           Font.Style = [fsBold]
           ParentFont = False
         end
+        object imgProtectionOn: TImage
+          Left = 10
+          Height = 48
+          Top = 243
+          Width = 48
+          AutoSize = True
+          Picture.Data = {
+            1754506F727461626C654E6574776F726B47726170686963D502000089504E47
+            0D0A1A0A0000000D49484452000000300000003008060000005702F987000000
+            097048597300000B1300000B1301009A9C1800000287494441546881ED994D6B
+            13511486A3D585205411054348324936060425281594E8465174A13FC0950BE9
+            468AB814447F80A845140A6AE9C60FDC74A928AD7623EE0B0AD2567125886D14
+            BFF5397847863A6DE77ECC5C53E68597306DEE39CF7B7A273399160AB972E54A
+            4DE57279BDD83787B64AA5D29A2008CEE14FD56AF50BAF979ACDE65ADF5C8904
+            EC11FC0AFF8A9A20AFF171DF7C0B6965AD563B06E0C47CF0982013954AE5A8AC
+            F10D5D00641D50FD40BD5C0A3C2688ACE9971A9942178BC50DB215F0A8DADF5A
+            E031FE4E9DA7F81427FC66A7B0ED767B150DF6E0011A8CF03A897F38805EC852
+            7B52F51A90DEC2601C8002B752844DEA1BC60198C473DF0184210F900758AE01
+            A8FF0DBFE8D6001D2E627B559F2BDD16A043ED76D887E3CBDD14E02393DF1781
+            3F112C7271FCDF0268C1671680F73D91FB199D6D439093FCEC6782DAE906E03D
+            D3BCB507AFE0F8BA4B78EB0014789CA04987BBC89A5A1217C2185EF99171001A
+            DF4D38A5E968088E074DF77C8C6F1B0760F1358D4653C056C3101C5FB49C7C38
+            9CABC601587C46B36134C45F99C22B9F360E40E33E838945B793E9B6897A8771
+            8056ABB51AA03983A6537CC93FC4DAB316939761CC5A7D235313BC6F313D2B13
+            E09E15BC484E445F01F82BEEB60EA0423CF3307DF30BD87C51F070D601F80039
+            E82C800A7133C3E90F398517C913340ACF64003FC3DEEF751E4044E1AD347997
+            6280F70C6A7B2AF0A168B04D1AA530F90F81CD454B33C42E9ABD7518E00DDE99
+            097CA846A3B191A93D74003FE6FCA16E52A987BF1708F2D960CBC89AF3D6B70A
+            2E54AFD71BC0DCD1807FC036DCE29BFB1F0176008F2FB65DF8FD7EDF9C4B4A3E
+            0A811D06F66BF0E71F18A372E2FBE6D216D78D4D62DF1CB9722D67FD06F6D621
+            3DC42922560000000049454E44AE426082
+          }
+          Visible = False
+        end
       end
     end
     object TabSheet2: TTabSheet
@@ -311,6 +344,32 @@ object AboutForm: TAboutForm
           Top = 8
           Width = 123
           Caption = 'Загруженные пакеты :'
+        end
+        object pnProtectionStatus: TPanel
+          Left = 10
+          Height = 26
+          Top = 168
+          Width = 383
+          ClientHeight = 26
+          ClientWidth = 383
+          TabOrder = 1
+          Visible = False
+          object Label9: TLabel
+            Left = 10
+            Height = 15
+            Top = 5
+            Width = 80
+            Caption = 'Ключ защиты:'
+          end
+          object lbProtectionKey: TLabel
+            Left = 105
+            Height = 15
+            Top = 5
+            Width = 16
+            Caption = '<>'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
         end
       end
     end

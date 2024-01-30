@@ -5,7 +5,7 @@ interface
 uses
   Forms, Classes, Generics.Collections, Controls,
   uDCLConst, uIDCLForm, uIDCLGrid, uDCLVariables, uDCLDBConnector, uDCLImages,
-  uDCLData, uDCLScriptsPackage, uReturnFormValue;
+  uDCLData, uDCLScriptsPackage, uReturnFormValue, uIDCLProtectionEngine;
 
 type
   IDCLMain=interface
@@ -46,6 +46,8 @@ type
 
     procedure LoadPackageFromFile(FileName: String; Run: Boolean);
     procedure ClearScriptPool;
+
+    function GetProtectionEngine: IDCLProtectionEngine;
   end;
 
 implementation

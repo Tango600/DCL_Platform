@@ -11,7 +11,7 @@ uses
   Controls, StdCtrls, DB, lcltype, fMain, fDCLLoginForm, fDCLProtectionForm,
   uDCLDBAwareTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenuSelector,
   uDCLNotifier, uIDCLMain, uIDCLForm, uIDCLGrid, uReturnFormValue, uDCLData,
-  uDCLConst, uIDCLCommand, uDCLScriptsPackage, uDCLImages;
+  uDCLConst, uIDCLCommand, uDCLScriptsPackage, uDCLImages, uIDCLProtectionEngine;
 
 type
   { TDCLMain }
@@ -30,6 +30,7 @@ type
     FPicturesIndexes: TDictionary<TPicturesTypes, Integer>;
     ProtectionForm: TProtectionForm;
     FImages: TImageList;
+    IProtectionEngine: IDCLProtectionEngine;
 
     function GetScriptText(ScriptName: String): TStringList;
 
@@ -41,6 +42,7 @@ type
 
     function LoadPackage(FileName: String): TDCLScriptsPackage;
     procedure UpdateFromPackages(PackagePath: String);
+    function GetProtectionEngine: IDCLProtectionEngine;
   public
     constructor Create; overload;
     destructor Destroy; override;
@@ -101,7 +103,7 @@ implementation
 uses
   uDCLConfig, uDCLDBStructure, uDCLMultiLang, fAbout, uDBUtils, uSystemUtils,
   uDCLGlobalVariables, uDCLUtils, uDCLMessages, uStringParams, uDCLCommand,
-  uIDCLProtectionEngine, uDCLProtectionEngine, uDCLUpdaterPackage;
+  uDCLProtectionEngine, uDCLUpdaterPackage;
 
 { TDCLMain }
 
@@ -580,7 +582,6 @@ var
   i, p:Integer;
   r: Boolean;
   S, vn, v, DialogName, ScriptName, Variables: String;
-  IProtectionEngine: IDCLProtectionEngine;
 
   function FindDialogCall: String;
   begin
@@ -860,6 +861,11 @@ begin
     end;
     retval:=FindNext(SRec);
   end;
+end;
+
+function TDCLMain.GetProtectionEngine: IDCLProtectionEngine;
+begin
+  Result:=IProtectionEngine;
 end;
 
 constructor TDCLMain.Create;
