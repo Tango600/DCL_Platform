@@ -8,9 +8,9 @@ object ProtectionForm: TProtectionForm
   Caption = 'Регистрация'
   ClientHeight = 173
   ClientWidth = 316
-  OnShow = FormShow
   Position = poScreenCenter
-  LCLVersion = '2.3.0.0'
+  LCLVersion = '3.99.0.0'
+  OnShow = FormShow
   object Label1: TLabel
     Left = 16
     Height = 16
@@ -33,10 +33,10 @@ object ProtectionForm: TProtectionForm
     Hint = 'Скопировать'
     Top = 32
     Width = 23
-    OnClick = sbCopyKeyClick
     ShowCaption = False
     ShowHint = True
     ParentShowHint = False
+    OnClick = sbCopyKeyClick
   end
   object edRegistrationKey: TEdit
     Left = 16
@@ -58,7 +58,7 @@ object ProtectionForm: TProtectionForm
     Top = 136
     Width = 75
     Caption = 'Принять'
-    OnClick = btApplayClick
     TabOrder = 2
+    OnClick = btApplayClick
   end
 end
