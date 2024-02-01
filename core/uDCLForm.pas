@@ -478,12 +478,17 @@ procedure TDCLForm.OnDestroyForm(Sender: TObject);
 var
   i: Integer;
 begin
-  for i:=1 to FGrids.Count do
+  if Assigned(FGrids) then
   begin
-    FGrids[i-1]:=nil;
+    for i:=1 to FGrids.Count do
+    begin
+      FGrids[i-1]:=nil;
+    end;
+    FreeAndNil(FGrids);
   end;
 
-  FIDCLMain.ReleaseForm(Self);
+  if Assigned(FIDCLMain) then
+    FIDCLMain.ReleaseForm(Self);
 end;
 
 procedure TDCLForm.SetRecordsStatus(Str: String);
@@ -745,14 +750,7 @@ begin
 end;
 
 destructor TDCLForm.Destroy;
-var
-  i: Integer;
 begin
-  for i:=1 to FGrids.Count do
-  begin
-    FGrids[i-1]:=nil;
-  end;
-  FreeAndNil(FGrids);
   FParentForm:=nil;
   FParentPanel:=nil;
   inherited Destroy;

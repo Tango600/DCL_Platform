@@ -325,7 +325,7 @@ begin
     end
     else
     begin
-      lForm.Close;
+      lForm:=nil;
     end;
   end;
   FreeAndNil(DCL);
