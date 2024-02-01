@@ -32,7 +32,7 @@ const
 
 type
   TUpdateKind=(ukAll, ukKeys);
-  TOperationsTypes=Array of TNotAllowedOperation;
+  TOperationsTypes=TList<TNotAllowedOperation>;
 
   { TDCLQuery }
   TDCLQuery=class(TDCLDialogQuery)
@@ -435,11 +435,13 @@ end;
 
 procedure TDCLQuery.FillDatasetUpdateSQL(KeyField, TableName: String);
 var
-  UpdatesFieldsSet, KeyFieldsSet, FieldN: String;
+  UpdatesFieldsSet, KeyFieldsWhereSet, FieldN: String;
   lUpdateSQL, lInsertSQL, lDeleteSQL, lRefreshSQL: String;
   v1, v2: Integer;
   DBField: TField;
-  KeyFields, UpdateFields: TList<String>;
+  flg: Boolean;
+  KeyFields: TAnsiStringArray;
+  UpdateFields: TList<String>;
 Begin
   If TableName<>'' Then
   Begin
@@ -487,24 +489,25 @@ Begin
       ShadowQuery.SQL.Text:='select * from '+TableName+' where 1=0';
       ShadowQuery.Open;
 
-      KeyFields:=TList<String>.Create;
       UpdateFields:=TList<String>.Create;
 
-      v1:=ParamsCount(KeyField);
-      If v1>1 then
-      Begin
-        For v2:=1 to v1 do
-        Begin
-          KeyFields.Add(UpperCase(GetParam(KeyField, v2)));
-        End;
-      End
-      Else
-      Begin
-        KeyFields.Add(UpperCase(KeyField));
-      end;
+      KeyFields:=KeyField.Split([','], TStringSplitOptions.ExcludeEmpty);
 
       For DBField in ShadowQuery.Fields do
-        UpdateFields.Add(UpperCase(DBField.FieldName));
+      begin
+        flg:=True;
+        for FieldN in KeyFields do
+        begin
+          if FieldN.Equals(DBField.FieldName, True) then
+          begin
+            flg:=False;
+            break;
+          end;
+        end;
+
+        if flg then
+          UpdateFields.Add(UpperCase(DBField.FieldName));
+      end;
 
       ShadowQuery.Close;
 
@@ -513,61 +516,76 @@ Begin
       Begin
         UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+'=:'+FieldN+', ';
       End;
+      For FieldN in KeyFields do
+      Begin
+        UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+'=:'+FieldN+', ';
+      End;
 
       If UpdatesFieldsSet<>'' then
         System.Delete(UpdatesFieldsSet, Length(UpdatesFieldsSet)-1, 2);
 
-      KeyFieldsSet:='';
+      KeyFieldsWhereSet:='';
       For FieldN in KeyFields do
-        KeyFieldsSet:=KeyFieldsSet+FieldN+'=:OLD_'+FieldN+' and ';
+        KeyFieldsWhereSet:=KeyFieldsWhereSet+FieldN+'=:OLD_'+FieldN+' and ';
 
-      If KeyFieldsSet<>'' then
-        System.Delete(KeyFieldsSet, Length(KeyFieldsSet)-4, 5);
+      If KeyFieldsWhereSet<>'' then
+        System.Delete(KeyFieldsWhereSet, Length(KeyFieldsWhereSet)-4, 5);
 
       If not FindNotAllowedOperation(dsoEdit) then
         lUpdateSQL:='update '+TableName+' set '+UpdatesFieldsSet+' where '+
-          KeyFieldsSet;
+          KeyFieldsWhereSet;
+
+      If not FindNotAllowedOperation(dsoDelete) then
+        lDeleteSQL:='delete from '+TableName+' where '+KeyFieldsWhereSet;
+
+      KeyFieldsWhereSet:='';
+      For FieldN in UpdateFields Do
+      begin
+        KeyFieldsWhereSet:=KeyFieldsWhereSet+':'+FieldN+', ';
+      end;
+      {$IFDEF SEQUENCENAME}
+      if (Self.Sequence.FieldName<>'') and (Self.Sequence.SequenceName<>'') then
+      begin
+        For FieldN in KeyFields Do
+        begin
+          KeyFieldsWhereSet:=KeyFieldsWhereSet+':'+FieldN+', ';
+        end;
+      end;
+      {$ENDIF}
+
+      If KeyFieldsWhereSet<>'' then
+        System.Delete(KeyFieldsWhereSet, Length(KeyFieldsWhereSet)-1, 2);
 
       UpdatesFieldsSet:='';
       For FieldN in UpdateFields Do
       begin
         UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+', ';
       end;
+      {$IFDEF SEQUENCENAME}
+      if (Self.Sequence.FieldName<>'') and (Self.Sequence.SequenceName<>'') then
+      begin
+        For FieldN in KeyFields Do
+        begin
+          UpdatesFieldsSet:=UpdatesFieldsSet+FieldN+', ';
+        end;
+      end;
+      {$ENDIF}
 
       If UpdatesFieldsSet<>'' then
         System.Delete(UpdatesFieldsSet, Length(UpdatesFieldsSet)-1, 2);
 
-      KeyFieldsSet:='';
-      For FieldN in UpdateFields Do
-      begin
-        KeyFieldsSet:=KeyFieldsSet+':'+FieldN+', ';
-      end;
-
-      If KeyFieldsSet<>'' then
-        System.Delete(KeyFieldsSet, Length(KeyFieldsSet)-1, 2);
-
       If not FindNotAllowedOperation(dsoInsert) then
         lInsertSQL:='insert into '+TableName+'('+UpdatesFieldsSet+') values('+
-          KeyFieldsSet+')';
-
-      KeyFieldsSet:='';
-      For FieldN in KeyFields do
-        KeyFieldsSet:=KeyFieldsSet+FieldN+'=:OLD_'+FieldN+' and ';
-
-      If KeyFieldsSet<>'' then
-        System.Delete(KeyFieldsSet, Length(KeyFieldsSet)-4, 5);
-
-      If not FindNotAllowedOperation(dsoDelete) then
-        lDeleteSQL:='delete from '+TableName+' where '+KeyFieldsSet;
+          KeyFieldsWhereSet+')';
 
       {$IFDEF REFRESHSQLDB}
-      KeyFieldsSet:='';
+      KeyFieldsWhereSet:='';
       For FieldN in KeyFields do
-        KeyFieldsSet:=KeyFieldsSet+FieldN+'=:'+FieldN+' and ';
-      If KeyFieldsSet<>'' then
-        System.Delete(KeyFieldsSet, Length(KeyFieldsSet)-4, 5);
+        KeyFieldsWhereSet:=KeyFieldsWhereSet+FieldN+'=:'+FieldN+' and ';
+      If KeyFieldsWhereSet<>'' then
+        System.Delete(KeyFieldsWhereSet, Length(KeyFieldsWhereSet)-4, 5);
 
-      lRefreshSQL:='select * from '+TableName+' where '+KeyFieldsSet;
+      lRefreshSQL:='select * from '+TableName+' where '+KeyFieldsWhereSet;
       if FUpdateSQL.RefreshSQL.Text<>lRefreshSQL then
         FUpdateSQL.RefreshSQL.Text:=lRefreshSQL;
       {$ENDIF}
@@ -587,19 +605,17 @@ End;
 function TDCLQuery.FindNotAllowedOperation(Value: TNotAllowedOperation
   ): Boolean;
 Var
-  l, i: Byte;
+  i: TNotAllowedOperation;
 Begin
-  l:=Length(FNotAllowOperations);
   Result:=False;
-  If l>0 then
-    For i:=1 to l do
+  For i in FNotAllowOperations do
+  Begin
+    If i=Value then
     Begin
-      If FNotAllowOperations[i-1]=Value then
-      Begin
-        Result:=True;
-        Break;
-      End;
+      Result:=True;
+      Break;
     End;
+  End;
 end;
 
 procedure TDCLQuery.SetDBConnector(Database: TDBConnector);
