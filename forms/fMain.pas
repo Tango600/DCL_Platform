@@ -79,13 +79,15 @@ begin
     if Self.FormStyle=fsMDIForm then
       SectionName:=SectionName+'MDI';
 
-    Settings:=TIniFile.Create(ConfigPath+'MainForm.ini', TEncoding.UTF8);
-    Settings.WriteInteger(SectionName, 'Top', Self.Top);
-    Settings.WriteInteger(SectionName, 'Left', Self.Left);
-    Settings.WriteInteger(SectionName, 'Height', Self.Height);
-    Settings.WriteInteger(SectionName, 'Width', Self.Width);
-
-    FreeAndNil(Settings);
+    try
+      Settings:=TIniFile.Create(ConfigPath+'MainForm.ini', TEncoding.UTF8);
+      Settings.WriteInteger(SectionName, 'Top', Self.Top);
+      Settings.WriteInteger(SectionName, 'Left', Self.Left);
+      Settings.WriteInteger(SectionName, 'Height', Self.Height);
+      Settings.WriteInteger(SectionName, 'Width', Self.Width);
+    finally
+      FreeAndNil(Settings);
+    end;
   end;
 end;
 

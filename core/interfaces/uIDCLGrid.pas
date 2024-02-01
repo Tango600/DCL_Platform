@@ -31,9 +31,6 @@ type
     function CheckEdits: Boolean;
     procedure NotifyEditFieldError(Field: TDCLField);
 
-    procedure GetDBGridFieldsPos(var Settings: TStringList);
-    function LoadDBGridFieldsPos: TList<TGridFieldSetting>;
-
     procedure ResetFieldsSettings;
 
     function GetQuery: TDCLQuery;

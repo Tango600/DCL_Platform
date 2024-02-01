@@ -928,12 +928,15 @@ begin
     if Assigned(FReturnValueParams) then
       Section:=Section+'Choose';
 
-    Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
-    Settings.WriteInteger(Section, 'Top', FForm.Top);
-    Settings.WriteInteger(Section, 'Left', FForm.Left);
-    Settings.WriteInteger(Section, 'Height', FForm.Height);
-    Settings.WriteInteger(Section, 'Width', FForm.Width);
-    FreeAndNil(Settings);
+    try
+      Settings:=TIniFile.Create(ConfigPath+'Settings.ini', TEncoding.UTF8);
+      Settings.WriteInteger(Section, 'Top', FForm.Top);
+      Settings.WriteInteger(Section, 'Left', FForm.Left);
+      Settings.WriteInteger(Section, 'Height', FForm.Height);
+      Settings.WriteInteger(Section, 'Width', FForm.Width);
+    finally
+      FreeAndNil(Settings);
+    end;
   end;
 end;
 

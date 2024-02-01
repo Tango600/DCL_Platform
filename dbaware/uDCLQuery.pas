@@ -1202,13 +1202,6 @@ begin
   if FNotAllowOperations<>Value then
   begin
     FNotAllowOperations:=Value;
-    If not FUpdateSQLDefined then
-    Begin
-      FMainTable:=GetMainQueryTable;
-      FKeyField:=GetPrimaryKeyField(FMainTable, True);
-      FUpdateSQLDefined:=True;
-    End;
-    SetUpdateSQL(FMainTable, FKeyField);
   end;
 end;
 
