@@ -21,10 +21,8 @@ type
 
     procedure SetSQL(SQL: String);
     procedure SetNavigatorButtonsSet(ButtonsExpr: String);
-    procedure ParseNavigatorButtons(ButtonsExpr: String);
 
     procedure AddButton(Button: TDCLCommandButton);
-    procedure AddFilter(Filter: TDBFilter);
 
     procedure AddEvent(EventType: TEventsEnum; ScriptName: String);
 

@@ -65,12 +65,10 @@ constructor TDCLMenuClassic.Create(Main: IDCLMain; MainForm: TForm);
 begin
   inherited Create(Main, MainForm);
 
-  if not TableExists(Main.GetDBConnector, DCLTable) then
-  begin
-    CreateAboutItem;
-  end
-  else
+  if TableExists(Main.GetDBConnector, DCLTable) then
     CreateMenu(LocalQuery, FMainMenu, 0);
+
+  CreateAboutItem;
 end;
 
 destructor TDCLMenuClassic.Destroy;
