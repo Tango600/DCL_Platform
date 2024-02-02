@@ -261,6 +261,8 @@ type
     procedure DeleteTempFilter;
 
     function GetSelectedRows: TBookmarkList;
+    function LoadDBGridFieldsPos: TList<TGridFieldSetting>;
+    procedure GetDBGridFieldsPos(var Settings: TStringList);
 
     procedure Undo;
     procedure PCopy;
@@ -294,9 +296,6 @@ type
 
     function CheckEdits: Boolean;
     procedure NotifyEditFieldError(Field: TDCLField);
-
-    procedure GetDBGridFieldsPos(var Settings: TStringList);
-    function LoadDBGridFieldsPos: TList<TGridFieldSetting>;
 
     procedure ResetFieldsSettings;
 
@@ -4256,8 +4255,11 @@ begin
     FieldsPos:=TStringList.Create;
     GetDBGridFieldsPos(FieldsPos);
 
-    if FieldsPos.Count>0 then
-      FieldsPos.SaveToFile(ConfigPath+Seed+'.ini', TEncoding.UTF8);
+    try
+      if FieldsPos.Count>0 then
+        FieldsPos.SaveToFile(ConfigPath+Seed+'.ini', TEncoding.UTF8);
+    except
+    end;
 
     FreeAndNil(FieldsPos);
   end;
@@ -4886,8 +4888,7 @@ begin
   end;
 
   FSeed:=CalculateSeed;
-  If Assigned(FQuery) then
-    FQuery.NotAllowOperations:=FNotAllowedOperations.ToArray;
+  FQuery.NotAllowOperations:=FNotAllowedOperations;
 
   AdjustToolPanel;
 

@@ -26,13 +26,17 @@ type
 
 implementation
 
+const
+  Filters: Array[1..4] of String=('usb-', 'nvme-nvme.', 'nvme-eui.', 'wwn-');
+
 { TDiskPartInfo }
 
 procedure TDiskPartInfo.ReadInfo;
 var
   devList, disklist: TStringList;
   p, l: Integer;
-  f, f1, s: String;
+  flg: Boolean;
+  f, filter, f1, s: String;
   devIds: TSortedList<String>;
 begin
   disklist:=TStringList.Create;
@@ -42,7 +46,17 @@ begin
   begin
     p:=f.LastIndexOf(PathDelim);
     s:=f.Substring(p+1);
-    if not s.StartsWith('usb-') then
+    flg:=True;
+    for filter in Filters do
+    begin
+      if s.StartsWith(filter, True) then
+      begin
+        flg:=False;
+        break;
+      end;
+    end;
+
+    if flg then
       disklist.Append(s);
   end;
   FreeAndNil(devList);

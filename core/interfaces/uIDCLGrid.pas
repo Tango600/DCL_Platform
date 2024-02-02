@@ -21,18 +21,13 @@ type
 
     procedure SetSQL(SQL: String);
     procedure SetNavigatorButtonsSet(ButtonsExpr: String);
-    procedure ParseNavigatorButtons(ButtonsExpr: String);
 
     procedure AddButton(Button: TDCLCommandButton);
-    procedure AddFilter(Filter: TDBFilter);
 
     procedure AddEvent(EventType: TEventsEnum; ScriptName: String);
 
     function CheckEdits: Boolean;
     procedure NotifyEditFieldError(Field: TDCLField);
-
-    procedure GetDBGridFieldsPos(var Settings: TStringList);
-    function LoadDBGridFieldsPos: TList<TGridFieldSetting>;
 
     procedure ResetFieldsSettings;
 

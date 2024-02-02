@@ -6,7 +6,7 @@ interface
 uses
   Classes, SysUtils, Forms, Menus, ComCtrls, Controls, fgl, ExtCtrls, Buttons,
   LCLClasses,
-  uDCLConst, uDCLDBConnector, uDBUtils, uDCLMeasurements, uIDCLMain,
+  uDCLConst, uDCLDBConnector, uDCLMeasurements, uIDCLMain,
   uDCLDBAwareTypes, uDCLDBStructure;
 
 type

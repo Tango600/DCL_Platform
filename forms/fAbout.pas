@@ -15,8 +15,10 @@ type
     ButtonOK: TButton;
     GroupBox1: TGroupBox;
     GroupBox2: TGroupBox;
+    imgProtectionOn: TImage;
     ImageLogo: TImage;
     Label1: TLabel;
+    lbProtectionKey: TLabel;
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
@@ -24,6 +26,7 @@ type
     Label6: TLabel;
     Label7: TLabel;
     Label8: TLabel;
+    Label9: TLabel;
     lbRevision: TLabel;
     lbBuildDate: TLabel;
     lbBuildType: TLabel;
@@ -39,6 +42,7 @@ type
     memConfigInfo: TMemo;
     miCopy: TMenuItem;
     PageControl1: TPageControl;
+    pnProtectionStatus: TPanel;
     pmPackages: TPopupMenu;
     TabSheet1: TTabSheet;
     TabSheet2: TTabSheet;
@@ -108,6 +112,11 @@ begin
   begin
     lbPackagesList.Items.Append(pi.Name+' ('+pi.Hash+')');
   end;
+  {$IFDEF PROTECTION}
+  imgProtectionOn.Visible:=True;
+  pnProtectionStatus.Visible:=True;
+  lbProtectionKey.Caption:=IDCLMain.GetProtectionEngine.GetProtectionKey;
+  {$ENDIF}
 end;
 
 procedure TAboutForm.miCopyClick(Sender: TObject);
