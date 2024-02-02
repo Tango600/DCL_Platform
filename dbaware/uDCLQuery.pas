@@ -381,7 +381,7 @@ var
   lUpdateSQL, lInsertSQL, lDeleteSQL, lRefreshSQL: String;
   DBField: TField;
   flg: Boolean;
-  KeyFields: TAnsiStringArray;
+  KeyFields: Array of string;
   UpdateFields: TList<String>;
 Begin
   If TableName<>'' Then
