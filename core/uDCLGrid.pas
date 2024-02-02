@@ -668,8 +668,9 @@ end;
 procedure TDCLGrid.ScrollDB(Data: TDataSet);
 begin
   ExecEvents(evtScroll);
-  if Assigned(FQuery) and FQuery.Active then
-    FForm.SetRecordsStatus(FQuery.RecNo, FQuery.RecordCount);
+  if FDataControlType=dctMainGrid then
+    if Assigned(FQuery) and FQuery.Active then
+      FForm.SetRecordsStatus(FQuery.RecNo, FQuery.RecordCount);
 
   UpdateAllControls;
 end;
