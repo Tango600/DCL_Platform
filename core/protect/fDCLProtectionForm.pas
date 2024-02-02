@@ -8,7 +8,7 @@ uses
   Windows, Messages, LazUTF8,
   {$ENDIF}
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, Buttons,
-  uIDCLProtectionEngine, uIDCLMain;
+  Menus, uIDCLProtectionEngine, uIDCLMain;
 
 type
 
@@ -20,10 +20,13 @@ type
     edProgramKey: TEdit;
     Label1: TLabel;
     Label2: TLabel;
+    MainMenu1: TMainMenu;
+    miAbout: TMenuItem;
     sbCopyKey: TSpeedButton;
     procedure btApplayClick(Sender: TObject);
     constructor Create(AOwner: TComponent; ProtectionEngine: IDCLProtectionEngine; DCLMain: IDCLMain); overload;
     procedure FormShow(Sender: TObject);
+    procedure miAboutClick(Sender: TObject);
     procedure sbCopyKeyClick(Sender: TObject);
   private
     FDCLMain: IDCLMain;
@@ -79,6 +82,11 @@ begin
   AppendMenu(GetSystemMenu(Handle, False), MF_STRING, AboutMenuItem,
     Pchar(UTF8ToWinCP('DCL '+GetDCLMessageString(msVersion)+' : '+DCLVersion)));
   {$ENDIF}
+end;
+
+procedure TProtectionForm.miAboutClick(Sender: TObject);
+begin
+  FDCLMain.About;
 end;
 
 procedure TProtectionForm.sbCopyKeyClick(Sender: TObject);
