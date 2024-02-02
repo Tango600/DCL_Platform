@@ -1691,7 +1691,6 @@ procedure TDCLGrid.SetNewQuery(Data: TDataSource);
 begin
   FQuery:=TDCLQuery.Create(Self.GetComponent);
   FDBConnector.SetConnector(FQuery);
-  FQuery.NotAllowOperations:=FNotAllowedOperations;
   SetQueryEvents(FQuery);
 
   FData.DataSet:=FQuery;
@@ -4889,6 +4888,7 @@ begin
   end;
 
   FSeed:=CalculateSeed;
+  FQuery.NotAllowOperations:=FNotAllowedOperations;
 
   AdjustToolPanel;
 

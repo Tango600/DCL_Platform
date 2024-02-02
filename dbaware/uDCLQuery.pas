@@ -97,6 +97,8 @@ type
 
     procedure SetDCLDBConnector(Query: TDCLSimlyQuery);
     function GetDBConnector(Query: TDCLSimlyQuery): TDatabaseObject;
+
+    procedure Init;
   public
     constructor Create(DatabaseObj: TDBConnector); overload;
     constructor Create(AOwner : TComponent); {$IFDEF FPC}override;{$ELSE}overload;{$ENDIF}
@@ -344,100 +346,39 @@ end;
 constructor TDCLQuery.Create(DatabaseObj: TDBConnector);
 begin
   inherited Create(nil);
-  FUpdateSQLDefined:=False;
-{$IFDEF ZEOS}
-  FFieldsDefsDefined:=False;
+  {$IFDEF ZEOS}
   Connection:=DatabaseObj;
-{$ENDIF}
-{$IFDEF ADO}
-  Connection:=DatabaseObj;
-{$ENDIF}
-{$IFDEF IBX}
-  Database:=DatabaseObj;
-  {$IFDEF FPC}
-  AllowAutoActivateTransaction:=True;
-  AutoCommit:=acCommitRetaining;
   {$ENDIF}
-{$ENDIF}
-{$IFDEF SQLdbFamily}
+  {$IFDEF IBX}
   Database:=DatabaseObj;
-{$ENDIF}
-{$IFDEF TRANSACTIONDB}
-  Transaction:=TDCLDBTransaction.Create(GetConnector, trtWrite);
-{$ENDIF}
-  inherited AfterDelete:=AfterDeleteData;
-  inherited AfterInsert:=AfterInsertData;
-  inherited AfterPost:=AfterPostData;
-  inherited AfterCancel:=AfterCancelData;
-  inherited AfterOpen:=AfterOpenData;
-  inherited BeforePost:=BeforePostData;
-  inherited BeforeInsert:=BeforeInsertData;
-
-  ShadowQuery:=TDCLDialogQuery.Create(Self);
-{$IFDEF TRANSACTIONDB}
-  ShadowTransaction:=TDCLDBTransaction.Create(GetConnector, trtWrite);
-  ShadowQuery.Transaction:=Transaction;
-{$ENDIF}
-{$IFDEF ZEOS}
+  {$ENDIF}
+  {$IFDEF SQLdbFamily}
+  Database:=DatabaseObj;
+  {$ENDIF}
+  Init;
+  {$IFDEF ZEOS}
   ShadowQuery.Connection:=DatabaseObj;
-{$ENDIF}
-{$IFDEF IBX}
+  {$ENDIF}
+  {$IFDEF IBX}
   ShadowQuery.Database:=DatabaseObj;
   {$IFDEF FPC}
-  ShadowQuery.AllowAutoActivateTransaction:=True;
-  ShadowQuery.AutoCommit:=acCommitRetaining;
-  //ShadowQuery.AutoTrim:=True;
   {$ENDIF}
-{$ENDIF}
-{$IFDEF SQLdbFamily}
+  {$ENDIF}
+  {$IFDEF SQLdbFamily}
   ShadowQuery.Database:=DatabaseObj;
-{$ENDIF}
+  {$ENDIF}
 end;
 
 constructor TDCLQuery.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FUpdateSQLDefined:=False;
-{$IFDEF ZEOS}
-  FFieldsDefsDefined:=False;
-{$ENDIF}
-{$IFDEF ADO}
-{$ENDIF}
-{$IFDEF IBX}
-  {$IFDEF FPC}
-  AllowAutoActivateTransaction:=True;
-  AutoCommit:=acCommitRetaining;
-  {$ENDIF}
-{$ENDIF}
-{$IFDEF TRANSACTIONDB}
-  Transaction:=TDCLDBTransaction.Create(GetConnector, trtWrite);
-{$ENDIF}
-  inherited AfterDelete:=AfterDeleteData;
-  inherited AfterInsert:=AfterInsertData;
-  inherited AfterPost:=AfterPostData;
-  inherited AfterCancel:=AfterCancelData;
-  inherited AfterOpen:=AfterOpenData;
-  inherited BeforePost:=BeforePostData;
-  inherited BeforeInsert:=BeforeInsertData;
-
-  ShadowQuery:=TDCLSimlyQuery.Create(Self);
-{$IFDEF TRANSACTIONDB}
-  ShadowTransaction:=TDCLDBTransaction.Create(GetConnector, trtWrite);
-  ShadowQuery.Transaction:=Transaction;
-{$ENDIF}
-{$IFDEF IBX}
-  {$IFDEF FPC}
-  ShadowQuery.AllowAutoActivateTransaction:=True;
-  ShadowQuery.AutoCommit:=acCommitRetaining;
-  {$ENDIF}
-{$ENDIF}
+  Init;
 end;
 
 procedure TDCLQuery.FillDatasetUpdateSQL(KeyField, TableName: String);
 var
   UpdatesFieldsSet, KeyFieldsWhereSet, FieldN: String;
   lUpdateSQL, lInsertSQL, lDeleteSQL, lRefreshSQL: String;
-  v1, v2: Integer;
   DBField: TField;
   flg: Boolean;
   KeyFields: TAnsiStringArray;
@@ -707,6 +648,45 @@ begin
   {$IFDEF SQLdbFamily}
   Query.DataBase
   {$ENDIF};
+end;
+
+procedure TDCLQuery.Init;
+begin
+  FNotAllowOperations:=TOperationsTypes.Create;
+  {$IFDEF ZEOS}
+  FFieldsDefsDefined:=False;
+  {$ENDIF}
+  {$IFDEF IBX}
+  {$IFDEF FPC}
+  AllowAutoActivateTransaction:=True;
+  AutoCommit:=acCommitRetaining;
+  {$ENDIF}
+  {$ENDIF}
+  FUpdateSQLDefined:=False;
+  {$IFDEF TRANSACTIONDB}
+  Transaction:=TDCLDBTransaction.Create(GetConnector, trtWrite);
+  {$ENDIF}
+  inherited AfterDelete:=AfterDeleteData;
+  inherited AfterInsert:=AfterInsertData;
+  inherited AfterPost:=AfterPostData;
+  inherited AfterCancel:=AfterCancelData;
+  inherited AfterOpen:=AfterOpenData;
+  inherited BeforePost:=BeforePostData;
+  inherited BeforeInsert:=BeforeInsertData;
+
+  ShadowQuery:=TDCLSimlyQuery.Create(Self);
+  {$IFDEF TRANSACTIONDB}
+  ShadowTransaction:=TDCLDBTransaction.Create(GetConnector, trtWrite);
+  ShadowQuery.Transaction:=Transaction;
+  {$ENDIF}
+  {$IFDEF IBX}
+  ShadowQuery.Database:=DatabaseObj;
+  {$IFDEF FPC}
+  ShadowQuery.AllowAutoActivateTransaction:=True;
+  ShadowQuery.AutoCommit:=acCommitRetaining;
+  //ShadowQuery.AutoTrim:=True;
+  {$ENDIF}
+  {$ENDIF}
 end;
 
 destructor TDCLQuery.Destroy;
@@ -1198,10 +1178,14 @@ begin
 end;
 
 procedure TDCLQuery.SetNotAllowedOperations(Value: TOperationsTypes);
+var
+  i: TNotAllowedOperation;
 begin
   if FNotAllowOperations<>Value then
   begin
-    FNotAllowOperations:=Value;
+    FNotAllowOperations.Clear;
+    for i in Value do
+      FNotAllowOperations.Add(i);;
   end;
 end;
 
