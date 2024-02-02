@@ -47,7 +47,6 @@ type
     TabSheet1: TTabSheet;
     TabSheet2: TTabSheet;
     procedure FormCreate(Sender: TObject);
-    procedure FormResize(Sender: TObject);
     procedure ImageLogoClick(Sender: TObject);
 
     constructor Create(Owner: TComponent; IDCLMain: IDCLMain); overload;
@@ -73,14 +72,6 @@ uses
 {$R *.lfm}
 
 { TAboutForm }
-
-procedure TAboutForm.FormResize(Sender: TObject);
-begin
-  if Assigned(ButtonOK) then
-  begin
-    ButtonOK.Left:=(Width-ButtonOK.Width) div 2;
-  end;
-end;
 
 procedure TAboutForm.ImageLogoClick(Sender: TObject);
 begin
