@@ -27,6 +27,7 @@ Function LeadingZero(Const aVal: Word): String;
 Function CopyCut(Var S: String; From, Count: Word): String;
 function ReplaseCPtoWIN(CodePageName:String):String;
 function ReplaseWINtoCP(CodePageName:String):String;
+Function TextToString(Text: String): String;
 
 Procedure InitGetAppConfigDir;
 Function NoFileExt(const FileName:String):Boolean;
@@ -58,6 +59,9 @@ implementation
 
 uses
   SumProps, uDCLGlobalVariables;
+
+const
+  TabSize=2;
 
 function IsLexem(const Lexem, S: String): Boolean;
 var
@@ -93,6 +97,30 @@ Begin
       Delete(S, L, 1);
     Dec(L);
   End;
+End;
+
+Function TextToString(Text: String): String;
+Var
+  L: Integer;
+  itabsize: byte;
+Begin
+  Result:='';
+  L:=Length(Text);
+  While L<>0 Do
+  Begin
+    If Text[L]=#10 Then
+      Text[L]:=' ';
+    If Text[L]=#9 Then
+    Begin
+      For itabsize:=1 To TabSize Do
+        Insert(' ', Text, L);
+    End;
+    If (Text[L]=#13)Or(Text[L]=#0) Then
+      Delete(Text, L, 1);
+    Dec(L);
+  End;
+
+  Result:=Text;
 End;
 
 Function CountSimb(S: String; C: Char): Integer;

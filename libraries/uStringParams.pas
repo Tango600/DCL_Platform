@@ -29,7 +29,6 @@ function NormalizeCase(const S: String): String;
 Function TrimSymbols(S: String; TrimS: String): String;
 Function IndexInSet(SetValue, S: String; SepChar: String=DefaultValuesSeparator;
   Delim: String=DefaultParamDelim): Integer;
-Function TextToString(Text: String): String;
 function TrimChars(CharsSet, S:string):String;
 
 Function DoublingApostrof(const S: String):String;
@@ -37,36 +36,12 @@ Function DCLCompareString(S1, S2: String): Boolean;
 
 implementation
 
-uses
-  uDCLConst, uDCLData;
+const
+  StopSimbols=';( )[],=\/+-^<>.%:;&$#@*'#39#10#13;
 
 Function DCLCompareString(S1, S2: String): Boolean;
 Begin
   Result:=LowerCase(S1)=LowerCase(S2);
-End;
-
-Function TextToString(Text: String): String;
-Var
-  L: Integer;
-  itabsize: byte;
-Begin
-  Result:='';
-  L:=Length(Text);
-  While L<>0 Do
-  Begin
-    If Text[L]=#10 Then
-      Text[L]:=' ';
-    If Text[L]=#9 Then
-    Begin
-      For itabsize:=1 To TabSize Do
-        Insert(' ', Text, L);
-    End;
-    If (Text[L]=#13)Or(Text[L]=#0) Then
-      Delete(Text, L, 1);
-    Dec(L);
-  End;
-
-  Result:=Text;
 End;
 
 function NormalizeCase(const S: String): String;

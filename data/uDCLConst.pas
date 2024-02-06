@@ -97,7 +97,6 @@ const
   ProcPrefix='!!';
   MaskPassChar='#';
   ParamDelim='"';
-  TabSize=2;
   FilterResetValue=-1;
 
   PAGSignatureSize=3;
@@ -106,8 +105,6 @@ const
   FloatDelimiterFrom=',';
   FloatDelimiterTo='.';
   Quote=#39;
-
-  StopSimbols=';( )[],=\/+-^<>.%:;&$#@*'#39#10#13;
 
   IntervalTimeToInitScripts=700;
   IntervalTimeNotify=61007;
