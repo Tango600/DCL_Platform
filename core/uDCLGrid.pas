@@ -1061,6 +1061,7 @@ begin
         Find(Sender);
         (Sender as TDBGrid).SetFocus;
         (Sender as TDBGrid).SelectedIndex:=col-1;
+        FindGrid.Cells[col, 0]:='%';
       end;
 
       if FindProcess then
@@ -1069,8 +1070,7 @@ begin
   end;
 end;
 
-procedure TDCLGrid.Grid1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState
-  );
+procedure TDCLGrid.Grid1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
   col: Integer;
 begin
@@ -1083,7 +1083,6 @@ begin
       begin
         if not FindProcess then
           Find(Sender);
-        FindGrid.Cells[col, 0]:='';
         (Sender as TDBGrid).SetFocus;
         (Sender as TDBGrid).SelectedIndex:=col-1;
         Find(Sender);
@@ -1099,6 +1098,7 @@ begin
 
     if Key=13 then
     begin
+      FindGrid.Cells[col-1, 0]:=FindGrid.Cells[col-1, 0]+'%';
       Find(Sender);
       (Sender as TDBGrid).SetFocus;
       (Sender as TDBGrid).SelectedIndex:=col-2;
