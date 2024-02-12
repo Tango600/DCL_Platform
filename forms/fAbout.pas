@@ -40,16 +40,19 @@ type
     lbVersion: TLabel;
     lbPackagesList: TListBox;
     memConfigInfo: TMemo;
+    MenuItem1: TMenuItem;
     miCopy: TMenuItem;
     PageControl1: TPageControl;
     pnProtectionStatus: TPanel;
     pmPackages: TPopupMenu;
+    pmProtectionInfo: TPopupMenu;
     TabSheet1: TTabSheet;
     TabSheet2: TTabSheet;
     procedure FormCreate(Sender: TObject);
     procedure ImageLogoClick(Sender: TObject);
 
     constructor Create(Owner: TComponent; IDCLMain: IDCLMain); overload;
+    procedure MenuItem1Click(Sender: TObject);
     procedure miCopyClick(Sender: TObject);
   private
     LogoClickCount: Integer;
@@ -67,7 +70,8 @@ implementation
 
 uses
   ClipBrd,
-  uDCLDBAwareTypes, uDCLConst, uDCLVersion, uDCLDBStructure, uDCLScriptsPackage;
+  uDCLDBAwareTypes, uDCLConst, uDCLVersion, uDCLDBStructure, fDCLProtectionForm,
+  uDCLScriptsPackage;
 
 {$R *.lfm}
 
@@ -108,6 +112,14 @@ begin
   pnProtectionStatus.Visible:=True;
   lbProtectionKey.Caption:=IDCLMain.GetProtectionEngine.GetProtectionKey;
   {$ENDIF}
+end;
+
+procedure TAboutForm.MenuItem1Click(Sender: TObject);
+var
+  ProtectionForm: TProtectionForm;
+begin
+  ProtectionForm:=TProtectionForm.Create(Application, FIDCLMain);
+  ProtectionForm.ShowModal;
 end;
 
 procedure TAboutForm.miCopyClick(Sender: TObject);

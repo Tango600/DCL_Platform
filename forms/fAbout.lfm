@@ -7,9 +7,9 @@ object AboutForm: TAboutForm
   Caption = 'О ...'
   ClientHeight = 353
   ClientWidth = 453
-  OnCreate = FormCreate
   Position = poScreenCenter
-  LCLVersion = '2.3.0.0'
+  LCLVersion = '3.99.0.0'
+  OnCreate = FormCreate
   object PageControl1: TPageControl
     Left = 0
     Height = 353
@@ -22,16 +22,16 @@ object AboutForm: TAboutForm
     object TabSheet1: TTabSheet
       BorderWidth = 1
       Caption = 'Version'
-      ClientHeight = 323
-      ClientWidth = 443
+      ClientHeight = 325
+      ClientWidth = 445
       object GroupBox1: TGroupBox
         Left = 1
-        Height = 321
+        Height = 323
         Top = 1
-        Width = 441
+        Width = 443
         Align = alClient
         BorderSpacing.Around = 1
-        ClientHeight = 319
+        ClientHeight = 303
         ClientWidth = 439
         ParentBackground = False
         ParentColor = False
@@ -45,7 +45,7 @@ object AboutForm: TAboutForm
           AnchorSideBottom.Side = asrBottom
           Left = 182
           Height = 25
-          Top = 282
+          Top = 266
           Width = 75
           Anchors = [akLeft, akBottom]
           BorderSpacing.Left = 100
@@ -66,7 +66,6 @@ object AboutForm: TAboutForm
           AutoSize = True
           BorderSpacing.Left = 10
           BorderSpacing.Top = 10
-          OnClick = ImageLogoClick
           Picture.Data = {
             1754506F727461626C654E6574776F726B47726170686963F306000089504E47
             0D0A1A0A0000000D494844520000005A0000005A0802000000B7CAD655000000
@@ -129,14 +128,15 @@ object AboutForm: TAboutForm
           Proportional = True
           Stretch = True
           Transparent = True
+          OnClick = ImageLogoClick
         end
         object lbProduct: TLabel
           AnchorSideLeft.Control = ImageLogo
           AnchorSideLeft.Side = asrBottom
           Left = 110
-          Height = 16
+          Height = 15
           Top = 8
-          Width = 56
+          Width = 49
           Anchors = [akLeft]
           BorderSpacing.Left = 10
           Caption = 'Продукт:'
@@ -145,10 +145,10 @@ object AboutForm: TAboutForm
         object lbProductName: TLabel
           AnchorSideLeft.Control = lbProduct
           AnchorSideLeft.Side = asrBottom
-          Left = 174
-          Height = 16
+          Left = 167
+          Height = 15
           Top = 8
-          Width = 87
+          Width = 74
           Anchors = [akLeft]
           BorderSpacing.Left = 8
           Caption = 'DCL Platform'
@@ -159,9 +159,9 @@ object AboutForm: TAboutForm
           AnchorSideLeft.Control = Label4
           AnchorSideLeft.Side = asrBottom
           Left = 293
-          Height = 16
+          Height = 15
           Top = 8
-          Width = 61
+          Width = 51
           Anchors = [akLeft]
           BorderSpacing.Left = 8
           Caption = 'lbVersion'
@@ -171,10 +171,10 @@ object AboutForm: TAboutForm
         object lbDBLib: TLabel
           AnchorSideLeft.Control = Label6
           AnchorSideLeft.Side = asrBottom
-          Left = 183
-          Height = 16
-          Top = 32
-          Width = 51
+          Left = 175
+          Height = 15
+          Top = 31
+          Width = 43
           Anchors = [akLeft]
           BorderSpacing.Left = 8
           Caption = 'lbDBLib'
@@ -184,10 +184,10 @@ object AboutForm: TAboutForm
         object lbDBLibVersion: TLabel
           AnchorSideLeft.Control = Label5
           AnchorSideLeft.Side = asrBottom
-          Left = 297
-          Height = 16
-          Top = 32
-          Width = 100
+          Left = 296
+          Height = 15
+          Top = 31
+          Width = 84
           Anchors = [akLeft]
           BorderSpacing.Left = 8
           Caption = 'lbDBLibVersion'
@@ -196,18 +196,18 @@ object AboutForm: TAboutForm
         end
         object lbCompillerName: TLabel
           Left = 70
-          Height = 16
+          Height = 15
           Top = 216
-          Width = 109
+          Width = 96
           Caption = 'lbCompillerName'
           Font.Style = [fsBold]
           ParentFont = False
         end
         object lbBuildType: TLabel
           Left = 232
-          Height = 16
+          Height = 15
           Top = 216
-          Width = 75
+          Width = 64
           Caption = 'lbBuildType'
           Font.Style = [fsBold]
           ParentFont = False
@@ -216,9 +216,9 @@ object AboutForm: TAboutForm
           AnchorSideLeft.Control = ImageLogo
           AnchorSideLeft.Side = asrBottom
           Left = 110
-          Height = 16
-          Top = 64
-          Width = 84
+          Height = 15
+          Top = 61
+          Width = 74
           Anchors = [akLeft]
           BorderSpacing.Left = 10
           Caption = 'Дата сборки :'
@@ -226,10 +226,10 @@ object AboutForm: TAboutForm
         object lbBuildDate: TLabel
           AnchorSideLeft.Control = Label1
           AnchorSideLeft.Side = asrBottom
-          Left = 202
-          Height = 16
-          Top = 64
-          Width = 76
+          Left = 192
+          Height = 15
+          Top = 61
+          Width = 65
           Anchors = [akLeft]
           BorderSpacing.Left = 8
           Caption = 'lbBuildDate'
@@ -238,39 +238,39 @@ object AboutForm: TAboutForm
         end
         object Label2: TLabel
           Left = 12
-          Height = 16
+          Height = 15
           Top = 216
-          Width = 53
+          Width = 48
           Caption = 'Собран :'
         end
         object Label3: TLabel
           Left = 200
-          Height = 16
+          Height = 15
           Top = 216
-          Width = 24
+          Width = 23
           Caption = 'ОС :'
         end
         object Label4: TLabel
           Left = 276
-          Height = 16
+          Height = 15
           Top = 8
           Width = 9
           Caption = 'v.'
         end
         object Label5: TLabel
           Left = 276
-          Height = 16
+          Height = 15
           Top = 32
-          Width = 13
+          Width = 12
           Caption = 'v :'
         end
         object Label6: TLabel
           AnchorSideLeft.Control = ImageLogo
           AnchorSideLeft.Side = asrBottom
           Left = 110
-          Height = 16
-          Top = 32
-          Width = 65
+          Height = 15
+          Top = 31
+          Width = 57
           Anchors = [akLeft]
           BorderSpacing.Left = 10
           Caption = 'Движ. БД :'
@@ -294,36 +294,36 @@ object AboutForm: TAboutForm
         end
         object lbConfigVersionText: TLabel
           Left = 10
-          Height = 16
+          Height = 15
           Top = 176
-          Width = 144
+          Width = 126
           Caption = 'Версия конфигурации:'
         end
         object lbConfigVersion: TLabel
           AnchorSideLeft.Control = lbConfigVersionText
           AnchorSideLeft.Side = asrBottom
-          Left = 162
-          Height = 16
-          Top = 176
-          Width = 19
+          Left = 144
+          Height = 15
+          Top = 168
+          Width = 15
           Anchors = [akLeft]
           BorderSpacing.Left = 8
           Caption = '0.1'
         end
         object Label8: TLabel
           Left = 296
-          Height = 16
+          Height = 15
           Top = 64
-          Width = 55
+          Width = 47
           Caption = 'Ревизия:'
         end
         object lbRevision: TLabel
           AnchorSideLeft.Control = Label8
           AnchorSideLeft.Side = asrBottom
-          Left = 359
-          Height = 16
-          Top = 64
-          Width = 20
+          Left = 351
+          Height = 15
+          Top = 61
+          Width = 19
           Anchors = [akLeft]
           BorderSpacing.Left = 8
           Caption = 'rev'
@@ -336,7 +336,7 @@ object AboutForm: TAboutForm
           AnchorSideBottom.Side = asrBottom
           Left = 10
           Height = 48
-          Top = 259
+          Top = 243
           Width = 48
           Anchors = [akLeft, akBottom]
           AutoSize = True
@@ -367,6 +367,7 @@ object AboutForm: TAboutForm
             0A811D06F66BF0E71F18A372E2FBE6D216D78D4D62DF1CB9722D67FD06F6D621
             3DC42922560000000049454E44AE426082
           }
+          PopupMenu = pmProtectionInfo
           Visible = False
         end
       end
@@ -374,16 +375,16 @@ object AboutForm: TAboutForm
     object TabSheet2: TTabSheet
       BorderWidth = 1
       Caption = 'Other info'
-      ClientHeight = 323
-      ClientWidth = 443
+      ClientHeight = 325
+      ClientWidth = 445
       object GroupBox2: TGroupBox
         Left = 1
-        Height = 321
+        Height = 323
         Top = 1
-        Width = 441
+        Width = 443
         Align = alClient
         BorderSpacing.Around = 1
-        ClientHeight = 319
+        ClientHeight = 303
         ClientWidth = 439
         TabOrder = 0
         object lbPackagesList: TListBox
@@ -400,13 +401,12 @@ object AboutForm: TAboutForm
           ItemHeight = 0
           PopupMenu = pmPackages
           TabOrder = 0
-          TopIndex = -1
         end
         object Label7: TLabel
           Left = 10
-          Height = 16
+          Height = 15
           Top = 8
-          Width = 140
+          Width = 123
           Caption = 'Загруженные пакеты :'
         end
         object pnProtectionStatus: TPanel
@@ -425,18 +425,19 @@ object AboutForm: TAboutForm
           BorderSpacing.Right = 10
           ClientHeight = 26
           ClientWidth = 419
+          PopupMenu = pmProtectionInfo
           TabOrder = 1
           Visible = False
           object Label9: TLabel
             Left = 10
-            Height = 16
+            Height = 15
             Top = 5
-            Width = 90
+            Width = 80
             Caption = 'Ключ защиты:'
           end
           object lbProtectionKey: TLabel
             Left = 105
-            Height = 16
+            Height = 15
             Top = 5
             Width = 16
             Caption = '<>'
@@ -453,6 +454,14 @@ object AboutForm: TAboutForm
     object miCopy: TMenuItem
       Caption = 'Copy'
       OnClick = miCopyClick
+    end
+  end
+  object pmProtectionInfo: TPopupMenu
+    Left = 88
+    Top = 296
+    object MenuItem1: TMenuItem
+      Caption = 'Сменить ключ защиты'
+      OnClick = MenuItem1Click
     end
   end
 end

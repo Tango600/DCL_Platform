@@ -20,11 +20,13 @@ type
     edProgramKey: TEdit;
     Label1: TLabel;
     Label2: TLabel;
+    Label3: TLabel;
+    lbExpire: TLabel;
     MainMenu1: TMainMenu;
     miAbout: TMenuItem;
     sbCopyKey: TSpeedButton;
     procedure btApplayClick(Sender: TObject);
-    constructor Create(AOwner: TComponent; ProtectionEngine: IDCLProtectionEngine; DCLMain: IDCLMain); overload;
+    constructor Create(AOwner: TComponent; DCLMain: IDCLMain); overload;
     procedure FormShow(Sender: TObject);
     procedure miAboutClick(Sender: TObject);
     procedure sbCopyKeyClick(Sender: TObject);
@@ -44,7 +46,7 @@ implementation
 
 uses
   Clipbrd, {$IFDEF LINUX}gtk2, gdk2,{$ENDIF}
-  uDCLConst, uDCLMultiLang, uDCLVersion;
+  uDCLConst, uDCLMultiLang, uDCLVersion, uKeyData;
 
 {$R *.lfm}
 
@@ -66,13 +68,24 @@ begin
 end;
 {$ENDIF}
 
-constructor TProtectionForm.Create(AOwner: TComponent; ProtectionEngine: IDCLProtectionEngine; DCLMain: IDCLMain);
+constructor TProtectionForm.Create(AOwner: TComponent; DCLMain: IDCLMain);
+var
+  Key: TKeyData;
 begin
   inherited Create(AOwner);
-  FProtectionEngine:=ProtectionEngine;
   FDCLMain:=DCLMain;
+  FProtectionEngine:=DCLMain.GetProtectionEngine;
 
+  lbExpire.Caption:='-';
   edProgramKey.Text:=FProtectionEngine.GetProtectionKey;
+  Key:=FProtectionEngine.GetKeyData;
+  if Key.RemainDays>-1 then
+  begin
+    if Key.RemainDays>0 then
+      lbExpire.Caption:=IntToStr(Key.RemainDays)+' ('+Key.KeyType+')'
+    else
+      lbExpire.Caption:='Бессрочно';
+  end;
 end;
 
 procedure TProtectionForm.FormShow(Sender: TObject);

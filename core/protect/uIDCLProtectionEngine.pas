@@ -4,13 +4,15 @@ unit uIDCLProtectionEngine;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils,
+  uKeyData;
 
 type
   IDCLProtectionEngine = interface
     function GetProtectionStatus: Boolean;
     function GetProtectionKey: String;
     function ApplaySoftwareKey(const Key: String): Boolean;
+    function GetKeyData: TKeyData;
   end;
 
 implementation

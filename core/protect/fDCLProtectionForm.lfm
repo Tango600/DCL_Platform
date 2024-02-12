@@ -10,6 +10,7 @@ object ProtectionForm: TProtectionForm
   ClientWidth = 325
   Menu = MainMenu1
   Position = poScreenCenter
+  LCLVersion = '3.99.0.0'
   OnShow = FormShow
   object Label1: TLabel
     AnchorSideLeft.Control = Owner
@@ -83,8 +84,31 @@ object ProtectionForm: TProtectionForm
     Width = 75
     BorderSpacing.Top = 10
     Caption = 'Принять'
+    Default = True
     TabOrder = 2
     OnClick = btApplayClick
+  end
+  object lbExpire: TLabel
+    AnchorSideLeft.Control = Label3
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = Label3
+    Left = 194
+    Height = 1
+    Top = 130
+    Width = 1
+    BorderSpacing.Left = 10
+  end
+  object Label3: TLabel
+    AnchorSideLeft.Control = btApplay
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = btApplay
+    AnchorSideTop.Side = asrCenter
+    Left = 100
+    Height = 15
+    Top = 130
+    Width = 84
+    BorderSpacing.Left = 15
+    Caption = 'Осталось дней:'
   end
   object MainMenu1: TMainMenu
     Left = 208
