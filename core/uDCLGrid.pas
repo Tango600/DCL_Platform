@@ -4065,8 +4065,8 @@ begin
       TempFilter.Field:=FDBGrid.SelectedColumn.FieldName;
       TempFilter.FilterString:=FDBGrid.SelectedColumn.Field.AsString;
 
-      FDBGrid.SelectedColumn.Title.ImageIndex:=FIDCLMain.GetImageIndex(ptGridFilter);
       OpenQuery(QueryBuilder);
+      RefreshGridColumns;
     end;
   end;
 end;
@@ -4074,44 +4074,21 @@ end;
 procedure TDCLGrid.DeleteTempFilter;
 var
   F: TDBFilter;
-  SF: TSortField;
-  i: Integer;
-  Column: TColumn;
+  flg: Boolean;
 begin
+  flg:=False;
   for F in FFilters do
   begin
     if F.FilterType=ftTempFilter then
     begin
+      flg:=True;
       FFilters.Remove(F);
-      Column:=nil;
-      for i:=0 to FDBGrid.Columns.Count-1 do
-      begin
-        if LowerCase(F.Field)=LowerCase(FDBGrid.Columns[i].FieldName) then
-        begin
-          Column:=FDBGrid.Columns[i];
-          break;
-        end;
-      end;
-
-      if Assigned(Column) then
-      begin
-        SF:=GetSortField(Column.FieldName);
-        if Assigned(SF) then
-        begin
-          case SF.Order of
-          soNone: Column.Title.ImageIndex:=-1;
-          soAsc: Column.Title.ImageIndex:=FIDCLMain.GetImageIndex(ptDownArrow);
-          soDesc: Column.Title.ImageIndex:=FIDCLMain.GetImageIndex(ptUpArrow);
-          end;
-        end
-        else
-          Column.Title.ImageIndex:=-1;
-      end;
-
-      OpenQuery(QueryBuilder);
-      break;
     end;
   end;
+  if flg then
+    OpenQuery(QueryBuilder);
+
+  RefreshGridColumns;
 end;
 
 function TDCLGrid.GetSelectedRows: TBookmarkList;
