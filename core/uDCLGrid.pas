@@ -139,10 +139,13 @@ type
 
     procedure Print(Sender: TObject);
 
+    function GetSortField(const FieldName: String): TSortField;
+
     procedure GridDblClick(Sender: TObject);
     procedure GridColumnClick(Column: TColumn);
     procedure GridKeyPress(Sender: TObject; var UTF8Key: TUTF8Char);
     procedure Grid1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure RefreshGridColumns;
 
     function SortDB(var SQL: String): String;
     procedure ReDrawColumns;
@@ -868,6 +871,21 @@ begin
     OpenFile(AppConfigDir+tmpFileName);
 end;
 
+function TDCLGrid.GetSortField(const FieldName: String): TSortField;
+var
+  FF: TSortField;
+begin
+  Result:=nil;
+  for FF in FOrdersFields do
+  begin
+    if LowerCase(FF.FieldName)=LowerCase(FieldName) then
+    begin
+      Result:=FF;
+      break;
+    end;
+  end;
+end;
+
 procedure TDCLGrid.ExecEvents(EventType: TEventsEnum);
 var
   Event: TDCLEvent;
@@ -910,51 +928,27 @@ procedure TDCLGrid.GridColumnClick(Column: TColumn);
 var
   SortIt: Boolean;
   tmpSQL, OrderBy, FieldName: String;
-  i: Integer;
 
-  function GetField(FieldName: String): TSortField;
-  var
-    FF: TSortField;
+  procedure RemoveField(const FieldName: String);
   begin
-    Result:=nil;
-    for FF in FOrdersFields do
-    begin
-      if LowerCase(FF.FieldName)=LowerCase(FieldName) then
-      begin
-        Result:=FF;
-        break;
-      end;
-    end;
+    FOrdersFields.Remove(GetSortField(FieldName));
   end;
 
-  procedure RemoveField(FieldName: String);
+  function ContainsField(const FieldName: String): Boolean;
   begin
-    FOrdersFields.Remove(GetField(FieldName));
-  end;
-
-  function ContainsField(FieldName: String): Boolean;
-  begin
-    Result:=Assigned(GetField(FieldName));
+    Result:=Assigned(GetSortField(FieldName));
   end;
 
   procedure TurnOrder(var Column: TColumn);
   var
-    SortOrder: TSortOrder;
     FF: TSortField;
   begin
-    FF:=GetField(Column.FieldName);
+    FF:=GetSortField(Column.FieldName);
     if Assigned(FF) then
     begin
-      SortOrder:=FF.Order;
-      if SortOrder=soDesc then
-      begin
-        Column.Title.ImageIndex:=FIDCLMain.GetImageIndex(ptUpArrow);
-        FF.Order:=soAsc;
-      end
-      else
-      begin
-        Column.Title.ImageIndex:=FIDCLMain.GetImageIndex(ptDownArrow);
-        FF.Order:=soDesc;
+      case FF.Order of
+      soAsc: FF.Order:=soDesc;
+      soDesc, soNone: FF.Order:=soAsc;
       end;
     end;
   end;
@@ -963,11 +957,9 @@ var
   var
     FF: TSortField;
   begin
-    FF:=GetField(Column.FieldName);
+    FF:=GetSortField(Column.FieldName);
     if not Assigned(FF) then
     begin
-      Column.Title.ImageIndex:=FIDCLMain.GetImageIndex(ptUpArrow);
-
       FF:=TSortField.Create;
       FF.FieldName:=LowerCase(Column.FieldName);
       FF.Order:=soAsc;
@@ -1003,7 +995,6 @@ begin
     If KeyState(VK_SHIFT) then
     begin
       //Снять
-      Column.Title.ImageIndex:=-1;
       RemoveField(Column.FieldName);
     end
     else
@@ -1022,10 +1013,6 @@ begin
         if not ContainsField(Column.FieldName) then
         begin
           FOrdersFields.Clear;
-          for i:=0 to FDBGrid.Columns.Count-1 do
-          begin
-            FDBGrid.Columns[i].Title.ImageIndex:=-1;
-          end;
 
           AddField(Column);
         end
@@ -1106,6 +1093,53 @@ begin
   end;
 end;
 
+procedure TDCLGrid.RefreshGridColumns;
+var
+  F: TDBFilter;
+  SF: TSortField;
+  i: Integer;
+  Column: TColumn;
+begin
+  for i:=0 to FDBGrid.Columns.Count-1 do
+  begin
+    Column:=FDBGrid.Columns[i];
+    SF:=GetSortField(FDBGrid.Columns[i].FieldName);
+
+    if Assigned(SF) then
+    begin
+      case SF.Order of
+      soNone: Column.Title.ImageIndex:=-1;
+      soAsc: Column.Title.ImageIndex:=FIDCLMain.GetImageIndex(ptDownArrow);
+      soDesc: Column.Title.ImageIndex:=FIDCLMain.GetImageIndex(ptUpArrow);
+      end;
+    end
+    else
+      Column.Title.ImageIndex:=-1;
+  end;
+
+  for F in FFilters do
+  begin
+    if F.FilterType=ftTempFilter then
+    begin
+      Column:=nil;
+      for i:=0 to FDBGrid.Columns.Count-1 do
+      begin
+        if LowerCase(F.Field)=LowerCase(FDBGrid.Columns[i].FieldName) then
+        begin
+          Column:=FDBGrid.Columns[i];
+          break;
+        end;
+      end;
+
+      if Assigned(Column) then
+      begin
+        Column.Title.ImageIndex:=FIDCLMain.GetImageIndex(ptGridFilter);
+      end;
+      //break;
+    end;
+  end;
+end;
+
 function TDCLGrid.SortDB(var SQL: String): String;
 var
   OrderBy: String;
@@ -1146,7 +1180,7 @@ var
   Column: TColumn;
   i: Integer;
 
-  function ContainsField(FieldName: String): Boolean;
+  function ContainsField(const FieldName: String): Boolean;
   var
     FF: TSortField;
   begin
@@ -1173,6 +1207,7 @@ begin
       Column.Title.Font.Style:=Column.Title.Font.Style-[fsBold];
     end
   end;
+  RefreshGridColumns;
 end;
 
 function TDCLGrid.GetEdits: TList<TDCLEdit>;
@@ -4042,21 +4077,6 @@ var
   SF: TSortField;
   i: Integer;
   Column: TColumn;
-
-  function GetField(FieldName: String): TSortField;
-  var
-    FF: TSortField;
-  begin
-    Result:=nil;
-    for FF in FOrdersFields do
-    begin
-      if LowerCase(FF.FieldName)=LowerCase(FieldName) then
-      begin
-        Result:=FF;
-        break;
-      end;
-    end;
-  end;
 begin
   for F in FFilters do
   begin
@@ -4075,7 +4095,7 @@ begin
 
       if Assigned(Column) then
       begin
-        SF:=GetField(Column.FieldName);
+        SF:=GetSortField(Column.FieldName);
         if Assigned(SF) then
         begin
           case SF.Order of
