@@ -561,9 +561,6 @@ begin
     {$ENDIF}
 
     if not FDisableAutoRefresh then
-    if Assigned(FDCLForm) then
-      FIDCLMain.NotifyForm(FDCLForm, fnaRefresh)
-    else
       FIDCLMain.NotifyForms(fnaRefresh);
   end;
 end;
