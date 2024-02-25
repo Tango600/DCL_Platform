@@ -947,6 +947,12 @@ begin
     OpenFile(tmpS);
   end;
 
+  If IsLexem('OpenURL=', Command) then
+  begin
+    tmpS:=FindParam('OpenURL=', Command);
+    OpenWeb(tmpS);
+  end;
+
   If IsLexem('OpenFolder=', Command) then
   begin
     tmpS:=FindParam('OpenFolder=', Command);

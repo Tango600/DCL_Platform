@@ -8,6 +8,7 @@ uses
 
   procedure Run(Command, Param: String; Wait: Boolean);
   procedure OpenFile(DocumentFileName: String);
+  procedure OpenWeb(URL: String);
 
 implementation
 
@@ -104,6 +105,11 @@ end;
 procedure OpenFile(DocumentFileName: String);
 begin
   OpenDocument(DocumentFileName);
+end;
+
+procedure OpenWeb(URL: String);
+begin
+  OpenURL(URL);
 end;
 
 end.
