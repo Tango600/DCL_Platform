@@ -11,6 +11,9 @@ uses
 {$IFDEF LINUX}
   uDiskPartInfo
 {$ENDIF}
+{$IFDEF DARWIN}
+  uSystemUUID
+{$ENDIF}
   ;
 
 type
@@ -25,6 +28,10 @@ type
     {$IFDEF LINUX}
     FPartsInfo: TDiskPartInfo;
     {$ENDIF}
+    {$IFDEF DARWIN}
+    SystemUUID: TSystemUUID;
+    {$ENDIF}
+
     FHWData: String;
   public
     constructor Create;
@@ -47,6 +54,10 @@ begin
   FPartsInfo:=TDiskPartInfo.Create;
   FHWData:=FPartsInfo.PartitionID;
 {$ENDIF}
+{$IFDEF DARWIN}
+  SystemUUID:=TSystemUUID.Create;
+  FHWData:=SystemUUID.UUID;
+{$ENDIF}
 end;
 
 destructor TDCLHardwareKeys.Destroy;
@@ -56,6 +67,9 @@ begin
 {$ENDIF}
 {$IFDEF LINUX}
   FreeAndNil(FPartsInfo);
+{$ENDIF}
+{$IFDEF DARWIN}
+  FreeAndNil(SystemUUID);
 {$ENDIF}
   inherited Destroy;
 end;
