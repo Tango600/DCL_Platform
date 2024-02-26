@@ -3170,7 +3170,7 @@ begin
     If FindParam('VariableName=', ScrLine)<>'' then
     begin
       FFilter.VarName:=FindParam('VariableName=', ScrLine);
-      FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, FFilter.VarName);
+      FIDCLMain.GetVariables.NewVariable(FNamespace, FFilter.VarName, '');
     end;
 
     tmpS:=FindParam('KeyValue=', ScrLine);
@@ -3203,7 +3203,7 @@ begin
   If FindParam('VariableName=', ScrLine)<>'' Then
   begin
     FFilter.VarName:=FindParam('VariableName=', ScrLine);
-    FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, FFilter.VarName);
+    FIDCLMain.GetVariables.NewVariable(FNamespace, FFilter.VarName, '');
   end;
 
   If FindParam('MaxLength=', ScrLine)<>'' Then
@@ -3260,7 +3260,7 @@ begin
   If FindParam('VariableName=', ScrLine)<>'' then
   begin
     FFilter.VarName:=FindParam('VariableName=', ScrLine);
-    FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, FFilter.VarName);
+    FIDCLMain.GetVariables.NewVariable(FNamespace, FFilter.VarName, '');
   end;
 
   tmpS:=FindParam('KeyValue=', ScrLine);
