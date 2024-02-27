@@ -281,8 +281,10 @@ Begin
           GPT.EasyIdentMode:=FindParam('EasyIdentMode=', cs)='1';
       End;
     End;
-    GPT.DCLUserName:=lUser;
-    GPT.EnterPass:=lPassword;
+    if lUser<> '' then
+      GPT.DCLUserName:=lUser;
+    if lPassword<>'' then
+      GPT.EnterPass:=lPassword;
   end;
 End;
 
