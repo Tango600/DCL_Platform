@@ -2659,6 +2659,7 @@ begin
         Filter.Control.Parent:=FFiltersPanel;
         Filter.Control.Left:=FFilterLeft;
         Filter.Control.Top:=FTop;
+        Filter.Control.Width:=Filter.Width;
         Inc(FTop, Filter.Control.Height+CompenentTopStep);
 
         for I:=1 to ParamsCount(Filter.ListField) do
