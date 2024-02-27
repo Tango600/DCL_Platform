@@ -78,6 +78,8 @@ begin
     SectionName:='Position';
     if Self.FormStyle=fsMDIForm then
       SectionName:=SectionName+'MDI';
+    if GPT.MenuType=mtPanels then
+      SectionName:=SectionName+'-Menu2';
 
     try
       Settings:=TIniFile.Create(ConfigPath+'MainForm.ini', TEncoding.UTF8);
@@ -161,6 +163,8 @@ begin
       SectionName:='Position';
       if Self.FormStyle=fsMDIForm then
         SectionName:=SectionName+'MDI';
+      if GPT.MenuType=mtPanels then
+        SectionName:=SectionName+'-Menu2';
 
       Self.Top:=Settings.ReadInteger(SectionName, 'Top', Self.Top);
       Self.Left:=Settings.ReadInteger(SectionName, 'Left', Self.Left);
