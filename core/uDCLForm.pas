@@ -740,7 +740,7 @@ begin
   end;
 
   {$IFNDEF NOONTOP}
-  If OnTop then  // Мешает отладки
+  If OnTop then  // Мешает отладке
     FormStyle:=fsStayOnTop;
   {$ENDIF}
   if not Modal then

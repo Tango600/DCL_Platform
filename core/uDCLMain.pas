@@ -907,8 +907,6 @@ begin
 
   GPT.AccessLevel:=ulExecute;
 
-  FDCLConfig.GetParamsStructure;
-
   InitLangEnv;
   CreateImageList;
 
