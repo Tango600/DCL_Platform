@@ -44,7 +44,7 @@ type
 implementation
 
 uses
-  fChangePasswordForm, uDCLGlobalVariables;
+  fChangePasswordForm, uDCLGlobalVariables, uDCLUtils;
 
 {$R *.lfm}
 
@@ -61,11 +61,12 @@ begin
     FQuery:=TDCLDialogQuery.Create(Self);
     FDBConnector.SetConnector(FQuery);
     FQuery.Params.Clear;
-    FQuery.SQL.Text:='select '+UserIDField+' from '+UsersTable+' where lower('+UserNameField+')=lower(:User)';
+    FQuery.SQL.Text:='select '+UserIDField+', '+UserAdminField+' from '+UsersTable+' where lower('+UserNameField+')=lower(:User)';
     FQuery.Params.ParamByName('User').AsString:=cbLogin.Text;
     FQuery.Open;
     FQuery.First;
     GPT.UserID:=FQuery.FieldByName(UserIDField).AsString;
+    GPT.AccessLevel:=TranslateDigitToUserLevel(FQuery.FieldByName(UserAdminField).AsInteger);
     FQuery.Close;
     FreeAndNil(FQuery);
   end

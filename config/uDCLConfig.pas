@@ -17,7 +17,7 @@ type
   TDCLConfig=class(TComponent)
   private
     Params: TStringList;
-    lPath: String;
+    lPath, lUser, lPassword: String;
 
     procedure LoadConfig(FileName: String);
   public
@@ -66,9 +66,9 @@ begin
     If PosEx('-ini', ParamStr(i))<>0 Then
       GPT.IniFileName:=ParamStr(i+1);
     If PosEx('-user', ParamStr(i))<>0 Then
-      GPT.DCLUserName:=ParamStr(i+1);
+      lUser:=ParamStr(i+1);
     If PosEx('-password', ParamStr(i))<>0 Then
-      GPT.EnterPass:=ParamStr(i+1);
+      lPassword:=ParamStr(i+1);
   End;
 
   LoadConfig(GPT.IniFileName);
@@ -281,6 +281,8 @@ Begin
           GPT.EasyIdentMode:=FindParam('EasyIdentMode=', cs)='1';
       End;
     End;
+    GPT.DCLUserName:=lUser;
+    GPT.EnterPass:=lPassword;
   end;
 End;
 

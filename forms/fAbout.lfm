@@ -8,7 +8,6 @@ object AboutForm: TAboutForm
   ClientHeight = 353
   ClientWidth = 453
   Position = poScreenCenter
-  LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
   object PageControl1: TPageControl
     Left = 0
@@ -320,11 +319,14 @@ object AboutForm: TAboutForm
         object lbRevision: TLabel
           AnchorSideLeft.Control = Label8
           AnchorSideLeft.Side = asrBottom
+          AnchorSideTop.Control = Label8
+          AnchorSideTop.Side = asrCenter
+          AnchorSideBottom.Control = Label8
+          AnchorSideBottom.Side = asrBottom
           Left = 351
           Height = 15
-          Top = 61
+          Top = 64
           Width = 19
-          Anchors = [akLeft]
           BorderSpacing.Left = 8
           Caption = 'rev'
           Font.Style = [fsBold]
