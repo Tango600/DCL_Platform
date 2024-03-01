@@ -133,6 +133,9 @@ type
     function GetData: TDataSource;
     function GetTableParts: TList<IDCLGrid>;
 
+    procedure FindProc;
+    procedure StartFind;
+    procedure ApplyFind;
     procedure Find(Sender: TObject);
     procedure FindGridOnSelectCell(Sender: TObject; aCol, aRow: Integer;
       var CanSelect: Boolean);
@@ -768,7 +771,15 @@ begin
   Result:=FTableParts;
 end;
 
-procedure TDCLGrid.Find(Sender: TObject);
+procedure TDCLGrid.FindProc;
+begin
+  if not FindProcess then
+    StartFind
+  else
+    ApplyFind;
+end;
+
+procedure TDCLGrid.StartFind;
 var
   ColCaptions: TStringList;
   i, StrIndex: Integer;
@@ -839,13 +850,22 @@ begin
 
     FindGrid.Show;
   end
-  else
+end;
+
+procedure TDCLGrid.ApplyFind;
+begin
+  if FindProcess then
   begin
     FindProcess:=False;
     FindGrid.Hide;
-
-    OpenQuery(QueryBuilder);
   end;
+
+  OpenQuery(QueryBuilder);
+end;
+
+procedure TDCLGrid.Find(Sender: TObject);
+begin
+  FindProc;
 end;
 
 procedure TDCLGrid.FindGridOnSelectCell(Sender: TObject; aCol, aRow: Integer;
@@ -4004,6 +4024,8 @@ begin
         begin
           FindGrid.Cells[t, FindGrid.RowCount-1]:='';
         end;
+
+        ApplyFind;
       end;
     end;
   end;
