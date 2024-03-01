@@ -1056,13 +1056,16 @@ begin
   begin
     if Active then
     begin
-      S:=FieldByName(FKeyField).AsString;
-      MS:=TMemoryStream.Create;
-      MS.Write(S[1], S.Length);
-      SetLength(Result, S.Length);
-      MS.Position:=0;
-      MS.Read(Result[0], S.Length);
-      FreeAndNil(MS);
+      if Assigned(FindField(FKeyField)) then
+      begin
+        S:=FieldByName(FKeyField).AsString;
+        MS:=TMemoryStream.Create;
+        MS.Write(S[1], S.Length);
+        SetLength(Result, S.Length);
+        MS.Position:=0;
+        MS.Read(Result[0], S.Length);
+        FreeAndNil(MS);
+      end;
     end;
   end;
 end;
@@ -1075,15 +1078,18 @@ var
 begin
   if Active and (FKeyField<>'') then
   begin
-    S:='';
-    SetLength(S, Length(Bookmark));
-    MS:=TMemoryStream.Create;
-    MS.Write(Bookmark[0], Length(Bookmark));
-    MS.Position:=0;
-    MS.Read(S[1], Length(Bookmark));
-    FreeAndNil(MS);
-    KValues:=S;
-    Locate(FKeyField, KValues, [loCaseInsensitive]);
+    if Assigned(FindField(FKeyField)) then
+    begin
+      S:='';
+      SetLength(S, Length(Bookmark));
+      MS:=TMemoryStream.Create;
+      MS.Write(Bookmark[0], Length(Bookmark));
+      MS.Position:=0;
+      MS.Read(S[1], Length(Bookmark));
+      FreeAndNil(MS);
+      KValues:=S;
+      Locate(FKeyField, KValues, [loCaseInsensitive]);
+    end;
   end;
 end;
 

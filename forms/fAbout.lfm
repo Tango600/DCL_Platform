@@ -144,11 +144,11 @@ object AboutForm: TAboutForm
         object lbProductName: TLabel
           AnchorSideLeft.Control = lbProduct
           AnchorSideLeft.Side = asrBottom
+          AnchorSideTop.Control = lbProduct
           Left = 167
           Height = 15
           Top = 8
           Width = 74
-          Anchors = [akLeft]
           BorderSpacing.Left = 8
           Caption = 'DCL Platform'
           Font.Style = [fsBold]
@@ -170,11 +170,11 @@ object AboutForm: TAboutForm
         object lbDBLib: TLabel
           AnchorSideLeft.Control = Label6
           AnchorSideLeft.Side = asrBottom
+          AnchorSideTop.Control = Label6
           Left = 175
           Height = 15
           Top = 31
           Width = 43
-          Anchors = [akLeft]
           BorderSpacing.Left = 8
           Caption = 'lbDBLib'
           Font.Style = [fsBold]
@@ -183,30 +183,38 @@ object AboutForm: TAboutForm
         object lbDBLibVersion: TLabel
           AnchorSideLeft.Control = Label5
           AnchorSideLeft.Side = asrBottom
+          AnchorSideTop.Control = Label5
           Left = 296
           Height = 15
           Top = 31
           Width = 84
-          Anchors = [akLeft]
           BorderSpacing.Left = 8
           Caption = 'lbDBLibVersion'
           Font.Style = [fsBold]
           ParentFont = False
         end
         object lbCompillerName: TLabel
-          Left = 70
+          AnchorSideLeft.Control = Label2
+          AnchorSideLeft.Side = asrBottom
+          AnchorSideTop.Control = Label2
+          Left = 63
           Height = 15
           Top = 216
           Width = 96
+          BorderSpacing.Left = 5
           Caption = 'lbCompillerName'
           Font.Style = [fsBold]
           ParentFont = False
         end
         object lbBuildType: TLabel
-          Left = 232
+          AnchorSideLeft.Control = Label3
+          AnchorSideLeft.Side = asrBottom
+          AnchorSideTop.Control = Label3
+          Left = 228
           Height = 15
           Top = 216
           Width = 64
+          BorderSpacing.Left = 5
           Caption = 'lbBuildType'
           Font.Style = [fsBold]
           ParentFont = False
@@ -214,35 +222,39 @@ object AboutForm: TAboutForm
         object Label1: TLabel
           AnchorSideLeft.Control = ImageLogo
           AnchorSideLeft.Side = asrBottom
+          AnchorSideTop.Control = Label6
+          AnchorSideTop.Side = asrBottom
           Left = 110
           Height = 15
           Top = 61
           Width = 74
-          Anchors = [akLeft]
           BorderSpacing.Left = 10
+          BorderSpacing.Top = 15
           Caption = 'Дата сборки :'
         end
         object lbBuildDate: TLabel
           AnchorSideLeft.Control = Label1
           AnchorSideLeft.Side = asrBottom
+          AnchorSideTop.Control = Label1
           Left = 192
           Height = 15
           Top = 61
           Width = 65
-          Anchors = [akLeft]
           BorderSpacing.Left = 8
           Caption = 'lbBuildDate'
           Font.Style = [fsBold]
           ParentFont = False
         end
         object Label2: TLabel
-          Left = 12
+          AnchorSideLeft.Control = ImageLogo
+          Left = 10
           Height = 15
           Top = 216
           Width = 48
           Caption = 'Собран :'
         end
         object Label3: TLabel
+          AnchorSideTop.Control = Label2
           Left = 200
           Height = 15
           Top = 216
@@ -257,9 +269,11 @@ object AboutForm: TAboutForm
           Caption = 'v.'
         end
         object Label5: TLabel
+          AnchorSideLeft.Control = Label4
+          AnchorSideTop.Control = lbDBLib
           Left = 276
           Height = 15
-          Top = 32
+          Top = 31
           Width = 12
           Caption = 'v :'
         end
@@ -292,6 +306,7 @@ object AboutForm: TAboutForm
           TabOrder = 1
         end
         object lbConfigVersionText: TLabel
+          AnchorSideLeft.Control = ImageLogo
           Left = 10
           Height = 15
           Top = 176
@@ -301,18 +316,20 @@ object AboutForm: TAboutForm
         object lbConfigVersion: TLabel
           AnchorSideLeft.Control = lbConfigVersionText
           AnchorSideLeft.Side = asrBottom
+          AnchorSideTop.Control = lbConfigVersionText
           Left = 144
           Height = 15
-          Top = 168
+          Top = 176
           Width = 15
-          Anchors = [akLeft]
           BorderSpacing.Left = 8
           Caption = '0.1'
         end
         object Label8: TLabel
+          AnchorSideLeft.Control = lbDBLibVersion
+          AnchorSideTop.Control = lbBuildDate
           Left = 296
           Height = 15
-          Top = 64
+          Top = 61
           Width = 47
           Caption = 'Ревизия:'
         end
@@ -325,7 +342,7 @@ object AboutForm: TAboutForm
           AnchorSideBottom.Side = asrBottom
           Left = 351
           Height = 15
-          Top = 64
+          Top = 61
           Width = 19
           BorderSpacing.Left = 8
           Caption = 'rev'
@@ -391,14 +408,17 @@ object AboutForm: TAboutForm
         TabOrder = 0
         object lbPackagesList: TListBox
           AnchorSideLeft.Control = GroupBox2
+          AnchorSideTop.Control = Label7
+          AnchorSideTop.Side = asrBottom
           AnchorSideRight.Control = GroupBox2
           AnchorSideRight.Side = asrBottom
           Left = 10
           Height = 120
-          Top = 32
+          Top = 27
           Width = 419
           Anchors = [akTop, akLeft, akRight]
           BorderSpacing.Left = 10
+          BorderSpacing.Top = 4
           BorderSpacing.Right = 10
           ItemHeight = 0
           PopupMenu = pmPackages
@@ -419,7 +439,7 @@ object AboutForm: TAboutForm
           AnchorSideRight.Side = asrBottom
           Left = 10
           Height = 26
-          Top = 172
+          Top = 167
           Width = 419
           Anchors = [akTop, akLeft, akRight]
           BorderSpacing.Left = 10
@@ -438,6 +458,7 @@ object AboutForm: TAboutForm
             Caption = 'Ключ защиты:'
           end
           object lbProtectionKey: TLabel
+            AnchorSideTop.Control = Label9
             Left = 105
             Height = 15
             Top = 5

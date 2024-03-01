@@ -60,6 +60,7 @@ const
   UpdateScriptIDField='PS_ID';
   PackageIDField='PACKAGE_ID';
   UpdateScriptNameField='SCRIPT_NAME';
+  UpdateScriptTypeField='SCRIPT_TYPE';
 
 implementation
 
