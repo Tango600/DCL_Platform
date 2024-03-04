@@ -429,6 +429,10 @@
         <Filename Value="core\protect\uSystemUUID.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="core\components\cMyDBLookupCombo.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
