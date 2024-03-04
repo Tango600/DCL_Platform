@@ -26,6 +26,7 @@ type
     FUserLevel: TUserLevelsType;
     MathParser: TMathParser;
     FDisableAutoRefresh: Boolean;
+    GlobalBreakFlg: Boolean;
 
     procedure TranslateVals(var S: String); overload;
     procedure TranslateVals(var S: String; Query: TDCLDialogQuery); overload;
@@ -239,8 +240,12 @@ var
     end;
 
   begin
+    GlobalBreakFlg:=False;
     while DCL.Count>LineNum+1 do
     begin
+      if GlobalBreakFlg then
+        Exit;
+
       Inc(LineNum);
       Line:=DCL[LineNum];
 
@@ -335,7 +340,8 @@ var
       if IsLexem('break;', Line) then
       begin
         LineNum:=DCL.Count;
-        break;
+        GlobalBreakFlg:=True;
+        Exit;
       end;
 
       RunCommand(Line);
