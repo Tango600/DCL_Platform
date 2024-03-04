@@ -81,6 +81,7 @@ function TDCLUpdaterPackage.UpdateScript(PackageID: Integer;
 var
   ScriptText: TStringList;
   r, id: Integer;
+  ScriptType: TScriptType;
 begin
   Result:=susNone;
 
@@ -102,8 +103,63 @@ begin
     ScriptText:=TStringList.Create;
     ScriptText.Clear;
 
+    ScriptType:=stND;
     try
-      if (not Script.SQL) and (Script.Ident=0) then
+      if Script.Delete then
+      begin
+        if Script.Ident=0 then
+        begin
+          FQuery.Params.Clear;
+          FQuery.SQL.Text:='select * from '+DCLTable+' where lower('+DCLNameField+') = lower(:ScrName) and '+
+            IdentifyField+' is null';
+          FQuery.Prepare;
+          FQuery.ParamByName('ScrName').AsString:=Script.ScriptName;
+          FQuery.Open;
+          if not FQuery.IsEmpty then
+          begin
+            id:=FQuery.FieldByName(IdField).AsInteger;
+          end;
+          FQuery.Last;
+          r:=FQuery.RecordCount;
+          FQuery.Close;
+
+          if r=1 then
+          begin
+            FQuery.Params.Clear;
+            FQuery.SQL.Text:='delete from '+DCLTable+' where '+IdField+' = :ID';
+            FQuery.Prepare;
+            FQuery.ParamByName('ID').AsInteger:=id;
+            FQuery.ExecSQL;
+            ScriptType:=stDeleteScript;
+          end;
+        end
+        else
+        begin
+          FQuery.Params.Clear;
+          FQuery.SQL.Text:='select * from '+DCLTable+' where '+IdentifyField+' = :IDENT';
+          FQuery.Prepare;
+          FQuery.ParamByName('IDENT').AsInteger:=Script.Ident;
+          FQuery.Open;
+          if not FQuery.IsEmpty then
+          begin
+            id:=FQuery.FieldByName(IdField).AsInteger;
+          end;
+          FQuery.Last;
+          r:=FQuery.RecordCount;
+          FQuery.Close;
+
+          if r=1 then
+          begin
+            FQuery.Params.Clear;
+            FQuery.SQL.Text:='delete from '+DCLTable+' where '+IdField+' = :ID';
+            FQuery.Prepare;
+            FQuery.ParamByName('ID').AsInteger:=id;
+            FQuery.ExecSQL;
+            ScriptType:=stDeleteMenuItem;
+          end;
+        end;
+      end
+      else if (not Script.SQL) and (Script.Ident=0) then
       begin
         FQuery.Params.Clear;
         FQuery.SQL.Text:='select * from '+DCLTable+' where lower('+DCLNameField+') = lower(:ScrName)';
@@ -138,6 +194,7 @@ begin
           FQuery.ParamByName('DCLTEXT').LoadFromStream(Script.ScriptText, ftMemo);
           FQuery.ExecSQL;
         end;
+        ScriptType:=stDCLScript;
       end
       else if (not Script.SQL) and (Script.Ident<>0) then
       begin
@@ -181,6 +238,7 @@ begin
           FQuery.ParamByName('PARENT').AsInteger:=Script.Parent;
           FQuery.ExecSQL;
         end;
+        ScriptType:=stMenuItem;
       end
       else if Script.SQL then
       begin
@@ -194,6 +252,7 @@ begin
         SQLScript.Script:=ScriptText;
         SQLScript.Execute;
         {$ENDIF}
+        ScriptType:=stSQL;
       end;
       Result:=susDone;
     except
@@ -211,11 +270,12 @@ begin
         FWriteTrans.StartTransaction;
       {$ENDIF}
       FQuery.Params.Clear;
-      FQuery.SQL.Text:='insert into '+UpdateScriptsTable+'('+PackageIDField+', '+UpdateScriptNameField+') '+
-        'values(:PID, :PNAME)';
+      FQuery.SQL.Text:='insert into '+UpdateScriptsTable+'('+PackageIDField+', '+UpdateScriptNameField+', '+UpdateScriptTypeField+') '+
+        'values(:PID, :PNAME, :ST)';
       FQuery.Prepare;
       FQuery.Params.ParamByName('PID').AsInteger:=PackageID;
       FQuery.Params.ParamByName('PNAME').AsString:=Script.ScriptName;
+      FQuery.Params.ParamByName('ST').AsString:=GetScriptTypeName(ScriptType);
       FQuery.ExecSQL;
       {$IFDEF TRANSACTIONDB}
       if FWriteTrans.Active then

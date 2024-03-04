@@ -8,6 +8,7 @@ uses
 
 type
   TRunType=(rtNone, rtCommand, rtDialog);
+  TScriptType=(stND, stDCLScript, stMenuItem, stSQL, stDeleteScript, stDeleteMenuItem);
 
   { TPackageInfo }
 
@@ -21,7 +22,7 @@ type
   { TDCLScriptItem }
 
   TDCLScriptItem=class
-    SQL: Boolean;
+    SQL, Delete: Boolean;
     RunType: TRunType;  // 0 - None, 1 - Command, 2 - Dialog
     Id, Ident, Parent, Order: Integer;
     ScriptName, Command: String;
@@ -63,6 +64,7 @@ type
     procedure AddFile(FileName: String; RunType: TRunType);
     function AddMenuItem(Title, Command: String; Ident, Parent: Integer): TDCLScriptItem;
     procedure AddUpdate(FileName: String; Order: Integer);
+    procedure AddDelete(const ScriptName: String; Ident, Order: Integer);
 
     procedure DeleteScript(Name: String);
     procedure DeleteMenuItem(Id: Integer);
@@ -76,6 +78,8 @@ type
     property PackageInfo: TPackageInfo read GetPackageInfo;
   end;
 
+
+  function GetScriptTypeName(ScriptType: TScriptType): String;
 
 implementation
 
@@ -92,13 +96,14 @@ const
   OrderSection='Order';
   IdentSection='Ident';
   ParentSection='Parent';
-  IdSection='Id';
+  IdParam='Id';
   RunTypeSection='RunType';
   CommandSection='Command';
   PackageNameSection='Name';
   RunOnStartSection='RunOnStart';
   SignHashSection='Sign';
   DependOnSection='DependOn';
+  DeleteSection='Delete';
 
 function GetDataHash(Data: TStream): String;
 var
@@ -123,6 +128,18 @@ begin
     end;
 
     Result:=MD5Print(MD5Buffer(Buffer[0], p));
+  end;
+end;
+
+function GetScriptTypeName(ScriptType: TScriptType): String;
+begin
+  case ScriptType of
+  stND: Result:='';
+  stDCLScript: Result:='DCL';
+  stMenuItem: Result:='MI';
+  stSQL: Result:='SQL';
+  stDeleteScript: Result:='d-DCL';
+  stDeleteMenuItem: Result:='d-MI';
   end;
 end;
 
@@ -229,6 +246,26 @@ begin
   si.Order:=Order;
   si.ScriptText:=TStringStream.Create('', TEncoding.UTF8);
   si.ScriptText.LoadFromFile(FileName);
+
+  FPackage.Scripts.Add(si);
+end;
+
+procedure TDCLScriptsPackage.AddDelete(const ScriptName: String; Ident, Order: Integer
+  );
+var
+  si: TDCLScriptItem;
+begin
+  si:=TDCLScriptItem.Create;
+  si.Delete:=True;
+  if Ident<=0 then
+    si.ScriptName:=ExtractFileNameOnly(ScriptName)
+  else
+  begin
+    si.Ident:=Ident;
+    si.ScriptName:=IntToStr(Ident);
+  end;
+  si.Order:=Order;
+  si.ScriptText:=TStringStream.Create(si.ScriptName, TEncoding.UTF8);
 
   FPackage.Scripts.Add(si);
 end;
@@ -344,11 +381,21 @@ begin
     for I in FPackage.Scripts do
     begin
       S:='';
+      if I.Delete then
+      begin
+        if I.Ident<>0 then
+        begin
+          S:=S+IdentSection+'='+IntToStr(I.Ident)+';';
+        end;
+
+        TextPackage.Append('['+DeleteSection+'='+I.ScriptName+';'+KeySection+'='+HashKey+';'+S+']');
+      end
+      else
       if not I.SQL then
       begin
         if I.Id<>0 then
         begin
-          S:=S+IdSection+'='+IntToStr(I.Id)+';';
+          S:=S+IdParam+'='+IntToStr(I.Id)+';';
         end;
         if I.RunType<>rtNone then
         begin
@@ -539,6 +586,38 @@ begin
   un:='';
   for S in TextPackage do
   begin
+    // region Delete
+    if (Pos('['+DeleteSection+'=', S)<>0) and (PosEx(KeySection+'='+HashKey, S)<>0) and (PosEx('['+SignHashSection+'=', S)=0) then
+    begin
+      s1:=FindParam(DeleteSection+'=', S);
+      if (s1<>'') and (FindParam(IdentSection+'=', S)='') then
+      begin
+        ScriptItem:=TDCLScriptItem.Create;
+        ScriptItem.ScriptName:=s1;
+        ScriptItem.Delete:=True;
+        ScriptItem.ScriptText:=TStringStream.Create(s1, TEncoding.UTF8);
+
+        FPackage.Scripts.Add(ScriptItem);
+        Continue;
+      end
+      else
+      begin
+        s1:=FindParam(IdentSection+'=', S);
+        if s1<>'' then
+        begin
+          ScriptItem:=TDCLScriptItem.Create;
+          ScriptItem.ScriptName:=s1;
+          ScriptItem.Delete:=True;
+          ScriptItem.Ident:=StrToInt(s1);
+          ScriptItem.ScriptText:=TStringStream.Create(s1, TEncoding.UTF8);
+
+          FPackage.Scripts.Add(ScriptItem);
+        end;
+        Continue;
+      end;
+    end;
+    // end region Delete
+
     // region Name
     if (Pos('['+NameSection+'=', S)<>0) and (PosEx(KeySection+'='+HashKey, S)<>0) and (PosEx('['+SignHashSection+'=', S)=0) then
     begin
@@ -561,7 +640,7 @@ begin
           ScriptItem.Command:=s1;
         end;
 
-        s1:=FindParam(IdSection+'=', S);
+        s1:=FindParam(IdParam+'=', S);
         if s1<>'' then
         begin
           ScriptItem.Id:=StrToInt(s1);
