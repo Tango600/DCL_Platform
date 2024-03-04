@@ -79,6 +79,8 @@ type
     FLocalBookmark: TBookmark;
     FFieldLayout: TDCLBaseLayoutManger<TDCLField>;
 
+    procedure OnNavigClick(Sender: TObject; Button: TDBNavButtonType);
+
     function GetDependField: String;
     procedure SetDependField(Value: String);
 
@@ -360,6 +362,14 @@ begin
 end;
 
 { TDCLGrid }
+
+procedure TDCLGrid.OnNavigClick(Sender: TObject; Button: TDBNavButtonType);
+begin
+  if Button=nbRefresh then
+  begin
+    ReFreshData;
+  end;
+end;
 
 function TDCLGrid.GetDependField: String;
 begin
@@ -1065,7 +1075,7 @@ begin
     begin
       if not FindProcess then
       begin
-        Find(Sender);
+        FindProc;
         (Sender as TDBGrid).SetFocus;
         (Sender as TDBGrid).SelectedIndex:=col-1;
         FindGrid.Cells[col, 0]:='%';
@@ -1089,10 +1099,10 @@ begin
       if Assigned(FindGrid) and (FindGrid.Cells[col, 0]<>'') then
       begin
         if not FindProcess then
-          Find(Sender);
+          FindProc;
         (Sender as TDBGrid).SetFocus;
         (Sender as TDBGrid).SelectedIndex:=col-1;
-        Find(Sender);
+        FindProc;
       end;
     end;
 
@@ -1106,7 +1116,7 @@ begin
     if Key=13 then
     begin
       FindGrid.Cells[col-1, 0]:=FindGrid.Cells[col-1, 0]+'%';
-      Find(Sender);
+      FindProc;
       (Sender as TDBGrid).SetFocus;
       (Sender as TDBGrid).SelectedIndex:=col-2;
     end;
@@ -4641,6 +4651,7 @@ begin
       FNavig.Parent:=FToolsPanel;
       FNavig.Align:=alBottom;
       FNavig.DataSource:=FData;
+      FNavig.OnClick:=OnNavigClick;
 
       Inc(FToolPanelHeight, FNavig.Height);
 
