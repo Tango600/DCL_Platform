@@ -1078,7 +1078,8 @@ begin
         FindProc;
         (Sender as TDBGrid).SetFocus;
         (Sender as TDBGrid).SelectedIndex:=col-1;
-        FindGrid.Cells[col, 0]:='%';
+        if GetSimplyFieldType(FQuery.FieldByName(FindFields[col-1]).DataType)=sftString then
+          FindGrid.Cells[col, 0]:='%';
       end;
 
       if FindProcess then
@@ -1115,7 +1116,8 @@ begin
 
     if Key=13 then
     begin
-      FindGrid.Cells[col-1, 0]:=FindGrid.Cells[col-1, 0]+'%';
+      if GetSimplyFieldType(FQuery.FieldByName(FindFields[col-1]).DataType)=sftString then
+        FindGrid.Cells[col-1, 0]:=FindGrid.Cells[col-1, 0]+'%';
       FindProc;
       (Sender as TDBGrid).SetFocus;
       (Sender as TDBGrid).SelectedIndex:=col-2;
