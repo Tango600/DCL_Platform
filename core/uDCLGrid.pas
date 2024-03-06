@@ -149,7 +149,7 @@ type
     procedure GridDblClick(Sender: TObject);
     procedure GridColumnClick(Column: TColumn);
     procedure GridKeyPress(Sender: TObject; var UTF8Key: TUTF8Char);
-    procedure Grid1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure Grid1KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure RefreshGridColumns;
 
     function SortDB(var SQL: String): String;
@@ -1088,13 +1088,23 @@ begin
   end;
 end;
 
-procedure TDCLGrid.Grid1KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+procedure TDCLGrid.Grid1KeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
 var
   col: Integer;
 begin
-  col:=(Sender as TDBGrid).SelectedColumn.Index+1;
   if FReadOnly then
   begin
+    col:=(Sender as TDBGrid).SelectedColumn.Index+1;
+    if Key=13 then
+    begin
+      if GetSimplyFieldType(FQuery.FieldByName(FindFields[col-1]).DataType)=sftString then
+        FindGrid.Cells[col, 0]:=FindGrid.Cells[col, 0]+'%';
+      FindProc;
+      (Sender as TDBGrid).SetFocus;
+      Key:=0;
+    end;
+
     if Key=46 then
     begin
       if Assigned(FindGrid) and (FindGrid.Cells[col, 0]<>'') then
@@ -1102,8 +1112,9 @@ begin
         if not FindProcess then
           FindProc;
         (Sender as TDBGrid).SetFocus;
-        (Sender as TDBGrid).SelectedIndex:=col-1;
+        (Sender as TDBGrid).SelectedIndex:=col;
         FindProc;
+        Key:=0;
       end;
     end;
 
@@ -1112,15 +1123,7 @@ begin
       if FindProcess then
       if FindGrid.Cells[col, 0]<>'' then
         FindGrid.Cells[col, 0]:=UTF8Copy(FindGrid.Cells[col, 0], 1, UTF8Length(FindGrid.Cells[col, 0])-1);
-    end;
-
-    if Key=13 then
-    begin
-      if GetSimplyFieldType(FQuery.FieldByName(FindFields[col-1]).DataType)=sftString then
-        FindGrid.Cells[col-1, 0]:=FindGrid.Cells[col-1, 0]+'%';
-      FindProc;
-      (Sender as TDBGrid).SetFocus;
-      (Sender as TDBGrid).SelectedIndex:=col-2;
+      Key:=0;
     end;
   end;
 end;
@@ -4838,7 +4841,7 @@ begin
       FDBGrid.OnDblClick:=GridDblClick;
       FDBGrid.OnTitleClick:=GridColumnClick;
       FDBGrid.OnUTF8KeyPress:=GridKeyPress;
-      FDBGrid.OnKeyUp:=Grid1KeyUp;
+      FDBGrid.OnKeyDown:=Grid1KeyDown;
 
       PopupGridMenu:=TPopupMenu.Create(FDBGrid);
       PopupGridMenu.Parent:=FDBGrid;
