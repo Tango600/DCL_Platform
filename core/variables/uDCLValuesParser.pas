@@ -273,6 +273,19 @@ begin
               MaxLength:=Length(Variable2.Name);
             end;
           end;
+          if not Assigned(LastVariable) then
+          begin
+            MaxLength:=0;
+            for Variable2 in FVariables.VariablesList do
+            begin
+              if (MaxLength<Length(Variable2.Name)) and (PosEx(VariablePrefix+Variable2.Name, ValueSet)<>0) then
+              begin
+                Pos:=PosEx(VariablePrefix+Variable2.Name, ValueSet);
+                LastVariable:=Variable2;
+                MaxLength:=Length(Variable2.Name);
+              end;
+            end;
+          end;
 
           if Assigned(LastVariable) then
           begin
