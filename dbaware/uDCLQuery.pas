@@ -439,7 +439,7 @@ Begin
         flg:=True;
         for FieldN in KeyFields do
         begin
-          if FieldN.Equals(DBField.FieldName, True) then
+          if FieldN.ToLower.Equals(DBField.FieldName.ToLower) then
           begin
             flg:=False;
             break;
