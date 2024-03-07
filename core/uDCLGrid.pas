@@ -1102,7 +1102,6 @@ begin
         FindGrid.Cells[col, 0]:=FindGrid.Cells[col, 0]+'%';
       FindProc;
       (Sender as TDBGrid).SetFocus;
-      Key:=0;
     end;
 
     if Key=46 then
@@ -1114,17 +1113,19 @@ begin
         (Sender as TDBGrid).SetFocus;
         (Sender as TDBGrid).SelectedIndex:=col;
         FindProc;
-        Key:=0;
       end;
     end;
 
     if Key=8 then
     begin
       if FindProcess then
-      if FindGrid.Cells[col, 0]<>'' then
-        FindGrid.Cells[col, 0]:=UTF8Copy(FindGrid.Cells[col, 0], 1, UTF8Length(FindGrid.Cells[col, 0])-1);
-      Key:=0;
+      begin
+        if FindGrid.Cells[col, 0]<>'' then
+          FindGrid.Cells[col, 0]:=UTF8Copy(FindGrid.Cells[col, 0], 1, UTF8Length(FindGrid.Cells[col, 0])-1);
+        Key:=0;
+      end;
     end;
+    Key:=0;
   end;
 end;
 
@@ -1695,7 +1696,13 @@ begin
     DateEdit.Width:=Field.Width;
   DateEdit.DataSource:=FData;
   DateEdit.DataField:=Field.FieldName;
+  DateEdit.DateOrder:=doNone;
+  case FQuery.FieldByName(Field.FieldName).DataType of
+  ftDate: DateEdit.DateFormat:=GPT.DateFormat;
+  ftDateTime: DateEdit.DateFormat:=GPT.TimeStampFormat;  // глюк, не работает !!!!
+  end;
   DateEdit.ReadOnly:=Field.ReadOnly;
+  DateEdit.Enabled:=Field.Enabled;
   DateEdit.Hint:=Field.Hint;
   if Field.Hint<>'' then
     DateEdit.ShowHint:=True;
@@ -4765,9 +4772,12 @@ begin
             ftGraphic, ftDBaseOle, ftParadoxOle, ftTypedBinary: begin
               AddMediaFieldGroup(DCLField, gtGrafic);
             end;
-            ftDate, ftDateTime: begin
+            ftDate: begin
               AddDBDateEdit(DCLField);
             end;
+            {ftDateTime: begin
+              AddDBDateEdit(DCLField);  // глюк, не работает отображение времени !!!
+            end;}
             ftBoolean: begin
               AddDBCheckBox(DCLField, '');
             end
