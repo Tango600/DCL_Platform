@@ -257,10 +257,10 @@ begin
   if Assigned(FVariables) then
   begin
     Pos:=1;
-    Start:=1;
+    Start:=0;
     for VN in FVariables.VariableNamesList do
     begin
-      while PosEx(VariablePrefix+VN, ValueSet.Substring(Start+1))<>0 do
+      while PosEx(VariablePrefix+VN, ValueSet.Substring(Start))<>0 do
       begin
         Pos:=PosEx(VariablePrefix+VN, ValueSet);
 
