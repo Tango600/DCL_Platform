@@ -36,7 +36,7 @@ type
 implementation
 
 uses
-  DB, uDCLUtils, uSystemUtils, uDCLMultiLang, uDBUtils, uDCLVariable,
+  DB, uDCLUtils, uSystemUtils, uDCLMultiLang, uDBUtils,
   uDCLDBUtils, uDCLGlobalVariables, uDCLVersion, uDCLConfigTable,
   uExpressionParser;
 
