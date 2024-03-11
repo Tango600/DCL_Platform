@@ -6,7 +6,7 @@ interface
 uses
   Classes, SysUtils, DateUtils,
   uDCLConst, uDCLData, uDCLVariables, uStringParams, SumProps, uDCLDBAwareTypes,
-  uDCLMD5, uDCLDBConnector, uVariableNamespace;
+  uDCLMD5, uDCLDBConnector;
 
 type
 
