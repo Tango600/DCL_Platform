@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  uDCLConst, uDCLData;
+  uDCLVariable, uVariableNamespace;
 
 type
 
@@ -19,26 +19,27 @@ type
 
     function GetVariableByName(const Namespace, VariableName: String): String; overload;
     procedure SetVariableByName(const Namespace, VariableName, Value: String);
+    function GetNames: TList<String>;
   public
     constructor Create;
 
-    function Exists(NameSpace, VariableName: String): Boolean;
-    procedure NewVariable(const NameSpace, VariableName, Value: String);
-    procedure NewVariableWithTest(const Namespace, VariableName: String);
+    function Exists(const NameSpace, VariableName: String): Boolean;
+    procedure NewVariable(const NameSpace: TVariableNamespace; const VariableName, Value: String);
+    procedure NewVariableWithTest(const Namespace: TVariableNamespace; const VariableName: String);
     procedure FreeVariable(const Namespace, VariableName: String);
 
     property Variables[Const Namespace, VariableName: String]: String read GetVariableByName
       write SetVariableByName;
 
-    property VariablesList: TList<TVariable> read FVariables;
+    property VariableNamesList: TList<String> read GetNames;
   end;
 
 
 implementation
 
-function CompareVariable(Variable: TVariable; Namespace, VariableName: String): Boolean;
+function CompareVariable(Variable: TVariable; const Namespace, VariableName: String): Boolean;
 begin
-  Result:=(LowerCase(Namespace)=LowerCase(Variable.NameSpace)) and (LowerCase(Variable.Name)=LowerCase(Trim(VariableName)));
+  Result:=(LowerCase(Namespace)=LowerCase(Variable.NameSpace.CurrentNamespace)) and (LowerCase(Variable.Name)=LowerCase(Trim(VariableName)));
 end;
 
 { TVariables }
@@ -49,37 +50,37 @@ begin
   FVariables:=TList<TVariable>.Create;
 end;
 
-function TVariables.Exists(NameSpace, VariableName: String): Boolean;
+function TVariables.Exists(const NameSpace, VariableName: String): Boolean;
 begin
   Result:=Assigned(Find(Namespace, VariableName));
 end;
 
-procedure TVariables.NewVariable(const NameSpace, VariableName, Value: String);
+procedure TVariables.NewVariable(const NameSpace: TVariableNamespace; const VariableName, Value: String);
 var
   v: TVariable;
 begin
-  If not Exists(Namespace, VariableName) Then
+  If not Exists(Namespace.CurrentNamespace, VariableName) Then
   begin
     v:=TVariable.Create;
-    v.NameSpace:=Trim(Namespace);
+    v.NameSpace:=Namespace;
     v.Name:=Trim(VariableName);
     v.Value:=Value;
     FVariables.Add(v);
   end
   Else
   begin
-    SetVariableByName(Namespace, VariableName, Value);
+    SetVariableByName(Namespace.CurrentNamespace, VariableName, Value);
   end;
 end;
 
-procedure TVariables.NewVariableWithTest(const Namespace, VariableName: String);
+procedure TVariables.NewVariableWithTest(const Namespace: TVariableNamespace; const VariableName: String);
 var
   v: TVariable;
 begin
-  If not Exists(Namespace, VariableName) Then
+  If not Exists(Namespace.CurrentNamespace, VariableName) Then
   begin
     v:=TVariable.Create;
-    v.NameSpace:=Trim(Namespace);
+    v.NameSpace:=Namespace;
     v.Name:=Trim(VariableName);
     v.Value:='';
     FVariables.Add(v);
@@ -100,7 +101,9 @@ end;
 function TVariables.Find(const Namespace, VariableName: String): TVariable;
 var
   i: TVariable;
+  ns: TVariableNamespace;
 begin
+  ns:=nil;
   Result:=nil;
   If VariableName<>'' Then
   begin
@@ -113,19 +116,26 @@ begin
       end;
     end;
 
-    For i in FVariables do
+    if not Assigned(Result) then
     begin
-      If CompareVariable(i, '', VariableName) Then
+      For i in FVariables do
       begin
-        Result:=i;
-        Exit;
+        if i.NameSpace.CurrentNamespace=Namespace then
+        begin
+          ns:=i.NameSpace;
+          break;
+        end;
+      end;
+
+      if Assigned(ns) and (ns.CurrentNamespace<>ns.RootNamespace) then
+      begin
+        Result:=Find(ns.RootNamespace, VariableName);
       end;
     end;
   end;
 end;
 
-function TVariables.GetVariableByName(const Namespace, VariableName: String
-  ): String;
+function TVariables.GetVariableByName(const Namespace, VariableName: String): String;
 var
   v: TVariable;
 begin
@@ -152,6 +162,15 @@ begin
       v.Value:=Value;
     end;
   end;
+end;
+
+function TVariables.GetNames: TList<String>;
+var
+  v: TVariable;
+begin
+  Result:=TList<String>.Create;
+  for v in FVariables do
+    Result.Add(v.Name);
 end;
 
 end.

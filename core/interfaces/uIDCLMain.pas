@@ -5,7 +5,8 @@ interface
 uses
   Forms, Classes, Generics.Collections, Controls,
   uDCLConst, uIDCLForm, uIDCLGrid, uDCLVariables, uDCLDBConnector, uDCLImages,
-  uDCLData, uDCLScriptsPackage, uReturnFormValue, uIDCLProtectionEngine;
+  uDCLData, uDCLScriptsPackage, uReturnFormValue, uIDCLProtectionEngine,
+  uVariableNamespace;
 
 type
   IDCLMain=interface
@@ -28,13 +29,13 @@ type
     procedure NotifyForms(Action: TFormsNotifyAction);
     procedure NotifyForm(Form: IDCLForm; Action: TFormsNotifyAction);
 
-    function CreateDialog(NameSpace, DialogName: String; NoContext: Boolean;
+    function CreateDialog(const NameSpace: TVariableNamespace; const DialogName: String; NoContext: Boolean;
       ParentForm: IDCLForm; Grid: IDCLGrid; UserLevel: TUserLevelsType;
       ReturnValueParams: TReturnValueParams; Modal: Boolean): IDCLForm;
     function CloseForm(Form: IDCLForm; Force: Boolean): IDCLForm;
     function CloseDialog(var Form: IDCLForm; Force: Boolean): Boolean;
     procedure ReleaseForm(const Form: IDCLForm);
-    procedure GetValueProc(NameSpace: String; Form: IDCLForm; ReturnValue: TReturnFormValue);
+    procedure GetValueProc(const NameSpace: TVariableNamespace; Form: IDCLForm; ReturnValue: TReturnFormValue);
 
     procedure Update;
 

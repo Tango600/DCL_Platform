@@ -55,6 +55,8 @@ function ConvertToJPEG(BitMap:TBitmap; Quality:Byte=JPEGCompressionQuality):TJpe
 function IsDigits(Value: String): Boolean;
 function OnlyLitters(S: String): String;
 
+function GetGUIDString: String;
+
 implementation
 
 uses
@@ -639,6 +641,14 @@ begin
       Result:=Result+C;
     end;
   end;
+end;
+
+function GetGUIDString: String;
+var
+  guid: TGUID;
+begin
+  CreateGUID(guid);
+  Result:=GUIDToString(guid);
 end;
 
 end.

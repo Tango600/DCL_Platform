@@ -97,7 +97,7 @@ Begin
       If Pos('//', TrimLeft(Params[i]))<>1 Then
       Begin
         cs:=Params[i];
-        Parser.RePlaseVariables('', cs, nil);
+        Parser.ReplaceAllVariables('', cs, nil);
 
 {$IFDEF ODBC}
         If IsParameter('DSN=', cs) then

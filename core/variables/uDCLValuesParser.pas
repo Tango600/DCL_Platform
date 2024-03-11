@@ -6,7 +6,7 @@ interface
 uses
   Classes, SysUtils, DateUtils,
   uDCLConst, uDCLData, uDCLVariables, uStringParams, SumProps, uDCLDBAwareTypes,
-  uDCLMD5, uDCLDBConnector;
+  uDCLMD5, uDCLDBConnector, uVariableNamespace;
 
 type
 
@@ -20,11 +20,12 @@ type
     FUserLevel: TUserLevelsType;
 
     procedure ReplaseSysVars(var ValueSet: String; Query: TDCLDialogQuery);
+    procedure RePlaseVariables(const Namespace: String; var ValueSet: String);
   public
-    constructor Create(NameSpace: String; UserLevel: TUserLevelsType; Variables: TVariables); overload;
+    constructor Create(const NameSpace: String; UserLevel: TUserLevelsType; Variables: TVariables); overload;
 
     procedure RePlaseParams(var Params: String; Query: TDCLDialogQuery);
-    procedure RePlaseVariables(const Namespace: String; var ValueSet: String; Query: TDCLDialogQuery);
+    procedure ReplaceAllVariables(const Namespace: String; var ValueSet: String; Query: TDCLDialogQuery);
     procedure RePlaceProc(var Params: String; Query: TDCLDialogQuery);
 
     procedure TranslateVals(var Params: String; Query: TDCLDialogQuery; CheckParams: Boolean);
@@ -35,7 +36,7 @@ type
 implementation
 
 uses
-  DB, uDCLUtils, uSystemUtils, uDCLMultiLang, uDBUtils,
+  DB, uDCLUtils, uSystemUtils, uDCLMultiLang, uDBUtils, uDCLVariable,
   uDCLDBUtils, uDCLGlobalVariables, uDCLVersion, uDCLConfigTable,
   uExpressionParser;
 
@@ -198,7 +199,7 @@ begin
   end;
 end;
 
-constructor TDCLValuseParser.Create(NameSpace: String; UserLevel: TUserLevelsType; Variables: TVariables);
+constructor TDCLValuseParser.Create(const NameSpace: String; UserLevel: TUserLevelsType; Variables: TVariables);
 begin
   FNameSpace:=NameSpace;
   FVariables:=Variables;
@@ -247,56 +248,58 @@ Begin
 end;
 
 procedure TDCLValuseParser.RePlaseVariables(const Namespace: String;
-  var ValueSet: String; Query: TDCLDialogQuery);
+  var ValueSet: String);
 var
-  Pos, MaxLength: Integer;
-  LastVariable, Variable, Variable2: TVariable;
+  Start, Pos, MaxLength: Integer;
+  VN, VN2, LastVariableValue: String;
+  Found: Boolean;
 begin
   if Assigned(FVariables) then
   begin
-    for Variable in FVariables.VariablesList do
+    Pos:=1;
+    Start:=1;
+    for VN in FVariables.VariableNamesList do
     begin
-      while PosEx(VariablePrefix+Variable.Name, ValueSet)<>0 do
+      while PosEx(VariablePrefix+VN, ValueSet.Substring(Start+1))<>0 do
       begin
-        Pos:=PosEx(VariablePrefix+Variable.Name, ValueSet);
+        Pos:=PosEx(VariablePrefix+VN, ValueSet);
 
         if Pos<>0 then
         begin
           MaxLength:=0;
-          LastVariable:=nil;
-          for Variable2 in FVariables.VariablesList do
+          LastVariableValue:='';
+          Found:=False;
+          for VN2 in FVariables.VariableNamesList do
           begin
-            if ((Namespace=Variable2.NameSpace) or (Variable2.NameSpace='')) and (MaxLength<Length(Variable2.Name)) and (PosEx(VariablePrefix+Variable2.Name, ValueSet)<>0) then
+            if FVariables.Exists(Namespace, VN2) and (MaxLength<Length(VN2)) and (PosEx(VariablePrefix+VN2, ValueSet)<>0) then
             begin
-              Pos:=PosEx(VariablePrefix+Variable2.Name, ValueSet);
-              LastVariable:=Variable2;
-              MaxLength:=Length(Variable2.Name);
-            end;
-          end;
-          if not Assigned(LastVariable) then
-          begin
-            MaxLength:=0;
-            for Variable2 in FVariables.VariablesList do
-            begin
-              if (MaxLength<Length(Variable2.Name)) and (PosEx(VariablePrefix+Variable2.Name, ValueSet)<>0) then
-              begin
-                Pos:=PosEx(VariablePrefix+Variable2.Name, ValueSet);
-                LastVariable:=Variable2;
-                MaxLength:=Length(Variable2.Name);
-              end;
+              Pos:=PosEx(VariablePrefix+VN2, ValueSet);
+              LastVariableValue:=FVariables.Variables[Namespace, VN2];
+              MaxLength:=Length(VN2);
+              Found:=True;
             end;
           end;
 
-          if Assigned(LastVariable) then
+          Start:=Pos;
+          if Found then
           begin
             Delete(ValueSet, Pos, MaxLength+Length(VariablePrefix));
-            Insert(LastVariable.Value, ValueSet, Pos);
+            Insert(LastVariableValue, ValueSet, Pos);
+          end
+          else
+          begin
+           Inc(Start);
           end;
         end;
       end;
     end;
   end;
+end;
 
+procedure TDCLValuseParser.ReplaceAllVariables(const Namespace: String;
+  var ValueSet: String; Query: TDCLDialogQuery);
+begin
+  RePlaseVariables(NameSpace, ValueSet);
   ReplaseSysVars(ValueSet, Query);
 end;
 
@@ -370,7 +373,6 @@ Begin
           For pv1:=1 To FunctionParamsCount Do
           Begin
             FunctionParams[pv1]:=GetParam(ProcParams, pv1);
-            // RePlaseVariables(FunctionParams[pv1]);
           End;
 
           if CompareProcName(FindNum, 'tofloat') then
@@ -561,7 +563,7 @@ end;
 procedure TDCLValuseParser.TranslateVals(var Params: String;
   Query: TDCLDialogQuery; CheckParams: Boolean);
 begin
-  RePlaseVariables(FNameSpace, Params, Query);
+  ReplaceAllVariables(FNameSpace, Params, Query);
   if CheckParams and Assigned(Query) then
     RePlaseParams(Params, Query);
   RePlaceProc(Params, Query);

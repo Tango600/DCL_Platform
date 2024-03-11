@@ -13,8 +13,9 @@ uses
   uDCLData, uDCLTypes, uDCLConst, uDCLVariables, uStringParams, uIDCLMain,
   uDCLDBConnector, uDCLQuery, uDCLMeasurements, uDBUtils, uDCLMultiLang,
   uDCLCommandButton, uDCLField, uDCLMessages, uDCLImages, cMediaFieldGroup,
-  uDCLBaseLayoutManger, uDCLHorizontalFieldLayoutManger, uDCLDBAwareTypes,
-  uIDCLCommand, uIDCLGrid, uIDCLForm, uDCLVerticalFieldLayoutManger;
+  uDCLBaseLayoutManger, uDCLHorizontalFieldLayoutManger, uVariableNamespace,
+  uDCLDBAwareTypes, uIDCLCommand, uIDCLGrid, uIDCLForm,
+  uDCLVerticalFieldLayoutManger;
 
 type
   TStructureField=class
@@ -33,8 +34,9 @@ type
     FIDCLMain: IDCLMain;
     FParentControl: TWinControl;
     FBasePanel: TPanel;
-    FNameSpace, FDependField, FMasterDataField, FMasterValueVariableName,
-      FSummFieldsSet, FNavigButtonsExpr, FSeed, FDialogName: String;
+    FNameSpace: TVariableNamespace;
+    FDependField, FMasterDataField, FMasterValueVariableName, FSummFieldsSet,
+      FNavigButtonsExpr, FSeed, FDialogName: String;
     FForm: IDCLForm;
     FDBGrid: TDBGrid;
     FFieldsCount, FToolPanelHeight, FFilterPanelHeight,
@@ -277,7 +279,7 @@ type
     procedure Cut;
     procedure Paste;
   public
-    constructor Create(const IDCLMain: IDCLMain; NameSpace: String; const Form: IDCLForm; const ParentControl: TWinControl;
+    constructor Create(const IDCLMain: IDCLMain; const NameSpace: TVariableNamespace; const Form: IDCLForm; const ParentControl: TWinControl;
       SurfType: TDataControlType; const Query: TDCLQuery; const Data: TDataSource); overload;
     destructor Destroy; override;
 
@@ -335,7 +337,7 @@ type
     FIDCLMain: IDCLMain;
     FGrid: TDCLGrid;
   public
-    constructor Create(IDCLMain: IDCLMain; NameSpace: String; Form: IDCLForm;
+    constructor Create(IDCLMain: IDCLMain; const NameSpace: TVariableNamespace; Form: IDCLForm;
       ParentControl: TWinControl; Query: TDCLQuery; Data: TDataSource); overload;
 
     property DCLGrid: TDCLGrid read FGrid;
@@ -350,7 +352,7 @@ uses
 
 { TLookupTable }
 
-constructor TLookupTable.Create(IDCLMain: IDCLMain; NameSpace: String;
+constructor TLookupTable.Create(IDCLMain: IDCLMain; const NameSpace: TVariableNamespace;
   Form: IDCLForm; ParentControl: TWinControl; Query: TDCLQuery; Data: TDataSource);
 begin
   inherited Create(ParentControl);
@@ -537,8 +539,8 @@ procedure TDCLGrid.TranslateVal(var Params: String; CheckParams: Boolean);
 var
   Parser: TDCLValuseParser;
 begin
-  Parser:=TDCLValuseParser.Create(FNameSpace, GetUserLevel, FIDCLMain.GetVariables);
-  Parser.RePlaseVariables(FNameSpace, Params, FQuery);
+  Parser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, GetUserLevel, FIDCLMain.GetVariables);
+  Parser.ReplaceAllVariables(FNameSpace.CurrentNamespace, Params, FQuery);
   if CheckParams then
     Parser.RePlaseParams(Params, FQuery);
   Parser.RePlaceProc(Params, FQuery);
@@ -668,7 +670,7 @@ begin
       begin
         if FMasterValueVariableName<>'' then
         begin
-          Data.FieldByName(FDependField).AsString:=FIDCLMain.GetVariables.Variables[FNamespace, FMasterValueVariableName];
+          Data.FieldByName(FDependField).AsString:=FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, FMasterValueVariableName];
         end;
       end;
     End;
@@ -1678,9 +1680,9 @@ begin
 
     If Field.Variable<>'' Then
       if Field.UseIndex then
-        FIDCLMain.GetVariables.Variables[FNamespace, Field.Variable]:=IntToStr(ItemIndex)
+        FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:=IntToStr(ItemIndex)
       else
-        FIDCLMain.GetVariables.Variables[FNamespace, Field.Variable]:=ItemName;
+        FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:=ItemName;
   end;
 end;
 
@@ -1780,8 +1782,7 @@ procedure TDCLGrid.ClickCommandButton(Sender: TObject);
 var
   CommandObj: IDCLCommand;
   DCLCommand, c: TDCLCommandButton;
-  guid: TGUID;
-  ns: String;
+  ns: TVariableNamespace;
   Bookmark: TBookmark;
 begin
   for c in FButtons do
@@ -1820,8 +1821,7 @@ begin
 
             if DCLCommand.Host then
             begin
-              CreateGUID(guid);
-              ns:=GUIDToString(guid);
+              ns:=TVariableNamespace.Create(FNameSpace.CurrentNamespace, GetGUIDString);
             end;
 
             CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
@@ -1835,8 +1835,7 @@ begin
       begin
         if DCLCommand.Host then
         begin
-          CreateGUID(guid);
-          ns:=GUIDToString(guid);
+          ns:=TVariableNamespace.Create(FNameSpace.CurrentNamespace, GetGUIDString);
         end;
 
         CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
@@ -1849,8 +1848,7 @@ begin
     begin
       if DCLCommand.Host then
       begin
-        CreateGUID(guid);
-        ns:=GUIDToString(guid);
+        ns:=TVariableNamespace.Create(FNameSpace.CurrentNamespace, GetGUIDString);
       end;
 
       CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
@@ -2268,7 +2266,7 @@ begin
     FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, FieldName);
 
     Field.Variable:=FieldName;
-    FIDCLMain.GetVariables.Variables[FNamespace, FieldName]:=S;
+    FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, FieldName]:=S;
   end;
   Edit.Text:=S;
 
@@ -2358,7 +2356,7 @@ begin
 
     if inFormat then
     // Update variables
-      FIDCLMain.GetVariables.Variables[FNamespace, Field.Variable]:=EdText;
+      FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:=EdText;
   end;
 end;
 
@@ -2582,7 +2580,7 @@ begin
     if DCLLookup.Variable<>'' then
     begin
       tmpSQL1:=(DCLLookup.DCLEditComponent.Control as TDBLookupComboBox).KeyValue;
-      FIDCLMain.GetVariables.Variables[FNamespace, DCLLookup.Variable]:=tmpSQL1;
+      FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, DCLLookup.Variable]:=tmpSQL1;
     end;
   end;
 end;
@@ -2637,7 +2635,7 @@ begin
       (Filter.Control as TDCLDBLookupCombo).KeyField:=Filter.KeyField;
 
       If Filter.VarName<>'' Then
-        FIDCLMain.GetVariables.Variables[FNamespace, Filter.VarName]:=
+        FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Filter.VarName]:=
           TrimRight(Filter.FilterQuery.FieldByName((Filter.Control as TDCLDBLookupCombo).KeyField).AsString);
 
       (Filter.Control as TDCLDBLookupCombo).ListSource:=Filter.FilterData;
@@ -2835,7 +2833,7 @@ begin
     if (Calendar.ParamName<>'') and Assigned(FQuery.ParamByName(Calendar.ParamName)) then
       FQuery.ParamByName(Calendar.ParamName).AsDate:=Calendar.Value
     else if Calendar.Variable<>'' then
-      FIDCLMain.GetVariables.Variables[FNamespace, Calendar.Variable]:=DateToStr(Calendar.Value);
+      FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Calendar.Variable]:=DateToStr(Calendar.Value);
 
     If Calendar.ReOpen Then
     begin
@@ -2898,9 +2896,9 @@ begin
 
   Case CheckBox.Checked of
   True:
-  FIDCLMain.GetVariables.Variables[FNamespace, Field.Variable]:='1';
+  FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:='1';
   False:
-  FIDCLMain.GetVariables.Variables[FNamespace, Field.Variable]:='0';
+  FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:='0';
   end;
 
   Field.DCLEditComponent:=TDCLEdit.Create;
@@ -2953,13 +2951,13 @@ begin
 
   if Assigned(Field) then
   begin
-    If FIDCLMain.GetVariables.Exists(FNamespace, Field.Variable) then
+    If FIDCLMain.GetVariables.Exists(FNamespace.CurrentNamespace, Field.Variable) then
     begin
       Case (Sender as TCheckbox).Checked of
       True:
-      FIDCLMain.GetVariables.Variables[FNamespace, Field.Variable]:='1';
+      FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:='1';
       False:
-      FIDCLMain.GetVariables.Variables[FNamespace, Field.Variable]:='0';
+      FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:='0';
       end;
     end;
   end;
@@ -3163,7 +3161,7 @@ begin
   begin
     // Update variables
     Value:=DateToStr((f.DCLEditComponent.Control as TDateTimePicker).Date);
-    FIDCLMain.GetVariables.Variables[FNamespace, Field.Variable]:=Value;
+    FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:=Value;
 
     If not Field.ReadOnly then
     begin
@@ -3364,7 +3362,7 @@ begin
     end;
     end;
     if Filter.VarName<>'' then
-      FIDCLMain.GetVariables.Variables[FNameSpace, Filter.VarName]:=Filter.FilterString;
+      FIDCLMain.GetVariables.Variables[FNameSpace.CurrentNamespace, Filter.VarName]:=Filter.FilterString;
 
     OpenQuery(QueryBuilder);
   end;
@@ -3400,7 +3398,7 @@ begin
     End;
 
     if Filter.VarName<>'' then
-      FIDCLMain.GetVariables.Variables[FNamespace, Filter.VarName]:=TrimRight(ExeplStr);
+      FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Filter.VarName]:=TrimRight(ExeplStr);
 
     If Filter.WaitForKey<>0 Then
     begin
@@ -4179,7 +4177,7 @@ begin
     FDBGrid.SelectedField.AsString:=Clipboard.AsText;
 end;
 
-constructor TDCLGrid.Create(const IDCLMain: IDCLMain; NameSpace: String; const Form: IDCLForm; const ParentControl: TWinControl;
+constructor TDCLGrid.Create(const IDCLMain: IDCLMain; const NameSpace: TVariableNamespace; const Form: IDCLForm; const ParentControl: TWinControl;
   SurfType: TDataControlType; const Query: TDCLQuery; const Data: TDataSource);
 var
   ChooseButton: TDCLCommandButton;

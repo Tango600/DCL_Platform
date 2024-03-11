@@ -7,7 +7,7 @@ uses
   Classes, SysUtils, Controls, Forms, ComCtrls, StdCtrls, Buttons, ExtCtrls,
   DBCtrls, DB, Generics.Collections, LazUTF8,
   uDCLDBAwareTypes, uDCLConst, uIDCLMain, uDCLData, uDCLDBConnector, uIDCLGrid,
-  uDCLTypes, uDCLVariables;
+  uDCLTypes, uDCLVariables, uVariableNamespace;
 
 type
 
@@ -16,7 +16,7 @@ type
   TDCLTextReport=class
   private
     FDCLMain: IDCLMain;
-    FNameSpace: String;
+    FNameSpace: TVariableNamespace;
     FDBConnector: TDCLDBConnector;
     FDialogRes: TModalResult;
     FDCLGrid: IDCLGrid;
@@ -39,7 +39,7 @@ type
     procedure ReplaseRepParams(var ReplaseText: TStringList);
     function TranslateRepParams(ParamName: String): String;
   public
-    constructor Create(const NameSpace: String; DCLMain: IDCLMain;
+    constructor Create(const NameSpace: TVariableNamespace; DCLMain: IDCLMain;
       DCLGrid: IDCLGrid; Scrypt: TStringList; ParamsSetID: Integer);
 
     procedure InitReport(Mode: TNewQueryMode);
@@ -125,14 +125,14 @@ end;
 procedure TDCLTextReport.GrabValListOnChange(Sender: TObject);
 begin
   If FVarsToControls.Count>(Sender as TComboBox).Tag Then
-    FVariables.Variables[FNamespace, FVarsToControls[(Sender as TComboBox).Tag]]:=
+    FVariables.Variables[FNamespace.CurrentNamespace, FVarsToControls[(Sender as TComboBox).Tag]]:=
       (Sender as TComboBox).Text;
 end;
 
 procedure TDCLTextReport.GrabValOnEdit(Sender: TObject);
 begin
   If FVarsToControls.Count>(Sender as TEdit).Tag Then
-    FVariables.Variables[FNamespace, FVarsToControls[(Sender as TEdit).Tag]]:=(Sender as TEdit).Text;
+    FVariables.Variables[FNamespace.CurrentNamespace, FVarsToControls[(Sender as TEdit).Tag]]:=(Sender as TEdit).Text;
 end;
 
 procedure TDCLTextReport.ValComboOnChange(Sender: TObject);
@@ -146,14 +146,14 @@ begin
     Else
       Val:=(Sender as TDBLookupComboBox).KeyValue;
 
-    FVariables.Variables[FNamespace, FVarsToControls[(Sender as TDBLookupComboBox).Tag]]:=Val;
+    FVariables.Variables[FNamespace.CurrentNamespace, FVarsToControls[(Sender as TDBLookupComboBox).Tag]]:=Val;
   end;
 end;
 
 procedure TDCLTextReport.GrabDateOnChange(Sender: TObject);
 begin
   If FVarsToControls.Count>(Sender as TDateTimePicker).Tag Then
-    FVariables.Variables[FNamespace, FVarsToControls[(Sender as TDateTimePicker).Tag]]:=
+    FVariables.Variables[FNamespace.CurrentNamespace, FVarsToControls[(Sender as TDateTimePicker).Tag]]:=
       DateToStr((Sender as TDateTimePicker).Date);
 end;
 
@@ -161,7 +161,7 @@ procedure TDCLTextReport.RePlaseVariables(var VarsSet: String);
 var
   Parser: TDCLValuseParser;
 begin
-  Parser:=TDCLValuseParser.Create(FNameSpace, ulUndefined, FVariables);
+  Parser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, ulUndefined, FVariables);
   Parser.TranslateVals(VarsSet, nil, False);
 end;
 
@@ -337,7 +337,7 @@ begin
   Result:=ResultString;
 end;
 
-constructor TDCLTextReport.Create(const NameSpace: String; DCLMain: IDCLMain;
+constructor TDCLTextReport.Create(const NameSpace: TVariableNamespace; DCLMain: IDCLMain;
       DCLGrid: IDCLGrid; Scrypt: TStringList; ParamsSetID: Integer);
 begin
   FNameSpace:=NameSpace;
@@ -743,7 +743,7 @@ begin
   Else
     BodyText:='';
 
-  Parser:=TDCLValuseParser.Create(FNameSpace, ulUndefined, FVariables);
+  Parser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, ulUndefined, FVariables);
   Parser.RePlaceProc(BodyText, nil);
   Body.Append(BodyText);
 end;
@@ -868,7 +868,7 @@ begin
     For S in EndSkrypts do
     begin
       If PosEx('DisposeVariable=', S)<>0 Then
-        FVariables.FreeVariable(FNamespace, FindParam('DisposeVariable=', S));
+        FVariables.FreeVariable(FNamespace.CurrentNamespace, FindParam('DisposeVariable=', S));
     end;
 
   If Not FSaved Then

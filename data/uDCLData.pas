@@ -9,11 +9,6 @@ uses
   uDCLConst, uDCLTypes, uDCLDBAwareTypes;
 
 type
-  TVariable=class
-    NameSpace, Name: String;
-    Value: String;
-  End;
-
   TDCLEdit=class
     Control: TWinControl;
     EditType: TFieldBoxType;

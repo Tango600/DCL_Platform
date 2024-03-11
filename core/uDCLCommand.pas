@@ -7,7 +7,8 @@ uses
   Classes, SysUtils, Generics.Collections, Forms, Controls, StdCtrls, DB, Dialogs,
   uDCLData, uDCLDBAwareTypes, uDCLConst, uDCLGrid, uDCLVariables,
   uIDCLMain, uIDCLForm, uIDCLGrid, uDCLUtils, uStringParams, uDCLDBConnector,
-  uDCLDBStructure, uDCLValuesParser, MathParser, uIDCLCommand;
+  uDCLDBStructure, uDCLValuesParser, MathParser, uIDCLCommand,
+  uVariableNamespace;
 
 type
 
@@ -20,7 +21,7 @@ type
     FForms: TList<IDCLForm>;
     FDCLForm: IDCLForm;
     FDCLGrid: IDCLGrid;
-    FNameSpace: String;
+    FNameSpace: TVariableNamespace;
     FVariables: TVariables;
     FParser: TDCLValuseParser;
     FUserLevel: TUserLevelsType;
@@ -42,7 +43,7 @@ type
     function GetDisableAutoRefresh: Boolean;
     procedure SetDisableAutoRefresh(Value: Boolean);
   public
-    constructor Create(const IDCLMain: IDCLMain; NameSpace: String;
+    constructor Create(const IDCLMain: IDCLMain; const NameSpace: TVariableNamespace;
       const DCLForm: IDCLForm; const DCLGrid: IDCLGrid); overload;
     destructor Destroy; override;
 
@@ -84,25 +85,25 @@ begin
   if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) then
   begin
     FParser.RePlaseParams(S, FDCLGrid.Query);
-    FParser.RePlaseVariables(FNameSpace, S, FDCLGrid.Query);
+    FParser.ReplaceAllVariables(FNameSpace.CurrentNamespace, S, FDCLGrid.Query);
     FParser.RePlaceProc(S, FDCLGrid.Query);
   end
   else
   begin
-    FParser.RePlaseVariables(FNameSpace, S, nil);
+    FParser.ReplaceAllVariables(FNameSpace.CurrentNamespace, S, nil);
     FParser.RePlaceProc(S, nil);
   end;
 end;
 
 procedure TDCLCommand.TranslateVals(var S: String; Query: TDCLDialogQuery);
 begin
-  FParser:=TDCLValuseParser.Create(FNameSpace, FUserLevel, FVariables);
+  FParser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, FUserLevel, FVariables);
   FParser.RePlaseParams(S, Query);
-  FParser.RePlaseVariables(FNameSpace, S, Query);
+  FParser.ReplaceAllVariables(FNameSpace.CurrentNamespace, S, Query);
   FParser.RePlaceProc(S, Query);
 end;
 
-constructor TDCLCommand.Create(const IDCLMain: IDCLMain; NameSpace: String;
+constructor TDCLCommand.Create(const IDCLMain: IDCLMain; const NameSpace: TVariableNamespace;
   const DCLForm: IDCLForm; const DCLGrid: IDCLGrid);
 begin
   inherited Create;
@@ -124,7 +125,7 @@ begin
   FNameSpace:=NameSpace;
   FVariables:=FIDCLMain.GetVariables;
 
-  FParser:=TDCLValuseParser.Create(FNameSpace, FUserLevel, FVariables);
+  FParser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, FUserLevel, FVariables);
   FParser.SetConnector(FDBConnector);
 
   MathParser:=TMathParser.Create;
@@ -193,7 +194,7 @@ var
       RightSide:=Trim(Copy(Line, p+1, l));
 
       if Pos(' ', LeftSide)=0 then
-      if FIDCLMain.GetVariables.Exists(FNameSpace, LeftSide) then
+      if FIDCLMain.GetVariables.Exists(FNameSpace.CurrentNamespace, LeftSide) then
       begin
         f:=True;
         r:=0;
@@ -206,11 +207,11 @@ var
 
         if f then
         begin
-          FIDCLMain.GetVariables.Variables[FNameSpace, LeftSide]:=FloatToStr(r, DefaultFormatSettings);
+          FIDCLMain.GetVariables.Variables[FNameSpace.CurrentNamespace, LeftSide]:=FloatToStr(r, DefaultFormatSettings);
         end
         else
         begin
-          FIDCLMain.GetVariables.Variables[FNameSpace, LeftSide]:=RightSide;
+          FIDCLMain.GetVariables.Variables[FNameSpace.CurrentNamespace, LeftSide]:=RightSide;
         end;
       end;
     end;
@@ -413,7 +414,7 @@ begin
     If sv_v2<=0 Then
       sv_v2:=Length(tmp2);
     VarName:=Copy(LowerCase(tmp2), 1, sv_v2);
-    If FVariables.Exists(FNameSpace, VarName) Then
+    If FVariables.Exists(FNameSpace.CurrentNamespace, VarName) Then
       If Pos('=', tmp2)<>0 Then
       begin
         sv_v2:=Pos('=', tmp2)-1;
@@ -435,10 +436,10 @@ begin
           TranslateVals(tmp2);
 
         TranslateVals(tmp2);
-        FVariables.Variables[FNameSpace, VarName]:=tmp2;
+        FVariables.Variables[FNameSpace.CurrentNamespace, VarName]:=tmp2;
       end
       Else
-        FVariables.Variables[FNameSpace, VarName]:='';
+        FVariables.Variables[FNameSpace.CurrentNamespace, VarName]:='';
   end;
 
   If (PosEx('ReturnQuery=', S)<>0)or(PosEx('SQL=', S)<>0) Then
@@ -502,12 +503,12 @@ begin
           begin
             For Edit in Grid.Edits do
             begin
-              if FVariables.Exists(FNamespace, Edit.Variable) then
+              if FVariables.Exists(FNamespace.CurrentNamespace, Edit.Variable) then
               begin
                 Case Edit.EditType of
                 fbtOutBox, fbtEditBox:
                 (Edit.Control as TEdit).Text:=
-                  FVariables.Variables[FNamespace, Edit.Variable];
+                  FVariables.Variables[FNamespace.CurrentNamespace, Edit.Variable];
                 end;
               end;
             end;
@@ -517,12 +518,12 @@ begin
           begin
             For Edit in PartGrid.Edits do
             begin
-              if FVariables.Exists(FNamespace, Edit.Variable) then
+              if FVariables.Exists(FNamespace.CurrentNamespace, Edit.Variable) then
               begin
                 Case Edit.EditType of
                 fbtOutBox, fbtEditBox:
                   (Edit.Control as TEdit).Text:=
-                    FVariables.Variables[FNamespace, Edit.Variable];
+                    FVariables.Variables[FNamespace.CurrentNamespace, Edit.Variable];
                 end;
               end;
             end;
@@ -734,9 +735,9 @@ begin
     If tmpS1<>'' then
       OpenDialog.DefaultExt:=tmpS1;
     If OpenDialog.Execute then
-      FVariables.Variables[FNameSpace, tmpS]:=OpenDialog.FileName
+      FVariables.Variables[FNameSpace.CurrentNamespace, tmpS]:=OpenDialog.FileName
     Else
-      FVariables.Variables[FNameSpace, tmpS]:='';
+      FVariables.Variables[FNameSpace.CurrentNamespace, tmpS]:='';
     FreeAndNil(OpenDialog);
   end;
 
@@ -749,9 +750,9 @@ begin
     If tmpS1<>'' Then
       SaveDialog.DefaultExt:=tmpS1;
     If SaveDialog.Execute Then
-      FVariables.Variables[FNameSpace, tmpS]:=SaveDialog.FileName
+      FVariables.Variables[FNameSpace.CurrentNamespace, tmpS]:=SaveDialog.FileName
     Else
-      FVariables.Variables[FNameSpace, tmpS]:='';
+      FVariables.Variables[FNameSpace.CurrentNamespace, tmpS]:='';
     FreeAndNil(SaveDialog);
   end;
 
@@ -863,14 +864,14 @@ begin
       If LowerCase(tmpS3)='yesno' Then
       begin
         If ShowErrorMessage(10, tmpS)=1 Then
-          FVariables.Variables[FNamespace, tmpS2]:='1'
+          FVariables.Variables[FNamespace.CurrentNamespace, tmpS2]:='1'
         Else
-          FVariables.Variables[FNamespace, tmpS2]:='0';
+          FVariables.Variables[FNamespace.CurrentNamespace, tmpS2]:='0';
       end
       Else If LowerCase(tmpS3)='input' Then
       begin
         tmpS3:=FindParam('DefaultValue=', Command);
-        FVariables.Variables[FNamespace, tmpS2]:=InputBox(tmpS, '', tmpS3);
+        FVariables.Variables[FNamespace.CurrentNamespace, tmpS2]:=InputBox(tmpS, '', tmpS3);
       end;
     end
     Else
@@ -900,7 +901,7 @@ begin
   begin
     tmpS:=FindParam('dispose=', Command);
     For v1:=1 to ParamsCount(tmpS) do
-      FVariables.FreeVariable(FNamespace, GetParam(tmpS, v1));
+      FVariables.FreeVariable(FNamespace.CurrentNamespace, GetParam(tmpS, v1));
   end;
 
   if IsLexem('SetValue=', Command) then
@@ -1073,7 +1074,7 @@ begin
   {$IFDEF MSWINDOWS}
   If IsLexem('ReportOfficeSheet=', Command) then
   begin
-    Parser:=TDCLValuseParser.Create(FNameSpace, FUserLevel, FVariables);
+    Parser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, FUserLevel, FVariables);
 
     SheetReportSelector:=TSheetOfficeReportSelector.Create(Command, FDBConnector, Parser);
     if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) and (FDCLGrid.Query.SQL.Text<>'') then
@@ -1085,7 +1086,7 @@ begin
 
   If IsLexem('ReportOfficeText=', Command) then
   begin
-    Parser:=TDCLValuseParser.Create(FNameSpace, FUserLevel, FVariables);
+    Parser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, FUserLevel, FVariables);
 
     TextOfficeReportSelector:=TTextOfficeReportSelector.Create(Command, FDBConnector, Parser);
     if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) and (FDCLGrid.Query.SQL.Text<>'') then

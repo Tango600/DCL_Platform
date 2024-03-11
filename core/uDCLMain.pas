@@ -11,7 +11,8 @@ uses
   Controls, StdCtrls, DB, lcltype, fMain, fDCLLoginForm, fDCLProtectionForm,
   uDCLDBAwareTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenuSelector,
   uDCLNotifier, uIDCLMain, uIDCLForm, uIDCLGrid, uReturnFormValue, uDCLData,
-  uDCLConst, uIDCLCommand, uDCLScriptsPackage, uDCLImages, uIDCLProtectionEngine;
+  uDCLConst, uIDCLCommand, uDCLScriptsPackage, uDCLImages, uVariableNamespace,
+  uIDCLProtectionEngine;
 
 type
   { TDCLMain }
@@ -76,12 +77,12 @@ type
     procedure NotifyForms(Action: TFormsNotifyAction);
     procedure NotifyForm(Form: IDCLForm; Action: TFormsNotifyAction);
 
-    function CreateDialog(NameSpace, DialogName: String; NoContext: Boolean;
+    function CreateDialog(const NameSpace: TVariableNamespace; const DialogName: String; NoContext: Boolean;
       ParentForm: IDCLForm; Grid: IDCLGrid; UserLevel: TUserLevelsType;
       ReturnValueParams: TReturnValueParams; Modal: Boolean): IDCLForm;
     function CloseForm(Form: IDCLForm; Force: Boolean): IDCLForm;
     function CloseDialog(var Form: IDCLForm; Force: Boolean): Boolean;
-    procedure GetValueProc(NameSpace: String; Form: IDCLForm; ReturnValue: TReturnFormValue);
+    procedure GetValueProc(const NameSpace: TVariableNamespace; Form: IDCLForm; ReturnValue: TReturnFormValue);
     function HasChildForm(Form: IDCLForm): Boolean;
     function HasParentForm(Form: IDCLForm): Boolean;
 
@@ -194,7 +195,7 @@ begin
               begin
                 if RunItem.RunType=rtCommand then
                 begin
-                  Command:=TDCLCommand.Create(Self, '', nil, nil);
+                  Command:=TDCLCommand.Create(Self, TVariableNamespace.Create('', ''), nil, nil);
                   Command.RunCommandScript(RunItem.ScriptName);
                 end
                 else
@@ -286,7 +287,7 @@ begin
   end;
 end;
 
-function TDCLMain.CreateDialog(NameSpace, DialogName: String; NoContext: Boolean;
+function TDCLMain.CreateDialog(const NameSpace: TVariableNamespace; const DialogName: String; NoContext: Boolean;
   ParentForm: IDCLForm; Grid: IDCLGrid; UserLevel: TUserLevelsType;
   ReturnValueParams: TReturnValueParams; Modal: Boolean): IDCLForm;
 var
@@ -331,7 +332,7 @@ begin
   FreeAndNil(DCL);
 end;
 
-procedure TDCLMain.GetValueProc(NameSpace: String; Form: IDCLForm; ReturnValue: TReturnFormValue);
+procedure TDCLMain.GetValueProc(const NameSpace: TVariableNamespace; Form: IDCLForm; ReturnValue: TReturnFormValue);
 var
   ReturnValueItem: TGetValueItem;
   Edit: TDCLEdit;
@@ -400,13 +401,13 @@ begin
       if ReturnValue.KeyVar<>'' then
       begin
         FVariables.NewVariableWithTest(Namespace, ReturnValue.KeyVar);
-        FVariables.Variables[Namespace, ReturnValue.KeyVar]:=ReturnValueItem.Key;
+        FVariables.Variables[Namespace.CurrentNamespace, ReturnValue.KeyVar]:=ReturnValueItem.Key;
       end;
 
       if ReturnValue.ValueVar<>'' then
       begin
         FVariables.NewVariableWithTest(Namespace, ReturnValue.ValueVar);
-        FVariables.Variables[Namespace, ReturnValue.ValueVar]:=ReturnValueItem.Value;
+        FVariables.Variables[Namespace.CurrentNamespace, ReturnValue.ValueVar]:=ReturnValueItem.Value;
       end;
 
       if ReturnValue.BatchScript<>'' then
@@ -635,7 +636,7 @@ begin
             v:=Copy(S, p+1, Length(S));
 
             if vn<>'' then
-              GetVariables.NewVariable('', Trim(vn), v);
+              GetVariables.NewVariable(TVariableNamespace.Create('', ''), Trim(vn), v);
           end;
         end;
       end;
@@ -703,8 +704,7 @@ end;
 
 procedure TDCLMain.WriteBaseID;
 var
-  guid:TGUID;
-  sGuid:String;
+  sGuid: String;
   IsEmpty: Boolean;
 begin
   if not GPT.NoParamsTable then
@@ -718,18 +718,14 @@ begin
 
     If IsEmpty then
     begin
-      If CreateGUID(guid)=0 then
-      Begin
-        sGuid:=GUIDToString(guid);
-        sGuid:=sGuid.Replace('-', '').Replace('{', '').Replace('}', '');
-        GPT.BaseID:=sGuid;
-        LocalQuery.SQL.Text:='insert into '+GPTTableName+'('+GPTNameField+', '+
-          GPTValueField+') values(:BID, :BG)';
-        LocalQuery.ParamByName('BID').AsString:=BaiseUIDParamName;
-        LocalQuery.ParamByName('BG').AsString:=sGuid;
+      sGuid:=GetGUIDString.Replace('-', '').Replace('{', '').Replace('}', '');
+      GPT.BaseID:=sGuid;
+      LocalQuery.SQL.Text:='insert into '+GPTTableName+'('+GPTNameField+', '+
+        GPTValueField+') values(:BID, :BG)';
+      LocalQuery.ParamByName('BID').AsString:=BaiseUIDParamName;
+      LocalQuery.ParamByName('BG').AsString:=sGuid;
 
-        LocalQuery.ExecSQL;
-      End;
+      LocalQuery.ExecSQL;
     end;
   end;
 end;
@@ -1065,14 +1061,14 @@ end;
 
 procedure TDCLMain.OpenDialog(DialogName: String; Host: Boolean);
 begin
-  CreateDialog('', DialogName, True, nil, nil, GPT.AccessLevel, nil, False);
+  CreateDialog(TVariableNamespace.Create('', ''), DialogName, True, nil, nil, GPT.AccessLevel, nil, False);
 end;
 
 procedure TDCLMain.RunCommandScript(CommandName: String);
 var
   Command: IDCLCommand;
 begin
-  Command:=TDCLCommand.Create(Self, '', nil, nil);
+  Command:=TDCLCommand.Create(Self, TVariableNamespace.Create('', ''), nil, nil);
   Command.RunCommandScript(CommandName);
 end;
 

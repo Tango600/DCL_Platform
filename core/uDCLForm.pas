@@ -8,7 +8,8 @@ uses
   Graphics, Menus,
   uDCLData, uDCLTypes, uDCLConst, uStringParams, uDCLQuery, uIDCLMain,
   uDCLMeasurements, uDCLDBConnector, uDCLUtils, uDCLVariables, uDCLMultiLang,
-  uIDCLCommand, uReturnFormValue, uIDCLForm, uIDCLGrid, uDCLImages;
+  uIDCLCommand, uReturnFormValue, uIDCLForm, uIDCLGrid, uDCLImages,
+  uVariableNamespace;
 
 type
 
@@ -20,7 +21,8 @@ type
     FReject, FFirstPage, FormCanClose, FCloseQuery: Boolean;
     FIDCLMain: IDCLMain;
     FDBConnector: TDCLDBConnector;
-    FNameSpace, FDialogName, CloseQueryText: String;
+    FNameSpace: TVariableNamespace;
+    FDialogName, CloseQueryText: String;
     FVariables: TVariables;
     FParentForm: IDCLForm;
     FOPL: TStringList;
@@ -93,7 +95,7 @@ type
     function GetDialogName: String;
     procedure SaveFormPos;
   public
-    constructor Create(const IDCLMain: IDCLMain; DialogName, NameSpace: String; const ParentForm: IDCLForm;
+    constructor Create(const IDCLMain: IDCLMain; const DialogName: String; const NameSpace: TVariableNamespace; const ParentForm: IDCLForm;
       OPL: TStringList; UserLevel: TUserLevelsType;
       const Query: TDCLQuery; const Data: TDataSource;
       ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False); overload;
@@ -399,11 +401,11 @@ procedure TDCLForm.TranslateVal(var Params: String; const Grid: IDCLGrid; CheckP
 var
   Parser: TDCLValuseParser;
 begin
-  Parser:=TDCLValuseParser.Create(FNameSpace, FUserLevel, FVariables);
+  Parser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, FUserLevel, FVariables);
   if Assigned(Grid) then
-    Parser.RePlaseVariables(FNameSpace, Params, Grid.Query)
+    Parser.ReplaceAllVariables(FNameSpace.CurrentNamespace, Params, Grid.Query)
   else
-    Parser.RePlaseVariables(FNameSpace, Params, nil);
+    Parser.ReplaceAllVariables(FNameSpace.CurrentNamespace, Params, nil);
   if CheckParams then
   if Assigned(Grid) then
     Parser.RePlaseParams(Params, Grid.Query);
@@ -514,7 +516,7 @@ begin
     SetRecordsStatus(IntToStr(RecNo));
 end;
 
-constructor TDCLForm.Create(const IDCLMain: IDCLMain; DialogName, NameSpace: String; const ParentForm: IDCLForm;
+constructor TDCLForm.Create(const IDCLMain: IDCLMain; const DialogName: String; const NameSpace: TVariableNamespace; const ParentForm: IDCLForm;
   OPL: TStringList; UserLevel: TUserLevelsType;
   const Query: TDCLQuery; const Data: TDataSource;
   ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False);
