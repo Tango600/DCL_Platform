@@ -1823,6 +1823,7 @@ begin
             if DCLCommand.Host then
             begin
               ns:=TVariableNamespace.Create(FNameSpace.CurrentNamespace, GetGUIDString);
+              FIDCLMain.GetVariables.RegisterNamespace(ns);
             end;
 
             CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
@@ -1837,6 +1838,7 @@ begin
         if DCLCommand.Host then
         begin
           ns:=TVariableNamespace.Create(FNameSpace.CurrentNamespace, GetGUIDString);
+          FIDCLMain.GetVariables.RegisterNamespace(ns);
         end;
 
         CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
@@ -1850,6 +1852,7 @@ begin
       if DCLCommand.Host then
       begin
         ns:=TVariableNamespace.Create(FNameSpace.CurrentNamespace, GetGUIDString);
+        FIDCLMain.GetVariables.RegisterNamespace(ns);
       end;
 
       CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);

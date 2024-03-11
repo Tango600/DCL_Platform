@@ -251,45 +251,45 @@ procedure TDCLValuseParser.RePlaseVariables(const Namespace: String;
   var ValueSet: String);
 var
   Start, Pos, MaxLength: Integer;
-  VN, VN2, LastVariableValue: String;
+  Variable, Variable2: String;
   Found: Boolean;
+  LastVariableValue: String;
 begin
   if Assigned(FVariables) then
   begin
-    Pos:=1;
+    Pos:=0;
     Start:=0;
-    for VN in FVariables.VariableNamesList do
+    while PosEx(VariablePrefix, ValueSet.Substring(Start))<>0 do
     begin
-      while PosEx(VariablePrefix+VN, ValueSet.Substring(Start))<>0 do
+      for Variable in FVariables.VariableNamesList do
       begin
-        Pos:=PosEx(VariablePrefix+VN, ValueSet);
+        Pos:=PosEx(VariablePrefix+Variable, ValueSet);
 
         if Pos<>0 then
         begin
           MaxLength:=0;
           LastVariableValue:='';
           Found:=False;
-          for VN2 in FVariables.VariableNamesList do
+          for Variable2 in FVariables.VariableNamesList do
           begin
-            if FVariables.Exists(Namespace, VN2) and (MaxLength<Length(VN2)) and (PosEx(VariablePrefix+VN2, ValueSet)<>0) then
+            if FVariables.Exists(Namespace, Variable2) and (MaxLength<Length(Variable2)) and (PosEx(VariablePrefix+Variable2, ValueSet)<>0) then
             begin
-              Pos:=PosEx(VariablePrefix+VN2, ValueSet);
-              LastVariableValue:=FVariables.Variables[Namespace, VN2];
-              MaxLength:=Length(VN2);
+              Pos:=PosEx(VariablePrefix+Variable2, ValueSet);
+              LastVariableValue:=FVariables.Variables[Namespace, Variable2];
+              MaxLength:=Length(Variable2);
               Found:=True;
             end;
           end;
 
-          Start:=Pos;
           if Found then
           begin
             Delete(ValueSet, Pos, MaxLength+Length(VariablePrefix));
             Insert(LastVariableValue, ValueSet, Pos);
-          end
-          else
-          begin
-           Inc(Start);
           end;
+        end
+        else
+        begin
+          Start:=PosEx(VariablePrefix, ValueSet)+1;
         end;
       end;
     end;
