@@ -1104,6 +1104,7 @@ begin
         FindGrid.Cells[col, 0]:=FindGrid.Cells[col, 0]+'%';
       FindProc;
       (Sender as TDBGrid).SetFocus;
+      Key:=0;
     end;
 
     if Key=46 then
@@ -1115,6 +1116,7 @@ begin
         (Sender as TDBGrid).SetFocus;
         (Sender as TDBGrid).SelectedIndex:=col;
         FindProc;
+        Key:=0;
       end;
     end;
 
@@ -1127,7 +1129,6 @@ begin
         Key:=0;
       end;
     end;
-    Key:=0;
   end;
 end;
 
