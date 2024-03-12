@@ -36,7 +36,7 @@
 ![Linux](https://img.shields.io/badge/Linux-42bd54?style=for-the-badge&logo=linux&logoColor=black)
 ![OSX](https://img.shields.io/badge/OSX-888888?style=for-the-badge&logo=macos&logoColor=black)
 ![Haiku](/HAIKU-logo-black-on-white-85.png&branch=master)
-
+ -- ОС для которых/под которыми собирается DCL.
 
 >  Почему нет бинарников в разделе Релиз?
 
