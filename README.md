@@ -35,6 +35,7 @@
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 ![Linux](https://img.shields.io/badge/Linux-42bd54?style=for-the-badge&logo=linux&logoColor=black)
 ![OSX](https://img.shields.io/badge/OSX-888888?style=for-the-badge&logo=macos&logoColor=black)
+![Haiku](https://www.haiku-inc.org/images/HAIKU-logo-black-on-white.png)
 
 
 >  Почему нет бинарников в разделе Релиз?
