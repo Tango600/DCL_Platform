@@ -8,6 +8,7 @@ uses
 var
   GPT: TGPT;
   Path, AppConfigDir, UserProfileDir: string;
+  DialogResult: Boolean;
 
 implementation
 

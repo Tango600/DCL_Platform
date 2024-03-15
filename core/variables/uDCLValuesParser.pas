@@ -41,14 +41,14 @@ uses
   uExpressionParser;
 
 const
-  MaxSysVars=34;
+  MaxSysVars=35;
   SysVarsSet: Array [1..MaxSysVars] of String=('_TIME_', '_TIMES_', '_DATE_', '_DATETIME_', // 4
     '_VERSION_', '_ISEMPTY_', '_USERNAME_', '_PASSWORD_', '_STRINGTYPECHAR_', '_ROLENAME_', // 10
     '_ROLEID_', '_USERPASS_', '_LONGROLENAME_', '_FOB_', '_EOB_', '_VALUESEPARATOR_', // 16
     '_APPPATH_', '_ENGINETYPE_', '_APPNAME_', '_DCL_USER_NAME_', '_USERID_', // 21
     '_USERNAMEACCESSLEVELS_', '_USERACCESSLEVEL_', '_NOTIFYACTIONS_', '_YESNO_', // 25
     '_YEAR_', '_DSSTATE_', '_DSSTATENAME_', '_APPDATAPATH_', '_OS_', '_USERPROFILE_', // 31
-    '_USERDOC_', '_DCLINI_', '_ACCESSLEVEL_'); // 34
+    '_USERDOC_', '_DCLINI_', '_ACCESSLEVEL_', '_LASTDIALOGRESULT_'); // 35
 
   ProcCount=24;
   ProcNames: Array [1..ProcCount] Of String=('ToFloat', 'DeleteNonFilesSimb', 'GetFileNameToTranslite', //3
@@ -188,6 +188,8 @@ begin
               Value:=IntToStr(Ord(GPT.AccessLevel))
             else
               Value:=IntToStr(Ord(FUserLevel));
+            35:
+            Value:=IntToStr(Ord(DialogResult));
             end;
 
             Delete(ValueSet, Pos, Length(LastVariable)+Length(VariablePrefix));

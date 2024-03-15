@@ -863,7 +863,8 @@ begin
 
       If LowerCase(tmpS3)='yesno' Then
       begin
-        If ShowErrorMessage(10, tmpS)=1 Then
+        DialogResult:=ShowErrorMessage(10, tmpS)=1;
+        If DialogResult Then
           FVariables.Variables[FNamespace.CurrentNamespace, tmpS2]:='1'
         Else
           FVariables.Variables[FNamespace.CurrentNamespace, tmpS2]:='0';
@@ -871,7 +872,10 @@ begin
       Else If LowerCase(tmpS3)='input' Then
       begin
         tmpS3:=FindParam('DefaultValue=', Command);
-        FVariables.Variables[FNamespace.CurrentNamespace, tmpS2]:=InputBox(tmpS, '', tmpS3);
+        tmpS1:='';
+        DialogResult:=InputQuery(tmpS, tmpS, tmpS1);
+        if DialogResult then
+          FVariables.Variables[FNamespace.CurrentNamespace, tmpS2]:=tmpS1;
       end;
     end
     Else

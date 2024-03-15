@@ -6,9 +6,9 @@ interface
 uses
   LCLIntf, Classes, Process, SysUtils;
 
-  procedure Run(Command, Param: String; Wait: Boolean);
-  procedure OpenFile(DocumentFileName: String);
-  procedure OpenWeb(URL: String);
+  procedure Run(const Command, Param: String; Wait: Boolean);
+  procedure OpenFile(const DocumentFileName: String);
+  procedure OpenWeb(const URL: String);
 
 implementation
 
@@ -68,7 +68,7 @@ begin
   end;
 end;
 
-procedure Run(Command, Param: String; Wait: Boolean);
+procedure Run(const Command, Param: String; Wait: Boolean);
 var
   Proc: TProcess;
   C, P: TProcessString;
@@ -102,12 +102,12 @@ begin
   FreeAndNil(Params);
 end;
 
-procedure OpenFile(DocumentFileName: String);
+procedure OpenFile(const DocumentFileName: String);
 begin
   OpenDocument(DocumentFileName);
 end;
 
-procedure OpenWeb(URL: String);
+procedure OpenWeb(const URL: String);
 begin
   OpenURL(URL);
 end;
