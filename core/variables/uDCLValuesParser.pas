@@ -301,8 +301,8 @@ end;
 procedure TDCLValuseParser.ReplaceAllVariables(const Namespace: String;
   var ValueSet: String; Query: TDCLDialogQuery);
 begin
-  RePlaseVariables(NameSpace, ValueSet);
   ReplaseSysVars(ValueSet, Query);
+  RePlaseVariables(NameSpace, ValueSet);
 end;
 
 procedure TDCLValuseParser.RePlaceProc(var Params: String; Query: TDCLDialogQuery);
