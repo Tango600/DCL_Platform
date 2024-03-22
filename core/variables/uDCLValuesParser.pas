@@ -252,17 +252,17 @@ end;
 procedure TDCLValuseParser.RePlaseVariables(const Namespace: String;
   var ValueSet: String);
 var
-  Start, Pos, MaxLength: Integer;
+  Pos, MaxLength: Integer;
   Variable, Variable2: String;
-  Found: Boolean;
+  Found, FoundRound: Boolean;
   LastVariableValue: String;
 begin
   if Assigned(FVariables) then
   begin
     Pos:=0;
-    Start:=0;
-    while PosEx(VariablePrefix, ValueSet.Substring(Start))<>0 do
+    while PosEx(VariablePrefix, ValueSet)<>0 do
     begin
+      FoundRound:=False;
       for Variable in FVariables.VariableNamesList do
       begin
         Pos:=PosEx(VariablePrefix+Variable, ValueSet);
@@ -280,6 +280,7 @@ begin
               LastVariableValue:=FVariables.Variables[Namespace, Variable2];
               MaxLength:=Length(Variable2);
               Found:=True;
+              FoundRound:=True;
             end;
           end;
 
@@ -288,12 +289,11 @@ begin
             Delete(ValueSet, Pos, MaxLength+Length(VariablePrefix));
             Insert(LastVariableValue, ValueSet, Pos);
           end;
-        end
-        else
-        begin
-          Start:=PosEx(VariablePrefix, ValueSet)+1;
         end;
       end;
+
+      if not FoundRound then
+        break;
     end;
   end;
 end;
