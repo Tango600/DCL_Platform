@@ -2498,6 +2498,7 @@ begin
     NoDataField:=True;
 
   DBLookupControl.ReadOnly:=Field.ReadOnly;
+  DBLookupControl.Enabled:=Field.Enabled;
   DBLookupControl.ListSource:=Field.LookupData.LookupDS;
   If Field.Width>0 Then
     DBLookupControl.Width:=Field.Width
