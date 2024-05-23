@@ -1972,10 +1972,10 @@ begin
       begin
         S2:=GetParam(S, i);
         p2:=Pos('/', S2);
+        if p2=0 then
+          p2:=Pos('=', S2);
         if p2<>0 then
-          S3:=Copy(S2, 1, p2-1)
-        else
-          S3:=S2;
+          S3:=Copy(S2, 1, p2-1);
         v2:=0;
         p1:=Pos('=', S3);
         If p1<>0 Then
