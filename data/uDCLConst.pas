@@ -21,6 +21,9 @@ const
 {$IFDEF UNIX}
   DefaultLibraryLocation='libfbclient.so';
 {$ENDIF}
+{$IFDEF DARWIN}
+  DefaultLibraryLocation='libfbclient.dylib';
+{$ENDIF}
 {$IFDEF IBX}
   {$IFDEF IBXLaz}
   AccessLibVersion=IBX_VERSION;
