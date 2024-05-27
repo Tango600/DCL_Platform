@@ -156,7 +156,7 @@ Initialization
 
   TBlobFields:=[ftBytes, ftVarBytes, ftBlob, ftGraphic, ftMemo, ftFmtMemo, ftTypedBinary, ftWideMemo];
   TStringTypedFields:=[ftUnknown, ftString, ftFixedChar, ftWideString, ftVariant, ftGuid, ftFixedWideChar, ftWideMemo];
-  TIntegerTypedFields:=[ftSmallint, ftInteger, ftWord, ftBoolean, ftAutoInc, ftLargeint, ftBytes, ftVarBytes, ftOraInterval];
+  TIntegerTypedFields:=[ftSmallint, ftInteger, ftWord, ftBoolean, ftAutoInc, ftLargeint, ftBytes, ftVarBytes];
   TFloatTypedFields:=[ftBCD, ftFloat, ftCurrency];
-  TDateTimeTypedFields:=[ftDate, ftTime, ftDateTime, ftTimeStamp, ftOraTimeStamp];
+  TDateTimeTypedFields:=[ftDate, ftTime, ftDateTime, ftTimeStamp];
 end.

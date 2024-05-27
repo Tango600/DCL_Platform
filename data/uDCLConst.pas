@@ -18,7 +18,7 @@ const
 {$IFDEF MSWINDOWS}
   DefaultLibraryLocation='gds32.dll';
 {$ENDIF}
-{$IFDEF UNIX}
+{$IFDEF LINUX}
   DefaultLibraryLocation='libfbclient.so';
 {$ENDIF}
 {$IFDEF DARWIN}
