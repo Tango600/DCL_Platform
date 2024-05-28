@@ -1411,6 +1411,8 @@ begin
     else
       FieldNameCapt:=LeftStr(ScrLine, p-1);
 
+    FDCLFields.Add(FCurrentField);
+
     If PosEx('As_Logic;', ScrLine)<>0 Then
     begin
       FCurrentField.DataFieldType:=dftLogic;
@@ -1503,7 +1505,7 @@ begin
       AddDropBox(FCurrentField, FCurrentField.FirstFieldsLine);
     end;
 
-    FDCLFields.Add(FCurrentField);
+    //FDCLFields.Add(FCurrentField);
   end;
   end;
 
@@ -1559,6 +1561,9 @@ begin
     DropList.Parent:=FFieldsPanel;
     DropList.DropDownCount:=DropDownRows;
     DropList.OnSelect:=DropListOnSelectItem;
+
+    Field.DCLEditComponent:=TDCLEdit.Create;
+    Field.DCLEditComponent.Control:=DropList;
 
     DropList.Clear;
 
@@ -1622,9 +1627,6 @@ begin
     end
     Else
       DropList.ItemIndex:=StrToIntEx(FindParam('SetIndexValue=', Scr));
-
-    Field.DCLEditComponent:=TDCLEdit.Create;
-    Field.DCLEditComponent.Control:=DropList;
   end;
 end;
 
@@ -2100,6 +2102,8 @@ begin
   Edit:=TEdit.Create(FFieldsPanel);
   Edit.Parent:=FFieldsPanel;
 
+  Field.DCLEditComponent.Control:=Edit;
+
   If FindParam('ComponentName=', Scr)<>'' then
     Edit.Name:=FindParam('ComponentName=', Scr);
 
@@ -2273,8 +2277,6 @@ begin
     FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, FieldName]:=S;
   end;
   Edit.Text:=S;
-
-  Field.DCLEditComponent.Control:=Edit;
 end;
 
 procedure TDCLGrid.FieldBoxOnClick(Sender: TObject);
@@ -2473,9 +2475,16 @@ begin
   DBLookupControl.Parent:=FFieldsPanel;
   DBLookupControl.Style:=csDropDownList;
   DBLookupControl.DropDownRows:=DropDownRows;
-
   DBLookupControl.ShowHint:=True;
   DBLookupControl.Hint:=Field.Hint;
+  {$IFDEF FPC}
+  DBLookupControl.OnSelect:=LookupOnClick;
+  {$ELSE}
+  DBLookupControl.OnClick:=LookupOnClick;
+  {$ENDIF}
+
+  Field.DCLEditComponent:=TDCLEdit.Create;
+  Field.DCLEditComponent.Control:=DBLookupControl;
 
   If Assigned(FQuery) and FQuery.Active Then
   begin
@@ -2540,14 +2549,6 @@ begin
     end;
   end;
   //LookupOnClick(DBLookupControl);
-
-  {$IFDEF FPC}
-  DBLookupControl.OnSelect:=LookupOnClick;
-  {$ELSE}
-  DBLookupControl.OnClick:=LookupOnClick;
-  {$ENDIF}
-  Field.DCLEditComponent:=TDCLEdit.Create;
-  Field.DCLEditComponent.Control:=DBLookupControl;
 end;
 
 procedure TDCLGrid.LookupOnClick(Sender: TObject);
@@ -2863,8 +2864,10 @@ var
 begin
   CheckBox:=TCheckbox.Create(FFieldsPanel);
   CheckBox.Parent:=FFieldsPanel;
-
   CheckBox.Caption:='';
+
+  Field.DCLEditComponent:=TDCLEdit.Create;
+  Field.DCLEditComponent.Control:=CheckBox;
 
   If Field.Hint<>'' Then
   begin
@@ -2905,9 +2908,6 @@ begin
   False:
   FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:='0';
   end;
-
-  Field.DCLEditComponent:=TDCLEdit.Create;
-  Field.DCLEditComponent.Control:=CheckBox;
 end;
 
 procedure TDCLGrid.AddDBCheckBox(Field: TDCLField; Scr: String);
@@ -3053,6 +3053,9 @@ begin
   DateBox.Parent:=FFieldsPanel;
   DateBox.DateFormat:=GPT.DateFormat;
 
+  Field.DCLEditComponent:=TDCLEdit.Create;
+  Field.DCLEditComponent.Control:=DateBox;
+
   If FindParam('ComponentName=', Scr)<>'' Then
     DateBox.Name:=FindParam('ComponentName=', Scr);
 
@@ -3141,10 +3144,10 @@ begin
 
   Field.Variable:=KeyField;
   If S<>'' then
+  begin
     DateBox.Date:=StrToDate(S);
-
-  Field.DCLEditComponent:=TDCLEdit.Create;
-  Field.DCLEditComponent.Control:=DateBox;
+    OnChangeDateBox(DateBox);
+  end;
 end;
 
 procedure TDCLGrid.OnChangeDateBox(Sender: TObject);
