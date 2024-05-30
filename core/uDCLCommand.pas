@@ -462,12 +462,18 @@ begin
       DCLQuery.SQL.Text:=SQLText;
       Screen.Cursor:=crSQLWait;
       try
-        DCLQuery.Open;
-      Except
+        try
+          DCLQuery.Open;
+        except
+          on E: Exception do
+          begin
+            ShowErrorMessage( - 1105, E.Message);
+            raise;
+          end;
+        end;
+      Finally
         Screen.Cursor:=crDefault;
-        //ShowErrorMessage( - 1105, 'SQL='+SQLText);
       end;
-      Screen.Cursor:=crDefault;
 
       ReturnField:=DCLQuery.Fields[0].FieldName;
 

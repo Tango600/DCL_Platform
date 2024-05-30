@@ -751,7 +751,7 @@ Begin
   -2, -3:
   MessageText:=GetDCLMessageString(msConnectionError);
   -1100, -1101, -1119, -1102, -1106, -1107, -1112, -1200, -1201, -1113, -1114, -1115, -1116, -1118:
-  MessageText:=GetDCLMessageString(msErrorQuery)+' '+IntToStr(ErrorCode)+' / '+AddText;
+  MessageText:=GetDCLMessageString(msErrorQuery)+' '+IntToStr(ErrorCode);
   -1111:
   MessageText:=GetDCLMessageString(msBadFindParams)+' '+IntToStr(ErrorCode);
   -1103, -1104, -1105, -1108, -1110, -1117:
@@ -794,11 +794,9 @@ Begin
   MessageText:=GetDCLMessageString(msErrorInRaightExpression)+' '+IntToStr(ErrorCode);
   -10000, -10001, -10002:
   MessageText:=GetDCLMessageString(msFieldNotFound)+' '+IntToStr(ErrorCode);
-  Else
-    MessageText:=AddText;
   End;
 
-  Result:=MessageText;
+  Result:=MessageText+LineEnding+AddText;
 End;
 
 procedure ClearTranscodeData(var Data:TTranscodeData);
