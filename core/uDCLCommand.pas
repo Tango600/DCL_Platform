@@ -1517,6 +1517,7 @@ var
   v1: Integer;
   ReturnValueParams: TReturnValueParams;
   lDCLForm: IDCLForm;
+  tp: IDCLGrid;
 begin
   lDCLForm:=nil;
   DialogName:=FindParam('Dialog=', ScrStr);
@@ -1544,9 +1545,13 @@ begin
     If Assigned(FDCLForm) then
     Begin
       v1:=StrToIntEx(TmpStr)-1;
-      If Assigned(FDCLForm.CurrentGrid.TableParts[v1]) Then
+      if v1<0 then
+        tp:=FDCLForm.CurrentGrid.CurrentTablePart
+      else
+        tp:=FDCLForm.CurrentGrid.TableParts[v1];
+      If Assigned(tp) Then
         lDCLForm:=FIDCLMain.CreateDialog(FNameSpace, DialogName, NoContext, FDCLForm,
-          FDCLForm.CurrentGrid.TableParts[v1], FUserLevel,  ReturnValueParams, ModalOpen);
+          tp, FUserLevel,  ReturnValueParams, ModalOpen);
     End;
   end
   Else
