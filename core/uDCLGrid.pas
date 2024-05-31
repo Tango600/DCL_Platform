@@ -347,7 +347,7 @@ implementation
 
 uses
   EditBtn, LCLProc, uRunProgram, uReturnFormValue, cMyDBLookupCombo,
-  uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, LazUTF8,
+  uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, LazUTF8, uDCLException,
   uPrintBase, uDCLGlobalVariables, uDCLMD5, uExpressionParser, uDCLCommand;
 
 { TLookupTable }
@@ -530,7 +530,10 @@ begin
     try
       FQuery.Open;
     Except
-      ShowErrorMessage( - 1100, 'SQL='+QText);
+      on E: Exception do
+      begin
+        raise TDCLException.Create(-1100, E.Message);
+      end;
     end;
   end;
 end;
@@ -1597,7 +1600,10 @@ begin
         ShadowQuery.Close;
         FreeAndNil(ShadowQuery);
       Except
-        ShowErrorMessage( - 1107, 'SQL='+tmpSQL1);
+        on E: Exception do
+        begin
+          raise TDCLException.Create( - 1107, E.Message);
+        end;
       end;
     end;
 
@@ -2461,7 +2467,10 @@ begin
       Field.LookupData.LookupQuery.Last;
       Field.LookupData.LookupQuery.First;
     Except
-      ShowErrorMessage( - 1115, 'SQL='+TempStr);
+      on E: Exception do
+      begin
+        raise TDCLException.Create( - 1115, E.Message);
+      end;
     end;
     Field.LookupData.LookupDS:=TDataSource.Create(Self.GetComponent);
     Field.LookupData.LookupDS.DataSet:=Field.LookupData.LookupQuery;
@@ -2627,7 +2636,10 @@ begin
         Filter.FilterQuery.Last;
         Filter.FilterQuery.First;
       Except
-        ShowErrorMessage( - 1116, 'SQL='+Filter.SQL);
+        on E: Exception do
+        begin
+          raise TDCLException.Create( - 1116, E.Message);
+        end;
       end;
 
       Filter.Control:=TDCLDBLookupCombo.Create(FFiltersPanel);
@@ -4351,7 +4363,10 @@ begin
   Try
     FQuery.Open;
   Except
-    ShowErrorMessage( - 1100, 'SQL='+FQuery.SQL.Text);
+    on E: Exception do
+    begin
+      raise TDCLException.Create(-1100, E.Message);
+    end;
   End;
 
   {$IFnDEF NODSBOOKMARKS}

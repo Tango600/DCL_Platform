@@ -54,9 +54,9 @@ type
 implementation
 
 uses
-  uDCLMessages, uDCLMultiLang, uDCLUtils, uDCLDBStructure, uStringParams,
+  uDCLMultiLang, uDCLUtils, uDCLDBStructure, uStringParams,
   uDCLMeasurements, uDCLQueryUtils, uDCLGlobalVariables, uDCLValuesParser,
-  uSystemUtils;
+  uSystemUtils, uDCLException;
 
 const
   EditTopStep=23;
@@ -293,7 +293,10 @@ begin
       {If GPT.DebugOn Then
         DebugProc('Report param SQL query: '+tmpSQL1);}
     Except
-      ShowErrorMessage( - 1109, RepParams[ParamNum]+' / SQL='+tmpSQL1);
+      on E: Exception do
+      begin
+        raise TDCLException.Create( - 1109, E.Message);
+      end;
     end;
 
     ReturnField:=FindParam('ReturnField=', RepParams[ParamNum+1]);
@@ -560,7 +563,10 @@ begin
           GrabDBLookupCombo.OnClick:=ValComboOnChange;
 {$ENDIF}
         Except
-          ShowErrorMessage( - 1108, 'SQL='+tmpSQL1);
+          on E: Exception do
+          begin
+            raise TDCLException.Create( - 1108, E.Message);
+          end;
         end;
 
         inc(ElementsTop, EditTopStep);
@@ -664,7 +670,10 @@ begin
       {If GPT.DebugOn Then
         DebugProc('Report SQL query: '+tmpSQL);}
     Except
-      ShowErrorMessage( - 1106, 'SQL='+tmpSQL);
+      on E: Exception do
+      begin
+        raise TDCLException.Create( - 1106, E.Message);
+      end;
     end;
     Screen.Cursor:=crDefault;
   end;

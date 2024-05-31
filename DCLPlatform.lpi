@@ -27,7 +27,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="libraries;libraries\foreigners;dclpackages;data;utils;wrappers;dbaware;config;core;core\layoutmangers;core\variables;forms;resources;reports;reports\text;reports\office;core\lang;core\components;core\interfaces;core\menu;core\protect"/>
+            <OtherUnitFiles Value="libraries;libraries\foreigners;dclpackages;data;utils;wrappers;dbaware;config;core;core\layoutmangers;core\variables;forms;resources;reports;reports\text;reports\office;core\lang;core\components;core\interfaces;core\menu;core\protect;core\exceptions"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -441,6 +441,10 @@
         <Filename Value="core\variables\uDCLVariable.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="core\exceptions\uDCLException.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -451,7 +455,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="libraries;libraries\foreigners;dclpackages;data;utils;wrappers;dbaware;config;core;core\layoutmangers;core\variables;forms;resources;reports;reports\text;reports\office;core\lang;core\components;core\interfaces;core\menu;core\protect"/>
+      <OtherUnitFiles Value="libraries;libraries\foreigners;dclpackages;data;utils;wrappers;dbaware;config;core;core\layoutmangers;core\variables;forms;resources;reports;reports\text;reports\office;core\lang;core\components;core\interfaces;core\menu;core\protect;core\exceptions"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

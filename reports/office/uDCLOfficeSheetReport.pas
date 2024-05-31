@@ -26,7 +26,7 @@ implementation
 uses
   DB,
   uSystemUtils, uDCLUtils, uDCLOfficeUtils, uDCLMessages, uSQLUtils,
-  uStringParams, uRunProgram, uDCLGlobalVariables;
+  uStringParams, uRunProgram, uDCLGlobalVariables, uDCLException;
 
 { TDCLOfficeSheetReport }
 
@@ -154,8 +154,11 @@ begin
     try
       DCLQuery.Open;
     Except
-      OOSetVisible(Document, True);
-      ShowErrorMessage( - 1104, 'SQL='+SQLStr);
+      on E: Exception do
+      begin
+        OOSetVisible(Document, True);
+        raise TDCLException.Create( - 1104, E.Message);
+      end;
     end;
     DCLQuery.First;
 
@@ -407,8 +410,11 @@ begin
     try
       DCLQuery.Open;
     Except
-      FExcel.Visible:=True;
-      ShowErrorMessage( - 1104, 'SQL='+SQLStr);
+      on E: Exception do
+      begin
+        FExcel.Visible:=True;
+        raise TDCLException.Create( - 1104, E.Message);
+      end;
     end;
     DCLQuery.First;
 

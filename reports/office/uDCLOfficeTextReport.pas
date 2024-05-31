@@ -29,7 +29,7 @@ uses
   uDCLOfficeUtils,
   {$ENDIF}
   uSystemUtils, uDCLUtils, uDCLMessages, uDCLGlobalVariables,
-  uStringParams, uDBUtils, uRunProgram, SumProps;
+  uDCLException, uStringParams, uDBUtils, uRunProgram, SumProps;
 
 { TDCLOfficeTextReport }
 
@@ -117,7 +117,10 @@ begin
     try
       DCLQuery.Open;
     Except
-      ShowErrorMessage( - 1104, 'SQL='+SQLStr);
+      on E: Exception do
+      begin
+        raise TDCLException.Create( - 1104, E.Message);
+      end;
     end;
     DCLQuery.First;
 
@@ -329,7 +332,10 @@ begin
     try
       DCLQuery.Open;
     Except
-      ShowErrorMessage( - 1104, 'SQL='+SQLStr);
+      on E: Exception do
+      begin
+        raise TDCLException.Create( - 1104, E.Message);
+      end;
     end;
     DCLQuery.First;
 

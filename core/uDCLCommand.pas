@@ -62,7 +62,7 @@ uses
   {$IFDEF MSWINDOWS}
   uSheetOfficeReportSelector, uTextOfficeReportSelector,
   {$ENDIF}
-  fAbout, uDCLGlobalVariables, uDCLConfigTable, uDCLDataStorage,
+  uDCLException, fAbout, uDCLGlobalVariables, uDCLConfigTable, uDCLDataStorage,
   uRunProgram, uDCLMessages, uDCLMultiLang, uSQLUtils, uSystemUtils,
   {$IFDEF TRANSACTIONDB}
   uDCLDBTransaction,
@@ -467,8 +467,7 @@ begin
         except
           on E: Exception do
           begin
-            ShowErrorMessage( - 1105, E.Message);
-            raise;
+            raise TDCLException.Create(-1105, E.Message);
           end;
         end;
       Finally
@@ -564,8 +563,10 @@ begin
       else
         SQLCommand.Open;
     Except
-      On ex: Exception do
-        ShowErrorMessage( - 1110, 'SQL='+SQL+' / '+ex.Message);
+      on E: Exception do
+      begin
+        raise TDCLException.Create(-1110, E.Message);
+      end;
     end;
     FreeAndNil(SQLCommand);
     {$IFDEF TRANSACTIONDB}
