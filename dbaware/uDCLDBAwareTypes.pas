@@ -66,6 +66,7 @@ type
   {$ENDIF}
 
   TDBDate=TDBDateEdit;
+
   TNavButtons=TDBNavButton;
   TNavButtonsSet=TDBNavButtonSet;
 

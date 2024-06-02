@@ -5129,6 +5129,14 @@ begin
       begin
         if Assigned(e.DCLEditComponent) and Assigned(e.DCLEditComponent.Control) then
         begin
+          if (e.DCLEditComponent.Control is TDateTimePicker) and ((e.DCLEditComponent.Control as TDateTimePicker).Text='') then
+          begin
+            Result:=False;
+          end;
+          if (e.DCLEditComponent.Control is TDBDate) and ((e.DCLEditComponent.Control as TDateTimePicker).Text='') then
+          begin
+            Result:=False;
+          end;
           if (e.DCLEditComponent.Control is TDBEdit) and ((e.DCLEditComponent.Control as TDBEdit).Text='') then
           begin
             Result:=False;
