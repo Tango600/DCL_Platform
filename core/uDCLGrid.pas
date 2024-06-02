@@ -761,8 +761,11 @@ end;
 
 procedure TDCLGrid.BeforePost(Data: TDataSet);
 begin
-  ExecEvents(evtBeforePost);
-  UpdateAllControls;
+  if CheckEdits then
+  begin
+    ExecEvents(evtBeforePost);
+    UpdateAllControls;
+  end;
 end;
 
 procedure TDCLGrid.OnDelete(Data: TDataSet);
@@ -1734,29 +1737,32 @@ begin
 end;
 
 procedure TDCLGrid.AddDBEdit(Field: TDCLField);
+var
+  DBEdit: TDBEdit;
 begin
   if FieldExists(FQuery, Field.FieldName) then
   begin
-    Field.DCLEditComponent:=TDCLEdit.Create;
-
-    Field.DCLEditComponent.Control:=TDBEdit.Create(FFieldsPanel);
-    Field.DCLEditComponent.Control.Parent:=FFieldsPanel;
+    DBEdit:=TDBEdit.Create(FFieldsPanel);
+    DBEdit.Parent:=FFieldsPanel;
     if Field.Width>0 then
-      Field.DCLEditComponent.Control.Width:=Field.Width;
-    (Field.DCLEditComponent.Control as TDBEdit).DataField:=Field.FieldName;
-    (Field.DCLEditComponent.Control as TDBEdit).DataSource:=FData;
-    (Field.DCLEditComponent.Control as TDBEdit).Hint:=Field.Hint;
+      DBEdit.Width:=Field.Width;
+    DBEdit.DataField:=Field.FieldName;
+    DBEdit.DataSource:=FData;
+    DBEdit.Hint:=Field.Hint;
     if Field.Hint<>'' then
-      (Field.DCLEditComponent.Control as TDBEdit).ShowHint:=True;
-    (Field.DCLEditComponent.Control as TDBEdit).CharCase:=Field.CharCase;
-    (Field.DCLEditComponent.Control as TDBEdit).PasswordChar:=Field.PasswordChar;
-    (Field.DCLEditComponent.Control as TDBEdit).OnClick:=DBEditClick;
-    (Field.DCLEditComponent.Control as TDBEdit).Enabled:=Field.Enabled;
+      DBEdit.ShowHint:=True;
+    DBEdit.CharCase:=Field.CharCase;
+    DBEdit.PasswordChar:=Field.PasswordChar;
+    DBEdit.OnClick:=DBEditClick;
+    DBEdit.Enabled:=Field.Enabled;
 
     If Field.PasswordChar<>#0 Then
-      Field.DCLEditComponent.Control.Tag:=1;
+      DBEdit.Tag:=1;
 
-    (Field.DCLEditComponent.Control as TDBEdit).ReadOnly:=Field.ReadOnly;
+    DBEdit.ReadOnly:=Field.ReadOnly;
+
+    Field.DCLEditComponent:=TDCLEdit.Create;
+    Field.DCLEditComponent.Control:=DBEdit;
   end;
 end;
 
@@ -5115,29 +5121,36 @@ var
   e: TDCLField;
 begin
   Result:=True;
-  for e in FDCLFields do
+  if FGridStyle<>gsGrid then
   begin
-    if e.RequireValue and (e.NotInputValue='') then
+    for e in FDCLFields do
     begin
-      if Assigned(e.DCLEditComponent) and Assigned(e.DCLEditComponent.Control) then
+      if e.RequireValue and (e.NotInputValue='') then
       begin
-        if (e.DCLEditComponent.Control is TEdit) and ((e.DCLEditComponent.Control as TEdit).Text='') then
+        if Assigned(e.DCLEditComponent) and Assigned(e.DCLEditComponent.Control) then
         begin
-          Result:=False;
-          NotifyEditFieldError(e);
-          break;
-        end;
-        if (e.DCLEditComponent.Control is TDBLookupComboBox) and VarIsNull((e.DCLEditComponent.Control as TDBLookupComboBox).KeyValue) then
-        begin
-          Result:=False;
-          NotifyEditFieldError(e);
-          break;
-        end;
-        if (e.DCLEditComponent.Control is TComboBox) and ((e.DCLEditComponent.Control as TComboBox).ItemIndex=-1) then
-        begin
-          Result:=False;
-          NotifyEditFieldError(e);
-          break;
+          if (e.DCLEditComponent.Control is TDBEdit) and ((e.DCLEditComponent.Control as TDBEdit).Text='') then
+          begin
+            Result:=False;
+          end;
+          if (e.DCLEditComponent.Control is TEdit) and ((e.DCLEditComponent.Control as TEdit).Text='') then
+          begin
+            Result:=False;
+          end;
+          if (e.DCLEditComponent.Control is TDBLookupComboBox) and VarIsNull((e.DCLEditComponent.Control as TDBLookupComboBox).KeyValue) then
+          begin
+            Result:=False;
+          end;
+          if (e.DCLEditComponent.Control is TComboBox) and ((e.DCLEditComponent.Control as TComboBox).ItemIndex=-1) then
+          begin
+            Result:=False;
+          end;
+
+          if not Result then
+          begin
+            NotifyEditFieldError(e);
+            break;
+          end;
         end;
       end;
     end;
