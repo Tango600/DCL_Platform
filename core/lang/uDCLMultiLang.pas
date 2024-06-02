@@ -41,7 +41,7 @@ type
     msNotAllowOpenForm, msDeleteRecordQ, msNotAllowExecuteApps, msPathsNotSupported, msSaveEditings, msSaveEditingsQ,
     msDoYouWontTerminateApplicationQ, msConfigurationFileNotFound, msClearContentQ, msNotifycation, msForUser,
     msLoading, msTimeToExit, msDSStateSet, msCloseDialogQuery, msNotFilter, msCantOpenForUpdatePackage,
-    msPackageSignNotValid);
+    msPackageSignNotValid, msFildsNotInputValue);
 
 
 procedure LoadLangRes(Lang:TLangName; Path:String);
@@ -92,7 +92,7 @@ const
     'msNotAllowOpenForm', 'msDeleteRecordQ', 'msNotAllowExecuteApps', 'msPathsNotSupported', 'msSaveEditings', 'msSaveEditingsQ',
     'msDoYouWontTerminateApplicationQ', 'msConfigurationFileNotFound', 'msClearContentQ', 'msNotifycation', 'msForUser',
     'msLoading', 'msTimeToExit', 'msDSStateSet', 'msCloseDialogQuery', 'msNotFilter', 'msCantOpenForUpdatePackage',
-    'msPackageSignNotValid');
+    'msPackageSignNotValid', 'msFildsNotInputValue');
 
 type
   TCharToUTF8Table=array [0..255] of String;
@@ -733,6 +733,8 @@ begin
     Result:='Нельзя загрузить пакет для обновления.';
     msPackageSignNotValid:
     Result:='Подпись пакета не верна.';
+    msFildsNotInputValue:
+    Result:='Не все обязательные поля заполнены!';
     end;
   End;
 end;
@@ -794,6 +796,8 @@ Begin
   MessageText:=GetDCLMessageString(msErrorInRaightExpression)+' '+IntToStr(ErrorCode);
   -10000, -10001, -10002:
   MessageText:=GetDCLMessageString(msFieldNotFound)+' '+IntToStr(ErrorCode);
+  -11000:
+  MessageText:=GetDCLMessageString(msFildsNotInputValue)+' '+IntToStr(ErrorCode);
   End;
 
   Result:=MessageText+LineEnding+AddText;

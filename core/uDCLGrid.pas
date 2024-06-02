@@ -9,7 +9,7 @@ uses
 {$ENDIF}
   Classes, SysUtils, Controls, Forms, DB, Generics.Collections, ToolWin,
   ComCtrls, StdCtrls, ExtCtrls, Graphics, DBCtrls, DBGrids, Grids,
-  CheckLst, Menus, ClipBrd, DBExtCtrls, LCLType,
+  CheckLst, Menus, ClipBrd, DBExtCtrls, LCLType, variants,
   uDCLData, uDCLTypes, uDCLConst, uDCLVariables, uStringParams, uIDCLMain,
   uDCLDBConnector, uDCLQuery, uDCLMeasurements, uDBUtils, uDCLMultiLang,
   uDCLCommandButton, uDCLField, uDCLMessages, uDCLImages, cMediaFieldGroup,
@@ -1381,6 +1381,7 @@ begin
       FCurrentField.FullFieldName:=FindParam('FullName=', ScrLine);
     end;
 
+    FCurrentField.RequireValue:=FindParam('RequirValue=', ScrLine)='1';
     FCurrentField.Hint:=FindParam('Hint=', ScrLine);
 
     FCurrentField.ReadOnly:=FindParam('ReadOnly=', ScrLine)='1';
@@ -1820,28 +1821,47 @@ begin
     end
     else if DCLCommand.ForEach then
     begin
-      if (FGridStyle in TDataGrid) and FMultiSelectMode then
+      if CheckEdits then
       begin
-        for Bookmark in FDBGrid.SelectedRows do
+        if (FGridStyle in TDataGrid) and FMultiSelectMode then
         begin
-          if Assigned(Bookmark) then
+          for Bookmark in FDBGrid.SelectedRows do
           begin
-            FQuery.GoToBookmark(Bookmark);
-
-            if DCLCommand.Host then
+            if Assigned(Bookmark) then
             begin
-              ns:=TVariableNamespace.Create(FNameSpace.CurrentNamespace, GetGUIDString);
-              FIDCLMain.GetVariables.RegisterNamespace(ns);
-            end;
+              FQuery.GoToBookmark(Bookmark);
 
-            CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
-            CommandObj.DisableAutoRefresh:=True;
-            CommandObj.SelectRunType(DCLCommand.Command);
+              if DCLCommand.Host then
+              begin
+                ns:=TVariableNamespace.Create(FNameSpace.CurrentNamespace, GetGUIDString);
+                FIDCLMain.GetVariables.RegisterNamespace(ns);
+              end;
+
+              CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
+              CommandObj.DisableAutoRefresh:=True;
+              CommandObj.SelectRunType(DCLCommand.Command);
+            end;
           end;
         end;
-      end;
 
-      if DCLCommand.ExecAfter<>'' then
+        if DCLCommand.ExecAfter<>'' then
+        begin
+          if DCLCommand.Host then
+          begin
+            ns:=TVariableNamespace.Create(FNameSpace.CurrentNamespace, GetGUIDString);
+            FIDCLMain.GetVariables.RegisterNamespace(ns);
+          end;
+
+          CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
+          CommandObj.SelectRunType(DCLCommand.ExecAfter);
+        end;
+
+        ReFreshData;
+      end;
+    end
+    else
+    begin
+      if CheckEdits then
       begin
         if DCLCommand.Host then
         begin
@@ -1850,21 +1870,8 @@ begin
         end;
 
         CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
-        CommandObj.SelectRunType(DCLCommand.ExecAfter);
+        CommandObj.SelectRunType(DCLCommand.Command);
       end;
-
-      ReFreshData;
-    end
-    else
-    begin
-      if DCLCommand.Host then
-      begin
-        ns:=TVariableNamespace.Create(FNameSpace.CurrentNamespace, GetGUIDString);
-        FIDCLMain.GetVariables.RegisterNamespace(ns);
-      end;
-
-      CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
-      CommandObj.SelectRunType(DCLCommand.Command);
     end;
   end;
 end;
@@ -2183,8 +2190,6 @@ begin
       NeedValue:=3;
     End;
   End;
-
-  Field.RequireValue:=FindParam('RequirValue=', Scr)='1';
 
   If FindParam('_ValueNotInput=', Scr)<>'' Then
   Begin
@@ -4483,7 +4488,12 @@ begin
 
       TranslateVal(tmpSQL, False);
       FQuery.SQL.Text:=tmpSQL;
-      FQuery.Open;
+      try
+        FQuery.Open;
+      except
+        on E: Exception do
+          raise TDCLException.Create(-1000, E.Message);
+      end;
     end;
   end;
 
@@ -5115,16 +5125,19 @@ begin
         begin
           Result:=False;
           NotifyEditFieldError(e);
+          break;
         end;
-        if (e.DCLEditComponent.Control is TDBLookupComboBox) and ((e.DCLEditComponent.Control as TDBLookupComboBox).KeyValue='') then
+        if (e.DCLEditComponent.Control is TDBLookupComboBox) and VarIsNull((e.DCLEditComponent.Control as TDBLookupComboBox).KeyValue) then
         begin
           Result:=False;
           NotifyEditFieldError(e);
+          break;
         end;
         if (e.DCLEditComponent.Control is TComboBox) and ((e.DCLEditComponent.Control as TComboBox).ItemIndex=-1) then
         begin
           Result:=False;
           NotifyEditFieldError(e);
+          break;
         end;
       end;
     end;
@@ -5133,7 +5146,7 @@ end;
 
 procedure TDCLGrid.NotifyEditFieldError(Field: TDCLField);
 begin
-  ////
+  ShowErrorMessage(-11000, ' : '+Field.Caption);
 end;
 
 procedure TDCLGrid.GetDBGridFieldsPos(var Settings: TStringList);
