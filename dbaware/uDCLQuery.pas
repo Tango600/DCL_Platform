@@ -4,8 +4,7 @@ unit uDCLQuery;
 interface
 
 uses
-  SysUtils, Classes, uStringParams,
-  Dialogs, Generics.Collections,
+  SysUtils, Classes, Dialogs, Generics.Collections,
 {$IFDEF ADO}
   WideStrings, ADODB, ADOConst, ADOInt,
 {$ENDIF}
