@@ -235,6 +235,8 @@ type
     procedure SetGridStyle(Value: TGridStyle);
     function GetGridStyle: TGridStyle;
 
+    function GetControlType: TDataControlType;
+
     function GetCurrentTablePart: IDCLGrid;
 
     function GetSQLFromStorage: String;
@@ -316,6 +318,7 @@ type
     property TableParts: TList<IDCLGrid> read GetTableParts;
     property CurrentTablePart: IDCLGrid read GetCurrentTablePart;
     property Style: TGridStyle read GetGridStyle write SetGridStyle;
+    property ControlType: TDataControlType read GetControlType;
     property ReadOnly: Boolean read FReadOnly write FReadOnly;
     property DependField: String read GetDependField write SetDependField;
     property MasterDataField: String read GetMasterDataField write SetMasterDataField;
@@ -694,6 +697,11 @@ begin
       FForm.SetRecordsStatus(FQuery.RecNo, FQuery.RecordCount);
 
   UpdateAllControls;
+end;
+
+function TDCLGrid.GetControlType: TDataControlType;
+begin
+  Result:=FDataControlType;
 end;
 
 procedure TDCLGrid.AfterOpen(Data: TDataSet);

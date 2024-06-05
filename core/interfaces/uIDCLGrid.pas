@@ -40,6 +40,7 @@ type
     function GetFieldsCount: Integer;
     procedure SetGridStyle(Value: TGridStyle);
     function GetGridStyle: TGridStyle;
+    function GetControlType: TDataControlType;
     Function GetUserLevel: TUserLevelsType;
     function GetCurrentTablePart: IDCLGrid;
     procedure SetNoDataField(Value: Boolean);
@@ -67,6 +68,7 @@ type
     property FieldsCount: Integer read GetFieldsCount;
     property CurrentTablePart: IDCLGrid read GetCurrentTablePart;
     property Style: TGridStyle read GetGridStyle write SetGridStyle;
+    property ControlType: TDataControlType read GetControlType;
     property DependField: String read GetDependField write SetDependField;
     property MasterDataField: String read GetMasterDataField write SetMasterDataField;
     property MasterValueVariableName: String read GetMasterValueVariableName write SetMasterValueVariableName;

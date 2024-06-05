@@ -1519,6 +1519,7 @@ var
   ReturnValueParams: TReturnValueParams;
   lDCLForm: IDCLForm;
   tp: IDCLGrid;
+  GridType: TDataControlType;
 begin
   lDCLForm:=nil;
   DialogName:=FindParam('Dialog=', ScrStr);
@@ -1540,7 +1541,14 @@ begin
   end;
   NoContext:=FindParam('NoContext=', ScrStr)='1';
 
-  TmpStr:=Trim(FindParam('TablePart=', ScrStr));
+  GridType:=dctNone;
+  if Assigned(FDCLGrid) then
+    GridType:=FDCLGrid.ControlType;
+
+  TmpStr:='';
+  if GridType=dctMainGrid then
+    TmpStr:=Trim(FindParam('TablePart=', ScrStr));
+
   If TmpStr<>'' Then
   begin
     If Assigned(FDCLForm) then

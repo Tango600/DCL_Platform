@@ -139,7 +139,7 @@ Type
   TUserLevelsType=(ulUndefined, ulDeny, ulReadOnly, ulWrite, ulExecute, ulLevel1, ulLevel2, ulLevel3, ulLevel4,
     ulUpdater, ulSigner, ulDeveloper);
   TGridStyle=(gsFields, gsFieldsHorizontal, gsGrid);
-  TDataControlType=(dctMainGrid, dctSideGrid, dctTablePart, dctLookupGrid);
+  TDataControlType=(dctNone, dctMainGrid, dctSideGrid, dctTablePart, dctLookupGrid);
 
   TNotAllowedOperation=(dsoNone, dsoDelete, dsoInsert, dsoEdit);
 
