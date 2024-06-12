@@ -137,6 +137,9 @@ type
     function GetData: TDataSource;
     function GetTableParts: TList<IDCLGrid>;
 
+    function GetReadOnly: Boolean;
+    procedure SetReadOnly(Value: Boolean);
+
     procedure FindProc;
     procedure StartFind;
     procedure ApplyFind;
@@ -280,10 +283,6 @@ type
     procedure PCopy;
     procedure Cut;
     procedure Paste;
-  public
-    constructor Create(const IDCLMain: IDCLMain; const NameSpace: TVariableNamespace; const Form: IDCLForm; const ParentControl: TWinControl;
-      SurfType: TDataControlType; const Query: TDCLQuery; const Data: TDataSource); overload;
-    destructor Destroy; override;
 
     procedure AddField(Field: TDCLField);
 
@@ -310,27 +309,10 @@ type
     procedure NotifyEditFieldError(Field: TDCLField);
 
     procedure ResetFieldsSettings;
-
-    property Query: TDCLQuery read GetQuery;
-    property Data: TDataSource read GetData;
-    property Edits: TList<TDCLEdit> read GetEdits;
-    property FieldsCount: Integer read GetFieldsCount;
-    property TableParts: TList<IDCLGrid> read GetTableParts;
-    property CurrentTablePart: IDCLGrid read GetCurrentTablePart;
-    property Style: TGridStyle read GetGridStyle write SetGridStyle;
-    property ControlType: TDataControlType read GetControlType;
-    property ReadOnly: Boolean read FReadOnly write FReadOnly;
-    property DependField: String read GetDependField write SetDependField;
-    property MasterDataField: String read GetMasterDataField write SetMasterDataField;
-    property MasterValueVariableName: String read GetMasterValueVariableName write SetMasterValueVariableName;
-    property NoDataField: Boolean read GetNoDataField write SetNoDataField;
-    property MultiSelect: Boolean read GetMultiSelectMode write SetMultiSelect;
-    property RightsLevel: TUserLevelsType read GetUserLevel;
-    property Seed: String read GetGridSeed;
-    property PrintTool: Boolean read GetPrintTool write SetPrintTool;
-    property SelectedRows: TBookmarkList read GetSelectedRows;
-    property NavigatorVisible: Boolean read GetNavigatorVisible write SetNavigatorVisible;
-    property FlatNavigator: Boolean read GetFlatNavigator write SetFlatNavigator;
+  public
+    constructor Create(const IDCLMain: IDCLMain; const NameSpace: TVariableNamespace; const Form: IDCLForm; const ParentControl: TWinControl;
+      SurfType: TDataControlType; const Query: TDCLQuery; const Data: TDataSource); overload;
+    destructor Destroy; override;
   end;
 
   { TLookupTable }
@@ -338,12 +320,12 @@ type
   TLookupTable=class(TPanel)
   private
     FIDCLMain: IDCLMain;
-    FGrid: TDCLGrid;
+    FGrid: IDCLGrid;
   public
     constructor Create(IDCLMain: IDCLMain; const NameSpace: TVariableNamespace; Form: IDCLForm;
       ParentControl: TWinControl; Query: TDCLQuery; Data: TDataSource); overload;
 
-    property DCLGrid: TDCLGrid read FGrid;
+    property DCLGrid: IDCLGrid read FGrid;
   end;
 
 implementation
@@ -545,7 +527,7 @@ procedure TDCLGrid.TranslateVal(var Params: String; CheckParams: Boolean);
 var
   Parser: TDCLValuseParser;
 begin
-  Parser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, GetUserLevel, FIDCLMain.GetVariables);
+  Parser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, GetUserLevel, FIDCLMain.Variables);
   Parser.ReplaceAllVariables(FNameSpace.CurrentNamespace, Params, FQuery);
   if CheckParams then
     Parser.RePlaseParams(Params, FQuery);
@@ -676,7 +658,7 @@ begin
       begin
         if FMasterValueVariableName<>'' then
         begin
-          Data.FieldByName(FDependField).AsString:=FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, FMasterValueVariableName];
+          Data.FieldByName(FDependField).AsString:=FIDCLMain.Variables[FNamespace.CurrentNamespace, FMasterValueVariableName];
         end;
       end;
     End;
@@ -795,6 +777,16 @@ end;
 function TDCLGrid.GetTableParts: TList<IDCLGrid>;
 begin
   Result:=FTableParts;
+end;
+
+function TDCLGrid.GetReadOnly: Boolean;
+begin
+  Result:=FReadOnly;
+end;
+
+procedure TDCLGrid.SetReadOnly(Value: Boolean);
+begin
+  FReadOnly:=Value;
 end;
 
 procedure TDCLGrid.FindProc;
@@ -1586,7 +1578,7 @@ begin
     begin
       tmpStr1:=FindParam('VariableName=', Scr);
       Field.Variable:=tmpStr1;
-      FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, tmpStr1);
+      FIDCLMain.Variables.NewVariableWithTest(FNamespace, tmpStr1);
     end;
 
     tmpSQL1:=FindParam('SQL=', Scr);
@@ -1701,9 +1693,9 @@ begin
 
     If Field.Variable<>'' Then
       if Field.UseIndex then
-        FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:=IntToStr(ItemIndex)
+        FIDCLMain.Variables[FNamespace.CurrentNamespace, Field.Variable]:=IntToStr(ItemIndex)
       else
-        FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:=ItemName;
+        FIDCLMain.Variables[FNamespace.CurrentNamespace, Field.Variable]:=ItemName;
   end;
 end;
 
@@ -1848,7 +1840,7 @@ begin
               if DCLCommand.Host then
               begin
                 ns:=TVariableNamespace.Create(FNameSpace.CurrentNamespace, GetGUIDString);
-                FIDCLMain.GetVariables.RegisterNamespace(ns);
+                FIDCLMain.Variables.RegisterNamespace(ns);
               end;
 
               CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
@@ -1863,7 +1855,7 @@ begin
           if DCLCommand.Host then
           begin
             ns:=TVariableNamespace.Create(FNameSpace.CurrentNamespace, GetGUIDString);
-            FIDCLMain.GetVariables.RegisterNamespace(ns);
+            FIDCLMain.Variables.RegisterNamespace(ns);
           end;
 
           CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
@@ -1880,7 +1872,7 @@ begin
         if DCLCommand.Host then
         begin
           ns:=TVariableNamespace.Create(FNameSpace.CurrentNamespace, GetGUIDString);
-          FIDCLMain.GetVariables.RegisterNamespace(ns);
+          FIDCLMain.Variables.RegisterNamespace(ns);
         end;
 
         CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
@@ -1917,8 +1909,8 @@ begin
     FTablePartsTabs.Caption:=InitCap(Title);
 
   grid:=TDCLGrid.Create(FIDCLMain, FNameSpace, FForm, FTablePartsTabs, dctTablePart, nil, Data);
-  grid.Style:=Style;
-  grid.PrintTool:=FPrintTool;
+  grid.SetGridStyle(Style);
+  grid.SetPrintTool(FPrintTool);
   FCurrentTablePartIndex:=FTableParts.Add(grid);
   Result:=grid;
 end;
@@ -1975,7 +1967,7 @@ begin
     If FindParam('Navigator=', Line)='1' then
     begin
       FTableParts[FCurrentTablePartIndex].NavigatorVisible:=True;
-      FTableParts[FCurrentTablePartIndex].FlatNavigator:=Self.FlatNavigator;
+      FTableParts[FCurrentTablePartIndex].FlatNavigator:=Self.GetFlatNavigator;
 
       ButtonsSet:=FindParam('NavigatorButtons=', Line);
       If ButtonsSet='' then
@@ -2296,10 +2288,10 @@ begin
   begin
     FieldName:=FindParam('VariableName=', Scr);
 
-    FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, FieldName);
+    FIDCLMain.Variables.NewVariableWithTest(FNamespace, FieldName);
 
     Field.Variable:=FieldName;
-    FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, FieldName]:=S;
+    FIDCLMain.Variables[FNamespace.CurrentNamespace, FieldName]:=S;
   end;
   Edit.Text:=S;
 end;
@@ -2387,7 +2379,7 @@ begin
 
     if inFormat then
     // Update variables
-      FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:=EdText;
+      FIDCLMain.Variables[FNamespace.CurrentNamespace, Field.Variable]:=EdText;
   end;
 end;
 
@@ -2547,7 +2539,7 @@ begin
   TempStr:=FindParam('VariableName=', Scr);
   If TempStr<>'' Then
   begin
-    FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, TempStr);
+    FIDCLMain.Variables.NewVariableWithTest(FNamespace, TempStr);
     Field.Variable:=TempStr;
   end;
 
@@ -2571,7 +2563,7 @@ begin
       If (Not NoDataField) and FQuery.CanModify Then
       begin
         If (Not (FQuery.State in dsEditModes))and FQuery.Active and(Not NoDataField) Then
-          Query.Edit;
+          FQuery.Edit;
         FData.DataSet.FieldByName(Field.FieldName).AsInteger:=StrToIntEx(TempStr);
       end;
     end;
@@ -2614,7 +2606,7 @@ begin
     if DCLLookup.Variable<>'' then
     begin
       tmpSQL1:=(DCLLookup.DCLEditComponent.Control as TDBLookupComboBox).KeyValue;
-      FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, DCLLookup.Variable]:=tmpSQL1;
+      FIDCLMain.Variables[FNamespace.CurrentNamespace, DCLLookup.Variable]:=tmpSQL1;
     end;
   end;
 end;
@@ -2672,7 +2664,7 @@ begin
       (Filter.Control as TDCLDBLookupCombo).KeyField:=Filter.KeyField;
 
       If Filter.VarName<>'' Then
-        FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Filter.VarName]:=
+        FIDCLMain.Variables[FNamespace.CurrentNamespace, Filter.VarName]:=
           TrimRight(Filter.FilterQuery.FieldByName((Filter.Control as TDCLDBLookupCombo).KeyField).AsString);
 
       (Filter.Control as TDCLDBLookupCombo).ListSource:=Filter.FilterData;
@@ -2841,7 +2833,7 @@ begin
 
   Calendar.Control.Date:=Calendar.Value;
   If Calendar.Variable<>'' Then
-    FIDCLMain.GetVariables.NewVariable(FNamespace, Calendar.Variable, DateToStr(Calendar.Control.Date));
+    FIDCLMain.Variables.NewVariable(FNamespace, Calendar.Variable, DateToStr(Calendar.Control.Date));
 
   Calendar.Control.OnChange:=CalendarOnChange;
   Inc(FFilterLeft, FieldsStepLeft+Calendar.Control.Width);
@@ -2870,7 +2862,7 @@ begin
     if (Calendar.ParamName<>'') and Assigned(FQuery.ParamByName(Calendar.ParamName)) then
       FQuery.ParamByName(Calendar.ParamName).AsDate:=Calendar.Value
     else if Calendar.Variable<>'' then
-      FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Calendar.Variable]:=DateToStr(Calendar.Value);
+      FIDCLMain.Variables[FNamespace.CurrentNamespace, Calendar.Variable]:=DateToStr(Calendar.Value);
 
     If Calendar.ReOpen Then
     begin
@@ -2909,11 +2901,11 @@ begin
   State:=False;
   If Field.Variable<>'' Then
   begin
-    FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, Field.Variable);
+    FIDCLMain.Variables.NewVariableWithTest(FNamespace, Field.Variable);
   end
   Else
   begin
-    FIDCLMain.GetVariables.NewVariableWithTest(FNamespace, 'CheckBox_'+Field.FieldName);
+    FIDCLMain.Variables.NewVariableWithTest(FNamespace, 'CheckBox_'+Field.FieldName);
     Field.Variable:='CheckBox_'+Field.FieldName;
   end;
 
@@ -2935,9 +2927,9 @@ begin
 
   Case CheckBox.Checked of
   True:
-  FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:='1';
+  FIDCLMain.Variables[FNamespace.CurrentNamespace, Field.Variable]:='1';
   False:
-  FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:='0';
+  FIDCLMain.Variables[FNamespace.CurrentNamespace, Field.Variable]:='0';
   end;
 end;
 
@@ -2987,13 +2979,13 @@ begin
 
   if Assigned(Field) then
   begin
-    If FIDCLMain.GetVariables.Exists(FNamespace.CurrentNamespace, Field.Variable) then
+    If FIDCLMain.Variables.Exists(FNamespace.CurrentNamespace, Field.Variable) then
     begin
       Case (Sender as TCheckbox).Checked of
       True:
-      FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:='1';
+      FIDCLMain.Variables[FNamespace.CurrentNamespace, Field.Variable]:='1';
       False:
-      FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:='0';
+      FIDCLMain.Variables[FNamespace.CurrentNamespace, Field.Variable]:='0';
       end;
     end;
   end;
@@ -3164,12 +3156,12 @@ begin
 
   If FindParam('VariableName=', Scr)<>'' Then
   begin
-    FIDCLMain.GetVariables.NewVariable(FNamespace, FindParam('VariableName=', Scr), S);
+    FIDCLMain.Variables.NewVariable(FNamespace, FindParam('VariableName=', Scr), S);
     KeyField:=FindParam('VariableName=', Scr);
   end
   Else
   begin
-    FIDCLMain.GetVariables.NewVariable(FNamespace, 'DateBox_'+Field.FieldName, S);
+    FIDCLMain.Variables.NewVariable(FNamespace, 'DateBox_'+Field.FieldName, S);
     KeyField:='DateBox_'+Field.FieldName;
   end;
 
@@ -3200,7 +3192,7 @@ begin
   begin
     // Update variables
     Value:=DateToStr((f.DCLEditComponent.Control as TDateTimePicker).Date);
-    FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Field.Variable]:=Value;
+    FIDCLMain.Variables[FNamespace.CurrentNamespace, Field.Variable]:=Value;
 
     If not Field.ReadOnly then
     begin
@@ -3250,7 +3242,7 @@ begin
     If FindParam('VariableName=', ScrLine)<>'' then
     begin
       FFilter.VarName:=FindParam('VariableName=', ScrLine);
-      FIDCLMain.GetVariables.NewVariable(FNamespace, FFilter.VarName, '');
+      FIDCLMain.Variables.NewVariable(FNamespace, FFilter.VarName, '');
     end;
 
     tmpS:=FindParam('KeyValue=', ScrLine);
@@ -3283,7 +3275,7 @@ begin
   If FindParam('VariableName=', ScrLine)<>'' Then
   begin
     FFilter.VarName:=FindParam('VariableName=', ScrLine);
-    FIDCLMain.GetVariables.NewVariable(FNamespace, FFilter.VarName, '');
+    FIDCLMain.Variables.NewVariable(FNamespace, FFilter.VarName, '');
   end;
 
   If FindParam('MaxLength=', ScrLine)<>'' Then
@@ -3340,7 +3332,7 @@ begin
   If FindParam('VariableName=', ScrLine)<>'' then
   begin
     FFilter.VarName:=FindParam('VariableName=', ScrLine);
-    FIDCLMain.GetVariables.NewVariable(FNamespace, FFilter.VarName, '');
+    FIDCLMain.Variables.NewVariable(FNamespace, FFilter.VarName, '');
   end;
 
   tmpS:=FindParam('KeyValue=', ScrLine);
@@ -3401,7 +3393,7 @@ begin
     end;
     end;
     if Filter.VarName<>'' then
-      FIDCLMain.GetVariables.Variables[FNameSpace.CurrentNamespace, Filter.VarName]:=Filter.FilterString;
+      FIDCLMain.Variables[FNameSpace.CurrentNamespace, Filter.VarName]:=Filter.FilterString;
 
     OpenQuery(QueryBuilder);
   end;
@@ -3437,7 +3429,7 @@ begin
     End;
 
     if Filter.VarName<>'' then
-      FIDCLMain.GetVariables.Variables[FNamespace.CurrentNamespace, Filter.VarName]:=TrimRight(ExeplStr);
+      FIDCLMain.Variables[FNamespace.CurrentNamespace, Filter.VarName]:=TrimRight(ExeplStr);
 
     If Filter.WaitForKey<>0 Then
     begin
@@ -3540,15 +3532,15 @@ begin
 
   If PosEx('Navigator=', Scr)<>0 then
   begin
-    LookupTable.DCLGrid.FNavigatorVisible:=FindParam('Navigator=', Scr)='1';
-    LookupTable.DCLGrid.FFlatNavig:=FindParam('Flat=', Scr)='1';
+    LookupTable.DCLGrid.NavigatorVisible:=FindParam('Navigator=', Scr)='1';
+    LookupTable.DCLGrid.FlatNavigator:=FindParam('Flat=', Scr)='1';
 
     LookupTable.DCLGrid.SetNavigatorButtonsSet(FindParam('NavigatorButtons=', Scr));
   end;
 
   LookupTable.DCLGrid.ReadOnly:=Field.ReadOnly;
   LookupTable.DCLGrid.DependField:=FindParam('DependField=', Scr);
-  LookupTable.DCLGrid.NoDataField:=Field.NoDataField;
+  LookupTable.DCLGrid.SetNoDataField(Field.NoDataField);
 
   LookupTable.DCLGrid.MasterValueVariableName:=FindParam('VariableName=', Scr);
 
@@ -4325,7 +4317,7 @@ begin
   end;
 
   if not GPT.DisableFieldsList then
-  if (Style=gsGrid) and Assigned(FDBGrid) then
+  if (GetGridStyle=gsGrid) and Assigned(FDBGrid) then
   begin
     ConfigPath:=AppConfigDir+FormConfigDir+PathDelim+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim+'Grids'+PathDelim;
     if not DirectoryExists(ConfigPath) then
@@ -4485,7 +4477,7 @@ begin
   if IsLexem('TablePartToolButton=', ScrStr) then
   begin
     TranslateVal(ScrStr, True);
-    ParseButton(ScrStr, CurrentTablePart);
+    ParseButton(ScrStr, GetCurrentTablePart);
   end;
 
   if IsLexem('Query=', ScrStr) then
@@ -4657,7 +4649,7 @@ begin
 
   If IsLexem('PartEvents=', ScrStr) then
   begin
-    ParseEvents(ScrStr, Self.CurrentTablePart);
+    ParseEvents(ScrStr, GetCurrentTablePart);
   end;
 
   if IsLexem('[Fields]', ScrStr) then
@@ -5185,7 +5177,7 @@ var
 begin
   if Assigned(Settings) and not GPT.DisableFieldsList then
   begin
-    if (Style=gsGrid) and Assigned(FDBGrid) then
+    if (GetGridStyle=gsGrid) and Assigned(FDBGrid) then
     begin
       for i:=1 to FDBGrid.Columns.Count do
       begin
@@ -5205,7 +5197,7 @@ var
 begin
   Result:=TList<TGridFieldSetting>.Create;
 
-  if Assigned(FDBGrid) and (Style=gsGrid) and not GPT.DisableFieldsList then
+  if Assigned(FDBGrid) and (GetGridStyle=gsGrid) and not GPT.DisableFieldsList then
   begin
     S:=GetGridSeed;
     ConfigPath:=AppConfigDir+FormConfigDir+PathDelim+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim+'Grids'+PathDelim;

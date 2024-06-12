@@ -48,7 +48,6 @@ type
     property RightsLevel: TUserLevelsType read GetUserLevel;
     property StackLevel: Integer read GetStackLevel write SetStackLevel;
 
-
     //region TForm
     procedure SetWindowState(Value : TWindowState);
     function GetWindowState: TWindowState;

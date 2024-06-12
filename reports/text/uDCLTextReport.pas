@@ -349,7 +349,7 @@ begin
   FDCLGrid:=DCLGrid;
   FScrypt:=Scrypt;
   FParamsSetID:=ParamsSetID;
-  FVariables:=DCLMain.GetVariables;
+  FVariables:=DCLMain.Variables;
   FVarsToControls:=TList<String>.Create;
 end;
 

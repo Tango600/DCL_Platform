@@ -33,6 +33,8 @@ type
 
     function GetQuery: TDCLQuery;
     function GetData: TDataSource;
+    function GetReadOnly: Boolean;
+    procedure SetReadOnly(Value: Boolean);
     function GetTableParts: TList<IDCLGrid>;
     function GetEdits: TList<TDCLEdit>;
     procedure SetMultiSelect(Value: Boolean);
@@ -63,6 +65,7 @@ type
 
     property Query: TDCLQuery read GetQuery;
     property Data: TDataSource read GetData;
+    property ReadOnly: Boolean read GetReadOnly write SetReadOnly;
     property TableParts: TList<IDCLGrid> read GetTableParts;
     property Edits: TList<TDCLEdit> read GetEdits;
     property FieldsCount: Integer read GetFieldsCount;

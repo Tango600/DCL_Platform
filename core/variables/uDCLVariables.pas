@@ -32,7 +32,7 @@ type
     procedure RegisterNamespace(Value: TVariableNamespace);
 
     property Variables[Const Namespace, VariableName: String]: String read GetVariableByName
-      write SetVariableByName;
+      write SetVariableByName; default;
     property VariableNamesList: TList<String> read GetNames;
   end;
 

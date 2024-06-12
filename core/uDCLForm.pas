@@ -94,12 +94,6 @@ type
     function GetCurrentGrid: IDCLGrid;
     function GetDialogName: String;
     procedure SaveFormPos;
-  public
-    constructor Create(const IDCLMain: IDCLMain; const DialogName: String; const NameSpace: TVariableNamespace; const ParentForm: IDCLForm;
-      OPL: TStringList; UserLevel: TUserLevelsType;
-      const Query: TDCLQuery; const Data: TDataSource;
-      ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False); overload;
-    destructor Destroy; override;
 
     function GetForm: TForm;
 
@@ -117,16 +111,6 @@ type
 
     procedure GetValueProc(Value: TReturnFormValue);
 
-    property Grids: TList<IDCLGrid> read GetGrids;
-    property CurrentGrid: IDCLGrid read GetCurrentGrid;
-    property DialogName: String read GetDialogName;
-    property IsSingle: Boolean read GetIsSingle;
-    property ReturnValueParams: TReturnValueParams read GetReturnValueParams write SetReturnValueParams;
-    property ParentDialog: IDCLForm read GetParentDialog;
-    property Reject: Boolean read IsReject;
-    property RightsLevel: TUserLevelsType read GetUserLevel;
-    property StackLevel: Integer read GetStackLevel write SetStackLevel;
-  public
     //region TForm
     procedure Hide;
     procedure Show;
@@ -140,6 +124,12 @@ type
     property FormStyle: TFormStyle read GetFormStyle write SetFormStyle default fsNormal;
     property Caption: String read GetCapt write SetCapt;
     //end region
+  public
+    constructor Create(const IDCLMain: IDCLMain; const DialogName: String; const NameSpace: TVariableNamespace; const ParentForm: IDCLForm;
+      OPL: TStringList; UserLevel: TUserLevelsType;
+      const Query: TDCLQuery; const Data: TDataSource;
+      ReturnValueParams: TReturnValueParams=nil; Modal: Boolean=False); overload;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -573,7 +563,7 @@ begin
   end;
 
   FNameSpace:=NameSpace;
-  FVariables:=FIDCLMain.GetVariables;
+  FVariables:=FIDCLMain.Variables;
   FOPL:=OPL;
   FGrids:=TList<IDCLGrid>.Create;
 
@@ -872,8 +862,8 @@ end;
 
 procedure TDCLForm.GetValueProc(Value: TReturnFormValue);
 begin
-  if Assigned(Self.ParentDialog) and Assigned(Value) then
-    FIDCLMain.GetValueProc(FNameSpace, Self.ParentDialog, Value);
+  if Assigned(Self.GetParentDialog) and Assigned(Value) then
+    FIDCLMain.GetValueProc(FNameSpace, Self.GetParentDialog, Value);
 end;
 
 procedure TDCLForm.Hide;

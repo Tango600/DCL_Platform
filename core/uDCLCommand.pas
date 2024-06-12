@@ -42,18 +42,16 @@ type
 
     function GetDisableAutoRefresh: Boolean;
     procedure SetDisableAutoRefresh(Value: Boolean);
-  public
-    constructor Create(const IDCLMain: IDCLMain; const NameSpace: TVariableNamespace;
-      const DCLForm: IDCLForm; const DCLGrid: IDCLGrid); overload;
-    destructor Destroy; override;
 
     function RunCommandScript(const CommandName: String): Boolean;
     procedure RunCommand(Command: String);
     procedure SelectRunType(const Command: String);
 
     procedure About;
-
-    property DisableAutoRefresh: Boolean read GetDisableAutoRefresh write SetDisableAutoRefresh;
+  public
+    constructor Create(const IDCLMain: IDCLMain; const NameSpace: TVariableNamespace;
+      const DCLForm: IDCLForm; const DCLGrid: IDCLGrid); overload;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -123,7 +121,7 @@ begin
       FUserLevel:=GPT.AccessLevel;
 
   FNameSpace:=NameSpace;
-  FVariables:=FIDCLMain.GetVariables;
+  FVariables:=FIDCLMain.Variables;
 
   FParser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, FUserLevel, FVariables);
   FParser.SetConnector(FDBConnector);
@@ -194,7 +192,7 @@ var
       RightSide:=Trim(Copy(Line, p+1, l));
 
       if Pos(' ', LeftSide)=0 then
-      if FIDCLMain.GetVariables.Exists(FNameSpace.CurrentNamespace, LeftSide) then
+      if FIDCLMain.Variables.Exists(FNameSpace.CurrentNamespace, LeftSide) then
       begin
         f:=True;
         r:=0;
@@ -207,11 +205,11 @@ var
 
         if f then
         begin
-          FIDCLMain.GetVariables.Variables[FNameSpace.CurrentNamespace, LeftSide]:=FloatToStr(r, DefaultFormatSettings);
+          FIDCLMain.Variables[FNameSpace.CurrentNamespace, LeftSide]:=FloatToStr(r, DefaultFormatSettings);
         end
         else
         begin
-          FIDCLMain.GetVariables.Variables[FNameSpace.CurrentNamespace, LeftSide]:=RightSide;
+          FIDCLMain.Variables[FNameSpace.CurrentNamespace, LeftSide]:=RightSide;
         end;
       end;
     end;
@@ -558,17 +556,20 @@ begin
     {$ENDIF}
 
     try
-      If not IsReturningQuery(SQL) then
-        SQLCommand.ExecSQL
-      else
-        SQLCommand.Open;
-    Except
-      on E: Exception do
-      begin
-        raise TDCLException.Create(-1110, E.Message);
+      try
+        If not IsReturningQuery(SQL) then
+          SQLCommand.ExecSQL
+        else
+          SQLCommand.Open;
+      Except
+        on E: Exception do
+        begin
+          raise TDCLException.Create(-1110, E.Message);
+        end;
       end;
+    Finally
+      FreeAndNil(SQLCommand);
     end;
-    FreeAndNil(SQLCommand);
     {$IFDEF TRANSACTIONDB}
     tmp_Transaction.Commit;
     FreeAndNil(tmp_Transaction);

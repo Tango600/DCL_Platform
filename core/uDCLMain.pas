@@ -44,9 +44,6 @@ type
     function LoadPackage(FileName: String): TDCLScriptsPackage;
     procedure UpdateFromPackages(PackagePath: String);
     function GetProtectionEngine: IDCLProtectionEngine;
-  public
-    constructor Create; overload;
-    destructor Destroy; override;
 
     function Start: Boolean;
     procedure RunInterface;
@@ -91,12 +88,9 @@ type
     procedure ClearScriptPool;
     function GetLoadedScripts: TList<TDCLScriptItem>;
     function GetPackages: TList<TPackageInfo>;
-
-    property DBConnector: TDCLDBConnector read FDBConnector;
-    property Variables: TVariables read FVariables;
-    property MainForm: TForm read FMainForm write FMainForm;
-    property Forms: TList<IDCLForm> read FForms;
-    property ImageList: TImageList read FImages;
+  public
+    constructor Create; overload;
+    destructor Destroy; override;
   end;
 
 implementation

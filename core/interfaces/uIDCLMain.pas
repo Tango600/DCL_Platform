@@ -49,6 +49,8 @@ type
     procedure ClearScriptPool;
 
     function GetProtectionEngine: IDCLProtectionEngine;
+
+    property Variables: TVariables read GetVariables;
   end;
 
 implementation
