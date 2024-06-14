@@ -590,11 +590,11 @@ var
   tmpDCL: TStringList;
   tmpS, tmpS1: String;
   v1, RepIdParams, RecCount: Integer;
-  DCLQuery: TDCLSimlyQuery;
+  DCLQuery: TDCLSimplyQuery;
   TextReport: TDCLTextReport;
 begin
   tmpDCL:=TStringList.Create;
-  DCLQuery:=TDCLSimlyQuery.Create(nil);
+  DCLQuery:=TDCLSimplyQuery.Create(nil);
   FDBConnector.SetConnector(DCLQuery);
 
   RepIdParams:=0;

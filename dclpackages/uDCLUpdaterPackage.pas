@@ -335,13 +335,13 @@ begin
   FWriteTrans:=TDCLDBTransaction.Create(DBConnector, trtWrite);
   {$ENDIF}
 
-  FQuery:=TDCLSimlyQuery.Create(nil);
+  FQuery:=TDCLSimplyQuery.Create(nil);
   FQuery.DataBase:=DBConnector;
   {$IFDEF TRANSACTIONDB}
   FQuery.Transaction:=FWriteTrans;
   {$ENDIF}
 
-  FQuery:=TDCLSimlyQuery.Create(nil);
+  FQuery:=TDCLSimplyQuery.Create(nil);
   FQuery.DataBase:=DBConnector;
   {$IFDEF TRANSACTIONDB}
   FQuery.Transaction:=FWriteTrans;

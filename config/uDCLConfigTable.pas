@@ -36,12 +36,12 @@ end;
 
 function TDCLConfigTable.ReadConfig(ConfigName, UserId: String): String;
 var
-  ParamsQuery: TDCLSimlyQuery;
+  ParamsQuery: TDCLSimplyQuery;
 begin
   Result:='';
   if Assigned(FDBConnector) and not GPT.NoParamsTable then
   begin
-    ParamsQuery:=TDCLSimlyQuery.Create(nil);
+    ParamsQuery:=TDCLSimplyQuery.Create(nil);
     FDBConnector.SetConnector(ParamsQuery);
     ParamsQuery.SQL.Text:='select '+GPTValueField+' from '+GPTTableName+' where lower('+
       GPTNameField+') = lower(:ParamName)';
@@ -61,13 +61,13 @@ end;
 
 procedure TDCLConfigTable.WriteConfig(ConfigName, NewValue, UserId: String);
 var
-  ParamsQuery: TDCLSimlyQuery;
+  ParamsQuery: TDCLSimplyQuery;
 begin
   if Assigned(FDBConnector) and not GPT.NoParamsTable then
   begin
     If Not GPT.NoParamsTable Then
     begin
-      ParamsQuery:=TDCLSimlyQuery.Create(nil);
+      ParamsQuery:=TDCLSimplyQuery.Create(nil);
       FDBConnector.SetConnector(ParamsQuery);
       if UserID<>'' then
       begin

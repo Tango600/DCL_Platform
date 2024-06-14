@@ -24,7 +24,7 @@ type
     FVariables: TVariables;
     FDBConnector: TDCLDBConnector;
     FDCLMenuSelector: TDCLMenuSelector;
-    LocalQuery: TDCLSimlyQuery;
+    LocalQuery: TDCLSimplyQuery;
     FDCLNotifier: TDCLNotifier;
     FPackages: TList<TPackageInfo>;
     FScripts: TList<TDCLScriptItem>;
@@ -917,7 +917,7 @@ begin
   FDBConnector:=TDCLDBConnector.Create;
   if FDBConnector.Connected then
   begin
-    LocalQuery:=TDCLSimlyQuery.Create(nil);
+    LocalQuery:=TDCLSimplyQuery.Create(nil);
     FDBConnector.SetConnector(LocalQuery);
 
     GPT.NoParamsTable:=TestGlobalParamsTable;

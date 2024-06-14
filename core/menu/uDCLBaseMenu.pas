@@ -26,8 +26,8 @@ type
     FImages: TImageList;
   protected
     FMainMenu: TMainMenu;
-    LocalQuery: TDCLSimlyQuery;
-    procedure CreateMenuControls(var Query: TDCLSimlyQuery; Items: TFPGObjectList<TMenuConstructionItem>; ParentControl: TLCLComponent); virtual; abstract;
+    LocalQuery: TDCLSimplyQuery;
+    procedure CreateMenuControls(var Query: TDCLSimplyQuery; Items: TFPGObjectList<TMenuConstructionItem>; ParentControl: TLCLComponent); virtual; abstract;
   published
     procedure InitActions;
     procedure CloseActions;
@@ -37,7 +37,7 @@ type
     procedure ClickMenu(Sender: TObject);
     function ExistItemByIdent(var List: TFPGObjectList<TMenuConstructionItem>; Id: Integer): Boolean;
 
-    procedure CreateMenu(var Query: TDCLSimlyQuery; ParentControl: TLCLComponent; ParentID: Integer);
+    procedure CreateMenu(var Query: TDCLSimplyQuery; ParentControl: TLCLComponent; ParentID: Integer);
 
     procedure RunFromPackage(IdentFrom, IdentTo: Integer);
     procedure RunFromScripts(IdentFrom, IdentTo: Integer);
@@ -152,7 +152,7 @@ begin
     Result:=0;
 end;
 
-procedure TDCLBaseMenu.CreateMenu(var Query: TDCLSimlyQuery; ParentControl: TLCLComponent; ParentID: Integer);
+procedure TDCLBaseMenu.CreateMenu(var Query: TDCLSimplyQuery; ParentControl: TLCLComponent; ParentID: Integer);
 var
   I: TDCLScriptItem;
   ci: TMenuConstructionItem;
@@ -243,7 +243,7 @@ begin
   FMainForm:=MainForm;
   FDBConnector:=Main.GetDBConnector;
 
-  LocalQuery:=TDCLSimlyQuery.Create(Self);
+  LocalQuery:=TDCLSimplyQuery.Create(Self);
   FDBConnector.SetConnector(LocalQuery);
 
   FImages:=TImageList.Create(Self);

@@ -36,7 +36,7 @@ type
   { TDCLQuery }
   TDCLQuery=class(TDCLDialogQuery)
   private
-    ShadowQuery: TDCLSimlyQuery;
+    ShadowQuery: TDCLSimplyQuery;
     FUpdateSQL: TUpdateObj;
     {$IFDEF TRANSACTIONDB}
     ShadowTransaction: TTransaction;
@@ -94,8 +94,8 @@ type
     procedure SetDBConnector(Database: TDBConnector);
     function GetConnector: TDatabaseObject;
 
-    procedure SetDCLDBConnector(Query: TDCLSimlyQuery);
-    function GetDBConnector(Query: TDCLSimlyQuery): TDatabaseObject;
+    procedure SetDCLDBConnector(Query: TDCLSimplyQuery);
+    function GetDBConnector(Query: TDCLSimplyQuery): TDatabaseObject;
 
     procedure Init;
   public
@@ -602,7 +602,7 @@ begin
   {$ENDIF};
 end;
 
-procedure TDCLQuery.SetDCLDBConnector(Query: TDCLSimlyQuery);
+procedure TDCLQuery.SetDCLDBConnector(Query: TDCLSimplyQuery);
 begin
   {$IFDEF ADO}
   Query.Connection:=Self.Connection;
@@ -632,7 +632,7 @@ begin
   {$ENDIF}
 end;
 
-function TDCLQuery.GetDBConnector(Query: TDCLSimlyQuery): TDatabaseObject;
+function TDCLQuery.GetDBConnector(Query: TDCLSimplyQuery): TDatabaseObject;
 begin
   Result:=
   {$IFDEF ADO}
@@ -673,7 +673,7 @@ begin
   inherited BeforePost:=BeforePostData;
   inherited BeforeInsert:=BeforeInsertData;
 
-  ShadowQuery:=TDCLSimlyQuery.Create(Self);
+  ShadowQuery:=TDCLSimplyQuery.Create(Self);
   {$IFDEF TRANSACTIONDB}
   ShadowTransaction:=TDCLDBTransaction.Create(GetConnector, trtWrite);
   ShadowQuery.Transaction:=Transaction;

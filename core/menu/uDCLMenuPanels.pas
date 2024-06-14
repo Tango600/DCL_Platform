@@ -15,7 +15,7 @@ type
   private
 
   protected
-    procedure CreateMenuControls(var Query: TDCLSimlyQuery; Items: TFPGObjectList<TMenuConstructionItem>; ParentControl: TLCLComponent); override;
+    procedure CreateMenuControls(var Query: TDCLSimplyQuery; Items: TFPGObjectList<TMenuConstructionItem>; ParentControl: TLCLComponent); override;
   public
     constructor Create(Main: IDCLMain; MainForm: TForm); overload;
     destructor Destroy; override;
@@ -28,7 +28,7 @@ uses
 
 { TDCLMenuPanels }
 
-procedure TDCLMenuPanels.CreateMenuControls(var Query: TDCLSimlyQuery;
+procedure TDCLMenuPanels.CreateMenuControls(var Query: TDCLSimplyQuery;
   Items: TFPGObjectList<TMenuConstructionItem>; ParentControl: TLCLComponent);
 var
   FTablePartsTabs: TTabSheet;

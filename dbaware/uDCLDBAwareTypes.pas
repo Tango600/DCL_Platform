@@ -26,7 +26,7 @@ type
   TDCLDBGrid=TDBGrid;
   {$IFDEF IBX}
     TDCLDialogQuery=TIBQuery;
-    TDCLSimlyQuery=TIBQuery;
+    TDCLSimplyQuery=TIBQuery;
     TDBConnector=TIBDatabase;
     TDatabaseObject=TIBDatabase;
     TCommandQuery=TIBQuery;
@@ -37,7 +37,7 @@ type
   {$IFDEF ZEOS}
     TDBConnector=TZConnection;
     TDatabaseObject=TZAbstractConnection;
-    TDCLSimlyQuery=TZQuery;
+    TDCLSimplyQuery=TZQuery;
     TDCLDialogQuery=TZQuery;
     {$IFDEF TRANSACTIONDB}
     TTransaction=TZTransaction;
@@ -48,7 +48,7 @@ type
   {$ENDIF}
   {$IFDEF SQLdbFamily}
     TDCLDialogQuery=TSQLQuery;
-    TDCLSimlyQuery=TSQLQuery;
+    TDCLSimplyQuery=TSQLQuery;
     TCommandQuery=TSQLQuery;
     TTransaction=TSQLTransaction;
     TUpdateObj=TSQLQuery;

@@ -12,9 +12,9 @@ type
 
   TDCLMenuClassic=class(TDCLBaseMenu)
   private
-    procedure CreateMenuControl(var Query: TDCLSimlyQuery; Item: TMenuConstructionItem; ParentControl: TLCLComponent);
+    procedure CreateMenuControl(var Query: TDCLSimplyQuery; Item: TMenuConstructionItem; ParentControl: TLCLComponent);
   protected
-    procedure CreateMenuControls(var Query: TDCLSimlyQuery; Items: TFPGObjectList<TMenuConstructionItem>; ParentControl: TLCLComponent); override;
+    procedure CreateMenuControls(var Query: TDCLSimplyQueryTDCLSimplyQuery; Items: TFPGObjectList<TMenuConstructionItem>; ParentControl: TLCLComponent); override;
   public
     constructor Create(Main: IDCLMain; MainForm: TForm); overload;
     destructor Destroy; override;
@@ -27,7 +27,7 @@ uses
 
 { TDCLMenuClassic }
 
-procedure TDCLMenuClassic.CreateMenuControl(var Query: TDCLSimlyQuery;
+procedure TDCLMenuClassic.CreateMenuControl(var Query: TDCLSimplyQuery;
   Item: TMenuConstructionItem; ParentControl: TLCLComponent);
 var
   ItemMenu: TMenuItem;
@@ -50,7 +50,7 @@ begin
   end;
 end;
 
-procedure TDCLMenuClassic.CreateMenuControls(var Query: TDCLSimlyQuery;
+procedure TDCLMenuClassic.CreateMenuControls(var Query: TDCLSimplyQuery;
   Items: TFPGObjectList<TMenuConstructionItem>; ParentControl: TLCLComponent);
 var
   ci: TMenuConstructionItem;

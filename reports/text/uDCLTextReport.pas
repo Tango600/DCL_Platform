@@ -274,7 +274,7 @@ function TDCLTextReport.TranslateRepParams(ParamName: String): String;
 var
   ParamNum: Integer;
   ResultString, ReturnField, tmpSQL1: String;
-  ParamsQuery: TDCLSimlyQuery;
+  ParamsQuery: TDCLSimplyQuery;
   F: TField;
 begin
   ParamNum:=0;
@@ -283,7 +283,7 @@ begin
     inc(ParamNum);
   If FindParam('SQL=', RepParams[ParamNum+1])<>'' Then
   begin
-    ParamsQuery:=TDCLSimlyQuery.Create(nil);
+    ParamsQuery:=TDCLSimplyQuery.Create(nil);
     FDBConnector.SetConnector(ParamsQuery);
     tmpSQL1:=FindParam('SQL=', RepParams[ParamNum+1]);
     RePlaseVariables(tmpSQL1);
@@ -652,7 +652,7 @@ begin
 
   If NewNew Then
   begin
-    FReportQuery:=TDCLSimlyQuery.Create(nil);
+    FReportQuery:=TDCLSimplyQuery.Create(nil);
     FDBConnector.SetConnector(FReportQuery);
   end
   else

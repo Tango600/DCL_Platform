@@ -17,7 +17,7 @@ type
     FDCLMain: IDCLMain;
     FDCLConnector: TDCLDBConnector;
     Timer: TTimer;
-    ShadowQuery, ShadowQuery2: TDCLSimlyQuery;
+    ShadowQuery, ShadowQuery2: TDCLSimplyQuery;
     ExitFlag: Boolean;
     MessageForm: TMessageForm;
     TimeToExit: TDateTime;
@@ -149,10 +149,10 @@ begin
   ExitFlag:=False;
   TimeToExit:=0;
 
-  ShadowQuery:=TDCLSimlyQuery.Create(Self);
+  ShadowQuery:=TDCLSimplyQuery.Create(Self);
   FDCLConnector.SetConnector(ShadowQuery);
 
-  ShadowQuery2:=TDCLSimlyQuery.Create(Self);
+  ShadowQuery2:=TDCLSimplyQuery.Create(Self);
   FDCLConnector.SetConnector(ShadowQuery2);
 
   Timer:=TTimer.Create(Self);
