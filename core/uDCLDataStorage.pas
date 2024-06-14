@@ -16,7 +16,6 @@ type
   private
     FErrorCode: Byte;
     FIsCompressed: Boolean;
-    FDBConnector: TDCLDBConnector;
     DCLQuery: TDCLDialogQuery;
     FTableName, FKeyField, FNameField, FDataField: String;
   public
@@ -52,7 +51,6 @@ uses
 
 constructor TDCLDataStorage.Create(DBConnector: TDCLDBConnector);
 begin
-  FDBConnector:=DBConnector;
   FErrorCode:=0;
 
   DCLQuery:=TDCLDialogQuery.Create(Self);
