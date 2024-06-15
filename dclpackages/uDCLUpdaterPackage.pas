@@ -18,7 +18,7 @@ type
     {$IFDEF TRANSACTIONDB}
     FWriteTrans: TDCLDBTransaction;
     {$ENDIF}
-    FQuery: TDCLSimlyQuery;
+    FQuery: TDCLSimplyQuery;
     FDBConnector: TDBConnector;
     SQLScript: TSQLScripter;
 

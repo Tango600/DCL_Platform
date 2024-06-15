@@ -14,7 +14,7 @@ type
   private
     procedure CreateMenuControl(var Query: TDCLSimplyQuery; Item: TMenuConstructionItem; ParentControl: TLCLComponent);
   protected
-    procedure CreateMenuControls(var Query: TDCLSimplyQueryTDCLSimplyQuery; Items: TFPGObjectList<TMenuConstructionItem>; ParentControl: TLCLComponent); override;
+    procedure CreateMenuControls(var Query: TDCLSimplyQuery; Items: TFPGObjectList<TMenuConstructionItem>; ParentControl: TLCLComponent); override;
   public
     constructor Create(Main: IDCLMain; MainForm: TForm); overload;
     destructor Destroy; override;
