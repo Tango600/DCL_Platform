@@ -19,7 +19,6 @@ type
     FWriteTrans: TDCLDBTransaction;
     {$ENDIF}
     FQuery: TDCLSimplyQuery;
-    FDBConnector: TDBConnector;
     SQLScript: TSQLScripter;
 
     function CheckDependencies(Package: TPackage): Boolean;
@@ -329,8 +328,6 @@ end;
 
 constructor TDCLUpdaterPackage.Create(DBConnector: TDBConnector);
 begin
-  FDBConnector:=DBConnector;
-
   {$IFDEF TRANSACTIONDB}
   FWriteTrans:=TDCLDBTransaction.Create(DBConnector, trtWrite);
   {$ENDIF}
