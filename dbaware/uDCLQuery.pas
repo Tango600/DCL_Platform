@@ -679,7 +679,6 @@ begin
   ShadowQuery.Transaction:=Transaction;
   {$ENDIF}
   {$IFDEF IBX}
-  ShadowQuery.Database:=DatabaseObj;
   {$IFDEF FPC}
   ShadowQuery.AllowAutoActivateTransaction:=True;
   ShadowQuery.AutoCommit:=acCommitRetaining;
