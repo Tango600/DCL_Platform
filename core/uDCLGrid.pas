@@ -319,11 +319,10 @@ type
 
   TLookupTable=class(TPanel)
   private
-    FIDCLMain: IDCLMain;
     FGrid: IDCLGrid;
   public
     constructor Create(IDCLMain: IDCLMain; const NameSpace: TVariableNamespace; Form: IDCLForm;
-      ParentControl: TWinControl; Query: TDCLQuery; Data: TDataSource); overload;
+      ParentControl: TWinControl; Data: TDataSource); overload;
 
     property DCLGrid: IDCLGrid read FGrid;
   end;
@@ -338,14 +337,12 @@ uses
 { TLookupTable }
 
 constructor TLookupTable.Create(IDCLMain: IDCLMain; const NameSpace: TVariableNamespace;
-  Form: IDCLForm; ParentControl: TWinControl; Query: TDCLQuery; Data: TDataSource);
+  Form: IDCLForm; ParentControl: TWinControl; Data: TDataSource);
 begin
   inherited Create(ParentControl);
   Self.Parent:=ParentControl;
-  FIDCLMain:=IDCLMain;
 
-  FGrid:=TDCLGrid.Create(FIDCLMain, NameSpace, Form, Self, dctLookupGrid,
-    Query, Data);
+  FGrid:=TDCLGrid.Create(IDCLMain, NameSpace, Form, Self, dctLookupGrid, nil, Data);
 end;
 
 { TDCLGrid }
@@ -3512,7 +3509,7 @@ var
   LookupTable: TLookupTable;
 begin
   LookupTable:=TLookupTable.Create(FIDCLMain, FNameSpace, FForm, FFieldsPanel,
-  nil, FData);
+    FData);
 
   if Field.Width>0 then
     LookupTable.Width:=Field.Width
