@@ -34,10 +34,20 @@ function TrimChars(CharsSet, S:string):String;
 Function DoublingApostrof(const S: String):String;
 Function DCLCompareString(S1, S2: String): Boolean;
 
+function IsLexem(const Lexem, S: String): Boolean;
+
 implementation
 
 const
   StopSimbols=';( )[],=\/+-^<>.%:;&$#@*'#39#10#13;
+
+function IsLexem(const Lexem, S: String): Boolean;
+var
+  t: String;
+begin
+  t:=Trim(S);
+  Result:=Pos(LowerCase(Lexem), LowerCase(t))=1;
+end;
 
 Function DCLCompareString(S1, S2: String): Boolean;
 Begin

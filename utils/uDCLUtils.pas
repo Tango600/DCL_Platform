@@ -13,8 +13,6 @@ uses
   uLZW, uSystemUtils, uDCLMultiLang,
   uDCLData, uDCLConst, uStringParams;
 
-function IsLexem(const Lexem, S: String): Boolean;
-
 Function StrToIntEx(St: String): LongInt;
 Function StrToFloatEx(St: String): Real;
 Function HexToInt64(HexStr: String): Int64;
@@ -64,14 +62,6 @@ uses
 
 const
   TabSize=2;
-
-function IsLexem(const Lexem, S: String): Boolean;
-var
-  t: String;
-begin
-  t:=Trim(S);
-  Result:=Pos(LowerCase(Lexem), LowerCase(t))=1;
-end;
 
 Function LeadingZero(Const aVal: Word): String;
 Begin
