@@ -311,29 +311,29 @@ Function TranslateDigitToUserLevel(Level: String): TUserLevelsType; overload;
 const
   ulPrefix='ul';
 Begin
-  If DCLCompareString(Level, ulPrefix+'Undefined') Then
+  If DCLStringEquals(Level, ulPrefix+'Undefined') Then
     Result:=ulUndefined
-  Else If DCLCompareString(Level, ulPrefix+'Deny') Then
+  Else If DCLStringEquals(Level, ulPrefix+'Deny') Then
     Result:=ulDeny
-  Else If DCLCompareString(Level, ulPrefix+'ReadOnly') Then
+  Else If DCLStringEquals(Level, ulPrefix+'ReadOnly') Then
     Result:=ulReadOnly
-  Else If DCLCompareString(Level, ulPrefix+'Write') Then
+  Else If DCLStringEquals(Level, ulPrefix+'Write') Then
     Result:=ulWrite
-  Else If DCLCompareString(Level, ulPrefix+'Execute') Then
+  Else If DCLStringEquals(Level, ulPrefix+'Execute') Then
     Result:=ulExecute
-  Else If DCLCompareString(Level, ulPrefix+'Level1') Then
+  Else If DCLStringEquals(Level, ulPrefix+'Level1') Then
     Result:=ulLevel1
-  Else If DCLCompareString(Level, ulPrefix+'Level2') Then
+  Else If DCLStringEquals(Level, ulPrefix+'Level2') Then
     Result:=ulLevel2
-  Else If DCLCompareString(Level, ulPrefix+'Level3') Then
+  Else If DCLStringEquals(Level, ulPrefix+'Level3') Then
     Result:=ulLevel3
-  Else If DCLCompareString(Level, ulPrefix+'Level4') Then
+  Else If DCLStringEquals(Level, ulPrefix+'Level4') Then
     Result:=ulLevel4
-  Else If DCLCompareString(Level, ulPrefix+'Updater') Then
+  Else If DCLStringEquals(Level, ulPrefix+'Updater') Then
     Result:=ulUpdater
-  Else If DCLCompareString(Level, ulPrefix+'Signer') Then
+  Else If DCLStringEquals(Level, ulPrefix+'Signer') Then
     Result:=ulSigner
-  Else If DCLCompareString(Level, ulPrefix+'Developer') Then
+  Else If DCLStringEquals(Level, ulPrefix+'Developer') Then
     Result:=ulDeveloper
   Else
     Result:=ulUndefined;

@@ -1676,7 +1676,7 @@ begin
         end
         else
         begin
-          If not DCLCompareString(FQuery.FieldByName(Field.FieldName).AsString, ItemName) and FQuery.CanModify Then
+          If not DCLStringEquals(FQuery.FieldByName(Field.FieldName).AsString, ItemName) and FQuery.CanModify Then
           begin
             If not (FQuery.State in dsEditModes) Then
               FQuery.Edit;
@@ -2590,7 +2590,7 @@ begin
       for f in FDCLFields do
       begin
         if Assigned(f.DCLEditComponent) and (f.DCLEditComponent.Control=(Sender as TEdit)) and
-          DCLCompareString(f.DCLEditComponent.Control.Name, DCLLookup.LookupData.ModifyEdit) then
+          DCLStringEquals(f.DCLEditComponent.Control.Name, DCLLookup.LookupData.ModifyEdit) then
         begin
           tmpSQL1:=(DCLLookup.DCLEditComponent.Control as TDBLookupComboBox).KeyValue;
           (f.DCLEditComponent.Control as TEdit).Text:=tmpSQL1;

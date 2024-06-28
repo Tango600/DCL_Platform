@@ -838,21 +838,21 @@ begin
     for vForm in FForms do
     begin
       tmpDCLForm:=vForm;
-      if DCLCompareString(tmpDCLForm.DialogName, tmpS1) then
+      if DCLStringEquals(tmpDCLForm.DialogName, tmpS1) then
       begin
-        If DCLCompareString(tmpS2, 'hide') then
+        If DCLStringEquals(tmpS2, 'hide') then
           tmpDCLForm.Hide;
-        If DCLCompareString(tmpS2, 'show') then
+        If DCLStringEquals(tmpS2, 'show') then
           tmpDCLForm.SetFocus;
-        If DCLCompareString(tmpS2, 'close') then
+        If DCLStringEquals(tmpS2, 'close') then
         begin
           FDCLForm:=FIDCLMain.CloseForm(tmpDCLForm, True);
           if Assigned(FDCLForm) then
             FDCLGrid:=FDCLForm.CurrentGrid;
         end;
-        If DCLCompareString(tmpS2, 'refresh') then
+        If DCLStringEquals(tmpS2, 'refresh') then
           tmpDCLForm.RefreshForm;
-        If DCLCompareString(tmpS2, 'top') then
+        If DCLStringEquals(tmpS2, 'top') then
           tmpDCLForm.ShowOnTop;
 
         break;

@@ -32,7 +32,7 @@ Function IndexInSet(SetValue, S: String; SepChar: String=DefaultValuesSeparator;
 function TrimChars(CharsSet, S:string):String;
 
 Function DoublingApostrof(const S: String):String;
-Function DCLCompareString(S1, S2: String): Boolean;
+Function DCLStringEquals(S1, S2: String): Boolean;
 
 function IsLexem(const Lexem, S: String): Boolean;
 
@@ -49,7 +49,7 @@ begin
   Result:=Pos(LowerCase(Lexem), LowerCase(t))=1;
 end;
 
-Function DCLCompareString(S1, S2: String): Boolean;
+Function DCLStringEquals(S1, S2: String): Boolean;
 Begin
   Result:=LowerCase(S1)=LowerCase(S2);
 End;

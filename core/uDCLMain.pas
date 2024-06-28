@@ -372,7 +372,7 @@ begin
       begin
         For Edit in lDCLForm.CurrentGrid.Edits do
         begin
-          If DCLCompareString(ReturnValue.KeyEditName, Edit.Control.Name) Then
+          If DCLStringEquals(ReturnValue.KeyEditName, Edit.Control.Name) Then
           begin
             (Edit.Control as TEdit).Text:=ReturnValueItem.Key;
             break;
@@ -384,7 +384,7 @@ begin
       begin
         For Edit in lDCLForm.CurrentGrid.Edits do
         begin
-          If DCLCompareString(ReturnValue.ValueEditName, Edit.Control.Name) Then
+          If DCLStringEquals(ReturnValue.ValueEditName, Edit.Control.Name) Then
           begin
             (Edit.Control as TEdit).Text:=ReturnValueItem.Value;
             break;
