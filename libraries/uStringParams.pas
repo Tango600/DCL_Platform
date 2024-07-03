@@ -36,6 +36,8 @@ Function DCLStringEquals(S1, S2: String): Boolean;
 
 function IsLexem(const Lexem, S: String): Boolean;
 
+function FindWholeWord(const Example, S: String): Integer;
+
 implementation
 
 const
@@ -47,6 +49,40 @@ var
 begin
   t:=Trim(S);
   Result:=Pos(LowerCase(Lexem), LowerCase(t))=1;
+end;
+
+function FindWholeWord(const Example, S: String): Integer;
+var
+  p, l, el: Integer;
+begin
+  Result:=0;
+  l:=Length(S);
+  el:=Length(Example);
+  p:=PosEx(Example, S);
+  if p>0 then
+  begin
+    if p+el-1=l then
+    begin
+      if p=1 then
+        Result:=p
+      else
+      begin
+        if Pos(S[p-1], StopSimbols)<>0 then
+          Result:=p;
+      end;
+    end
+    else
+    begin
+      if p+el-1<l then
+      begin
+        if Pos(S[p+el], StopSimbols)<>0 then
+        begin
+          if (p=1) or (Pos(S[p-1], StopSimbols)<>0) then
+            Result:=p;
+        end;
+      end;
+    end;
+  end;
 end;
 
 Function DCLStringEquals(S1, S2: String): Boolean;
