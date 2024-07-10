@@ -18,7 +18,7 @@ type
   TDCLForm=class(TInterfacedObject, IDCLForm)
   private
     FForm: TForm;
-    FReject, FFirstPage, FormCanClose, FCloseQuery: Boolean;
+    FReject, FormCanClose, FCloseQuery, FIsSingle: Boolean;
     FIDCLMain: IDCLMain;
     FDBConnector: TDCLDBConnector;
     FNameSpace: TVariableNamespace;
@@ -38,7 +38,6 @@ type
     FStatusBar: TStatusBar;
     FReturnValueParams: TReturnValueParams;
     FUserLevel: TUserLevelsType;
-    FIsSingle: Boolean;
     FStackLevel, FCurrentGridIndex: Integer;
 
     //region TForm
@@ -283,12 +282,11 @@ begin
   //FTab.PageControl:=FPages;
 
   FPages.ActivePage.Align:=alClient;
-  FParentPanel:=FTab.PageControl.Pages[pc];
+  FParentPanel:=FTab;
 
   Result:=AddGrid(FParentPanel, dctMainGrid, Query, Data);
 
-  FPages.ActivePage:=FPages.Pages[pc];
-  FPages.ActivePageIndex:=pc;
+  FPages.ActivePage:=FTab;
 end;
 
 function TDCLForm.AddGrid(const ParentControl: TWinControl; SurfType: TDataControlType;
@@ -515,7 +513,9 @@ var
   SrcLine, tmpS, tmpS1: String;
   ff: IDCLForm;
   g: IDCLGrid;
+  {$IFNDEF NOONTOP}
   OnTop: Boolean;
+  {$ENDIF}
   FieldsCount: Integer;
   UserLevelLocal: TUserLevelsType;
   FCurrentGrid: IDCLGrid;
@@ -531,7 +531,6 @@ begin
   FForm.OnDestroy:=OnDestroyForm;
   FDialogName:=DialogName;
   FDBConnector:=FIDCLMain.GetDBConnector;
-  FFirstPage:=True;
   FReturnValueParams:=ReturnValueParams;
   FParentForm:=ParentForm;
   FUserLevel:=UserLevel;
@@ -552,6 +551,7 @@ begin
       end;
   end;
 
+  {$IFNDEF NOONTOP}
   For ff in FIDCLMain.GetForms do
   begin
     If Assigned(ff) Then
@@ -561,6 +561,7 @@ begin
         break;
       end;
   end;
+  {$ENDIF}
 
   FNameSpace:=NameSpace;
   FVariables:=FIDCLMain.Variables;
@@ -665,9 +666,7 @@ begin
 
       if IsLexem('[Page]', SrcLine) then
       begin
-        if not FFirstPage then
-          AddMainPage(Query, Data);
-        FFirstPage:=False;
+        FCurrentGrid:=AddMainPage(Query, Data);
       end;
 
       if IsLexem('Title=', SrcLine) then
@@ -697,6 +696,7 @@ begin
         Self.Caption:=tmpS1;
       end;
 
+      {$IFNDEF NOONTOP}
       If IsLexem('OnTop=', SrcLine) then
       begin
         tmpS:=SrcLine;
@@ -704,6 +704,7 @@ begin
         tmpS:=FindParam('OnTop=', tmpS);
         OnTop:=tmpS='1';
       end;
+      {$ENDIF}
 
       If IsLexem('Single;', SrcLine) then
       begin
