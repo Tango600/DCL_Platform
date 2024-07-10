@@ -82,20 +82,16 @@ procedure TDCLCommand.TranslateVals(var S: String);
 begin
   if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) then
   begin
-    FParser.RePlaseParams(S, FDCLGrid.Query);
-    FParser.ReplaceAllVariables(FNameSpace.CurrentNamespace, S, FDCLGrid.Query);
-    FParser.RePlaceProc(S, FDCLGrid.Query);
+    TranslateVals(S, FDCLGrid.Query);
   end
   else
   begin
-    FParser.ReplaceAllVariables(FNameSpace.CurrentNamespace, S, nil);
-    FParser.RePlaceProc(S, nil);
+    TranslateVals(S, nil);
   end;
 end;
 
 procedure TDCLCommand.TranslateVals(var S: String; Query: TDCLDialogQuery);
 begin
-  FParser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, FUserLevel, FVariables);
   FParser.RePlaseParams(S, Query);
   FParser.ReplaceAllVariables(FNameSpace.CurrentNamespace, S, Query);
   FParser.RePlaceProc(S, Query);
