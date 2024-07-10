@@ -18,7 +18,7 @@ type
   TDCLForm=class(TInterfacedObject, IDCLForm)
   private
     FForm: TForm;
-    FReject, FormCanClose, FCloseQuery, FIsSingle: Boolean;
+    FReject, FCloseQuery, FIsSingle: Boolean;
     FIDCLMain: IDCLMain;
     FDBConnector: TDCLDBConnector;
     FNameSpace: TVariableNamespace;
@@ -381,8 +381,7 @@ end;
 
 procedure TDCLForm.CloseDialogCommand(Sender: TObject);
 begin
-  if FormCanClose then
-    Close;
+  Close;
 end;
 
 procedure TDCLForm.TranslateVal(var Params: String; const Grid: IDCLGrid; CheckParams: Boolean);
@@ -458,7 +457,6 @@ begin
       S:=GetDCLMessageString(msClose);
     DlgRes:=ShowErrorMessage(10, S);
     CanClose:=DlgRes=1;
-    FormCanClose:=CanClose;
   End
   Else
     CanClose:=True;
@@ -536,7 +534,6 @@ begin
   FUserLevel:=UserLevel;
   FCloseQuery:=False;
   CloseQueryText:='';
-  FormCanClose:=True;
   FCurrentGridIndex:=0;
 
   FReject:=False;
