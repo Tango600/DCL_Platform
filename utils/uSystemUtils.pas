@@ -44,7 +44,7 @@ function GetSpecialPath(CSIDL: Word): string;
 implementation
 
 uses
-  uDCLData, uDCLGlobalVariables, uRunProgram, uStringParams;
+  uDCLGlobalVariables, uRunProgram, uStringParams;
 
 function ValidObject(const AObj: TObject): Boolean;
 begin
