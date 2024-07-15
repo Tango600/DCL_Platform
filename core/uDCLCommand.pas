@@ -31,19 +31,19 @@ type
 
     procedure TranslateVals(var S: String); overload;
     procedure TranslateVals(var S: String; Query: TDCLDialogQuery); overload;
-    procedure SetValue(S: String);
+    procedure SetValue(constref S: String);
 
     procedure ExecSQLCommand(SQL: String);
 
     function GetRaights: TUserLevelsType;
-    procedure RunTextReport(ScrLine: String; Query: TDCLDialogQuery; Grid: TDCLGrid);
+    procedure RunTextReport(constref ScrLine: String; Query: TDCLDialogQuery; Grid: TDCLGrid);
 
-    procedure DialogCommand(ScrStr: String);
+    procedure DialogCommand(constref ScrStr: String);
 
     function GetDisableAutoRefresh: Boolean;
     procedure SetDisableAutoRefresh(Value: Boolean);
 
-    function RunCommandScript(const CommandName: String): Boolean;
+    function RunCommandScript(constref CommandName: String): Boolean;
     procedure RunCommand(Command: String);
     procedure SelectRunType(const Command: String);
 
@@ -135,14 +135,14 @@ begin
   inherited Destroy;
 end;
 
-function TDCLCommand.RunCommandScript(const CommandName: String): Boolean;
+function TDCLCommand.RunCommandScript(constref CommandName: String): Boolean;
 var
   DCL: TStringList;
   LineNum: Integer;
   Item: TStackItem;
   CondHosts: TStack<TStackItem>;
 
-  function ParseCondition(CondLineNum: Integer): Boolean;
+  function ParseCondition(const CondLineNum: Integer): Boolean;
   var
     posI, posI2: Integer;
     Line, ConditionStr: String;
@@ -369,7 +369,7 @@ begin
   DCL.Free;
 end;
 
-procedure TDCLCommand.SetValue(S: String);
+procedure TDCLCommand.SetValue(constref S: String);
 var
   tmp1, tmp2, VarName, SQLText, ReturnField, KeyField: String;
   sv_v2, v2: Integer;
@@ -581,7 +581,7 @@ begin
   Result:=FUserLevel;
 end;
 
-procedure TDCLCommand.RunTextReport(ScrLine: String; Query: TDCLDialogQuery; Grid: TDCLGrid);
+procedure TDCLCommand.RunTextReport(constref ScrLine: String; Query: TDCLDialogQuery; Grid: TDCLGrid);
 var
   tmpDCL: TStringList;
   tmpS, tmpS1: String;
@@ -1508,7 +1508,7 @@ begin
   About.Release;
 end;
 
-procedure TDCLCommand.DialogCommand(ScrStr: String);
+procedure TDCLCommand.DialogCommand(constref ScrStr: String);
 var
   TmpStr, DialogName: String;
   ModalOpen, NoContext: Boolean;

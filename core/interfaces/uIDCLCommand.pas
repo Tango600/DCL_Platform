@@ -8,7 +8,7 @@ uses
 
 type
   IDCLCommand = interface
-    function RunCommandScript(const CommandName: String): Boolean;
+    function RunCommandScript(constref CommandName: String): Boolean;
     procedure RunCommand(Command: String);
     procedure SelectRunType(const Command: String);
 
