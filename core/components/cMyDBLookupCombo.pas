@@ -21,7 +21,7 @@ type
     FShadowItems: TFPGObjectList<TDBLookupItem>;
     FValueObject: TDBLookupItem;
     FResetValue: Variant;
-    FAddResetValue: Boolean;
+    FAddResetValue, FPartial: Boolean;
 
     procedure KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState); overload;
     procedure UpdateItems;
@@ -46,6 +46,7 @@ type
     property Style: TComboBoxStyle read GetStyle write SetStyle default csDropDown;
     property FilterResetValue: Variant read FResetValue write FResetValue;
     property AddResetValue: Boolean read GetAddResetValue write SetAddResetValue;
+    property Partial: Boolean read FPartial write FPartial;
   end;
 
 implementation
@@ -117,7 +118,7 @@ begin
   for i in FShadowItems do
   begin
     s:=i.Value;
-    if UTF8LowerCase(s).StartsWith(UTF8LowerCase(Exemple)) or (Exemple='') then
+    if (Exemple='') or (not FPartial and UTF8LowerCase(s).StartsWith(UTF8LowerCase(Exemple))) or (FPartial and UTF8LowerCase(s).Contains(UTF8LowerCase(Exemple), True)) then
     begin
       Self.AddItem(i.Value, i);
       Inc(c);

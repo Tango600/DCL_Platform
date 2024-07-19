@@ -2675,6 +2675,7 @@ begin
       begin
         (Filter.Control as TDCLDBLookupCombo).FilterResetValue:=FilterResetValue;
         (Filter.Control as TDCLDBLookupCombo).AddResetValue:=True;
+        (Filter.Control as TDCLDBLookupCombo).Partial:=Filter.Partial;
       end;
 
       If Filter.KeyValue<>'' Then
@@ -3248,6 +3249,13 @@ begin
       FFilter.KeyValue:=tmpS;
     end;
 
+    tmpS:=FindParam('FilterMode=', ScrLine);
+    If tmpS<>'' Then
+    begin
+      If PosEx('Partial', tmpS)<>0 Then
+        FFilter.Partial:=True;
+    end;
+
     Grid.AddFilter(FFilter);
   end;
 end;
@@ -3336,6 +3344,13 @@ begin
   If tmpS<>'' then
   begin
     FFilter.KeyValue:=tmpS;
+  end;
+
+  tmpS:=FindParam('FilterMode=', ScrLine);
+  If tmpS<>'' Then
+  begin
+    If PosEx('Partial', tmpS)<>0 Then
+      FFilter.Partial:=True;
   end;
 
   Grid.AddFilter(FFilter);
