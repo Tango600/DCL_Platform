@@ -38,7 +38,7 @@ type
   TDBFilter=class
     Width, FilterNum, WaitForKey, FilterChengFlag,
       MaxLength: Integer;
-    Partial, Between, NotLike, CaseC, NotFilter: Boolean;
+    Contains, Partial, Between, NotLike, CaseC, NotFilter: Boolean;
     FilterName, FilterString, Field, KeyField, ListField: String;
     FilterLabel: TDialogLabel;
     Control: TWinControl;

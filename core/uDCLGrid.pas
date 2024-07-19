@@ -2675,7 +2675,7 @@ begin
       begin
         (Filter.Control as TDCLDBLookupCombo).FilterResetValue:=FilterResetValue;
         (Filter.Control as TDCLDBLookupCombo).AddResetValue:=True;
-        (Filter.Control as TDCLDBLookupCombo).Partial:=Filter.Partial;
+        (Filter.Control as TDCLDBLookupCombo).Partial:=Filter.Contains;
       end;
 
       If Filter.KeyValue<>'' Then
@@ -3253,7 +3253,7 @@ begin
     If tmpS<>'' Then
     begin
       If PosEx('Partial', tmpS)<>0 Then
-        FFilter.Partial:=True;
+        FFilter.Contains:=True;
     end;
 
     Grid.AddFilter(FFilter);
