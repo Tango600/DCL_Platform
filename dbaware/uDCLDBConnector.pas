@@ -265,6 +265,9 @@ begin
     If Not IsFullPath(GPT.DBPath) Then
       GPT.DBPath:=ExtractFilePath(Application.ExeName)+GPT.DBPath;
 
+    if GPT.Port<>0 then
+      Port:=GPT.Port;
+
     If GPT.ServerName<>'' Then
     begin
       DatabaseName:=GPT.DBPath;
