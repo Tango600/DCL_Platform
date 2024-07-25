@@ -323,6 +323,7 @@ type
   public
     constructor Create(const IDCLMain: IDCLMain; NameSpace: TVariableNamespace; const Form: IDCLForm;
       ParentControl: TWinControl; Data: TDataSource); overload;
+    destructor Destroy; override;
 
     property DCLGrid: IDCLGrid read FGrid;
   end;
@@ -343,6 +344,12 @@ begin
   Self.Parent:=ParentControl;
 
   FGrid:=TDCLGrid.Create(IDCLMain, NameSpace, Form, Self, dctLookupGrid, nil, Data);
+end;
+
+destructor TLookupTable.Destroy;
+begin
+  FGrid:=nil;
+  inherited Destroy;
 end;
 
 { TDCLGrid }
@@ -5189,7 +5196,7 @@ var
 begin
   if Assigned(Settings) and not GPT.DisableFieldsList then
   begin
-    if (GetGridStyle=gsGrid) and Assigned(FDBGrid) then
+    if (GetGridStyle=gsGrid) and Assigned(FDBGrid) and Assigned(FDBGrid.Columns) then
     begin
       for i:=1 to FDBGrid.Columns.Count do
       begin

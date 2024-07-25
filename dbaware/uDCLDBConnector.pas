@@ -89,7 +89,7 @@ begin
       {$ENDIF}
 
       Params.Clear;
-      If Not IsFullPAth(GPT.DBPath) Then
+      If Not IsFullPath(GPT.DBPath) Then
         GPT.DBPath:=ExtractFilePath(Application.ExeName)+GPT.DBPath;
 
       If IsUNCPath(GPT.DBPath) Then
@@ -348,7 +348,7 @@ begin
   begin
     If GPT.DBPath<>'' Then
     begin
-      If Not IsFullPAth(GPT.DBPath) Then
+      If Not IsFullPath(GPT.DBPath) Then
         GPT.DBPath:=ExtractFilePath(Application.ExeName)+GPT.DBPath;
 
       ConnectorType:=GPT.DBType;
