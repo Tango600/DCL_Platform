@@ -3,7 +3,7 @@ unit uDCLGlobalConfigTable;
 interface
 
 uses
-  uDCLConst;
+  Graphics, uDCLConst;
 
 type
   TGPT=record
@@ -12,11 +12,12 @@ type
     DialogsSettings, DisableColors, DisableFieldsList,
     DisableUnload, DisableLoad, EasyIdentMode, DisableIniPasword, IBAll: Boolean;
     OneCopy, Port: Integer;
+    MainColor, TablePartColor, GridColor, GridAlternateColor: TColor;
     DateSeparator, TimeSeparator, ThousandSeparator, DecimalSeparator: Char;
     ServerCodePage, DateFormat, TimeFormat, Viewer, MainFormCaption,
     DataBaseName, ScriptDir, DBPath, ServerName, DBType: String;
     SQLDialect: Byte;
-    NoParamsTable, NoUsersTable, DisableLogOnWithoutUser: Boolean;
+    NoParamsTable, NoUsersTable, DisableLogOnWithoutUser, DisableColorScheme: Boolean;
     DBUserName, DCLUserName, DCLUserPass, EnterPass, LongRoleName, GetValueSeparator,
     IniFileName, BaseID,
     StringTypeChar,

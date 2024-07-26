@@ -4,7 +4,7 @@ unit uDCLConfig;
 interface
 
 uses
-  Classes, SysUtils, Forms,
+  Classes, SysUtils, Forms, Graphics,
 {$IFDEF MSWINDOWS}
   uDCLOfficeUtils,
 {$ENDIF}
@@ -82,10 +82,15 @@ Var
   Parser: TDCLValuseParser;
   cs, s: String;
 
-function IsParameter(ParamName, ParamLine: String): Boolean;
-begin
-  Result:=PosEx(ParamName, ParamLine)=1;
-end;
+  function IsParameter(ParamName, ParamLine: String): Boolean;
+  begin
+    Result:=PosEx(ParamName, ParamLine)=1;
+  end;
+
+  function IntToColor(Value: Integer): TColor;
+  begin
+    Result:=RGBToColor(Value and $ff0000 div $00ffff, Value and $00ff00 div $ff, Value and $0000ff);
+  end;
 
 Begin
   If Params.Count>0 Then
@@ -279,6 +284,27 @@ Begin
           GPT.ScriptDir:=FindParam('ScriptDir=', cs);
         If IsParameter('EasyIdentMode=', cs) Then
           GPT.EasyIdentMode:=FindParam('EasyIdentMode=', cs)='1';
+
+        If IsParameter('DisableColorScheme=', cs) then
+        Begin
+          GPT.DisableColorScheme:=Trim(FindParam('DisableColorScheme=', cs))='1';
+        End;
+        If IsParameter('MainColor=', cs) then
+        Begin
+          GPT.MainColor:=IntToColor(StrToInt(FindParam('MainColor=', cs)));
+        End;
+        If IsParameter('TablePartColor=', cs) then
+        Begin
+          GPT.TablePartColor:=IntToColor(StrToInt(FindParam('TablePartColor=', cs)));
+        End;
+        If IsParameter('GridColor=', cs) then
+        Begin
+          GPT.GridColor:=IntToColor(StrToInt(FindParam('GridColor=', cs)));
+        End;
+        If IsParameter('GridAlternateColor=', cs) then
+        Begin
+          GPT.GridAlternateColor:=IntToColor(StrToInt(FindParam('GridAlternateColor=', cs)));
+        End;
       End;
     End;
     if lUser<> '' then

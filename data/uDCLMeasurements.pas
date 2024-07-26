@@ -4,7 +4,7 @@ unit uDCLMeasurements;
 interface
 
 uses
-  DBGrids;
+  Graphics, DBGrids;
 
 const
   EditWidth=230;
@@ -87,6 +87,8 @@ const
   NewDialogImage=0;
   ActiveDialogImage=1;
   InActiveDialogImage=2;
+
+  NoColorValue=clBlack;
 
   IndicatorWidth=DEFINDICATORCOLWIDTH;
 

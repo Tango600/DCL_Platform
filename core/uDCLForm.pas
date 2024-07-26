@@ -527,6 +527,8 @@ begin
   FForm.OnClose:=OnFormClose;
   FForm.OnCloseQuery:=OnFormCloseQuery;
   FForm.OnDestroy:=OnDestroyForm;
+  if not GPT.DisableColorScheme and (GPT.MainColor<>NoColorValue) then
+    FForm.Color:=GPT.MainColor;
   FDialogName:=DialogName;
   FDBConnector:=FIDCLMain.GetDBConnector;
   FReturnValueParams:=ReturnValueParams;

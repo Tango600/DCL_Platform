@@ -205,7 +205,6 @@ Var
   iI, L: Integer;
   tmpS: String;
 Begin
-  //St:=Calculate(St);
   L:=Length(St);
   tmpS:='';
   For iI:=1 To L Do
@@ -461,6 +460,8 @@ Begin
   HexStr:=UpperCase(HexStr);
   If UpperCase(HexStr[Length(HexStr)])='H' Then
     Delete(HexStr, Length(HexStr), 1);
+  If HexStr[1]='$' Then
+    Delete(HexStr, 1, 1);
   RetVar:=0;
   For i:=1 To Length(HexStr) Do
   Begin
@@ -481,6 +482,8 @@ Begin
   HexStr:=UpperCase(HexStr);
   If UpperCase(HexStr[Length(HexStr)])='H' Then
     Delete(HexStr, Length(HexStr), 1);
+  If HexStr[1]='$' Then
+    Delete(HexStr, 1, 1);
   RetVar:=0;
   For i:=1 To Length(HexStr) Do
   Begin

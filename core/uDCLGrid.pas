@@ -1899,6 +1899,8 @@ begin
     FTablePartsPages.Height:=TablePartHeight;
     FTablePartsPages.OnChange:=ChangePartTabPage;
     FTablePartsPages.Tag:=2;
+    if not GPT.DisableColorScheme and (GPT.TablePartColor<>NoColorValue) then
+      FTablePartsPages.Color:=GPT.TablePartColor;
   end;
 
   pc:=FTablePartsPages.PageCount;
@@ -1906,6 +1908,8 @@ begin
   FTablePartsTabs.Parent:=FTablePartsPages;
   FTablePartsTabs.Name:='TablePart_'+IntToStr(pc+1);
   FTablePartsTabs.PageControl:=FTablePartsPages;
+  if not GPT.DisableColorScheme and (GPT.TablePartColor<>NoColorValue) then
+    FTablePartsTabs.Color:=GPT.TablePartColor;
 
   If Title='' Then
     FTablePartsTabs.Caption:=GetDCLMessageString(msPage)+' '+IntToStr(pc+1)
@@ -4709,6 +4713,19 @@ begin
     FToolBar.ButtonHeight:=ToolButtonHeight;
     FToolBar.Flat:=ToolButtonsFlat;
     FToolBar.EdgeBorders:=[ebLeft, ebTop, ebRight];
+    if not GPT.DisableColorScheme then
+    begin
+      if FDataControlType in [dctMainGrid] then
+      begin
+        if GPT.MainColor<>NoColorValue then
+          FToolBar.Color:=GPT.MainColor;
+      end
+      else
+      begin
+        if GPT.TablePartColor<>NoColorValue then
+          FToolBar.Color:=GPT.TablePartColor;
+      end;
+    end;
   end;
 
   if not Assigned(FNavig) then
@@ -4902,12 +4919,19 @@ begin
 
       FDBGrid.DataSource:=FData;
       if FBrushColors.Count=0 then
-        FDBGrid.AlternateColor:=GridAlternateColor;
+      begin
+        if GPT.DisableColorScheme or (GPT.GridAlternateColor=NoColorValue) then
+          FDBGrid.AlternateColor:=GridAlternateColor
+        else
+          FDBGrid.AlternateColor:=GPT.GridAlternateColor;
+      end;
       FDBGrid.TitleImageList:=FIDCLMain.GetImageList;
       FDBGrid.OnDblClick:=GridDblClick;
       FDBGrid.OnTitleClick:=GridColumnClick;
       FDBGrid.OnUTF8KeyPress:=GridKeyPress;
       FDBGrid.OnKeyDown:=Grid1KeyDown;
+      if not GPT.DisableColorScheme and (GPT.GridColor<>NoColorValue) then
+        FDBGrid.Color:=GPT.GridColor;
 
       PopupGridMenu:=TPopupMenu.Create(FDBGrid);
       PopupGridMenu.Parent:=FDBGrid;
