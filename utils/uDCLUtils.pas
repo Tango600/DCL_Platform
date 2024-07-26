@@ -13,6 +13,7 @@ uses
   uLZW, uSystemUtils, uDCLMultiLang,
   uDCLData, uDCLConst, uStringParams;
 
+function IsHexValue(const HexStr: String): Boolean;
 Function StrToIntEx(St: String): LongInt;
 Function StrToFloatEx(St: String): Real;
 Function HexToInt64(HexStr: String): Int64;
@@ -199,6 +200,42 @@ Begin
     S:=S*Base;
   Result:=S;
 End;
+
+function IsHexValue(const HexStr: String): Boolean;
+var
+  i: Integer;
+  HexData: String;
+begin
+  Result:=False;
+  HexData:='';
+  If UpperCase(HexStr[Length(HexStr)])='H' Then
+  begin
+    Result:=True;
+    HexData:=Copy(HexStr, 1, Length(HexStr)-1);
+  end;
+  If HexStr[Length(HexStr)]='$' Then
+  begin
+    Result:=True;
+    HexData:=Copy(HexStr, 1, Length(HexStr)-1);
+  end;
+  If HexStr[1]='$' Then
+  begin
+    Result:=True;
+    HexData:=Copy(HexStr, 2, Length(HexStr));
+  end;
+
+  if Result and (Length(HexData)>0) then
+  begin
+    For i:=1 To Length(HexData) Do
+    Begin
+      If PosEx(UpperCase(HexData[i]), '0123456789ABCDEF')=0 then
+      Begin
+        Result:=False;
+        Exit;
+      End;
+    End;
+  end;
+end;
 
 Function StrToIntEx(St: String): LongInt;
 Var

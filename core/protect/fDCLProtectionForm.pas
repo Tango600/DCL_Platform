@@ -26,7 +26,7 @@ type
     miAbout: TMenuItem;
     sbCopyKey: TSpeedButton;
     procedure btApplayClick(Sender: TObject);
-    constructor Create(AOwner: TComponent; DCLMain: IDCLMain); overload;
+    constructor Create(AOwner: TComponent; const DCLMain: IDCLMain); overload;
     procedure FormShow(Sender: TObject);
     procedure miAboutClick(Sender: TObject);
     procedure sbCopyKeyClick(Sender: TObject);
@@ -68,7 +68,7 @@ begin
 end;
 {$ENDIF}
 
-constructor TProtectionForm.Create(AOwner: TComponent; DCLMain: IDCLMain);
+constructor TProtectionForm.Create(AOwner: TComponent; const DCLMain: IDCLMain);
 var
   Key: TKeyData;
 begin

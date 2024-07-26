@@ -72,16 +72,16 @@ type
     function IsNeedLogin: Boolean;
 
     procedure NotifyForms(Action: TFormsNotifyAction);
-    procedure NotifyForm(Form: IDCLForm; Action: TFormsNotifyAction);
+    procedure NotifyForm(const Form: IDCLForm; Action: TFormsNotifyAction);
 
     function CreateDialog(const NameSpace: TVariableNamespace; const DialogName: String; NoContext: Boolean;
-      ParentForm: IDCLForm; Grid: IDCLGrid; UserLevel: TUserLevelsType;
+      const ParentForm: IDCLForm; const Grid: IDCLGrid; UserLevel: TUserLevelsType;
       ReturnValueParams: TReturnValueParams; Modal: Boolean): IDCLForm;
-    function CloseForm(Form: IDCLForm; Force: Boolean): IDCLForm;
+    function CloseForm(const Form: IDCLForm; Force: Boolean): IDCLForm;
     function CloseDialog(var Form: IDCLForm; Force: Boolean): Boolean;
-    procedure GetValueProc(const NameSpace: TVariableNamespace; Form: IDCLForm; ReturnValue: TReturnFormValue);
-    function HasChildForm(Form: IDCLForm): Boolean;
-    function HasParentForm(Form: IDCLForm): Boolean;
+    procedure GetValueProc(const NameSpace: TVariableNamespace; const Form: IDCLForm; ReturnValue: TReturnFormValue);
+    function HasChildForm(const Form: IDCLForm): Boolean;
+    function HasParentForm(const Form: IDCLForm): Boolean;
 
     procedure LoadPackageFromFile(FileName: String; Run: Boolean);
     function CheckSigned(Package: TDCLScriptsPackage): Boolean;
@@ -265,7 +265,7 @@ begin
   end;
 end;
 
-procedure TDCLMain.NotifyForm(Form: IDCLForm; Action: TFormsNotifyAction);
+procedure TDCLMain.NotifyForm(const Form: IDCLForm; Action: TFormsNotifyAction);
 begin
   case Action of
   fnaMinimize: Form.WindowState:=wsMinimized;
@@ -282,7 +282,7 @@ begin
 end;
 
 function TDCLMain.CreateDialog(const NameSpace: TVariableNamespace; const DialogName: String; NoContext: Boolean;
-  ParentForm: IDCLForm; Grid: IDCLGrid; UserLevel: TUserLevelsType;
+  const ParentForm: IDCLForm; const Grid: IDCLGrid; UserLevel: TUserLevelsType;
   ReturnValueParams: TReturnValueParams; Modal: Boolean): IDCLForm;
 var
   DCL: TStringList;
@@ -326,7 +326,7 @@ begin
   FreeAndNil(DCL);
 end;
 
-procedure TDCLMain.GetValueProc(const NameSpace: TVariableNamespace; Form: IDCLForm; ReturnValue: TReturnFormValue);
+procedure TDCLMain.GetValueProc(const NameSpace: TVariableNamespace; const Form: IDCLForm; ReturnValue: TReturnFormValue);
 var
   ReturnValueItem: TGetValueItem;
   Edit: TDCLEdit;
@@ -417,7 +417,7 @@ begin
   end;
 end;
 
-function TDCLMain.HasChildForm(Form: IDCLForm): Boolean;
+function TDCLMain.HasChildForm(const Form: IDCLForm): Boolean;
 var
   F: IDCLForm;
   G, G2: IDCLGrid;
@@ -440,7 +440,7 @@ begin
   end;
 end;
 
-function TDCLMain.HasParentForm(Form: IDCLForm): Boolean;
+function TDCLMain.HasParentForm(const Form: IDCLForm): Boolean;
 var
   F: IDCLForm;
 begin
@@ -455,7 +455,7 @@ begin
   end;
 end;
 
-function TDCLMain.CloseForm(Form: IDCLForm; Force: Boolean): IDCLForm;
+function TDCLMain.CloseForm(const Form: IDCLForm; Force: Boolean): IDCLForm;
 var
   level, l: Integer;
   Parent, F, C: IDCLForm;

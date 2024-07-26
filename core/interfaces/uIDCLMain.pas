@@ -27,15 +27,15 @@ type
     function GetPackages: TList<TPackageInfo>;
 
     procedure NotifyForms(Action: TFormsNotifyAction);
-    procedure NotifyForm(Form: IDCLForm; Action: TFormsNotifyAction);
+    procedure NotifyForm(const Form: IDCLForm; Action: TFormsNotifyAction);
 
     function CreateDialog(const NameSpace: TVariableNamespace; const DialogName: String; NoContext: Boolean;
-      ParentForm: IDCLForm; Grid: IDCLGrid; UserLevel: TUserLevelsType;
+      const ParentForm: IDCLForm; const Grid: IDCLGrid; UserLevel: TUserLevelsType;
       ReturnValueParams: TReturnValueParams; Modal: Boolean): IDCLForm;
-    function CloseForm(Form: IDCLForm; Force: Boolean): IDCLForm;
+    function CloseForm(const Form: IDCLForm; Force: Boolean): IDCLForm;
     function CloseDialog(var Form: IDCLForm; Force: Boolean): Boolean;
     procedure ReleaseForm(const Form: IDCLForm);
-    procedure GetValueProc(const NameSpace: TVariableNamespace; Form: IDCLForm; ReturnValue: TReturnFormValue);
+    procedure GetValueProc(const NameSpace: TVariableNamespace; const Form: IDCLForm; ReturnValue: TReturnFormValue);
 
     procedure Update;
 
