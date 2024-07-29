@@ -21,9 +21,11 @@ type
     FShadowItems: TFPGObjectList<TDBLookupItem>;
     FValueObject: TDBLookupItem;
     FResetValue: Variant;
-    FAddResetValue, FPartial: Boolean;
+    FAddResetValue, FPartial, FInFilterMode: Boolean;
 
+    procedure OnFocus(Sender: TObject);
     procedure KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState); overload;
+    procedure KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState); overload;
     procedure UpdateItems;
     procedure FilterItems(Exemple: String);
     procedure SetListData(Value: TDataSource);
@@ -35,6 +37,8 @@ type
     procedure SetStyle(Value: TComboBoxStyle); override;
     function GetAddResetValue: Boolean;
     procedure SetAddResetValue(Value: Boolean);
+  protected
+    procedure Select; override;
   public
     constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
@@ -56,18 +60,29 @@ uses
 
 { TDBMyLookupCombo }
 
+procedure TDBMyLookupCombo.OnFocus(Sender: TObject);
+begin
+  if not FInFilterMode and Assigned(FValueObject) and not VarIsEmpty(FResetValue) then
+    if FValueObject.Key=FResetValue then
+    begin
+      Text:='';
+    end;
+end;
+
 procedure TDBMyLookupCombo.KeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 var
   i: TDBLookupItem;
 begin
-  FilterItems(Self.Text);
+  if Self.Text<>'' then
+    FilterItems(Self.Text);
   if (Self.Text='') and not VarIsEmpty(FResetValue) then
   begin
     for i in FShadowItems do
     begin
       if i.Key=FResetValue then
       begin
+        FInFilterMode:=False;
         FValueObject:=i;
         Text:=i.Value;
         FilterItems('');
@@ -78,6 +93,13 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TDBMyLookupCombo.KeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if Self.Text='<>' then
+    Self.Text:='';
 end;
 
 procedure TDBMyLookupCombo.UpdateItems;
@@ -120,6 +142,8 @@ begin
     s:=i.Value;
     if (Exemple='') or (not FPartial and UTF8LowerCase(s).StartsWith(UTF8LowerCase(Exemple))) or (FPartial and UTF8LowerCase(s).Contains(UTF8LowerCase(Exemple), True)) then
     begin
+      if Exemple<>'' then
+        FInFilterMode:=True;
       Self.AddItem(i.Value, i);
       Inc(c);
     end;
@@ -190,7 +214,7 @@ end;
 
 function TDBMyLookupCombo.GetStyle: TComboBoxStyle;
 begin
-  result:=csDropDown;
+  Result:=csDropDown;
 end;
 
 procedure TDBMyLookupCombo.SetStyle(Value: TComboBoxStyle);
@@ -242,7 +266,14 @@ begin
     i.Value:='<>';
     FShadowItems.Insert(0, i);
     FilterItems('');
+    FInFilterMode:=False;
   end;
+end;
+
+procedure TDBMyLookupCombo.Select;
+begin
+  inherited Select;
+  FInFilterMode:=False;
 end;
 
 constructor TDBMyLookupCombo.Create(TheOwner: TComponent);
@@ -250,6 +281,8 @@ begin
   inherited Create(TheOwner);
   FShadowItems:=TFPGObjectList<TDBLookupItem>.Create;
   OnKeyUp:=KeyUp;
+  OnKeyDown:=KeyDown;
+  OnEnter:=OnFocus;
 end;
 
 destructor TDBMyLookupCombo.Destroy;
