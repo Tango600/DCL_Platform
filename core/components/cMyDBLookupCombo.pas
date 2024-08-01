@@ -27,7 +27,7 @@ type
     procedure KeyUp(Sender: TObject; var Key: Word; Shift: TShiftState); overload;
     procedure KeyDown(Sender: TObject; var Key: Word; Shift: TShiftState); overload;
     procedure UpdateItems;
-    procedure FilterItems(Exemple: String);
+    procedure FilterItems(const Exemple: String);
     procedure SetListData(Value: TDataSource);
     procedure SetKeyField(Value: String);
     procedure SetListField(Value: String);
@@ -129,7 +129,7 @@ begin
   end;
 end;
 
-procedure TDBMyLookupCombo.FilterItems(Exemple: String);
+procedure TDBMyLookupCombo.FilterItems(const Exemple: String);
 var
   i: TDBLookupItem;
   S: String;
