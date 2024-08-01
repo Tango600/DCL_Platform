@@ -32,7 +32,7 @@ type
 implementation
 
 uses
-  uDCLValuesParser, uDCLGlobalVariables;
+  uDCLValuesParser, uDCLGlobalVariables, uSystemUtils;
 
 { TDCLConfig }
 
@@ -85,11 +85,6 @@ Var
   function IsParameter(ParamName, ParamLine: String): Boolean;
   begin
     Result:=PosEx(ParamName, ParamLine)=1;
-  end;
-
-  function IntToColor(Value: Integer): TColor;
-  begin
-    Result:=RGBToColor(Value and $ff0000 div $00ffff, Value and $00ff00 div $ff, Value and $0000ff);
   end;
 
 Begin

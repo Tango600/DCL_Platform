@@ -249,7 +249,7 @@ type
     procedure AddNotAllowedOperation(Operation: TNotAllowedOperation);
     function FindNotAllowedOperation(Operation: TNotAllowedOperation): Boolean;
 
-    procedure AddBrushColor(Line: String);
+    procedure AddBrushColor(const Line: String);
     procedure GridDrawDataCell(Sender: TObject; Const Rect: TRect; DataCol: Integer;
       Column: TColumn; State: TGridDrawState);
 
@@ -331,7 +331,7 @@ type
 implementation
 
 uses
-  EditBtn, LCLProc, uRunProgram, uReturnFormValue, cMyDBLookupCombo,
+  EditBtn, LCLProc, uRunProgram, uReturnFormValue, cMyDBLookupCombo, StrUtils,
   uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, LazUTF8, uDCLException,
   uPrintBase, uDCLGlobalVariables, uDCLMD5, uExpressionParser, uDCLCommand;
 
@@ -1960,7 +1960,7 @@ begin
       FTableParts[FCurrentTablePartIndex].DependField:=FindParam('DependField=', Line);
     end;
 
-    FTableParts[FCurrentTablePartIndex].Query.open;
+    FTableParts[FCurrentTablePartIndex].Query.Open;
 
     If FindParam('MasterDataField=', Line)<>'' then
     begin
@@ -3828,7 +3828,7 @@ begin
   end;
 end;
 
-procedure TDCLGrid.AddBrushColor(Line: String);
+procedure TDCLGrid.AddBrushColor(const Line: String);
 var
   BrushColor: TBrushColor;
   Color: String;
@@ -3840,9 +3840,9 @@ begin
 
     Case GetStringDataType(Color) of
     idDigit:
-    BrushColor.Color:=StrToIntEx(Color);
+    BrushColor.Color:=IntToColor(StrToIntEx(Color));
     idHex:
-    BrushColor.Color:=HexToInt(Color);
+    BrushColor.Color:=IntToColor(Hex2Dec(Color));
     idColor:
     BrushColor.Color:=StringToColor(Color);
     end;
@@ -5168,7 +5168,7 @@ begin
   begin
     for e in FDCLFields do
     begin
-      if e.RequireValue and (e.NotInputValue='') then
+      if e.RequireValue and (e.NotInputValue='') and not e.ReadOnly and e.Enabled then
       begin
         if Assigned(e.DCLEditComponent) and Assigned(e.DCLEditComponent.Control) then
         begin

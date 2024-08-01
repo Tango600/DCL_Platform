@@ -939,7 +939,8 @@ begin
       LocalQuery.Close;
       FDCLConfig.LoadExternalParams(Params);
 
-      FDCLConfig.GetParamsStructure;
+      if Params.Count>0 then
+        FDCLConfig.GetParamsStructure;
 
       ReadBaseID;
     end;

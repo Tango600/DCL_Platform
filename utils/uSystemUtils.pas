@@ -36,6 +36,7 @@ procedure OpenDir(Dir: String);
 function GetScreen:TBitmap;
 
 Function UpTime: Cardinal;
+function IntToColor(Value: Integer): TColor;
 
 {$IFDEF MSWINDOWS}
 function GetSpecialPath(CSIDL: Word): string;
@@ -49,6 +50,11 @@ uses
 function ValidObject(const AObj: TObject): Boolean;
 begin
   Result:=Assigned(AObj){$IFDEF AUTOREFCOUNT}and(not AObj.Disposed){$ENDIF};
+end;
+
+function IntToColor(Value: Integer): TColor;
+begin
+  Result:=RGBToColor(Value and $ff0000 div $00ffff, Value and $00ff00 div $ff, Value and $0000ff);
 end;
 
 function FindCommandStrParam(Str: String): String;
