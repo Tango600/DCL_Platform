@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, DB, Controls, LCLType, StdCtrls, SysUtils, Variants,
-  fgl;
+  Generics.Collections;
 
 type
   TDBLookupItem = class
@@ -18,7 +18,7 @@ type
   private
     FDS: TDataSource;
     FKeyField, FListField: String;
-    FShadowItems: TFPGObjectList<TDBLookupItem>;
+    FShadowItems: TList<TDBLookupItem>;
     FValueObject: TDBLookupItem;
     FResetValue: Variant;
     FAddResetValue, FPartial, FInFilterMode: Boolean;
@@ -279,7 +279,7 @@ end;
 constructor TDBMyLookupCombo.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
-  FShadowItems:=TFPGObjectList<TDBLookupItem>.Create;
+  FShadowItems:=TList<TDBLookupItem>.Create;
   OnKeyUp:=KeyUp;
   OnKeyDown:=KeyDown;
   OnEnter:=OnFocus;
