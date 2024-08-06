@@ -4,8 +4,8 @@ unit uDCLMenuPanels;
 interface
 
 uses
-  Classes, SysUtils, Forms, Menus, ComCtrls, Controls, fgl, ExtCtrls, Buttons,
-  LCLClasses, //System.UItypes,
+  Classes, SysUtils, Forms, Menus, ComCtrls, Controls, ExtCtrls, Buttons,
+  LCLClasses, Generics.Collections, //System.UItypes,
   uIDCLMain, uDCLBaseMenu, uDCLDBAwareTypes;
 
 type
@@ -15,7 +15,7 @@ type
   private
 
   protected
-    procedure CreateMenuControls(var Query: TDCLSimplyQuery; Items: TFPGObjectList<TMenuConstructionItem>; ParentControl: TLCLComponent); override;
+    procedure CreateMenuControls(var Query: TDCLSimplyQuery; Items: TList<TMenuConstructionItem>; ParentControl: TLCLComponent); override;
   public
     constructor Create(Main: IDCLMain; MainForm: TForm); overload;
     destructor Destroy; override;
@@ -29,7 +29,7 @@ uses
 { TDCLMenuPanels }
 
 procedure TDCLMenuPanels.CreateMenuControls(var Query: TDCLSimplyQuery;
-  Items: TFPGObjectList<TMenuConstructionItem>; ParentControl: TLCLComponent);
+  Items: TList<TMenuConstructionItem>; ParentControl: TLCLComponent);
 var
   FTablePartsTabs: TTabSheet;
   FButtonFlowPanel: TFlowPanel;

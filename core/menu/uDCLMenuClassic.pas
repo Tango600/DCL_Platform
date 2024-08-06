@@ -4,7 +4,8 @@ unit uDCLMenuClassic;
 interface
 
 uses
-  Classes, SysUtils, Forms, Menus, ComCtrls, Controls, fgl, LCLClasses,
+  Classes, SysUtils, Forms, Menus, ComCtrls, Controls, LCLClasses,
+  Generics.Collections,
   uDCLConst, uIDCLMain, uDCLDBAwareTypes, uDCLBaseMenu, uDBUtils;
 
 type
@@ -14,7 +15,7 @@ type
   private
     procedure CreateMenuControl(var Query: TDCLSimplyQuery; Item: TMenuConstructionItem; ParentControl: TLCLComponent);
   protected
-    procedure CreateMenuControls(var Query: TDCLSimplyQuery; Items: TFPGObjectList<TMenuConstructionItem>; ParentControl: TLCLComponent); override;
+    procedure CreateMenuControls(var Query: TDCLSimplyQuery; Items: TList<TMenuConstructionItem>; ParentControl: TLCLComponent); override;
   public
     constructor Create(Main: IDCLMain; MainForm: TForm); overload;
     destructor Destroy; override;
@@ -51,7 +52,7 @@ begin
 end;
 
 procedure TDCLMenuClassic.CreateMenuControls(var Query: TDCLSimplyQuery;
-  Items: TFPGObjectList<TMenuConstructionItem>; ParentControl: TLCLComponent);
+  Items: TList<TMenuConstructionItem>; ParentControl: TLCLComponent);
 var
   ci: TMenuConstructionItem;
 begin

@@ -4,8 +4,8 @@ unit uDCLBaseMenu;
 interface
 
 uses
-  Classes, SysUtils, Forms, Menus, ComCtrls, Controls, fgl, ExtCtrls, Buttons,
-  LCLClasses,
+  Classes, SysUtils, Forms, Menus, ComCtrls, Controls, ExtCtrls, Buttons,
+  LCLClasses, Generics.Collections, Generics.Defaults,
   uDCLConst, uDCLDBConnector, uDCLMeasurements, uIDCLMain,
   uDCLDBAwareTypes, uDCLDBStructure;
 
@@ -13,6 +13,10 @@ type
   TMenuConstructionItem=class
     Id, Parent: Integer;
     Command, Title: String;
+  end;
+
+  TComparerMenuItem = class(TInterfacedObject, IComparer<TMenuConstructionItem>)
+    function Compare(const Left, Right: TMenuConstructionItem): Integer; overload;
   end;
 
   { TDCLBaseMenu }
@@ -27,7 +31,7 @@ type
   protected
     FMainMenu: TMainMenu;
     LocalQuery: TDCLSimplyQuery;
-    procedure CreateMenuControls(var Query: TDCLSimplyQuery; Items: TFPGObjectList<TMenuConstructionItem>; ParentControl: TLCLComponent); virtual; abstract;
+    procedure CreateMenuControls(var Query: TDCLSimplyQuery; Items: TList<TMenuConstructionItem>; ParentControl: TLCLComponent); virtual; abstract;
   published
     procedure InitActions;
     procedure CloseActions;
@@ -35,7 +39,7 @@ type
     function GetMenuCommandById(Ident: Integer): String;
 
     procedure ClickMenu(Sender: TObject);
-    function ExistItemByIdent(var List: TFPGObjectList<TMenuConstructionItem>; Id: Integer): Boolean;
+    function ExistItemByIdent(var List: TList<TMenuConstructionItem>; Id: Integer): Boolean;
 
     procedure CreateMenu(var Query: TDCLSimplyQuery; ParentControl: TLCLComponent; ParentID: Integer);
 
@@ -127,7 +131,7 @@ begin
   end;
 end;
 
-function TDCLBaseMenu.ExistItemByIdent(var List: TFPGObjectList<TMenuConstructionItem>; Id: Integer): Boolean;
+function TDCLBaseMenu.ExistItemByIdent(var List: TList<TMenuConstructionItem>; Id: Integer): Boolean;
 var
   I: TMenuConstructionItem;
 begin
@@ -142,13 +146,13 @@ begin
   end;
 end;
 
-function CompareTopItems(const Item1, Item2: TMenuConstructionItem): Integer;
+function TComparerMenuItem.Compare(const Left, Right: TMenuConstructionItem): Integer;
 begin
-  if Item1.Id<Item2.Id then
+  if Left.Id<Right.Id then
     Result:=-1
-  else if Item1.Id>Item2.Id then
+  else if Left.Id>Right.Id then
     Result:=1
-  else if Item1.Id=Item2.Id then
+  else if Left.Id=Right.Id then
     Result:=0;
 end;
 
@@ -156,10 +160,12 @@ procedure TDCLBaseMenu.CreateMenu(var Query: TDCLSimplyQuery; ParentControl: TLC
 var
   I: TDCLScriptItem;
   ci: TMenuConstructionItem;
-  ConstructionItems: TFPGObjectList<TMenuConstructionItem>;
+  ConstructionItems: TList<TMenuConstructionItem>;
   ParentWhere: String;
+  iComp: IComparer<TMenuConstructionItem>;
 begin
-  ConstructionItems:=TFPGObjectList<TMenuConstructionItem>.Create;
+  iComp:=TComparerMenuItem.Create;
+  ConstructionItems:=TList<TMenuConstructionItem>.Create(iComp);
   for I in FMain.GetLoadedScripts do
   begin
     if (I.Ident>=1) and (I.Ident<=20000) then
@@ -197,7 +203,7 @@ begin
   end;
   Query.Close;
 
-  ConstructionItems.Sort(CompareTopItems);
+  ConstructionItems.Sort(iComp);
 
   CreateMenuControls(Query, ConstructionItems, ParentControl);
 end;
