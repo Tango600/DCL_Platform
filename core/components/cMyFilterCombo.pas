@@ -1,4 +1,4 @@
-unit cMyDBLookupCombo;
+unit cMyFilterCombo;
 {$mode delphi}
 
 interface

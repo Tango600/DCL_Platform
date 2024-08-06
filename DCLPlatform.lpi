@@ -430,7 +430,7 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="core\components\cMyDBLookupCombo.pas"/>
+        <Filename Value="core\components\cMyFilterCombo.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>

@@ -331,7 +331,7 @@ type
 implementation
 
 uses
-  EditBtn, LCLProc, uRunProgram, uReturnFormValue, cMyDBLookupCombo, StrUtils,
+  EditBtn, LCLProc, uRunProgram, uReturnFormValue, cMyFilterCombo, StrUtils,
   uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, LazUTF8, uDCLException,
   uPrintBase, uDCLGlobalVariables, uDCLMD5, uExpressionParser, uDCLCommand;
 

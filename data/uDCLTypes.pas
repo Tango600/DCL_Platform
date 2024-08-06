@@ -5,7 +5,7 @@ interface
 
 Uses
   Controls, ExtCtrls, StdCtrls, ComCtrls, Buttons, cMeDateEdit,
-  Forms, DBCtrls, cMyDBLookupCombo;
+  Forms, DBCtrls, cMyFilterCombo;
 
 type
   TDialogButton=TBitBtn;
