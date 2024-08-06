@@ -40,7 +40,7 @@ type
       MaxLength: Integer;
     Contains, Partial, Between, NotLike, CaseC, NotFilter: Boolean;
     FilterName, FilterString, Field, KeyField, ListField: String;
-    FilterLabel: TDialogLabel;
+    FilterLabel, NotCheckLabel: TDialogLabel;
     Control: TWinControl;
     FilterType: TFilterType;
     FilterQuery: TDCLDialogQuery;

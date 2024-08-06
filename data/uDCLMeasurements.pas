@@ -51,6 +51,7 @@ const
   CompenentTopStep=8;
   ButtonsInterval=10;
   FilterLabelTop=7;
+  NotCheckTopStep=30;
 
   ColumnsLongerThis=1000;
   DefaultColumnSize=350;

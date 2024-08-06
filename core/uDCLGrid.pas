@@ -2633,6 +2633,8 @@ begin
   Filter.FilterLabel.Top:=FilterLabelTop;
   Filter.FilterLabel.Left:=FFilterLeft;
   Filter.FilterLabel.Caption:=InitCap(Filter.Caption);
+  if not GPT.DisableColorScheme and (GPT.MainColor<>NoColorValue) then
+    Filter.FilterLabel.Font.Color:=NegativeColor(GPT.MainColor);
   Inc(FTop, Filter.FilterLabel.Height+LabelTopInterval);
 
   case Filter.FilterType of
@@ -2665,7 +2667,7 @@ begin
       Filter.Control.Parent:=FFiltersPanel;
       (Filter.Control as TDCLDBLookupCombo).Style:=csDropDownList;
       Filter.Control.Top:=FTop;
-      Inc(FTop, Filter.Control.Height+CompenentTopStep);
+      Inc(FTop, NotCheckTopStep);  // Filter.Control.Height+CompenentTopStep);
 
       Filter.Control.Left:=FFilterLeft;
       (Filter.Control as TDCLDBLookupCombo).ListField:=Filter.ListField;
@@ -2738,7 +2740,7 @@ begin
         Filter.Control.Left:=FFilterLeft;
         Filter.Control.Top:=FTop;
         Filter.Control.Width:=Filter.Width;
-        Inc(FTop, Filter.Control.Height+CompenentTopStep);
+        Inc(FTop, NotCheckTopStep);  // Filter.Control.Height+CompenentTopStep);
 
         for I:=1 to ParamsCount(Filter.ListField) do
         begin
@@ -2779,13 +2781,22 @@ begin
     Filter.NotCheck.Parent:=FFiltersPanel;
     Filter.NotCheck.Top:=FTop;
     Filter.NotCheck.Left:=FFilterLeft;
-    Filter.NotCheck.Width:=Filter.Width;
-    if Filter.Width>80 then
-      Filter.NotCheck.Caption:=GetDCLMessageString(msNotFilter)
-    else
-      Filter.NotCheck.Caption:=UTF8Copy(GetDCLMessageString(msNotFilter), 1, 3)+'.';
-
+    Filter.NotCheck.Caption:='';
+    Filter.NotCheck.Width:=CheckWidth;
     Filter.NotCheck.OnClick:=OnFilterNotCheckClick;
+
+    Filter.NotCheckLabel:=TDialogLabel.Create(FFiltersPanel);
+    Filter.NotCheckLabel.Parent:=FFiltersPanel;
+    Filter.NotCheckLabel.Top:=FTop;
+    Filter.NotCheckLabel.Left:=CheckWidth+FFilterLeft;
+    if Filter.Width>80 then
+      Filter.NotCheckLabel.Caption:=GetDCLMessageString(msNotFilter)
+    else
+      Filter.NotCheckLabel.Caption:=UTF8Copy(GetDCLMessageString(msNotFilter), 1, 3)+'.';
+
+    if not GPT.DisableColorScheme and (GPT.MainColor<>NoColorValue) then
+      Filter.NotCheckLabel.Font.Color:=NegativeColor(GPT.MainColor);
+
     Inc(FTop, Filter.NotCheck.Height);
   end;
   Inc(FTop, CompenentTopStep);
@@ -2830,6 +2841,8 @@ begin
   Calendar.LabelField.Top:=FilterLabelTop;
   Calendar.LabelField.Left:=FFilterLeft;
   Calendar.LabelField.Caption:=InitCap(Calendar.Caption);
+  if not GPT.DisableColorScheme and (GPT.MainColor<>NoColorValue) then
+    Calendar.LabelField.Font.Color:=NegativeColor(GPT.MainColor);
   Inc(FTop, Calendar.LabelField.Height+LabelTopInterval);
 
   Calendar.Control:=TDateTimePicker.Create(FFiltersPanel);
@@ -4829,6 +4842,8 @@ begin
       DCLField.FLabel:=TDialogLabel.Create(FFieldsPanel);
       DCLField.FLabel.Parent:=FFieldsPanel;
       DCLField.FLabel.Caption:=DCLField.Caption;
+      if not GPT.DisableColorScheme and (GPT.MainColor<>NoColorValue) then
+        DCLField.FLabel.Font.Color:=NegativeColor(GPT.MainColor);
 
       if not Assigned(DCLField.DCLEditComponent) and FQuery.Active then
       begin

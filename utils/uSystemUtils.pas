@@ -38,6 +38,8 @@ function GetScreen:TBitmap;
 Function UpTime: Cardinal;
 function IntToColor(Value: Integer): TColor;
 
+function NegativeColor(Color: TColor): TColor;
+
 {$IFDEF MSWINDOWS}
 function GetSpecialPath(CSIDL: Word): string;
 {$ENDIF}
@@ -101,6 +103,17 @@ Begin
   Result:=HiWord(GetKeyState(Key))<>0;
 {$R+}
 End;
+
+function NegativeColor(Color: TColor): TColor;
+var
+  r, g, b: Byte;
+begin
+  b:=Color and $ff0000 div $00ffff;
+  g:=Color and $00ff00 div $ff;
+  r:=Color and $0000ff;
+
+  Result:=RGBToColor(r xor $ff, g xor $ff, b xor $ff);
+end;
 
 function GetSpecialPath(CSIDL: Word): string;
 var
