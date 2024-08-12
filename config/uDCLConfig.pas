@@ -8,7 +8,7 @@ uses
 {$IFDEF MSWINDOWS}
   uDCLOfficeUtils,
 {$ENDIF}
-  uDCLData, uDCLConst, uDCLUtils, uStringParams;
+  uDCLConst, uDCLUtils, uStringParams;
 
 type
 

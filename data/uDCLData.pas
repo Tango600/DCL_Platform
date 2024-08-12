@@ -76,10 +76,6 @@ type
     Center:Boolean;
   End;
 
-  TVirtualScript=Record
-    ScriptName, ScrCommand, ScrText:string;
-  End;
-
   { TReturnValueParams }
 
   TReturnValueParams=class
