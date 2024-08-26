@@ -18,11 +18,10 @@ type
   private
     Params: TStringList;
     lPath, lUser, lPassword: String;
-
-    procedure LoadConfig(FileName: String);
   public
     constructor Create; overload;
 
+    procedure LoadConfig(FileName: String);
     procedure GetParamsStructure;
     procedure LoadExternalParams(var ExtParams: TStringList);
 
@@ -32,7 +31,7 @@ type
 implementation
 
 uses
-  uDCLValuesParser, uDCLGlobalVariables, uSystemUtils;
+  {$IFnDEF IDEMODE}uDCLValuesParser,{$ENDIF} uDCLGlobalVariables, uSystemUtils;
 
 { TDCLConfig }
 
@@ -79,7 +78,9 @@ end;
 procedure TDCLConfig.GetParamsStructure;
 Var
   i: Integer;
+{$IFnDEF IDEMODE}
   Parser: TDCLValuseParser;
+{$ENDIF}
   cs, s: String;
 
   function IsParameter(ParamName, ParamLine: String): Boolean;
@@ -90,14 +91,18 @@ Var
 Begin
   If Params.Count>0 Then
   begin
+{$IFnDEF IDEMODE}
     Parser:=TDCLValuseParser.Create('', ulUndefined, nil);
+{$ENDIF}
 
     For i:=0 To Params.Count-1 Do
     Begin
       If Pos('//', TrimLeft(Params[i]))<>1 Then
       Begin
         cs:=Params[i];
+{$IFnDEF IDEMODE}
         Parser.ReplaceAllVariables('', cs, nil);
+{$ENDIF}
 
 {$IFDEF ODBC}
         If IsParameter('DSN=', cs) then

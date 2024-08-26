@@ -53,7 +53,9 @@ const
   AccessLibVersion=laz_version;
 {$ENDIF}
 
+{$IFnDEF IDEMODE}
 {$I revision.inc}
+{$ENDIF}
 
   JPEGCompressionQuality=85;
 
