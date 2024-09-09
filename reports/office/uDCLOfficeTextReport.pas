@@ -59,7 +59,7 @@ begin
 
   FileName:=FindParam('Template=', ParamStr);
   If not IsFullPath(FileName) then
-    FileName:=AppConfigDir+FileName;
+    FileName:=GPT.AppConfigDir+FileName;
 
   BookmarkFromLayot:=False;
   If NoFileExt(FileName) then
@@ -88,7 +88,7 @@ begin
 
   OutFileName:=FindParam('FileName=', ParamStr);
   if not IsFullPath(OutFileName) then
-    OutFileName:=AppConfigDir+OutFileName;
+    OutFileName:=GPT.AppConfigDir+OutFileName;
 
   Layout:=TStringList.Create;
   If FileExists(FileName) Then
@@ -243,7 +243,7 @@ begin
 
   FileName:=FindParam('Template=', ParamStr);
   If not IsFullPath(FileName) then
-    FileName:=AppConfigDir+FileName;
+    FileName:=GPT.AppConfigDir+FileName;
 
   If NoFileExt(FileName) then
   begin
@@ -269,7 +269,7 @@ begin
 
   OutFileName:=FindParam('FileName=', ParamStr);
   if not IsFullPath(OutFileName) then
-    OutFileName:=AppConfigDir+OutFileName;
+    OutFileName:=GPT.AppConfigDir+OutFileName;
 
   If FileExists(FileName) Then
   begin

@@ -50,7 +50,7 @@ begin
 
   FileName:=FindParam('Template=', ParamStr);
   If not IsFullPath(FileName) then
-    FileName:=AppConfigDir+FileName;
+    FileName:=GPT.AppConfigDir+FileName;
   If NoFileExt(FileName) then
   begin
     OfficeDocumentFormat:=odfOO;
@@ -75,7 +75,7 @@ begin
 
   OutFileName:=FindParam('FileName=', ParamStr);
   if not IsFullPath(OutFileName) then
-    OutFileName:=AppConfigDir+OutFileName;
+    OutFileName:=GPT.AppConfigDir+OutFileName;
 
   If FileExists(FileName) then
   begin
@@ -331,7 +331,7 @@ begin
 
   FileName:=FindParam('Template=', ParamStr);
   If not IsFullPath(FileName) then
-    FileName:=AppConfigDir+FileName;
+    FileName:=GPT.AppConfigDir+FileName;
   If NoFileExt(FileName) then
   begin
     if FileExists(FileName+'.'+TemplateExt) then
@@ -370,7 +370,7 @@ begin
   end;
 
   if not IsFullPath(OutFileName) then
-    OutFileName:=AppConfigDir+OutFileName;
+    OutFileName:=GPT.AppConfigDir+OutFileName;
 
   If FileExists(FileName) Then
   begin

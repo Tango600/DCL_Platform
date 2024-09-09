@@ -26,12 +26,10 @@ Function OOGetVisible(var Document: Variant): Boolean;
 Procedure SetFormulaByXY(var Loc, NF, Sheet, Cell: Variant; Const Formula: String; row, col: Integer);
 Procedure InsertTextByXY(var Sheet, Cell: Variant; Const Text: String; row, col: Integer);
 Function GetTextByXY(var Sheet, Cell: Variant; Const row, col: Integer):String;
-Function FileNameToURL(FileName: String): Variant;
+Function FileNameToURL(const FileName: String): Variant;
 Function MakePropertyValue(ServiceManager, PropertyName, PropertyValue: Variant): Variant;
 function GetPossibleOffice(DocType: TDocumentType; OfficeType, SettingOffice: TOfficeFormat): TOfficeFormat;
-Function ConvertOfficeType(OfficeType: String): TOfficeFormat;
-Function ConvertDocumentType(OfficeType: String): TOfficeDocumentFormat;
-Function GetDocumentType(FileName: String): TOfficeDocumentFormat;
+Function GetDocumentType(const FileName: String): TOfficeDocumentFormat;
 
 implementation
 
@@ -42,17 +40,7 @@ var
   WordRuning: Boolean;
   WordVer: Byte;
 
-Function ConvertOfficeType(OfficeType: String): TOfficeFormat;
-Begin
-  If LowerCase(OfficeType)='oo' then
-    Result:=ofOO
-  Else If LowerCase(OfficeType)='mso' then
-    Result:=ofMSO
-  Else
-    Result:=ofPossible;
-End;
-
-Function ConvertDocumentType(OfficeType: String): TOfficeDocumentFormat;
+Function ConvertDocumentType(const OfficeType: String): TOfficeDocumentFormat;
 Begin
   If LowerCase(OfficeType)='oo' then
     Result:=odfOO
@@ -62,7 +50,7 @@ Begin
     Result:=odfPossible;
 End;
 
-Function GetDocumentType(FileName: String): TOfficeDocumentFormat;
+Function GetDocumentType(const FileName: String): TOfficeDocumentFormat;
 Var
   Ext: String;
 Begin
@@ -83,7 +71,7 @@ begin
   dtSheet:
   If OfficeType=ofPossible then
   Begin
-    If IsExcelInstall and (SettingOffice<>ofOO) then
+    If (SettingOffice<>ofOO) and IsExcelInstall then
       Result:=ofMSO
     else if IsOOInstall then
       Result:=ofOO
@@ -95,7 +83,7 @@ begin
   dtText:
   If OfficeType=ofPossible then
   Begin
-    If IsWordInstall and (SettingOffice<>ofOO) then
+    If (SettingOffice<>ofOO) and IsWordInstall then
       Result:=ofMSO
     else if IsOOInstall then
       Result:=ofOO
@@ -124,7 +112,7 @@ Begin
   End;
 End;
 
-Function FileNameToURL(FileName: String): Variant;
+Function FileNameToURL(const FileName: String): Variant;
 Var
   i: Integer;
   j: Byte;
@@ -148,8 +136,6 @@ Begin
       For j:=1 to Length(utf8ch) do
         Result:=Result+'%'+IntToHex(Ord(utf8ch[j]), 2);
     End;
-    Else
-      Result:=Result+'%'+IntToHex(Ord(FileName[i]));
     End;
   End;
   Result:=VarAsType('file:///'+Result, varOleStr);

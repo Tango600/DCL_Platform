@@ -848,7 +848,7 @@ begin
   If FileName='' Then
     FileName:='Report.txt';
   If Not IsFullPath(FileName) Then
-    FileName:=IncludeTrailingPathDelimiter(AppConfigDir)+FileName;
+    FileName:=IncludeTrailingPathDelimiter(GPT.AppConfigDir)+FileName;
 
   RePlaseVariables(FileName);
 

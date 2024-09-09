@@ -405,7 +405,7 @@ var
 begin
   if GPT.DialogsSettings then
   begin
-    ConfigPath:=AppConfigDir+FormConfigDir+PathDelim+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim;
+    ConfigPath:=GPT.AppConfigDir+FormConfigDir+PathDelim+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim;
     if DirectoryExists(ConfigPath) and FileExists(ConfigPath+'Settings.ini') then
     begin
       Section:='Position';
@@ -908,7 +908,7 @@ var
 begin
   if GPT.DialogsSettings and (Self.WindowState=wsNormal) then
   begin
-    ConfigPath:=AppConfigDir+FormConfigDir+PathDelim+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim;
+    ConfigPath:=GPT.AppConfigDir+FormConfigDir+PathDelim+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim;
     if not DirectoryExists(ConfigPath) then
       ForceDirectories(ConfigPath);
 

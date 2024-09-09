@@ -96,14 +96,6 @@ Begin
 {$ENDIF}
 End;
 
-{$IFDEF MSWINDOWS}
-Function KeyState(Key: Integer): Boolean;
-Begin
-{$R-}
-  Result:=HiWord(GetKeyState(Key))<>0;
-{$R+}
-End;
-
 function NegativeColor(Color: TColor): TColor;
 var
   r, g, b: Byte;
@@ -114,6 +106,14 @@ begin
 
   Result:=RGBToColor(r xor $ff, g xor $ff, b xor $ff);
 end;
+
+{$IFDEF MSWINDOWS}
+Function KeyState(Key: Integer): Boolean;
+Begin
+{$R-}
+  Result:=HiWord(GetKeyState(Key))<>0;
+{$R+}
+End;
 
 function GetSpecialPath(CSIDL: Word): string;
 var

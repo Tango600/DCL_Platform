@@ -178,6 +178,7 @@ Type
   TPairCondition=(pcNone, pcAnd, pcOr);
   TTransactionType=(trtWrite, trtRead, trtUniversal);
   TMenuType=(mtClassic, mtPanels);
+  TOneCopyMode=(ocmNone, ocmApp, ocmBase);
 
 implementation
 

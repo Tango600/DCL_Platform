@@ -4,11 +4,7 @@ unit uDCLConfig;
 interface
 
 uses
-  Classes, SysUtils, Forms, Graphics,
-{$IFDEF MSWINDOWS}
-  uDCLOfficeUtils,
-{$ENDIF}
-  uDCLConst, uDCLUtils, uStringParams;
+  Classes, SysUtils, Forms, Graphics;
 
 type
 
@@ -17,7 +13,7 @@ type
   TDCLConfig=class(TComponent)
   private
     Params: TStringList;
-    lPath, lUser, lPassword: String;
+    IniFileName, lPath, lUser, lPassword: String;
   public
     constructor Create; overload;
 
@@ -26,12 +22,14 @@ type
     procedure LoadExternalParams(var ExtParams: TStringList);
 
     property Path: String read lPath;
+    property FileName: String read IniFileName;
   end;
 
 implementation
 
 uses
-  {$IFnDEF IDEMODE}uDCLValuesParser,{$ENDIF} uDCLGlobalVariables, uSystemUtils;
+  {$IFnDEF IDEMODE}uDCLValuesParser,{$ENDIF} uDCLConst, uDCLGlobalVariables,
+  uSystemUtils, uDCLUtils, uStringParams;
 
 { TDCLConfig }
 
@@ -40,6 +38,7 @@ begin
   if FileExists(FileName) then
   begin
     Params.LoadFromFile(FileName);
+    IniFileName:=FileName;
   end;
 end;
 
@@ -48,6 +47,10 @@ var
   i: Integer;
 begin
   inherited Create(Application);
+  GPT.StringTypeChar:='''';
+  GPT.DialogsSettings:=True;
+  GPT.UseMessages:=True;
+
   Params:=TStringList.Create;
   lPath:=ExtractFilePath(Application.ExeName);
   SetCurrentDir(lPath);
@@ -104,10 +107,8 @@ Begin
         Parser.ReplaceAllVariables('', cs, nil);
 {$ENDIF}
 
-{$IFDEF ODBC}
         If IsParameter('DSN=', cs) then
           GPT.DataBaseName:=FindParam('DSN=', cs);
-{$ENDIF}
 
 {$IFDEF SERVERDB}
         If IsParameter('UserName=', cs) then
@@ -145,9 +146,6 @@ Begin
           If Trim(FindParam('DisableFieldsList=', cs))='1' then
             GPT.DisableFieldsList:=True;
 
-        If IsParameter('GetValueSeparator=', cs) then
-          GPT.GetValueSeparator:=FindParam('GetValueSeparator=', cs);
-
         If IsParameter('SQLMonitor=1', cs) then
         Begin
           // SQLMonActions.StartSQLTrace;
@@ -157,6 +155,11 @@ Begin
         Begin
           GPT.DebugMesseges:=Trim(FindParam('DebugMesseges=', cs))='1';
         End;
+
+        If IsParameter('IDEReadOnly=', cs) then
+        Begin
+          GPT.IDEReadOnly:=Trim(FindParam('IDEReadOnly=', cs))='1';
+        end;
 
         If IsParameter('UseMessages=', cs) then
         Begin
@@ -180,26 +183,23 @@ Begin
 
         If IsParameter('OneCopy=', cs) then
         Begin
-          GPT.OneCopy:=StrToInt(FindParam('OneCopy=', cs));
+          GPT.OneCopy:=TOneCopyMode(StrToInt(FindParam('OneCopy=', cs)));
         End;
 
-        If IsParameter('DisableIniPasword=', cs) then
-        Begin
-          GPT.DisableIniPasword:=Trim(FindParam('DisableIniPasword=', cs))='1';
-        End;
-
-{$IFDEF CPU32}
         If IsParameter('LibPath=', cs) then
         Begin
-          GPT.LibPath:=FindParam('LibPath=', cs);
+          GPT.Lib32:=FindParam('LibPath=', cs);
+          {$IF defined(CPU32) or defined(IDEMODE)}
+          GPT.LibPath:=GPT.Lib32;
+          {$ENDIF}
         End;
-{$ENDIF}
-{$IFDEF CPU64}
         If IsParameter('LibPath_x64=', cs) then
         Begin
-          GPT.LibPath:=FindParam('LibPath_x64=', cs);
+          GPT.Lib64:=FindParam('LibPath_x64=', cs);
+          {$IF defined(CPU64) or defined(IDEMODE)}
+          GPT.LibPath:=GPT.Lib64;
+          {$ENDIF}
         End;
-{$ENDIF}
 
         If IsParameter('DateFormat=', cs) then
         Begin
@@ -244,21 +244,14 @@ Begin
             GPT.DecimalSeparator:=s[1];
         End;
 
-        {$IFDEF MSWINDOWS}
         If IsParameter('OfficeType=', cs) then
         Begin
           GPT.OfficeFormat:=ConvertOfficeType(Trim(FindParam('OfficeType=', cs)));
         End;
 
-        If IsParameter('OfficeDocumentFormat=', cs) then
-        Begin
-          GPT.OfficeDocumentFormat:=GetDocumentType(Trim(FindParam('OfficeDocumentFormat=', cs)));
-        End;
-        {$ENDIF}
-
         If IsParameter('UserLocalProfile=', cs) then
         Begin
-          AppConfigDir:=IncludeTrailingPathDelimiter(Trim(FindParam('UserLocalProfile=', cs)));
+          GPT.AppConfigDir:=IncludeTrailingPathDelimiter(Trim(FindParam('UserLocalProfile=', cs)));
         End;
 
         If IsParameter('WordOLEExtension=', cs) then

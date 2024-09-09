@@ -27,7 +27,7 @@ Function CopyCut(Var S: String; From, Count: Word): String;
 function ReplaseCPtoWIN(CodePageName:String):String;
 function ReplaseWINtoCP(CodePageName:String):String;
 Function TextToString(Text: String): String;
-
+Function ConvertOfficeType(const OfficeType: String): TOfficeFormat;
 Procedure InitGetAppConfigDir;
 Function NoFileExt(const FileName:String):Boolean;
 Function FakeFileExt(Const FileName, Ext: String): String;
@@ -187,6 +187,16 @@ Begin
   For i:=1 to PowNum-1 do
     s:=s*Base;
   Result:=s;
+End;
+
+Function ConvertOfficeType(const OfficeType: String): TOfficeFormat;
+Begin
+  If LowerCase(OfficeType)='oo' then
+    Result:=ofOO
+  Else If LowerCase(OfficeType)='mso' then
+    Result:=ofMSO
+  Else
+    Result:=ofPossible;
 End;
 
 Function Pow(Const Base: Real; PowNum: Word): Real; overload;
@@ -484,7 +494,7 @@ Begin
   if not DirectoryExists(UserProfileDir) then
     ForceDirectories(UserProfileDir);
 
-  AppConfigDir:=UserProfileDir+DCLDir+PathDelim;
+  GPT.AppConfigDir:=UserProfileDir+DCLDir+PathDelim;
 End;
 
 /// ////////////////////////////////////////////////////////////

@@ -8,23 +8,24 @@ uses
 type
   TGPT=record
   // EnableSQLTrace,
-    DebugMesseges, ExitCnf, UseMessages,
+    DebugMesseges, ExitCnf, UseMessages, IDEReadOnly,
     DialogsSettings, DisableColors, DisableFieldsList,
-    DisableUnload, DisableLoad, EasyIdentMode, DisableIniPasword, IBAll: Boolean;
-    OneCopy, Port: Integer;
+    DisableUnload, DisableLoad, EasyIdentMode, IBAll: Boolean;
+    OneCopy: TOneCopyMode;
+    Port: Integer;
     MainColor, TablePartColor, GridColor, GridAlternateColor: TColor;
     DateSeparator, TimeSeparator, ThousandSeparator, DecimalSeparator: Char;
     ServerCodePage, DateFormat, TimeFormat, Viewer, MainFormCaption,
     DataBaseName, ScriptDir, DBPath, ServerName, DBType: String;
     SQLDialect: Byte;
     NoParamsTable, NoUsersTable, DisableLogOnWithoutUser, DisableColorScheme: Boolean;
-    DBUserName, DCLUserName, DCLUserPass, EnterPass, LongRoleName, GetValueSeparator,
+    DBUserName, DCLUserName, DCLUserPass, EnterPass, LongRoleName,
     IniFileName, BaseID,
-    StringTypeChar,
+    StringTypeChar, Lib32, Lib64,
     TimeStampFormat, DCLLongUserName, UserID, RoleID,
-    DCLRoleName, DBPassword, LibPath,
+    DCLRoleName, DBPassword, LibPath, AppConfigDir,
     WordOLEExtension, ExcelOLEExtension: String;
-    OfficeDocumentFormat: TOfficeDocumentFormat;
+    //OfficeDocumentFormat: TOfficeDocumentFormat;
     OfficeFormat: TOfficeFormat;
     AccessLevel: TUserLevelsType;
     MenuType: TMenuType;

@@ -146,7 +146,7 @@ begin
               end;
             end;
             16:
-            Value:=GPT.GetValueSeparator;
+            Value:=',';
             17:
             Value:=ExcludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0)));
             18:
@@ -174,7 +174,7 @@ begin
             28:
             Value:=GetNameDSState(Query.State);
             29:
-            Value:=ExcludeTrailingPathDelimiter(AppConfigDir);
+            Value:=ExcludeTrailingPathDelimiter(GPT.AppConfigDir);
             30:
             Value:=OSType;
             31:

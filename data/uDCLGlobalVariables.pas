@@ -7,7 +7,7 @@ uses
 
 var
   GPT: TGPT;
-  Path, AppConfigDir, UserProfileDir: string;
+  Path, UserProfileDir: string;
   DialogResult: Boolean;
 
 implementation

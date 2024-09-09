@@ -871,9 +871,10 @@ begin
   {$ELSE}
   GPT.IBAll:=False;
   {$ENDIF}
+  GPT.StringTypeChar:='''';
   GPT.MenuType:=mtClassic;
   GPT.DebugMesseges:=False;
-  GPT.OneCopy:=0;
+  GPT.OneCopy:=ocmNone;
   GPT.ExitCnf:=False;
   GPT.UseMessages:=True;
   GPT.DialogsSettings:=True;
@@ -882,7 +883,7 @@ begin
   GPT.DBType:=DefaultDBType;
   {$ENDIF}
   GPT.OfficeFormat:=ofMSO;
-  GPT.OfficeDocumentFormat:=odfMSO2007;
+  //GPT.OfficeDocumentFormat:=odfMSO2007;
 
   GPT.TimeFormat:=DefaultTimeFormat;
   GPT.DateFormat:=DefaultDateFormat;
@@ -905,7 +906,7 @@ begin
   LoadLangRes(LangName, Path);
 
   {$IFDEF MSWINDOWS}
-  If GPT.OneCopy=1 Then
+  If GPT.OneCopy=ocmApp Then
   begin
     CreateMutex(nil, True, MemFileName);
     If GetLastError=ERROR_ALREADY_EXISTS Then
@@ -948,7 +949,7 @@ begin
   FreeAndNil(FDCLConfig);
 
   {$IFDEF MSWINDOWS}
-  If GPT.OneCopy=2 Then
+  If GPT.OneCopy=ocmBase Then
   begin
     CreateMutex(nil, True, PChar(MemFileName+GPT.BaseID));
     If GetLastError=ERROR_ALREADY_EXISTS Then
@@ -1028,10 +1029,10 @@ procedure TDCLMain.Update;
 begin
   if GPT.AccessLevel>=ulUpdater then
   begin
-    if not DirectoryExists(AppConfigDir+UpdatesDir) then
-      ForceDirectories(AppConfigDir+UpdatesDir);
+    if not DirectoryExists(GPT.AppConfigDir+UpdatesDir) then
+      ForceDirectories(GPT.AppConfigDir+UpdatesDir);
 
-    UpdateFromPackages(AppConfigDir+UpdatesDir+PathDelim);
+    UpdateFromPackages(GPT.AppConfigDir+UpdatesDir+PathDelim);
   end;
 end;
 

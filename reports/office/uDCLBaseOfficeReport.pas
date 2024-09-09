@@ -50,10 +50,10 @@ begin
         If IsFullPAth(FileName) Then
           TempFile:=FakeFileExt(FileName, Ext)
         Else
-          TempFile:=IncludeTrailingPathDelimiter(AppConfigDir)+FakeFileExt(FileName, Ext);
+          TempFile:=IncludeTrailingPathDelimiter(GPT.AppConfigDir)+FakeFileExt(FileName, Ext);
       end
       Else
-        TempFile:=IncludeTrailingPathDelimiter(AppConfigDir)+GetTempFileName(Ext);
+        TempFile:=IncludeTrailingPathDelimiter(GPT.AppConfigDir)+GetTempFileName(Ext);
 
       BinStor.GetData(Template, ftByName).SaveToFile(TempFile);
     end

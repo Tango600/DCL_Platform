@@ -905,12 +905,12 @@ var
 begin
   Print:=TPrintBase.Create(FQuery);
   Print.Print(FDBGrid, FForm.Caption);
-  Print.Save(AppConfigDir+tmpFileName);
+  Print.Save(GPT.AppConfigDir+tmpFileName);
 
   if GPT.Viewer<>'' then
-    Run('"'+GPT.Viewer+'"', '"'+AppConfigDir+tmpFileName+'"', False)
+    Run('"'+GPT.Viewer+'"', '"'+GPT.AppConfigDir+tmpFileName+'"', False)
   else
-    OpenFile(AppConfigDir+tmpFileName);
+    OpenFile(GPT.AppConfigDir+tmpFileName);
 end;
 
 function TDCLGrid.GetSortField(const FieldName: String): TSortField;
@@ -3904,7 +3904,7 @@ begin
 
     if flg and Assigned(Brush) then
     begin
-      RowTextColor:=clWhite;
+      RowTextColor:=NegativeColor(Brush.Color);
       TDBGrid(Sender).Canvas.Brush.Color:=Brush.Color;
       TDBGrid(Sender).Canvas.Font.Color:=RowTextColor;
 
@@ -4355,7 +4355,7 @@ begin
   if not GPT.DisableFieldsList then
   if (GetGridStyle=gsGrid) and Assigned(FDBGrid) then
   begin
-    ConfigPath:=AppConfigDir+FormConfigDir+PathDelim+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim+'Grids'+PathDelim;
+    ConfigPath:=GPT.AppConfigDir+FormConfigDir+PathDelim+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim+'Grids'+PathDelim;
     if not DirectoryExists(ConfigPath) then
       ForceDirectories(ConfigPath);
 
@@ -5258,7 +5258,7 @@ begin
   if Assigned(FDBGrid) and (GetGridStyle=gsGrid) and not GPT.DisableFieldsList then
   begin
     S:=GetGridSeed;
-    ConfigPath:=AppConfigDir+FormConfigDir+PathDelim+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim+'Grids'+PathDelim;
+    ConfigPath:=GPT.AppConfigDir+FormConfigDir+PathDelim+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim+'Grids'+PathDelim;
     if DirectoryExists(ConfigPath) and FileExists(ConfigPath+S+'.ini') then
     begin
       FieldsPos:=TStringList.Create;

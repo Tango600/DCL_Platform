@@ -620,7 +620,7 @@ begin
   Else
   begin
     If Not IsFullPAth(tmpS) Then
-      tmpS:=IncludeTrailingPathDelimiter(AppConfigDir)+tmpS;
+      tmpS:=IncludeTrailingPathDelimiter(GPT.AppConfigDir)+tmpS;
     If FileExists(tmpS) Then
       tmpDCL.LoadFromFile(tmpS);
   end;
@@ -707,11 +707,6 @@ begin
   end;
 
   TranslateVals(Command);
-
-  If IsLexem('SetValueSeparator=', Command) then
-  begin
-    GPT.GetValueSeparator:=FindParam('SetValueSeparator=', Command);
-  end;
 
   If IsLexem('ExecCommand=', Command) then
   begin
@@ -981,7 +976,7 @@ begin
     tmpS1:=FindParam('GetFromDB=', Command);
 
     If not IsFullPath(tmpS) then
-      tmpS:=IncludeTrailingPathDelimiter(AppConfigDir)+tmpS;
+      tmpS:=IncludeTrailingPathDelimiter(GPT.AppConfigDir)+tmpS;
     DataStorage:=TDCLDataStorage.Create(FDBConnector);
     if Flg2 then
       DataStorage.SaveToFile(tmpS, tmpS1, ftByIndex)
@@ -1013,7 +1008,7 @@ begin
       Flg2:=FindParam('ByID=', Command)='1';
 
       If not IsFullPath(tmpS) then
-        tmpS:=IncludeTrailingPathDelimiter(AppConfigDir)+tmpS;
+        tmpS:=IncludeTrailingPathDelimiter(GPT.AppConfigDir)+tmpS;
       If FileExists(tmpS) then
       begin
         DataStorage:=TDCLDataStorage.Create(FDBConnector);
