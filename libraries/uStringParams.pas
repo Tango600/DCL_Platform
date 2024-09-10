@@ -45,10 +45,21 @@ const
 
 function IsLexem(const Lexem, S: String): Boolean;
 var
+  p: Integer;
   t: String;
 begin
   t:=Trim(S);
-  Result:=Pos(LowerCase(Lexem), LowerCase(t))=1;
+  p:=Pos(LowerCase(Lexem), LowerCase(t));
+  if p=1 then
+    Result:=True
+  else
+  begin
+    if p>1 then
+    begin
+      if Pos(t[p-1], StopSimbols)<>0 then
+        Result:=True;
+    end;
+  end;
 end;
 
 function FindWholeWord(const Example, S: String): Integer;
