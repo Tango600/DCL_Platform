@@ -48,6 +48,7 @@ var
   p: Integer;
   t: String;
 begin
+  Result:=False;
   t:=Trim(S);
   p:=Pos(LowerCase(Lexem), LowerCase(t));
   if p=1 then
