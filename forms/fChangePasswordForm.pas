@@ -27,9 +27,6 @@ type
 
   end;
 
-var
-  FormChangePassword: TFormChangePassword;
-
 implementation
 
 {$R *.lfm}
@@ -44,7 +41,7 @@ begin
   end
   else
   begin
-    ShowMessage('Пароль не совпадают!');
+    ShowMessage('Пароли не совпадают!');
   end;
 end;
 

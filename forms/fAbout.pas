@@ -63,9 +63,6 @@ type
     function GetConfigVersion: String;
   end;
 
-var
-  AboutForm: TAboutForm;
-
 implementation
 
 uses
