@@ -550,17 +550,17 @@ begin
       end;
   end;
 
-  {$IFNDEF NOONTOP}
   For ff in FIDCLMain.GetForms do
   begin
     If Assigned(ff) Then
       If ff.FormStyle=fsStayOnTop Then
       begin
+        {$IFNDEF NOONTOP}
         OnTop:=True;
+        {$ENDIF}
         break;
       end;
   end;
-  {$ENDIF}
 
   FNameSpace:=NameSpace;
   FVariables:=FIDCLMain.Variables;
@@ -628,7 +628,7 @@ begin
     ///Show;
     for SrcLine in OPL do
     begin
-      if Pos('//', SrcLine.Trim)=1 then
+      if (Pos('//', SrcLine.Trim)=1) or (SrcLine='') then
         Continue;
 
       If IsLexem('SetAccessLevel=', SrcLine) then
@@ -638,9 +638,9 @@ begin
         tmpS:=FindParam('SetAccessLevel=', tmpS);
         Case GetStringDataType(tmpS) of
         idDigit:
-        FUserLevel:=TranslateDigitToUserLevel(StrToIntEx(tmpS));
+          FUserLevel:=TranslateDigitToUserLevel(StrToIntEx(tmpS));
         idUserLevel:
-        FUserLevel:=TranslateDigitToUserLevel(tmpS);
+          FUserLevel:=TranslateDigitToUserLevel(tmpS);
         end;
       end;
 
@@ -651,9 +651,9 @@ begin
         tmpS:=FindParam('UserAccessRaight=', tmpS);
         Case GetStringDataType(tmpS) of
         idDigit:
-        UserLevelLocal:=TranslateDigitToUserLevel(StrToIntEx(tmpS));
+          UserLevelLocal:=TranslateDigitToUserLevel(StrToIntEx(tmpS));
         idUserLevel:
-        UserLevelLocal:=TranslateDigitToUserLevel(tmpS);
+          UserLevelLocal:=TranslateDigitToUserLevel(tmpS);
         end;
         If UserLevelLocal>FUserLevel Then
         begin
@@ -695,15 +695,15 @@ begin
         Self.Caption:=tmpS1;
       end;
 
-      {$IFNDEF NOONTOP}
       If IsLexem('OnTop=', SrcLine) then
       begin
         tmpS:=SrcLine;
         TranslateVal(tmpS, FCurrentGrid, True);
         tmpS:=FindParam('OnTop=', tmpS);
+        {$IFNDEF NOONTOP}
         OnTop:=tmpS='1';
+        {$ENDIF}
       end;
-      {$ENDIF}
 
       If IsLexem('Single;', SrcLine) then
       begin
@@ -728,7 +728,7 @@ begin
   if FieldsCount>0 then
   begin
     FForm.Height:=(56*8)+110;
-    FForm.Width:=((FieldsCount div 8)+1)*280;
+    FForm.Width:=((FieldsCount div 8)+1)*(EditWidth+FieldsStepLeft*3);
   end;
 
   {$IFNDEF NOONTOP}
