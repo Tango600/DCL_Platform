@@ -19,9 +19,6 @@ function GetExtByType(FileType: TGraficFileType): String;
 
 implementation
 
-uses
-  SumProps;
-
 function CheckStrFmtType(const S: String; SimplyFormatType: TSimplyFieldType): Boolean;
 Begin
   Case SimplyFormatType of
