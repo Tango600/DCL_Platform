@@ -5,8 +5,7 @@ interface
 
 uses
   Classes, SysUtils, DateUtils,
-  uDCLConst, uDCLData, uDCLVariables, uStringParams, SumProps, uDCLDBAwareTypes,
-  uDCLMD5, uDCLDBConnector;
+  uDCLConst, uDCLData, uDCLVariables, uDCLDBAwareTypes, uDCLMD5, uDCLDBConnector;
 
 type
 
@@ -36,9 +35,9 @@ type
 implementation
 
 uses
-  DB, uDCLUtils, uSystemUtils, uDCLMultiLang, uDBUtils,
+  DB, uDCLUtils, uSystemUtils, uDCLMultiLang, uDBUtils, uConvertEx,
   uDCLDBUtils, uDCLGlobalVariables, uDCLVersion, uDCLConfigTable,
-  uExpressionParser;
+  uExpressionParser, uStringParams, SumProps, uStringUtils;
 
 const
   MaxSysVars=35;

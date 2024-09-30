@@ -54,9 +54,9 @@ type
 implementation
 
 uses
-  uDCLMultiLang, uDCLUtils, uDCLDBStructure, uStringParams,
+  uDCLMultiLang, uDCLUtils, uDCLDBStructure, uStringParams, uStringUtils,
   uDCLMeasurements, uDCLQueryUtils, uDCLGlobalVariables, uDCLValuesParser,
-  uSystemUtils, uDCLException;
+  uSystemUtils, uDCLException, uConvertEx;
 
 const
   EditTopStep=23;

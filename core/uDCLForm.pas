@@ -135,7 +135,8 @@ implementation
 
 uses
   IniFiles,
-  uDCLCommand, uDCLGrid, uDCLValuesParser, uDCLMessages, uDCLGlobalVariables;
+  uDCLCommand, uDCLGrid, uDCLValuesParser, uDCLMessages, uDCLGlobalVariables,
+  uConvertEx, uStringUtils;
 
 { TDCLForm }
 

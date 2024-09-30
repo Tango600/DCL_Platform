@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, DB, LazUTF8,
-  uDCLDBAwareTypes;
+  uDCLDBAwareTypes, uDBControlsTypes;
 
 type
 

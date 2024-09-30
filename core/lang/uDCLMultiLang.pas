@@ -50,6 +50,7 @@ function GetDCLErrorString(ErrorCode: Integer; AddText: String=''):string;
 function LoadTranscodeFile(DataType:TTranscodeDataType; FileName:String; Lang:TLangName):Boolean;
 Function Transcode(DataType:TTranscodeDataType; const Buf: String): String;
 function GetLacalaizedMonthName(MonthNum:Integer):string;
+Function GetFileNameToTranslite(Const FullFileName: String): String;
 
 function GetSystemLanguage: String;
 procedure InitLangEnv;
@@ -850,7 +851,7 @@ begin
             Case lt of
             idDigit, idHex:Begin
               If lt=idHex then
-                k:=HexToInt(tmp1)
+                k:=StrToInt(tmp1)
               Else
                 k:=StrToInt(tmp1);
               TranscodeData[DataType][l].CodeFrom1:=k;
@@ -868,7 +869,7 @@ begin
             Case lt of
             idDigit, idHex:Begin
               If lt=idHex then
-                k:=HexToInt(tmp1)
+                k:=StrToInt(tmp1)
               Else
                 k:=StrToInt(tmp1);
               TranscodeData[DataType][l].CodeFrom1:=k;
@@ -880,7 +881,7 @@ begin
             Case lt of
             idDigit, idHex:Begin
               If lt=idHex then
-                k:=HexToInt(tmp1)
+                k:=StrToInt(tmp1)
               Else
                 k:=StrToInt(tmp1);
               TranscodeData[DataType][l].CodeFrom2:=k;
@@ -1185,6 +1186,18 @@ begin
   Result:=GetISO639LangCode(S);
 {$ENDIF}
 end;
+
+Function GetFileNameToTranslite(Const FullFileName: String): String;
+Var
+  FileName, NewFileName, FilePath: String;
+Begin
+  FileName:=ExtractFileName(FullFileName);
+  FilePath:=ExtractFilePath(FullFileName);
+
+  NewFileName:=Transcode(tdtTranslit, FileName);
+
+  Result:=FilePath+NewFileName;
+End;
 
 procedure InitLangEnv;
 begin

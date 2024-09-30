@@ -9,7 +9,7 @@ uses
   cwstring,
 {$ENDIF}
 {$ENDIF}
-  SysUtils;
+  uStringUtils, SysUtils;
 
 const
   DefaultParamsSeparator=';';
@@ -22,17 +22,10 @@ Function GetParam(const ParamsSet: String; ParamNo: Integer;
 Function ParamsCount(const ParamsSet: String; SeparateChar: String=DefaultValuesSeparator;
   ParamDelim: String=DefaultParamDelim): Integer;
 Function GetClearParam(const Param: String; ParamDelim: String=DefaultParamDelim): String;
-Function PosEx(const SubStr, S: String): Cardinal;
-function Any(const StrSet, S: String): Boolean;
-Function InitCap(const S: String): String;
-function NormalizeCase(const S: String): String;
-Function TrimSymbols(S: String; TrimS: String): String;
-Function IndexInSet(SetValue, S: String; SepChar: String=DefaultValuesSeparator;
-  Delim: String=DefaultParamDelim): Integer;
-function TrimChars(CharsSet, S:string):String;
+Function IndexInSet(const SetValue, S: String; const SepChar: String=DefaultValuesSeparator;
+  const Delim: String=DefaultParamDelim): Integer;
 
 Function DoublingApostrof(const S: String):String;
-Function DCLStringEquals(S1, S2: String): Boolean;
 
 function IsLexem(const Lexem, S: String): Boolean;
 
@@ -95,58 +88,6 @@ begin
       end;
     end;
   end;
-end;
-
-Function DCLStringEquals(S1, S2: String): Boolean;
-Begin
-  Result:=LowerCase(S1)=LowerCase(S2);
-End;
-
-function NormalizeCase(const S: String): String;
-var
-  tmp: String;
-  l, i: Integer;
-  nextUpper: Boolean;
-begin
-  Result:='';
-  if Length(S)>0 then
-  begin
-    l:=Length(S);
-    tmp:=UpperCase(S[1]);
-    if l>1 then
-    begin
-      nextUpper:=False;
-      for i:=2 to l do
-      begin
-        if S[i]='_' then
-        begin
-          nextUpper:=True;
-          tmp:=tmp+' ';
-        end
-        else
-        begin
-          if nextUpper then
-            tmp:=tmp+UpperCase(S[i])
-          else
-            tmp:=tmp+LowerCase(S[i]);
-
-          nextUpper:=False;
-        end;
-      end;
-    end;
-    Result:=tmp;
-  end;
-end;
-
-Function TrimSymbols(S: String; TrimS: String): String;
-var
-  i: Cardinal;
-begin
-  for i:=Length(S) downto 1 do
-    if Pos(S[i], TrimS)<>0 then
-      Delete(S, i, 1);
-
-  Result:=S;
 end;
 
 Function FindParam(const KeyWord, StrParam: String): String;
@@ -282,39 +223,8 @@ begin
   Result:=pices[l-1];
 end;
 
-Function PosEx(const SubStr, S: String): Cardinal;
-begin
-  Result:=Pos(LowerCase(SubStr), LowerCase(S));
-end;
-
-function Any(const StrSet, S: String): Boolean;
-var
-  c: Char;
-begin
-  Result:=False;
-  if Length(StrSet)>0 then
-  begin
-    for c in StrSet do
-    begin
-      if PosEx(c, S)<>0 then
-      begin
-        Result:=True;
-        break;
-      end;
-    end;
-  end;
-end;
-
-Function InitCap(const S: String): String;
-begin
-  if S<>'' then
-    Result:=UpperCase(S[1])+Copy(S, 2, Length(S)-1)
-  Else
-    Result:='';
-end;
-
-Function IndexInSet(SetValue, S: String; SepChar: String=DefaultValuesSeparator;
-  Delim: String=DefaultParamDelim): Integer;
+Function IndexInSet(const SetValue, S: String; const SepChar: String=DefaultValuesSeparator;
+  const Delim: String=DefaultParamDelim): Integer;
 var
   p, i, Pos: Cardinal;
   ps: String;
@@ -335,18 +245,6 @@ Begin
     End;
   End;
 End;
-
-function TrimChars(CharsSet, S:string):String;
-var
-  i:Integer;
-begin
-  Result:='';
-  For i:=1 to Length(S) do
-  Begin
-    If PosEx(S[i], CharsSet)=0 then
-      Result:=Result+S[i];
-  End;
-end;
 
 Function DoublingApostrof(const S: String):String;
 var

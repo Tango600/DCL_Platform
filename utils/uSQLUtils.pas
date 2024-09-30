@@ -15,7 +15,7 @@ Function ReplaceSQLFields(SQL, Fields: String): String;
 implementation
 
 uses
-  uStringParams;
+  uStringUtils;
 
 function TrimSQLComment(SQLText: String): String;
 var

@@ -4,7 +4,6 @@ unit uDCLDBAwareTypes;
 interface
 
 uses
-  DBGrids, DBExtCtrls, DBCtrls,
   {$IFDEF IBX}
   IBDatabase, IBCustomDataSet, IBQuery, IBUpdateSQL, ibxscript,
   {$ENDIF}
@@ -20,10 +19,9 @@ uses
   odbcconn,
   {$ENDIF}
   {$ENDIF}
-  Classes, SysUtils;
+  Classes;
 
 type
-  TDCLDBGrid=TDBGrid;
   {$IFDEF IBX}
     TDCLDialogQuery=TIBQuery;
     TDCLSimplyQuery=TIBQuery;
@@ -64,11 +62,6 @@ type
     TDBConnector=TODBCConnection;
   {$ENDIF}
   {$ENDIF}
-
-  TDBDate=TDBDateEdit;
-
-  TNavButtons=TDBNavButton;
-  TNavButtonsSet=TDBNavButtonSet;
 
 implementation
 

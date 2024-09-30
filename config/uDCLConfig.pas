@@ -4,13 +4,13 @@ unit uDCLConfig;
 interface
 
 uses
-  Classes, SysUtils, Forms, Graphics;
+  Classes, SysUtils, Graphics;
 
 type
 
   { TDCLConfig }
 
-  TDCLConfig=class(TComponent)
+  TDCLConfig=class
   private
     Params: TStringList;
     IniFileName, lPath, lUser, lPassword: String;
@@ -29,7 +29,7 @@ implementation
 
 uses
   {$IFnDEF IDEMODE}uDCLValuesParser,{$ENDIF} uDCLConst, uDCLGlobalVariables,
-  uSystemUtils, uDCLUtils, uStringParams;
+  uSystemUtils, uDCLUtils, uStringParams, uStringUtils, uConvertEx;
 
 { TDCLConfig }
 
@@ -46,13 +46,13 @@ constructor TDCLConfig.Create;
 var
   i: Integer;
 begin
-  inherited Create(Application);
+  inherited Create;
   GPT.StringTypeChar:='''';
   GPT.DialogsSettings:=True;
   GPT.UseMessages:=True;
 
   Params:=TStringList.Create;
-  lPath:=ExtractFilePath(Application.ExeName);
+  lPath:=ExtractFilePath(ParamStr(0));
   SetCurrentDir(lPath);
   If GPT.IniFileName='' Then
     GPT.IniFileName:=lPath+'DCL.ini';

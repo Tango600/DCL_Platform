@@ -5,9 +5,9 @@ interface
 
 uses
   Classes, SysUtils, Controls, ComCtrls, StdCtrls, ExtCtrls, DB, DBCtrls,
-  Buttons, Dialogs, ExtDlgs, Graphics, Generics.Collections,
+  Buttons, Dialogs, ExtDlgs, Graphics, Generics.Collections, uStringUtils,
   uDCLConst, uDCLMeasurements, uDCLData, uDCLField, uLZW, uDCLImages,
-  uDCLMultiLang, uDCLMessages, uStringParams, uDCLUtils;
+  uDCLMultiLang, uDCLMessages, uDCLUtils;
 
 type
 

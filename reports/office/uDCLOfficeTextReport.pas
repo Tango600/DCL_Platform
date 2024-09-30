@@ -28,8 +28,8 @@ uses
   {$IFDEF MSWINDOWS}
   uDCLOfficeUtils,
   {$ENDIF}
-  uSystemUtils, uDCLUtils, uDCLMessages, uDCLGlobalVariables,
-  uDCLException, uStringParams, uDBUtils, uRunProgram, SumProps;
+  uSystemUtils, uDCLUtils, uDCLMessages, uDCLGlobalVariables, uStringUtils,
+  uDCLException, uStringParams, uDBUtils, uRunProgram, SumProps, uConvertEx;
 
 { TDCLOfficeTextReport }
 

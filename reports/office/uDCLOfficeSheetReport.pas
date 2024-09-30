@@ -25,8 +25,8 @@ implementation
 
 uses
   DB,
-  uSystemUtils, uDCLUtils, uDCLOfficeUtils, uDCLMessages, uSQLUtils,
-  uStringParams, uRunProgram, uDCLGlobalVariables, uDCLException;
+  uSystemUtils, uDCLOfficeUtils, uDCLMessages, uSQLUtils,
+  uStringParams, uRunProgram, uDCLGlobalVariables, uDCLException, uStringUtils;
 
 { TDCLOfficeSheetReport }
 
@@ -176,9 +176,9 @@ begin
     ColorStr:=FindParam('AlternationRowBackColor=', ParamStr);
     If ColorStr<>'' Then
     begin
-      RowRColor:=HexToInt(Copy(ColorStr, 1, 2));
-      RowBColor:=HexToInt(Copy(ColorStr, 3, 2));
-      RowGColor:=HexToInt(Copy(ColorStr, 5, 2));
+      RowRColor:=StrToInt(Copy(ColorStr, 1, 2));
+      RowBColor:=StrToInt(Copy(ColorStr, 3, 2));
+      RowGColor:=StrToInt(Copy(ColorStr, 5, 2));
       EnableRowChColor:=True;
     end;
 
@@ -186,9 +186,9 @@ begin
     ColorStr:=FindParam('AlternationColBackColor=', ParamStr);
     If ColorStr<>'' Then
     begin
-      ColRColor:=HexToInt(Copy(ColorStr, 1, 2));
-      ColBColor:=HexToInt(Copy(ColorStr, 3, 2));
-      ColGColor:=HexToInt(Copy(ColorStr, 5, 2));
+      ColRColor:=StrToInt(Copy(ColorStr, 1, 2));
+      ColBColor:=StrToInt(Copy(ColorStr, 3, 2));
+      ColGColor:=StrToInt(Copy(ColorStr, 5, 2));
       EnableColChColor:=True;
     end;
 
@@ -422,9 +422,9 @@ begin
     ColorStr:=FindParam('AlternationRowBackColor=', ParamStr);
     If ColorStr<>'' Then
     begin
-      RowRColor:=HexToInt(Copy(ColorStr, 1, 2));
-      RowBColor:=HexToInt(Copy(ColorStr, 3, 2));
-      RowGColor:=HexToInt(Copy(ColorStr, 5, 2));
+      RowRColor:=StrToInt(Copy(ColorStr, 1, 2));
+      RowBColor:=StrToInt(Copy(ColorStr, 3, 2));
+      RowGColor:=StrToInt(Copy(ColorStr, 5, 2));
       EnableRowChColor:=True;
     end;
 
@@ -432,9 +432,9 @@ begin
     ColorStr:=FindParam('AlternationColBackColor=', ParamStr);
     If ColorStr<>'' Then
     begin
-      ColRColor:=HexToInt(Copy(ColorStr, 1, 2));
-      ColBColor:=HexToInt(Copy(ColorStr, 3, 2));
-      ColGColor:=HexToInt(Copy(ColorStr, 5, 2));
+      ColRColor:=StrToInt(Copy(ColorStr, 1, 2));
+      ColBColor:=StrToInt(Copy(ColorStr, 3, 2));
+      ColGColor:=StrToInt(Copy(ColorStr, 5, 2));
       EnableColChColor:=True;
     end;
 

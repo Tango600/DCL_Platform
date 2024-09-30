@@ -4,6 +4,7 @@ unit uSystemUtils;
 interface
 
 uses
+  uDCLConst,
 {$IFDEF MSWINDOWS}
   Windows, ShlObj,
 {$ENDIF}
@@ -25,6 +26,13 @@ Function KeyState(Key: Integer): Boolean;
 Function IsUNCPath(Path: String): Boolean;
 Function IsFullPath(Path: String): Boolean;
 Function ShiftDown: Boolean;
+Function NoFileExt(const FileName:String): Boolean;
+Function FakeFileExt(Const FileName, Ext: String): String;
+Function AddToFileName(Const FileName, AddStr: String): String;
+Function GetTempFileName(const Ext: String): String;
+
+function ReplaseCPtoWIN(const CodePageName: String): String;
+function ReplaseWINtoCP(const CodePageName: String): String;
 
 function GetUserProfileDir: String;
 function GetUserDocumentsDir: String;
@@ -34,7 +42,9 @@ function GetAppName(App: String): String;
 procedure OpenDir(Dir: String);
 
 function GetScreen:TBitmap;
+function ConvertToJPEG(const BitMap: TBitmap; Quality: Byte=JPEGCompressionQuality): TJpegImage;
 
+function GetGUIDString: String;
 Function UpTime: Cardinal;
 function IntToColor(Value: Integer): TColor;
 
@@ -127,12 +137,10 @@ begin
 end;
 {$ENDIF}
 {$IFDEF UNIX}
-
 Function KeyState(Key: Integer): Boolean;
 Begin
   Result:=GetKeyState(Key)<>0;
 End;
-
 {$ENDIF}
 
 Function ShiftDown: Boolean;
@@ -185,7 +193,93 @@ begin
 {$ENDIF}
 end;
 
-function GetScreen:TBitmap;
+Function NoFileExt(const FileName:String): Boolean;
+var
+  i, p, l, k: Integer;
+begin
+  p:=0;
+  k:=0;
+  i:=Length(FileName);
+  l:=i-5;
+  If i<=5 then
+    l:=1;
+
+  For i:=Length(FileName) downto l do
+  Begin
+    If FileName[i]=PathDelim then
+    begin
+      Result:=True;
+      Exit;
+    end;
+
+    If FileName[i]='.' then
+    Begin
+      k:=p;
+      Break;
+    End;
+    Inc(p);
+  End;
+
+  Result:=not (k>1);
+end;
+
+Function FakeFileExt(Const FileName, Ext: String): String;
+Begin
+  Result:=ChangeFileExt(FileName, '.'+Ext);
+End;
+
+Function AddToFileName(Const FileName, AddStr: String): String;
+Var
+  tmpS, P, Ext: String;
+Begin
+  tmpS:=ExtractFileName(ChangeFileExt(FileName, ''));
+  P:=ExtractFilePath(FileName);
+  Ext:=ExtractFileExt(FileName);
+  Result:=P+tmpS+AddStr+Ext;
+End;
+
+Function GetTempFileName(const Ext: String): String;
+var
+  ep: Integer;
+Begin
+  If Ext<>'' then
+  Begin
+    ep:=1;
+    If Ext[1]='.' then
+      ep:=2;
+    Result:='tmp'+IntToStr(UpTime)+'.'+Copy(Ext, ep, Length(Ext));
+  End
+  Else
+    Result:='tmp'+IntToStr(UpTime);
+End;
+
+function ReplaseCPtoWIN(const CodePageName: String): String;
+begin
+  Result:=CodePageName;
+  If Pos('cp', LowerCase(CodePageName))=1 then
+  Begin
+    Result:='WIN'+Copy(CodePageName, 3, Length(CodePageName));
+  End;
+end;
+
+function ReplaseWINtoCP(const CodePageName: String): String;
+begin
+  Result:='';
+  If Pos('win', LowerCase(CodePageName))=1 then
+  Begin
+    Result:='cp'+Copy(CodePageName, 4, Length(CodePageName));
+  End;
+end;
+
+function GetGUIDString: String;
+var
+  guid: TGUID;
+begin
+  CreateGUID(guid);
+  Result:=GUIDToString(guid);
+end;
+
+function GetScreen: TBitmap;
 var
   DC:HDC;
 {$IFNDEF FPC}
@@ -218,6 +312,20 @@ begin
     WidgetSet.ReleaseDC(0, DC);
   end;
 {$ENDIF}
+end;
+
+function ConvertToJPEG(const BitMap: TBitmap; Quality: Byte=JPEGCompressionQuality): TJpegImage;
+begin
+  if Quality=0 then
+    Quality:=JPEGCompressionQuality;
+  Result:=TJpegImage.Create;
+  Result.ProgressiveEncoding:=True;
+  try
+    Result.CompressionQuality:=Quality;
+    Result.Assign(BitMap);
+  finally
+    ///
+  end;
 end;
 
 end.

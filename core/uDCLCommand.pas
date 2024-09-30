@@ -5,8 +5,8 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections, Forms, Controls, StdCtrls, DB, Dialogs,
-  uDCLData, uDCLDBAwareTypes, uDCLConst, uDCLGrid, uDCLVariables,
-  uIDCLMain, uIDCLForm, uIDCLGrid, uDCLUtils, uStringParams, uDCLDBConnector,
+  uDCLData, uDCLDBAwareTypes, uDCLConst, uDCLGrid, uDCLVariables, uStringUtils,
+  uIDCLMain, uIDCLForm, uIDCLGrid, uStringParams, uDCLDBConnector,
   uDCLDBStructure, uDCLValuesParser, MathParser, uIDCLCommand,
   uVariableNamespace;
 
@@ -61,7 +61,7 @@ uses
   uSheetOfficeReportSelector, uTextOfficeReportSelector,
   {$ENDIF}
   uDCLException, fAbout, uDCLGlobalVariables, uDCLConfigTable, uDCLDataStorage,
-  uRunProgram, uDCLMessages, uDCLMultiLang, uSQLUtils, uSystemUtils,
+  uRunProgram, uDCLMessages, uDCLMultiLang, uSQLUtils, uSystemUtils, uConvertEx,
   {$IFDEF TRANSACTIONDB}
   uDCLDBTransaction,
   {$ENDIF}

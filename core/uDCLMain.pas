@@ -98,7 +98,7 @@ implementation
 uses
   uDCLConfig, uDCLDBStructure, uDCLMultiLang, fAbout, uDBUtils, uSystemUtils,
   uDCLGlobalVariables, uDCLUtils, uDCLMessages, uStringParams, uDCLCommand,
-  uDCLProtectionEngine, uDCLUpdaterPackage, uDCLMeasurements;
+  uDCLProtectionEngine, uDCLUpdaterPackage, uDCLMeasurements, uStringUtils;
 
 { TDCLMain }
 
@@ -864,6 +864,16 @@ constructor TDCLMain.Create;
 var
   FDCLConfig: TDCLConfig;
   Params: TStringList;
+
+  Procedure InitGetAppConfigDir;
+  Begin
+    UserProfileDir:=GetUserProfileDir;
+    if not DirectoryExists(UserProfileDir) then
+      ForceDirectories(UserProfileDir);
+
+    GPT.AppConfigDir:=UserProfileDir+DCLDir+PathDelim;
+  End;
+
 begin
   GPT.NoParamsTable:=False;
   {$IFDEF IBALL}

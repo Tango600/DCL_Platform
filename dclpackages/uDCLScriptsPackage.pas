@@ -84,7 +84,7 @@ type
 implementation
 
 uses
-  uStringParams, MD5, uLZW, uDCLConst;
+  uStringParams, uStringUtils, MD5, uLZW, uDCLConst;
 
 const
   KeySection='Key';

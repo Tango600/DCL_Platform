@@ -14,7 +14,7 @@ uses
   uDCLDBConnector, uDCLQuery, uDCLMeasurements, uDBUtils, uDCLMultiLang,
   uDCLCommandButton, uDCLField, uDCLMessages, uDCLImages, cMediaFieldGroup,
   uDCLBaseLayoutManger, uDCLHorizontalFieldLayoutManger, uVariableNamespace,
-  uDCLDBAwareTypes, uIDCLCommand, uIDCLGrid, uIDCLForm,
+  uDCLDBAwareTypes, uIDCLCommand, uIDCLGrid, uIDCLForm, uDBControlsTypes,
   uDCLVerticalFieldLayoutManger;
 
 type
@@ -333,7 +333,8 @@ implementation
 uses
   EditBtn, LCLProc, uRunProgram, uReturnFormValue, cMyFilterCombo, StrUtils,
   uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, LazUTF8, uDCLException,
-  uPrintBase, uDCLGlobalVariables, uDCLMD5, uExpressionParser, uDCLCommand;
+  uPrintBase, uDCLGlobalVariables, uDCLMD5, uExpressionParser, uDCLCommand,
+  uConvertEx, uStringUtils;
 
 { TLookupTable }
 
@@ -404,6 +405,20 @@ var
   tmpS: String;
   v1: Integer;
   DigitType: TIsDigitType;
+
+  Function FindDisableAction(const Action: String): Boolean;
+  Var
+    iI: Byte;
+  Begin
+    Result:=False;
+    For iI:=1 To ToolCommandsCount Do
+      If LowerCase(ToolButtonsCmd[iI])=LowerCase(Action) Then
+      Begin
+        Result:=True;
+        Break;
+      End;
+  End;
+
 begin
   If not FindDisableAction(LowerCase(FindParam('action=', ScrLine))) then
   begin
