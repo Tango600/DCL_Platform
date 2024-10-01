@@ -41,7 +41,7 @@ type
     function TestGlobalParamsTable: Boolean;
     procedure CreateImageList;
 
-    function LoadPackage(FileName: String): TDCLScriptsPackage;
+    function LoadPackage(const FileName: String): TDCLScriptsPackage;
     procedure UpdateFromPackages(PackagePath: String);
     function GetProtectionEngine: IDCLProtectionEngine;
 
@@ -83,7 +83,7 @@ type
     function HasChildForm(const Form: IDCLForm): Boolean;
     function HasParentForm(const Form: IDCLForm): Boolean;
 
-    procedure LoadPackageFromFile(FileName: String; Run: Boolean);
+    procedure LoadPackageFromFile(const FileName: String; Run: Boolean);
     function CheckSigned(Package: TDCLScriptsPackage): Boolean;
     procedure ClearScriptPool;
     function GetLoadedScripts: TList<TDCLScriptItem>;
@@ -131,7 +131,7 @@ begin
   end;
 end;
 
-procedure TDCLMain.LoadPackageFromFile(FileName: String; Run: Boolean);
+procedure TDCLMain.LoadPackageFromFile(const FileName: String; Run: Boolean);
 var
   Package: TDCLScriptsPackage;
   I: TDCLScriptItem;
@@ -185,7 +185,7 @@ begin
             c:=FScripts.Count;
             for RunItem in FScripts do
             begin
-              if (Run or Package.PackageInfo.RunOnStart) and ((RunItem.RunType<>rtNone) or (c=1)) then
+              if Package.PackageInfo.RunOnStart and ((RunItem.RunType<>rtNone) or (c=1)) then
               begin
                 if RunItem.RunType=rtCommand then
                 begin
@@ -787,7 +787,7 @@ begin
   PictureAdd(ptGridFilter);
 end;
 
-function TDCLMain.LoadPackage(FileName: String): TDCLScriptsPackage;
+function TDCLMain.LoadPackage(const FileName: String): TDCLScriptsPackage;
 var
   RawPackage: TFileStream;
 begin

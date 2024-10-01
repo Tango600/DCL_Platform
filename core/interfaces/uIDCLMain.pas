@@ -45,7 +45,7 @@ type
     function GetImageIndex(PictureType: TPicturesTypes): Integer;
     function GetImageIndexes: TDictionary<TPicturesTypes, Integer>;
 
-    procedure LoadPackageFromFile(FileName: String; Run: Boolean);
+    procedure LoadPackageFromFile(const FileName: String; Run: Boolean);
     procedure ClearScriptPool;
 
     function GetProtectionEngine: IDCLProtectionEngine;
