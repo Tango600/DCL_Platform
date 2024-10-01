@@ -3,13 +3,7 @@ unit uStringParams;
 interface
 
 uses
-{$IFDEF FPC}
-  LConvEncoding,
-{$IFDEF UNIX}
-  cwstring,
-{$ENDIF}
-{$ENDIF}
-  uStringUtils, SysUtils;
+  SysUtils, uStringUtils;
 
 const
   DefaultParamsSeparator=';';
