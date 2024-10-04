@@ -4,7 +4,7 @@ unit uDCLBaseOfficeReport;
 interface
 
 uses
-  Classes, SysUtils,
+  Classes, SysUtils, LazFileUtils,
   uDCLData, uDCLConst, uDCLDBConnector, uDCLValuesParser;
 
 type
@@ -19,7 +19,7 @@ type
     FErrorCode: Integer;
     OfficeDocumentFormat: TOfficeDocumentFormat;
 
-    function GetTemplateFile(Template, FileName, Ext: String): String;
+    function GetTemplateFile(const Template, FileName, Ext: String): String;
   public
     constructor Create(DCLConnector: TDCLDBConnector; ValuseParser: TDCLValuseParser; SQL: String); overload;
   end;
@@ -27,39 +27,39 @@ type
 implementation
 
 uses
-  uDCLDataStorage, uSystemUtils, uDCLUtils, uDCLMessages, uDCLGlobalVariables;
+  uDCLDataStorage, uSystemUtils, uDCLMessages, uDCLGlobalVariables;
 
 { TDCLBaseOfficeReport }
 
-function TDCLBaseOfficeReport.GetTemplateFile(Template, FileName, Ext: String
-  ): String;
+function TDCLBaseOfficeReport.GetTemplateFile(const Template, FileName, Ext: String): String;
 var
   BinStor: TDCLDataStorage;
-  TempFile: String;
+  TempFile, Templ: String;
 begin
   BinStor:=TDCLDataStorage.Create(FDCLConnector);
   FErrorCode:=0;
-  FValuseParser.TranslateVals(Template, nil, False);
+  Templ:=Template;
+  FValuseParser.TranslateVals(Templ, nil, False);
 
-  If Template<>'' Then
+  If Templ<>'' Then
   begin
-    If BinStor.IsDataExist(Template, ftByName) then
+    If BinStor.IsDataExist(Templ, ftByName) then
     begin
       If FileName<>'' Then
       begin
-        If IsFullPAth(FileName) Then
-          TempFile:=FakeFileExt(FileName, Ext)
+        If FilenameIsAbsolute(FileName) Then
+          TempFile:=ChangeFileExt(FileName, '.'+Ext)
         Else
-          TempFile:=IncludeTrailingPathDelimiter(GPT.AppConfigDir)+FakeFileExt(FileName, Ext);
+          TempFile:=IncludeTrailingPathDelimiter(GPT.AppConfigDir)+ChangeFileExt(FileName, '.'+Ext);
       end
       Else
         TempFile:=IncludeTrailingPathDelimiter(GPT.AppConfigDir)+GetTempFileName(Ext);
 
-      BinStor.GetData(Template, ftByName).SaveToFile(TempFile);
+      BinStor.GetData(Templ, ftByName).SaveToFile(TempFile);
     end
     Else
     begin
-      ShowErrorMessage( - 5004, Template);
+      ShowErrorMessage( - 5004, Templ);
       FErrorCode:=4;
       TempFile:='';
     end;

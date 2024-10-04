@@ -483,7 +483,7 @@ begin
   end;
 end;
 
-function FindSegmentNum(Base41, Segment: String): Integer;
+function FindSegmentNum(const Base41, Segment: String): Integer;
 var
   i: Integer;
 begin

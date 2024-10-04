@@ -4,7 +4,8 @@ unit uDCLCommand;
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections, Forms, Controls, StdCtrls, DB, Dialogs,
+  Classes, SysUtils, Generics.Collections, Forms, Controls, StdCtrls, DB,
+  Dialogs, LazFileUtils,
   uDCLData, uDCLDBAwareTypes, uDCLConst, uDCLGrid, uDCLVariables, uStringUtils,
   uIDCLMain, uIDCLForm, uIDCLGrid, uStringParams, uDCLDBConnector,
   uDCLDBStructure, uDCLValuesParser, MathParser, uIDCLCommand,
@@ -619,7 +620,7 @@ begin
   end
   Else
   begin
-    If Not IsFullPAth(tmpS) Then
+    If Not FilenameIsAbsolute(tmpS) Then
       tmpS:=IncludeTrailingPathDelimiter(GPT.AppConfigDir)+tmpS;
     If FileExists(tmpS) Then
       tmpDCL.LoadFromFile(tmpS);
@@ -975,7 +976,7 @@ begin
     tmpS:=FindParam('FileName=', Command);
     tmpS1:=FindParam('GetFromDB=', Command);
 
-    If not IsFullPath(tmpS) then
+    If not FilenameIsAbsolute(tmpS) then
       tmpS:=IncludeTrailingPathDelimiter(GPT.AppConfigDir)+tmpS;
     DataStorage:=TDCLDataStorage.Create(FDBConnector);
     if Flg2 then
@@ -1007,7 +1008,7 @@ begin
       Flg1:=FindParam('Compress=', Command)='1';
       Flg2:=FindParam('ByID=', Command)='1';
 
-      If not IsFullPath(tmpS) then
+      If not FilenameIsAbsolute(tmpS) then
         tmpS:=IncludeTrailingPathDelimiter(GPT.AppConfigDir)+tmpS;
       If FileExists(tmpS) then
       begin

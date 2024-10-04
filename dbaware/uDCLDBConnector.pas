@@ -14,8 +14,8 @@ uses
   {$IFDEF SQLdbFamily}
   SQLDB, {$IFDEF IBALL}SQLDBLib,{$ENDIF}
   {$ENDIF}
-  FileUtil, LazUTF8,
-  uDCLData, uDCLConst, uDCLDBAwareTypes, uDCLDebug, uDCLUtils;
+  FileUtil, LazUTF8, LazFileUtils,
+  uDCLData, uDCLConst, uDCLDBAwareTypes, uDCLDebug;
 
 type
   { TDCLDBConnector }
@@ -89,7 +89,7 @@ begin
       {$ENDIF}
 
       Params.Clear;
-      If Not IsFullPath(GPT.DBPath) Then
+      If Not FilenameIsAbsolute(GPT.DBPath) Then
         GPT.DBPath:=ExtractFilePath(Application.ExeName)+GPT.DBPath;
 
       If IsUNCPath(GPT.DBPath) Then
@@ -161,7 +161,7 @@ begin
       GPT.DBType:=DefaultDBTInterBaseType;
     End;
 
-    If Not IsFullPAth(GPT.DBPath) Then
+    If Not FilenameIsAbsolute(GPT.DBPath) Then
       GPT.DBPath:=ExtractFilePath(Application.ExeName)+GPT.DBPath;
 
     If IsUNCPath(GPT.DBPath) Then
@@ -262,7 +262,7 @@ begin
 
   If GPT.DBPath<>'' Then
   begin
-    If Not IsFullPath(GPT.DBPath) Then
+    If Not FilenameIsAbsolute(GPT.DBPath) Then
       GPT.DBPath:=ExtractFilePath(Application.ExeName)+GPT.DBPath;
 
     if GPT.Port<>0 then
@@ -348,7 +348,7 @@ begin
   begin
     If GPT.DBPath<>'' Then
     begin
-      If Not IsFullPath(GPT.DBPath) Then
+      If Not FilenameIsAbsolute(GPT.DBPath) Then
         GPT.DBPath:=ExtractFilePath(Application.ExeName)+GPT.DBPath;
 
       ConnectorType:=GPT.DBType;

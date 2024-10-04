@@ -4,7 +4,7 @@ unit uDCLOfficeTextReport;
 interface
 
 uses
-  Classes, SysUtils, ComObj, Variants, Graphics,
+  Classes, SysUtils, ComObj, Variants, Graphics, LazFileUtils,
   uDCLConst, uDCLDBAwareTypes, uDCLData, uDCLBaseOfficeReport, uDCLDBConnector,
   uDCLValuesParser;
 
@@ -28,7 +28,7 @@ uses
   {$IFDEF MSWINDOWS}
   uDCLOfficeUtils,
   {$ENDIF}
-  uSystemUtils, uDCLUtils, uDCLMessages, uDCLGlobalVariables, uStringUtils,
+  uSystemUtils, uDCLMessages, uDCLGlobalVariables, uStringUtils,
   uDCLException, uStringParams, uDBUtils, uRunProgram, SumProps, uConvertEx;
 
 { TDCLOfficeTextReport }
@@ -58,7 +58,7 @@ begin
   end;
 
   FileName:=FindParam('Template=', ParamStr);
-  If not IsFullPath(FileName) then
+  If not FilenameIsAbsolute(FileName) then
     FileName:=GPT.AppConfigDir+FileName;
 
   BookmarkFromLayot:=False;
@@ -87,7 +87,7 @@ begin
   OneDoc:=FindParam('OneDoc=', ParamStr)='1';
 
   OutFileName:=FindParam('FileName=', ParamStr);
-  if not IsFullPath(OutFileName) then
+  if not FilenameIsAbsolute(OutFileName) then
     OutFileName:=GPT.AppConfigDir+OutFileName;
 
   Layout:=TStringList.Create;
@@ -242,7 +242,7 @@ begin
   end;
 
   FileName:=FindParam('Template=', ParamStr);
-  If not IsFullPath(FileName) then
+  If not FilenameIsAbsolute(FileName) then
     FileName:=GPT.AppConfigDir+FileName;
 
   If NoFileExt(FileName) then
@@ -268,7 +268,7 @@ begin
   end;
 
   OutFileName:=FindParam('FileName=', ParamStr);
-  if not IsFullPath(OutFileName) then
+  if not FilenameIsAbsolute(OutFileName) then
     OutFileName:=GPT.AppConfigDir+OutFileName;
 
   If FileExists(FileName) Then
@@ -450,17 +450,17 @@ begin
         Case OfficeDocumentFormat of
         odfMSO97:
         begin
-          FileName:=FakeFileExt(OutFileName, 'doc');
+          FileName:=ChangeFileExt(OutFileName, '.doc');
           VariantArray[0]:=MakePropertyValue(OO, 'FilterName', 'MS Word 97');
         end;
         odfMSO2007:
         begin
-          FileName:=FakeFileExt(OutFileName, 'docx');
+          FileName:=ChangeFileExt(OutFileName, '.docx');
           VariantArray[0]:=MakePropertyValue(OO, 'FilterName', 'MS Word 2007');
         end;
         odfOO, odfPossible:
         begin
-          FileName:=FakeFileExt(OutFileName, 'odt');
+          FileName:=ChangeFileExt(OutFileName, '.odt');
           VariantArray[0]:=MakePropertyValue(OO, 'FilterName', 'writer8');
         end;
         end;
@@ -478,10 +478,10 @@ begin
       End;
 
       If ToPDF Then
-        OpenFile(FakeFileExt(AddToFileName(OutFileName, '_'+IntToStr(DocNum)), 'pdf'));
+        OpenFile(ChangeFileExt(AddToFileName(OutFileName, '_'+IntToStr(DocNum)), '.pdf'));
 
       If ToHTML Then
-        OpenFile(FakeFileExt(AddToFileName(OutFileName, '_'+IntToStr(DocNum)), 'html'));
+        OpenFile(ChangeFileExt(AddToFileName(OutFileName, '_'+IntToStr(DocNum)), '.html'));
 
       inc(DocNum);
       DCLQuery.Next;

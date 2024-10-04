@@ -4,7 +4,7 @@ unit uDCLProtectionEngine;
 interface
 
 uses
-  Classes, SysUtils, LazFileUtils, strutils,
+  Classes, SysUtils, LazFileUtils, strutils, DateUtils,
   uIDCLProtectionEngine, uDCLHardwareKeys, uDCLConst, uDCLMD5, uKeyData;
 
 type
@@ -30,9 +30,6 @@ type
 
 
 implementation
-
-uses
-   DateUtils;
 
 const
   KeyFileName='protection.key';

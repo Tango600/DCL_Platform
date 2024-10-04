@@ -4,7 +4,7 @@ unit uDCLValuesParser;
 interface
 
 uses
-  Classes, SysUtils, DateUtils,
+  Classes, SysUtils, DateUtils, DB,
   uDCLConst, uDCLData, uDCLVariables, uDCLDBAwareTypes, uDCLMD5, uDCLDBConnector;
 
 type
@@ -35,7 +35,7 @@ type
 implementation
 
 uses
-  DB, uDCLUtils, uSystemUtils, uDCLMultiLang, uDBUtils, uConvertEx,
+  uDCLUtils, uSystemUtils, uDCLMultiLang, uDBUtils, uConvertEx,
   uDCLDBUtils, uDCLGlobalVariables, uDCLVersion, uDCLConfigTable,
   uExpressionParser, uStringParams, SumProps, uStringUtils;
 

@@ -4,7 +4,7 @@ unit uDCLOfficeSheetReport;
 interface
 
 uses
-  Classes, SysUtils, ComObj, Variants, Windows,
+  Classes, SysUtils, ComObj, Variants, Windows, DB, LazFileUtils,
   uDCLConst, uDCLDBAwareTypes, uDCLData, uDCLDBConnector, uDCLBaseOfficeReport,
   uDCLValuesParser;
 
@@ -24,7 +24,6 @@ type
 implementation
 
 uses
-  DB,
   uSystemUtils, uDCLOfficeUtils, uDCLMessages, uSQLUtils,
   uStringParams, uRunProgram, uDCLGlobalVariables, uDCLException, uStringUtils;
 
@@ -49,7 +48,7 @@ begin
   end;
 
   FileName:=FindParam('Template=', ParamStr);
-  If not IsFullPath(FileName) then
+  If not FilenameIsAbsolute(FileName) then
     FileName:=GPT.AppConfigDir+FileName;
   If NoFileExt(FileName) then
   begin
@@ -74,7 +73,7 @@ begin
   end;
 
   OutFileName:=FindParam('FileName=', ParamStr);
-  if not IsFullPath(OutFileName) then
+  if not FilenameIsAbsolute(OutFileName) then
     OutFileName:=GPT.AppConfigDir+OutFileName;
 
   If FileExists(FileName) then
@@ -250,7 +249,7 @@ begin
     If ToHTML Then
       OOExportToFormat(Document, OutFileName, 'html');
 
-    FileName:=FakeFileExt(OutFileName, Ext);
+    FileName:=ChangeFileExt(OutFileName, '.'+Ext);
     OOSetVisible(Document, True);
     If Save Then
     begin
@@ -284,10 +283,10 @@ begin
     if Any then
     begin
       If ToPDF Then
-        OpenFile(FakeFileExt(FileName, 'pdf'));
+        OpenFile(ChangeFileExt(FileName, '.pdf'));
 
       If ToHTML Then
-        OpenFile(FakeFileExt(FileName, 'html'));
+        OpenFile(ChangeFileExt(FileName, '.html'));
     end;
   end
   Else
@@ -330,7 +329,7 @@ begin
   end;
 
   FileName:=FindParam('Template=', ParamStr);
-  If not IsFullPath(FileName) then
+  If not FilenameIsAbsolute(FileName) then
     FileName:=GPT.AppConfigDir+FileName;
   If NoFileExt(FileName) then
   begin
@@ -369,7 +368,7 @@ begin
     OutFileName:=FindParam('FileName=', ParamStr);
   end;
 
-  if not IsFullPath(OutFileName) then
+  if not FilenameIsAbsolute(OutFileName) then
     OutFileName:=GPT.AppConfigDir+OutFileName;
 
   If FileExists(FileName) Then

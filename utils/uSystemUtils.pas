@@ -23,11 +23,8 @@ function ValidObject(const AObj: TObject): Boolean;
 function FindCommandStrParam(Str: String): String;
 
 Function KeyState(Key: Integer): Boolean;
-Function IsUNCPath(Path: String): Boolean;
-Function IsFullPath(Path: String): Boolean;
 Function ShiftDown: Boolean;
 Function NoFileExt(const FileName:String): Boolean;
-Function FakeFileExt(Const FileName, Ext: String): String;
 Function AddToFileName(Const FileName, AddStr: String): String;
 Function GetTempFileName(const Ext: String): String;
 
@@ -36,8 +33,6 @@ function ReplaseWINtoCP(const CodePageName: String): String;
 
 function GetUserProfileDir: String;
 function GetUserDocumentsDir: String;
-
-function GetAppName(App: String): String;
 
 procedure OpenDir(Dir: String);
 
@@ -49,10 +44,6 @@ Function UpTime: Cardinal;
 function IntToColor(Value: Integer): TColor;
 
 function NegativeColor(Color: TColor): TColor;
-
-{$IFDEF MSWINDOWS}
-function GetSpecialPath(CSIDL: Word): string;
-{$ENDIF}
 
 implementation
 
@@ -85,6 +76,19 @@ begin
     end;
   end;
 end;
+
+{$IFDEF MSWINDOWS}
+function GetSpecialPath(CSIDL: Word): string;
+var
+  S: string;
+begin
+  SetLength(S, MAX_PATH-1);
+  if not SHGetSpecialFolderPath(0, PChar(S), CSIDL, True) then
+    S:='';
+  S:=S+#0#0;
+  Result:=String(PChar(S));
+end;
+{$ENDIF}
 
 function GetUserProfileDir: String;
 Begin
@@ -124,17 +128,6 @@ Begin
   Result:=HiWord(GetKeyState(Key))<>0;
 {$R+}
 End;
-
-function GetSpecialPath(CSIDL: Word): string;
-var
-  S: string;
-begin
-  SetLength(S, MAX_PATH-1);
-  if not SHGetSpecialFolderPath(0, PChar(S), CSIDL, True) then
-    S:='';
-  S:=S+#0#0;
-  Result:=String(PChar(S));
-end;
 {$ENDIF}
 {$IFDEF UNIX}
 Function KeyState(Key: Integer): Boolean;
@@ -156,32 +149,6 @@ Begin
     StrToInt(FormatDateTime('S', Time)))*1000)+StrToInt(FormatDateTime('Z', Time));
 {$ENDIF};
 End;
-
-Function IsFullPath(Path: String): Boolean;
-Begin
-  If Length(Path)>1 then
-    Result:=((Pos(':\', Path)=2)or(Path[1]='/')or(Path[1]='~')) and (LastDelimiter('/\', Path)<>0)
-  Else
-    Result:=False;
-End;
-
-Function IsUNCPath(Path: String): Boolean;
-Begin
-  Result:=Pos('\\', Path)=1;
-End;
-
-function GetAppName(App: String): String;
-var
-  p:Integer;
-begin
-  p:=Pos(' ', App);
-  if p=0 then
-    Result:=App
-  else
-  begin
-    Result:=Copy(App, 1, p-1);
-  end;
-end;
 
 procedure OpenDir(Dir: String);
 begin
@@ -222,11 +189,6 @@ begin
 
   Result:=not (k>1);
 end;
-
-Function FakeFileExt(Const FileName, Ext: String): String;
-Begin
-  Result:=ChangeFileExt(FileName, '.'+Ext);
-End;
 
 Function AddToFileName(Const FileName, AddStr: String): String;
 Var

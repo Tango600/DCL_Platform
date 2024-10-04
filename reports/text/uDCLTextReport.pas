@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Controls, Forms, ComCtrls, StdCtrls, Buttons, ExtCtrls,
-  DBCtrls, DB, Generics.Collections, LazUTF8,
+  DBCtrls, DB, Generics.Collections, LazUTF8, LazFileUtils,
   uDCLDBAwareTypes, uDCLConst, uIDCLMain, uDCLData, uDCLDBConnector, uIDCLGrid,
   uDCLTypes, uDCLVariables, uVariableNamespace;
 
@@ -54,9 +54,9 @@ type
 implementation
 
 uses
-  uDCLMultiLang, uDCLUtils, uDCLDBStructure, uStringParams, uStringUtils,
+  uDCLMultiLang, uDCLDBStructure, uStringParams, uStringUtils,
   uDCLMeasurements, uDCLQueryUtils, uDCLGlobalVariables, uDCLValuesParser,
-  uSystemUtils, uDCLException, uConvertEx;
+  uDCLException, uConvertEx;
 
 const
   EditTopStep=23;
@@ -847,7 +847,7 @@ begin
 
   If FileName='' Then
     FileName:='Report.txt';
-  If Not IsFullPath(FileName) Then
+  If Not FilenameIsAbsolute(FileName) Then
     FileName:=IncludeTrailingPathDelimiter(GPT.AppConfigDir)+FileName;
 
   RePlaseVariables(FileName);

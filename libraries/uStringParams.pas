@@ -19,7 +19,7 @@ Function GetClearParam(const Param: String; ParamDelim: String=DefaultParamDelim
 Function IndexInSet(const SetValue, S: String; const SepChar: String=DefaultValuesSeparator;
   const Delim: String=DefaultParamDelim): Integer;
 
-Function DoublingApostrof(const S: String):String;
+Function DoublingApostrof(const S: String): String;
 
 function IsLexem(const Lexem, S: String): Boolean;
 
@@ -220,7 +220,7 @@ end;
 Function IndexInSet(const SetValue, S: String; const SepChar: String=DefaultValuesSeparator;
   const Delim: String=DefaultParamDelim): Integer;
 var
-  p, i, Pos: Cardinal;
+  p, i: Cardinal;
   ps: String;
 Begin
   Result:=0;
@@ -229,7 +229,6 @@ Begin
   Begin
     For i:=1 to p do
     Begin
-      Pos:=0;
       ps:=GetParam(SetValue, i, SepChar, Delim);
       If LowerCase(Trim(ps))=LowerCase(Trim(S)) then
       begin
@@ -240,7 +239,7 @@ Begin
   End;
 End;
 
-Function DoublingApostrof(const S: String):String;
+Function DoublingApostrof(const S: String): String;
 var
   i, l:Integer;
 begin
