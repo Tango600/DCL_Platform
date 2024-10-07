@@ -94,7 +94,7 @@ begin
     end;
     Proc.Parameters:=Params;
     If Wait then
-      Proc.Options:=Proc.Options+[poWaitOnExit, poUsePipes];
+      Proc.Options:=Proc.Options+[poWaitOnExit];
 
     Proc.Execute;
     FreeAndNil(Proc);

@@ -226,14 +226,22 @@ function TDCLScriptsPackage.AddMenuItem(Title, Command: String; Ident,
 var
   si: TDCLScriptItem;
 begin
-  si:=TDCLScriptItem.Create;
-  si.Command:=Command;
-  si.ScriptName:=Title;
-  si.Ident:=Ident;
-  si.Parent:=Parent;
+  Result:=nil;
+  for si in FPackage.Scripts do
+  begin
+    if si.Ident=Ident then
+    begin
+      Exit;
+    end;
+  end;
 
-  FPackage.Scripts.Add(si);
-  Result:=si;
+  Result:=TDCLScriptItem.Create;
+  Result.Command:=Command;
+  Result.ScriptName:=Title;
+  Result.Ident:=Ident;
+  Result.Parent:=Parent;
+
+  FPackage.Scripts.Add(Result);
 end;
 
 procedure TDCLScriptsPackage.AddUpdate(FileName: String; Order: Integer);
@@ -250,8 +258,7 @@ begin
   FPackage.Scripts.Add(si);
 end;
 
-procedure TDCLScriptsPackage.AddDelete(const ScriptName: String; Ident, Order: Integer
-  );
+procedure TDCLScriptsPackage.AddDelete(const ScriptName: String; Ident, Order: Integer);
 var
   si: TDCLScriptItem;
 begin
@@ -483,7 +490,7 @@ begin
   end;
 end;
 
-function FindSegmentNum(const Base41, Segment: String): Integer;
+function FindSegmentNum(Base41, Segment: String): Integer;
 var
   i: Integer;
 begin
@@ -592,6 +599,7 @@ begin
       s1:=FindParam(DeleteSection+'=', S);
       if (s1<>'') and (FindParam(IdentSection+'=', S)='') then
       begin
+        f:=True;
         ScriptItem:=TDCLScriptItem.Create;
         ScriptItem.ScriptName:=s1;
         ScriptItem.Delete:=True;
@@ -605,6 +613,7 @@ begin
         s1:=FindParam(IdentSection+'=', S);
         if s1<>'' then
         begin
+          f:=True;
           ScriptItem:=TDCLScriptItem.Create;
           ScriptItem.ScriptName:=s1;
           ScriptItem.Delete:=True;
@@ -624,6 +633,7 @@ begin
       s1:=FindParam(NameSection+'=', S);
       if s1<>'' then
       begin
+        f:=True;
         sn:=s1;
         ScriptItem:=TDCLScriptItem.Create;
         ScriptItem.ScriptName:=sn;
@@ -682,6 +692,7 @@ begin
       s1:=FindParam(UpdateSection+'=', S);
       if s1<>'' then
       begin
+        f:=True;
         un:=s1;
         ScriptItem:=TDCLScriptItem.Create;
         ScriptItem.SQL:=True;
@@ -716,7 +727,6 @@ begin
     begin
       if not f then
         ScriptItem.ScriptText.WriteString(LineEnding);
-
       ScriptItem.ScriptText.WriteString(S);
       f:=False;
     end;
