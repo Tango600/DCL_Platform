@@ -39,15 +39,7 @@ begin
   t:=Trim(S);
   p:=Pos(LowerCase(Lexem), LowerCase(t));
   if p=1 then
-    Result:=True
-  else
-  begin
-    if p>1 then
-    begin
-      if Pos(t[p-1], StopSimbols)<>0 then
-        Result:=True;
-    end;
-  end;
+    Result:=True;
 end;
 
 function FindWholeWord(const Example, S: String): Integer;
