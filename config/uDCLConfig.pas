@@ -14,10 +14,12 @@ type
   private
     Params: TStringList;
     IniFileName, lPath, lUser, lPassword: String;
+
+    procedure SetIniFileName(const FileName: String);
   public
     constructor Create; overload;
 
-    procedure LoadConfig(FileName: String);
+    procedure LoadConfig(const FileName: String);
     procedure GetParamsStructure;
     procedure LoadExternalParams(var ExtParams: TStringList);
 
@@ -33,7 +35,7 @@ uses
 
 { TDCLConfig }
 
-procedure TDCLConfig.LoadConfig(FileName: String);
+procedure TDCLConfig.LoadConfig(const FileName: String);
 begin
   if FileExists(FileName) then
   begin
@@ -42,9 +44,28 @@ begin
   end;
 end;
 
+function GetNextParam(ParamNum: Integer): String;
+begin
+  Result:='';
+  if ParamCount>ParamNum then
+  begin
+    Result:=ParamStr(ParamNum+1);
+  end;
+end;
+
+procedure TDCLConfig.SetIniFileName(const FileName: String);
+begin
+  if FileExists(FileName) then
+  begin
+    GPT.IniFileName:=FileName;
+    IniFileName:=FileName;
+  end;
+end;
+
 constructor TDCLConfig.Create;
 var
   i: Integer;
+  s: String;
 begin
   inherited Create;
   GPT.StringTypeChar:='''';
@@ -59,23 +80,35 @@ begin
 
   if ParamCount>0 then
   begin
-    if FileExists(ParamStr(1)) and (LowerCase(ExtractFileExt(ParamStr(1)))='.ini') then
-      GPT.IniFileName:=ParamStr(1);
+    if LowerCase(ExtractFileExt(ParamStr(1)))='.ini' then
+    begin
+      SetIniFileName(ParamStr(1));
+    end;
   end;
 
   For i:=1 to ParamCount do
   Begin
-    If PosEx('-ini', ParamStr(i))<>0 Then
-      GPT.IniFileName:=ParamStr(i+1);
-    If PosEx('-user', ParamStr(i))<>0 Then
-      lUser:=ParamStr(i+1);
-    If PosEx('-password', ParamStr(i))<>0 Then
-      lPassword:=ParamStr(i+1);
+    s:=ParamStr(i);
+    if Pos('-', s)<>1 then
+      Continue;
+
+    If PosEx('-ini', s)<>0 Then
+    begin
+      s:=GetNextParam(i);
+      SetIniFileName(s);
+      Continue;
+    end;
+    If PosEx('-user', s)<>0 Then
+    begin
+      lUser:=GetNextParam(i);
+      Continue;
+    end;
+    If PosEx('-password', s)<>0 Then
+    begin
+      lPassword:=GetNextParam(i);
+      Continue;
+    end;
   End;
-
-  LoadConfig(GPT.IniFileName);
-
-  GetParamsStructure;
 end;
 
 procedure TDCLConfig.GetParamsStructure;

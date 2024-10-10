@@ -904,7 +904,19 @@ begin
   SetCurrentDir(Path);
 
   InitGetAppConfigDir;
+
   FDCLConfig:=TDCLConfig.Create;
+  if FDCLConfig.FileName<>'' then
+  begin
+    FDCLConfig.LoadConfig(FDCLConfig.FileName);
+    FDCLConfig.GetParamsStructure;
+  end
+  else
+  begin
+    FDCLConfig.LoadConfig(GPT.IniFileName);
+    FDCLConfig.GetParamsStructure;
+  end;
+
   FVariables:=TVariables.Create;
   FForms:=TList<IDCLForm>.Create;
 
@@ -948,10 +960,12 @@ begin
         LocalQuery.Next;
       end;
       LocalQuery.Close;
-      FDCLConfig.LoadExternalParams(Params);
 
       if Params.Count>0 then
+      begin
+        FDCLConfig.LoadExternalParams(Params);
         FDCLConfig.GetParamsStructure;
+      end;
 
       ReadBaseID;
     end;
