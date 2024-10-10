@@ -509,7 +509,7 @@ begin
     msFind:
     Result:='Поиск';
     msFindCurrCell:
-    Result:='Поиск по текущей ячейки';
+    Result:='Фильтр по текущей ячейки';
     msPrint:
     Result:='Печать';
     msCopy:
