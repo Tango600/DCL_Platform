@@ -17,7 +17,7 @@ type
     DateSeparator, TimeSeparator, ThousandSeparator, DecimalSeparator: Char;
     ServerCodePage, DateFormat, TimeFormat, Viewer, MainFormCaption,
     DataBaseName, ScriptDir, DBPath, ServerName, DBType,
-    Signer, SignerPass, BTUtility, DCLRun: String;
+    Signer, SignerPass: String;
     SQLDialect: Byte;
     NoParamsTable, NoUsersTable, DisableLogOnWithoutUser, DisableColorScheme: Boolean;
     DBUserName, DCLUserName, DCLUserPass, EnterPass, LongRoleName,
