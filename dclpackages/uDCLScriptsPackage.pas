@@ -61,7 +61,7 @@ type
     function EncodePackage(RunOnStart: Boolean): TStream;
 
     procedure ClearFiles;
-    procedure AddFile(FileName: String; RunType: TRunType);
+    procedure AddScriptFile(const FileName: String; const Ident: Integer; RunType: TRunType);
     function AddMenuItem(Title, Command: String; Ident, Parent: Integer): TDCLScriptItem;
     procedure AddUpdate(FileName: String; Order: Integer);
     procedure AddDelete(const ScriptName: String; Ident, Order: Integer);
@@ -209,13 +209,26 @@ begin
   FPackage.Scripts.Clear;
 end;
 
-procedure TDCLScriptsPackage.AddFile(FileName: String; RunType: TRunType);
+procedure TDCLScriptsPackage.AddScriptFile(const FileName: String; const Ident: Integer; RunType: TRunType);
 var
   si: TDCLScriptItem;
 begin
+  if Ident>0 then
+  begin
+    for si in FPackage.Scripts do
+    begin
+      if si.Ident=Ident then
+      begin
+        Exit;
+      end;
+    end;
+  end;
+
   si:=TDCLScriptItem.Create;
   si.ScriptName:=ExtractFileNameOnly(FileName);
   si.RunType:=RunType;
+  if Ident>0 then
+    si.Ident:=Ident;
   si.ScriptText.LoadFromFile(FileName);
 
   FPackage.Scripts.Add(si);
