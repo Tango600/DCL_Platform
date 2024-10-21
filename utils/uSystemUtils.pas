@@ -9,9 +9,6 @@ uses
   Windows, ShlObj,
 {$ENDIF}
 {$IFDEF FPC}
-  LConvEncoding,
-{$ENDIF}
-{$IFDEF FPC}
   InterfaceBase, LCLType,
 {$ENDIF}
 {$IFDEF UNIX}
@@ -161,33 +158,8 @@ begin
 end;
 
 Function NoFileExt(const FileName:String): Boolean;
-var
-  i, p, l, k: Integer;
 begin
-  p:=0;
-  k:=0;
-  i:=Length(FileName);
-  l:=i-5;
-  If i<=5 then
-    l:=1;
-
-  For i:=Length(FileName) downto l do
-  Begin
-    If FileName[i]=PathDelim then
-    begin
-      Result:=True;
-      Exit;
-    end;
-
-    If FileName[i]='.' then
-    Begin
-      k:=p;
-      Break;
-    End;
-    Inc(p);
-  End;
-
-  Result:=not (k>1);
+  Result:=ExtractFileExt(FileName)='';
 end;
 
 Function AddToFileName(Const FileName, AddStr: String): String;

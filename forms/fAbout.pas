@@ -18,6 +18,7 @@ type
     imgProtectionOn: TImage;
     ImageLogo: TImage;
     Label1: TLabel;
+    lbIniFile: TLabel;
     lbProtectionKey: TLabel;
     Label2: TLabel;
     Label3: TLabel;
@@ -68,7 +69,7 @@ implementation
 uses
   ClipBrd,
   uDCLDBAwareTypes, uDCLConst, uDCLVersion, uDCLDBStructure, fDCLProtectionForm,
-  uDCLScriptsPackage;
+  uDCLScriptsPackage, uDCLGlobalVariables;
 
 {$R *.lfm}
 
@@ -166,6 +167,8 @@ begin
   lbDBLib.Caption:=DBEngineType;
   lbDBLibVersion.Caption:=AccessLibVersion;
   lbRevision.Caption:=RevisionStr;
+
+  lbIniFile.Caption:=GPT.IniFileName;
 
   lbCompillerName.Caption:=InternalAppNameSuffix{$IFDEF FPC}+' '+fpcVersion{$ENDIF};
   lbBuildType.Caption:=TargetOS+'_'+TargetCPU;

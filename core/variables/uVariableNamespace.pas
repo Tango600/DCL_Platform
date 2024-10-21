@@ -12,7 +12,7 @@ type
     FRootNamespace, FCurrentNamespace: String;
   public
     constructor Create(const RootNamespace, CurrentNamespace: String); overload;
-    function IsEqual(Instance: TVariableNamespace): Boolean;
+    function IsEqual(const Instance: TVariableNamespace): Boolean;
 
     property RootNamespace: String read FRootNamespace;
     property CurrentNamespace: String read FCurrentNamespace;
@@ -29,7 +29,7 @@ begin
   FCurrentNamespace:=CurrentNamespace;
 end;
 
-function TVariableNamespace.IsEqual(Instance: TVariableNamespace): Boolean;
+function TVariableNamespace.IsEqual(const Instance: TVariableNamespace): Boolean;
 begin
   Result:=(FRootNamespace=Instance.RootNamespace) and (FCurrentNamespace=Instance.CurrentNamespace);
 end;

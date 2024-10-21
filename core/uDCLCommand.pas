@@ -1121,7 +1121,7 @@ begin
     If IsLexem('OnTop=', Command) then
     begin
       if (Trim(FindParam('OnTop=', Command))='1') and (FDCLForm.FormStyle=fsNormal) then
-          FDCLForm.FormStyle:=fsStayOnTop
+        FDCLForm.FormStyle:=fsStayOnTop
       else
         FDCLForm.FormStyle:=fsNormal;
     end;
