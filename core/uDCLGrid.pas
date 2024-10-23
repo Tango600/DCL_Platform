@@ -1530,8 +1530,6 @@ begin
     begin
       AddDropBox(FCurrentField, FCurrentField.FirstFieldsLine);
     end;
-
-    //FDCLFields.Add(FCurrentField);
   end;
   end;
 
@@ -1587,6 +1585,12 @@ begin
     DropList.Parent:=FFieldsPanel;
     DropList.DropDownCount:=DropDownRows;
     DropList.OnSelect:=DropListOnSelectItem;
+    If DropList.Hint<>'' Then
+    begin
+      DropList.ShowHint:=True;
+      DropList.Hint:=Field.Hint;
+      DropList.TextHint:=Field.Hint;
+    end;
 
     Field.DCLEditComponent:=TDCLEdit.Create;
     Field.DCLEditComponent.Control:=DropList;
@@ -1768,6 +1772,7 @@ begin
     DBEdit.DataField:=Field.FieldName;
     DBEdit.DataSource:=FData;
     DBEdit.Hint:=Field.Hint;
+    DBEdit.TextHint:=Field.Hint;
     if Field.Hint<>'' then
       DBEdit.ShowHint:=True;
     DBEdit.CharCase:=Field.CharCase;
@@ -2153,6 +2158,7 @@ begin
   begin
     Edit.ShowHint:=True;
     Edit.Hint:=Field.Hint;
+    Edit.TextHint:=Field.Hint;
   end;
 
   Edit.PasswordChar:=Field.PasswordChar;
