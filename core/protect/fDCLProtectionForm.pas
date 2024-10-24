@@ -8,7 +8,7 @@ uses
   Windows, Messages, LazUTF8,
   {$ENDIF}
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, Buttons,
-  Menus, uIDCLProtectionEngine, uIDCLMain;
+  Menus, ExtCtrls, uIDCLProtectionEngine, uIDCLMain;
 
 type
 
@@ -18,6 +18,8 @@ type
     btApplay: TButton;
     edRegistrationKey: TEdit;
     edProgramKey: TEdit;
+    ImageList1: TImageList;
+    imKeyValid: TImage;
     Label1: TLabel;
     Label2: TLabel;
     Label3: TLabel;
@@ -27,6 +29,9 @@ type
     sbCopyKey: TSpeedButton;
     procedure btApplayClick(Sender: TObject);
     constructor Create(AOwner: TComponent; const DCLMain: IDCLMain); overload;
+    procedure edRegistrationKeyChange(Sender: TObject);
+    procedure edRegistrationKeyClick(Sender: TObject);
+    procedure edRegistrationKeyExit(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure miAboutClick(Sender: TObject);
     procedure sbCopyKeyClick(Sender: TObject);
@@ -79,13 +84,57 @@ begin
   lbExpire.Caption:='-';
   edProgramKey.Text:=FProtectionEngine.GetProtectionKey;
   Key:=FProtectionEngine.GetKeyData;
-  if Key.RemainDays>-1 then
+  if Key.IsValid then
   begin
+    imKeyValid.ImageIndex:=0;
+    edRegistrationKey.TextHint:='<ключ введён>';
     if Key.RemainDays>0 then
       lbExpire.Caption:=IntToStr(Key.RemainDays)+' ('+Key.KeyType+')'
     else
       lbExpire.Caption:='Бессрочно';
+  end
+  else
+  begin
+    imKeyValid.ImageIndex:=1;
+    edRegistrationKey.TextHint:='<введите ключ защиты>';
   end;
+end;
+
+procedure TProtectionForm.edRegistrationKeyChange(Sender: TObject);
+begin
+  if FProtectionEngine.ValidateKey(edRegistrationKey.Text) then
+    imKeyValid.ImageIndex:=0
+  else
+    imKeyValid.ImageIndex:=1;
+end;
+
+procedure TProtectionForm.edRegistrationKeyClick(Sender: TObject);
+begin
+  if not FProtectionEngine.ValidateKey(edRegistrationKey.Text) then
+    edRegistrationKey.Clear;
+end;
+
+procedure TProtectionForm.edRegistrationKeyExit(Sender: TObject);
+var
+  Key: TKeyData;
+begin
+  Key:=FProtectionEngine.GetKeyData;
+  if Key.IsValid then
+    edRegistrationKey.TextHint:='<ключ введён>'
+  else
+    edRegistrationKey.TextHint:='<введите ключ защиты>';
+
+  if (Key.IsValid and (edRegistrationKey.Text='')) or FProtectionEngine.ValidateKey(edRegistrationKey.Text) then
+  begin
+    imKeyValid.ImageIndex:=0;
+  end
+  else
+  begin
+    imKeyValid.ImageIndex:=1;
+  end;
+
+  if not FProtectionEngine.ValidateKey(edRegistrationKey.Text) then
+    edRegistrationKey.Clear;
 end;
 
 procedure TProtectionForm.FormShow(Sender: TObject);
@@ -95,11 +144,12 @@ begin
   AppendMenu(GetSystemMenu(Handle, False), MF_STRING, AboutMenuItem,
     Pchar(UTF8ToWinCP('DCL '+GetDCLMessageString(msVersion)+' : '+DCLVersion)));
   {$ENDIF}
+  btApplay.SetFocus;
 end;
 
 procedure TProtectionForm.miAboutClick(Sender: TObject);
 begin
-  FDCLMain.About;
+  ShowAbout;
 end;
 
 procedure TProtectionForm.sbCopyKeyClick(Sender: TObject);
@@ -126,11 +176,28 @@ begin
 end;
 
 procedure TProtectionForm.btApplayClick(Sender: TObject);
+var
+  Key: TKeyData;
+  Answer: Boolean;
 begin
-  if FProtectionEngine.ApplaySoftwareKey(edRegistrationKey.Text) then
+  Key:=FProtectionEngine.GetKeyData;
+  Answer:=True;
+  if Key.IsValid then
+    Answer:=MessageDlg('Заменить существующий действующий ключ?', mtConfirmation, mbOKCancel, 0)=1;
+
+  if Answer then
   begin
-    MessageDlg('Ok', 'Protection is ok!', mtInformation, [mbOK], 0);
-    Close;
+    if FProtectionEngine.ApplaySoftwareKey(edRegistrationKey.Text) then
+    begin
+      imKeyValid.ImageIndex:=0;
+      MessageDlg('Ok', 'Ключ защиты принят!', mtInformation, [mbOK], 0);
+      Close;
+    end
+    else
+    begin
+      MessageDlg('Ключ защиты', 'Ключ защиты не принят!', mtError, [mbOK], 0);
+      edRegistrationKey.Clear;
+    end;
   end;
 end;
 

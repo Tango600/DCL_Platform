@@ -13,6 +13,7 @@ type
     function GetProtectionKey: String;
     function ApplaySoftwareKey(const Key: String): Boolean;
     function GetKeyData: TKeyData;
+    function ValidateKey(const Key: String): Boolean;
   end;
 
 implementation

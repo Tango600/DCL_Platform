@@ -22,6 +22,7 @@ type
     function ApplaySoftwareKey(const Key: String): Boolean;
     function CheckKey(const Key: String): TKeyData;
     function GetKeyData: TKeyData;
+    function ValidateKey(const Key: String): Boolean;
     function NormalizeKey(const Key: String): String;
   public
     constructor Create;
@@ -66,7 +67,7 @@ end;
 
 function TDCLProtectionEngine.GetProtectionStatus: Boolean;
 begin
-  Result:=CheckKey(GetSoftwareKey).RemainDays>-1;
+  Result:=CheckKey(GetSoftwareKey).IsValid;
 end;
 
 function TDCLProtectionEngine.GetProtectionKey: String;
@@ -101,7 +102,7 @@ var
   FS: TStream;
 begin
   Result:=False;
-  if CheckKey(Key.Trim).ExpireDayes>-1 then
+  if CheckKey(Key).IsValid then
   begin
     Result:=True;
     if not DirectoryExists(ProgDataDir) then
@@ -109,7 +110,7 @@ begin
     if DirectoryExists(ProgDataDir) then
     begin
       FS:=TFileStream.Create(ProgDataDir+KeyFileName, fmCreate);
-      WriteFileData(NormalizeKey(Key.Trim), FS);
+      WriteFileData(NormalizeKey(Key), FS);
 
       FreeAndNil(FS);
     end;
@@ -126,57 +127,61 @@ var
   TestResult: Boolean;
 begin
   Result:=TKeyData.Create;
-  Result.RemainDays:=-1;
-  S:=GetProtectionKey;
-  for i:=0 to 7 do
+  if ValidateKey(Key) then
   begin
-    S:=MD5String(S+KeyFolder+'\'+S+'\');
-  end;
-
-  S2:=NormalizeKey(Key);
-  TestResult:=S.ToLowerInvariant=S2.ToLowerInvariant;
-  Result.KeyType:='tl';
-
-  if not TestResult then
-  begin
-    for p:=1 to Length(Periods) do
+    S:=GetProtectionKey;
+    for i:=0 to 7 do
     begin
-      for d:=0 to 1096 do
+      S:=MD5String(S+KeyFolder+'\'+S+'\');
+    end;
+
+    S2:=NormalizeKey(Key);
+    TestResult:=S.ToLowerInvariant=S2.ToLowerInvariant;
+    if TestResult then
+    begin
+      Result.RemainDays:=-1;
+      Result.AllDays:=-1;
+      Result.KeyType:='tl';
+    end
+    else
+    begin
+      Result.RemainDays:=0;
+      for p:=1 to Length(Periods) do
       begin
-        S:=GetProtectionKey+';'+Periods[p]+';'+AddChar('0', IntToStr(YearOf(IncDay(Today, -d))-2020), 2)+CharsTab[MonthOf(IncDay(Today, -d))]+CharsTab[DayOf(IncDay(Today, -d))];
-        for i:=0 to 7 do
+        for d:=0 to 1096 do
         begin
-          S:=MD5String(S+KeyFolder+'\'+S+'\');
-        end;
-
-        if S.ToLowerInvariant=S2.ToLowerInvariant then
-        begin
-          if p=1 then
-            Result.RemainDays:=7
-          else if p=2 then
-            Result.RemainDays:=31
-          else if p=3 then
-            Result.RemainDays:=366
-          else if p=4 then
-            Result.RemainDays:=731
-          else if p=5 then
-            Result.RemainDays:=1096;
-
-          TestResult:=d<=Result.RemainDays;
-          if TestResult then
+          S:=GetProtectionKey+';'+Periods[p]+';'+AddChar('0', IntToStr(YearOf(IncDay(Today, -d))-2020), 2)+CharsTab[MonthOf(IncDay(Today, -d))]+CharsTab[DayOf(IncDay(Today, -d))];
+          for i:=0 to 7 do
           begin
-            Result.RemainDays:=Result.RemainDays-d;
-            Result.ExpireDayes:=d;
-            Result.KeyType:=Periods[p];
+            S:=MD5String(S+KeyFolder+'\'+S+'\');
           end;
 
-          Exit;
+          if S.ToLowerInvariant=S2.ToLowerInvariant then
+          begin
+            if p=1 then
+              Result.AllDays:=7
+            else if p=2 then
+              Result.AllDays:=31
+            else if p=3 then
+              Result.AllDays:=366
+            else if p=4 then
+              Result.AllDays:=731
+            else if p=5 then
+              Result.AllDays:=1096;
+
+            TestResult:=d<=Result.AllDays;
+            if TestResult then
+            begin
+              Result.RemainDays:=Result.AllDays-d;
+              Result.KeyType:=Periods[p];
+            end;
+
+            Exit;
+          end;
         end;
       end;
     end;
-  end
-  else
-    Result.RemainDays:=0;
+  end;
 end;
 
 function TDCLProtectionEngine.GetKeyData: TKeyData;
@@ -184,14 +189,34 @@ begin
   Result:=CheckKey(GetSoftwareKey);
 end;
 
+function TDCLProtectionEngine.ValidateKey(const Key: String): Boolean;
+var
+  c: Char;
+  t: Boolean;
+begin
+  Result:=Length(Key.Trim)=32;
+  if Result then
+  begin
+    for c in Key.Trim.ToLowerInvariant do
+    begin
+      t:=(c in ['0'..'9']) or (c in ['a'..'f']);
+      if not t then
+      begin
+        Result:=False;
+        Exit;
+      end;
+    end;
+  end;
+end;
+
 function TDCLProtectionEngine.NormalizeKey(const Key: String): String;
 var
   c: Char;
 begin
   Result:='';
-  for c in Key.ToLowerInvariant do
+  for c in Key.Trim.ToLowerInvariant do
   begin
-    if (c in ['0'..'9']) or (c in ['a'..'z']) then
+    if (c in ['0'..'9']) or (c in ['a'..'f']) then
       Result:=Result+c;
   end;
 end;
