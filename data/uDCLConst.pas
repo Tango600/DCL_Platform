@@ -16,7 +16,7 @@ uses
 
 const
 {$IFDEF MSWINDOWS}
-  DefaultLibraryLocation='gds32.dll';
+  DefaultLibraryLocation='fbclient.dll';
 {$ENDIF}
 {$IFDEF LINUX}
   DefaultLibraryLocation='libfbclient.so';
