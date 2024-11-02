@@ -1403,7 +1403,7 @@ begin
       FCurrentField.FullFieldName:=FindParam('FullName=', ScrLine);
     end;
 
-    FCurrentField.RequireValue:=FindParam('RequirValue=', ScrLine)='1';
+    FCurrentField.RequireValue:=FindParam('RequireValue=', ScrLine)='1';
     FCurrentField.Hint:=FindParam('Hint=', ScrLine);
 
     FCurrentField.ReadOnly:=FindParam('ReadOnly=', ScrLine)='1';
