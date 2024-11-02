@@ -515,6 +515,7 @@ var
   {$IFNDEF NOONTOP}
   OnTop: Boolean;
   {$ENDIF}
+  FirstPage: Boolean;
   FieldsCount: Integer;
   UserLevelLocal: TUserLevelsType;
   FCurrentGrid: IDCLGrid;
@@ -618,6 +619,7 @@ begin
   FStatusBar.Panels[0].Width:=100;
   FStatusBar.Panels[1].Width:=80;
 
+  FirstPage:=True;
   FCurrentGrid:=AddMainPage(Query, Data);
 
   if Assigned(OPL) then
@@ -666,7 +668,9 @@ begin
 
       if IsLexem('[Page]', SrcLine) then
       begin
-        FCurrentGrid:=AddMainPage(Query, Data);
+        if not FirstPage then
+          FCurrentGrid:=AddMainPage(FCurrentGrid.Query, FCurrentGrid.Data);
+        FirstPage:=False;
       end;
 
       if IsLexem('Title=', SrcLine) then

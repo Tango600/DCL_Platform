@@ -5051,7 +5051,8 @@ begin
   end;
 
   FSeed:=CalculateSeed;
-  FQuery.NotAllowOperations:=FNotAllowedOperations;
+  if Assigned(FQuery) then
+    FQuery.NotAllowOperations:=FNotAllowedOperations;
 
   AdjustToolPanel;
 
