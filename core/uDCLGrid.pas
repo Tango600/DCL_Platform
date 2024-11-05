@@ -1432,6 +1432,38 @@ begin
     Else
       FCurrentField.PasswordChar:=#0;
 
+    S:=FindParam('Format=', ScrLine);
+    if S<>'' then
+    begin
+      If LowerCase(S)='float' Then
+      begin
+        FCurrentField.FieldTypeFormat:=fftFloat;
+      end;
+      if LowerCase(S)='digit' then
+      begin
+        FCurrentField.FieldTypeFormat:=fftDigit;
+      end;
+      if LowerCase(S)='trim' then
+      begin
+        FCurrentField.FieldTypeFormat:=fftTrim;
+      end;
+    end;
+
+    If FindParam('CharCase=', ScrLine)<>'' then
+    begin
+      if FindParam('CharCase=', ScrLine).ToLower='lowercase' then
+        FCurrentField.CharCase:=ecLowerCase
+      else
+        if FindParam('CharCase=', ScrLine).ToLower='uppercase' then
+          FCurrentField.CharCase:=ecUppercase;
+    end;
+
+    FCurrentField.CheckState:=0;
+    If PosEx('_OnCheck;', ScrLine)<>0 Then
+      FCurrentField.CheckState:=1;
+    If PosEx('_OffCheck;', ScrLine)<>0 Then
+      FCurrentField.CheckState:=-1;
+
     FCurrentField.FirstFieldsLine:=S;
     if FGridStyle in TDataGrid then
     begin
@@ -2170,14 +2202,8 @@ begin
 
   Edit.PasswordChar:=Field.PasswordChar;
 
-  If FindParam('CharCase=', Scr)<>'' then
+  if Field.CharCase<>ecNormal then
   begin
-    if FindParam('CharCase=', Scr).ToLower='lowercase' then
-      Field.CharCase:=ecLowerCase
-    else
-      if FindParam('CharCase=', Scr).ToLower='uppercase' then
-        Field.CharCase:=ecUppercase;
-
     Edit.CharCase:=Field.CharCase;
   end;
 
@@ -2191,22 +2217,9 @@ begin
 
   If FieldBoxType<>fbtOutBox then
   begin
-    S:=FindParam('Format=', Scr);
-    if S<>'' then
+    if Field.FieldTypeFormat<>fftNone then
     begin
       Edit.OnKeyPress:=FieldBoxKeyPress;
-      If LowerCase(S)='float' Then
-      begin
-        Field.FieldTypeFormat:=fftFloat;
-      end;
-      if LowerCase(S)='digit' then
-      begin
-        Field.FieldTypeFormat:=fftDigit;
-      end;
-      if LowerCase(S)='trim' then
-      begin
-        Field.FieldTypeFormat:=fftTrim;
-      end;
     end;
   end
   Else
@@ -2936,12 +2949,11 @@ begin
     Field.Variable:='CheckBox_'+Field.FieldName;
   end;
 
+  if Field.CheckState<>0 then
+  begin
+    CheckBox.Checked:=Field.CheckState=1;
+  end;
   CheckBox.Checked:=Field.Value='1';
-
-  If PosEx('_OnCheck;', Scr)<>0 Then
-    CheckBox.Checked:=True;
-  If PosEx('_OffCheck;', Scr)<>0 Then
-    CheckBox.Checked:=False;
 
   CheckBox.OnClick:=CheckOnClick;
   CheckBox.Width:=CheckWidth;
@@ -2974,10 +2986,10 @@ begin
   If Field.UnCheckValue<>'' Then
     DBCheckBox.ValueUnchecked:=Field.UnCheckValue;
 
-  If PosEx('_OnCheck;', Scr)<>0 Then
-    DBCheckBox.Checked:=True;
-  If PosEx('_OffCheck;', Scr)<>0 Then
-    DBCheckBox.Checked:=False;
+  if Field.CheckState<>0 then
+    DBCheckBox.Checked:=Field.CheckState=1;
+
+  DBCheckBox.Checked:=Field.Value='1';
 
   Field.DCLEditComponent:=TDCLEdit.Create;
   Field.DCLEditComponent.Control:=DBCheckBox;
