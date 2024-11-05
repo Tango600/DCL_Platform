@@ -230,7 +230,7 @@ begin
             end;
 
             Prefix:='';
-            if Filter.Partial then
+            if Filter.Contains then
             begin
               Prefix:='%';
             end;

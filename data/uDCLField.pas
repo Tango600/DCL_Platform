@@ -5,22 +5,15 @@ interface
 
 uses
   Classes, SysUtils, StdCtrls, Generics.Collections,
-  uDCLData, uDCLTypes, uDCLConst;
+  uDCLFieldData, uDCLData, uDCLTypes, uDCLConst;
 
 type
   { TDCLField }
 
-  TDCLField=class
+  TDCLField=class(TDCLFieldData)
   public
     FLabel: TDialogLabel;
-    CharCase: TEditCharCase;
-    FieldName, Caption, Hint, Variable, CheckValue, UnCheckValue,
-      FullFieldName, FirstFieldsLine, NotInputValue: String;
-    PasswordChar: Char;
-    ReadOnly, NoDataField, UseIndex, Enabled, RequireValue: Boolean;
-    Width, Height, StepLeft: Integer;
-    DataFieldType: TDCLDataFieldKind;
-    FieldTypeFormat: TFieldFormat;
+    StepLeft: Integer;
     LookupData: TDCLLookup;
     DCLEditComponent: TDCLEdit;
     ContextButtons: TList<TContextFieldButton>;
@@ -35,13 +28,8 @@ implementation
 
 constructor TDCLField.Create;
 begin
+  inherited Create;
   ContextButtons:=TList<TContextFieldButton>.Create;
-
-  Enabled:=True;
-  CheckValue:='1';
-  UnCheckValue:='0';
-  CharCase:=ecNormal;
-  DataFieldType:=dftDefault;
 end;
 
 end.

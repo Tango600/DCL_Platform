@@ -6,7 +6,7 @@ interface
 uses
   StdCtrls, ComCtrls, Controls, Graphics, ExtCtrls, DB, Buttons, Classes,
   Generics.Collections, SysUtils, Forms, DBCtrls,
-  uDCLConst, uDCLTypes, uDCLDBAwareTypes;
+  uDCLConst, uDCLTypes, uDCLDBFilter, uDCLDBAwareTypes;
 
 type
   TDCLEdit=class
@@ -35,17 +35,13 @@ type
     QueryType: TQueryType;
   end;
 
-  TDBFilter=class
-    Width, FilterNum, WaitForKey, FilterChengFlag,
-      MaxLength: Integer;
-    Contains, Partial, Between, NotLike, CaseC, NotFilter: Boolean;
-    FilterName, FilterString, Field, KeyField, ListField: String;
+  TDBFilter=class(TDCLDBFilter)
+    FilterNum: Integer;
+    FilterString: String;
     FilterLabel, NotCheckLabel: TDialogLabel;
     Control: TWinControl;
-    FilterType: TFilterType;
     FilterQuery: TDCLDialogQuery;
     FilterData: TDataSource;
-    FilterKey, VarName, Caption, SQL, KeyValue: String;
     NotCheck: TCheckBox;
   end;
 

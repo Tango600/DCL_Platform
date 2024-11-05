@@ -203,6 +203,8 @@ type
     procedure AddLookUp(Field: TDCLField; Scr: String);
     procedure LookupOnClick(Sender: TObject);
 
+    procedure AddLookupTable(Field: TDCLField; Scr: String);
+
     procedure AddCalendar(ScrLine: String);
     procedure CalendarOnChange(Sender: TObject);
 
@@ -217,9 +219,10 @@ type
     procedure AddDateBox(Field: TDCLField; Scr: String);
     procedure OnChangeDateBox(Sender: TObject);
 
-    procedure ParseDBFilter(ScrLine: String; const Grid: TDCLGrid);
-    procedure ParseContextFilter(ScrLine: String; const Grid: TDCLGrid);
-    procedure ParseComboFilter(ScrLine: String; const Grid: TDCLGrid);
+    function ParseCommonFilter(ScrLine: String): TDBFilter;
+    procedure ParseDBFilter(const Filter: TDBFilter; const Grid: TDCLGrid);
+    procedure ParseContextFilter(const Filter: TDBFilter; const Grid: TDCLGrid);
+    procedure ParseComboFilter(const Filter: TDBFilter; const Grid: TDCLGrid);
     procedure OnFilterNotCheckClick(Sender: TObject);
     procedure ExecFilter(Sender: TObject);
     procedure OnContextFilter(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -227,8 +230,6 @@ type
     function QueryBuilder: String;
     function GetConditionsFromFindGrid: String;
     function GetConditionsFromFilters: String;
-
-    procedure AddLookupTable(Field: TDCLField; Scr: String);
 
     procedure Choose;
 
@@ -1370,6 +1371,7 @@ begin
   p:=0;
   l:=Length(ScrLine);
   case FFieldParsingMode of
+  fpmNone: ;
   fpmCaption:
   begin
     FCurrentField:=TDCLField.Create;
@@ -1381,6 +1383,8 @@ begin
     else
       FieldNameCapt:=LeftStr(ScrLine, p-1);
 
+    FCurrentField.ComponentName:=FindParam('ComponentName=', ScrLine);
+
     FCurrentField.Caption:=FieldNameCapt;
     if FindParam('Width=', ScrLine)<>'' then
       FCurrentField.Width:=StrToIntEx(FindParam('Width=', ScrLine));
@@ -1389,6 +1393,13 @@ begin
     begin
       FCurrentField.Height:=StrToIntEx(FindParam('Height=', ScrLine));
     end;
+
+    FCurrentField.Value:=FindParam('_Value=', ScrLine);
+    FCurrentField.SQL:=FindParam('SQL=', ScrLine);
+
+    S:=FindParam('MaxLength=', ScrLine);
+    If S<>'' Then
+      FCurrentField.MaxLength:=StrToIntEx(Trim(S));
 
     If FindParam('Disabled=', ScrLine)='1' then
       FCurrentField.Enabled:=False;
@@ -1571,7 +1582,7 @@ end;
 procedure TDCLGrid.AddDropBox(Field: TDCLField; Scr: String);
 var
   ShadowQuery: TDCLDialogQuery;
-  TmpStr, tmpStr1, tmpSQL1: String;
+  TmpStr, tmpStr1: String;
   DropList: TComboBox;
   v1, v2: Integer;
 begin
@@ -1597,21 +1608,18 @@ begin
 
     DropList.Clear;
 
-    If FindParam('VariableName=', Scr)<>'' Then
+    If Field.Variable<>'' Then
     begin
-      tmpStr1:=FindParam('VariableName=', Scr);
-      Field.Variable:=tmpStr1;
-      FIDCLMain.Variables.NewVariableWithTest(FNamespace, tmpStr1);
+      FIDCLMain.Variables.NewVariableWithTest(FNamespace, Field.Variable);
     end;
 
-    tmpSQL1:=FindParam('SQL=', Scr);
-    If tmpSQL1<>'' Then
+    If Field.SQL<>'' Then
     begin
       ShadowQuery:=TDCLDialogQuery.Create(Self.GetComponent);
       ShadowQuery.Name:='DropBoxQ_'+IntToStr(UpTime);
       FDBConnector.SetConnector(ShadowQuery);
 
-      ShadowQuery.SQL.Text:=tmpSQL1;
+      ShadowQuery.SQL.Text:=Field.SQL;
       try
         ShadowQuery.Open;
 
@@ -2151,8 +2159,7 @@ begin
 
   Field.DCLEditComponent.Control:=Edit;
 
-  If FindParam('ComponentName=', Scr)<>'' then
-    Edit.Name:=FindParam('ComponentName=', Scr);
+  Edit.Name:=Field.ComponentName;
 
   If Field.Hint<>'' Then
   begin
@@ -2206,24 +2213,17 @@ begin
     Edit.ReadOnly:=True;
 
   Field.DCLEditComponent.EditType:=FieldBoxType;
-  If FindParam('Disabled=', Scr)='1' Then
-    Edit.Enabled:=False;
   Edit.Text:='';
   Edit.OnChange:=FieldBoxOnEdit;
 
-  S:=FindParam('MaxLength=', Scr);
-  If S<>'' Then
-    Edit.MaxLength:=StrToIntEx(Trim(S));
+  Edit.MaxLength:=Field.MaxLength;
 
   NeedValue:=0;
-  If PosEx('_Value=', Scr)<>0 Then
+  If Field.Value<>'' Then
+    NeedValue:=1
+  Else
   Begin
-    If FindParam('_Value=', Scr)<>'' Then
-      NeedValue:=1
-    Else
-    Begin
-      NeedValue:=3;
-    End;
+    NeedValue:=3;
   End;
 
   If FindParam('_ValueNotInput=', Scr)<>'' Then
@@ -2266,7 +2266,7 @@ begin
     End;
   end;
 
-  If FindParam('SQL=', Scr)<>'' Then
+  If Field.SQL<>'' Then
     NeedValue:=2;
 
   S:='';
@@ -2278,7 +2278,7 @@ begin
       S:=TrimRight(FQuery.FieldByName(Field.FieldName).AsString);
   1:
   begin
-    S:=FindParam('_Value=', Scr);
+    S:=Field.Value;
   end;
   6:
   begin
@@ -2288,8 +2288,7 @@ begin
   begin
     ShadowQuery:=TDCLDialogQuery.Create(Self.GetComponent);
     FDBConnector.SetConnector(ShadowQuery);
-    S:=FindParam('SQL=', Scr);
-    ShadowQuery.SQL.Text:=S;
+    ShadowQuery.SQL.Text:=Field.SQL;
     ShadowQuery.Open;
     If FindParam('ReturnField=', Scr)<>'' Then
       FieldName:=FindParam('ReturnField=', Scr)
@@ -2313,14 +2312,10 @@ begin
   end;
   end;
 
-  If FindParam('VariableName=', Scr)<>'' Then
+  If Field.Variable<>'' Then
   begin
-    FieldName:=FindParam('VariableName=', Scr);
-
-    FIDCLMain.Variables.NewVariableWithTest(FNamespace, FieldName);
-
-    Field.Variable:=FieldName;
-    FIDCLMain.Variables[FNamespace.CurrentNamespace, FieldName]:=S;
+    FIDCLMain.Variables.NewVariableWithTest(FNamespace, Field.Variable);
+    FIDCLMain.Variables[FNamespace.CurrentNamespace, Field.Variable]:=S;
   end;
   Edit.Text:=S;
 end;
@@ -2495,8 +2490,8 @@ var
   DBLookupControl: TDBLookupComboBox;
 begin
   Field.LookupData:=TDCLLookup.Create;
-  TempStr:=FindParam('SQL=', Scr);
-  If TempStr<>'' Then
+  TempStr:=Field.SQL;
+  If Field.SQL<>'' Then
   begin
     Field.LookupData.LookupQuery:=TDCLDialogQuery.Create(Self.GetComponent);
     FDBConnector.SetConnector(Field.LookupData.LookupQuery);
@@ -2565,11 +2560,9 @@ begin
 
   Field.Height:=DBLookupControl.Height;
 
-  TempStr:=FindParam('VariableName=', Scr);
-  If TempStr<>'' Then
+  If Field.Variable<>'' Then
   begin
-    FIDCLMain.Variables.NewVariableWithTest(FNamespace, TempStr);
-    Field.Variable:=TempStr;
+    FIDCLMain.Variables.NewVariableWithTest(FNamespace, Field.Variable);
   end;
 
   DBLookupControl.KeyField:=FindParam('Key=', Scr);
@@ -2579,25 +2572,19 @@ begin
   If TempStr<>'' Then
     Field.LookupData.ModifyEdit:=GetParam(TempStr, 1);
 
-  TempStr:=FindParam('KeyValue=', Scr);
-
   If (NoDataField) Then
     Field.LookupData.LookupQuery.First;
-  If TempStr<>'' Then
+
+  If Field.Value<>'' Then
   begin
-    TranslateVal(TempStr, False);
-    if TempStr<>'' then
+    DBLookupControl.KeyValue:=Field.Value;
+    If (Not NoDataField) and FQuery.CanModify Then
     begin
-      DBLookupControl.KeyValue:=TempStr;
-      If (Not NoDataField) and FQuery.CanModify Then
-      begin
-        If (Not (FQuery.State in dsEditModes))and FQuery.Active and(Not NoDataField) Then
-          FQuery.Edit;
-        FData.DataSet.FieldByName(Field.FieldName).AsInteger:=StrToIntEx(TempStr);
-      end;
+      If (Not (FQuery.State in dsEditModes))and FQuery.Active and(Not NoDataField) Then
+        FQuery.Edit;
+      FData.DataSet.FieldByName(Field.FieldName).AsInteger:=StrToIntEx(Field.Value);
     end;
   end;
-  //LookupOnClick(DBLookupControl);
 end;
 
 procedure TDCLGrid.LookupOnClick(Sender: TObject);
@@ -2924,8 +2911,6 @@ end;
 
 procedure TDCLGrid.AddSimplyCheckBox(Field: TDCLField; Scr: String);
 var
-  Value1: String;
-  State: Boolean;
   CheckBox: TCheckBox;
 begin
   CheckBox:=TCheckbox.Create(FFieldsPanel);
@@ -2941,7 +2926,6 @@ begin
     CheckBox.Hint:=Field.Hint;
   end;
 
-  State:=False;
   If Field.Variable<>'' Then
   begin
     FIDCLMain.Variables.NewVariableWithTest(FNamespace, Field.Variable);
@@ -2952,13 +2936,7 @@ begin
     Field.Variable:='CheckBox_'+Field.FieldName;
   end;
 
-  Value1:=FindParam('_Value=', Scr);
-  if Value1<>'' then
-  begin
-    state:=Value1='1';
-  end;
-
-  CheckBox.Checked:=state;
+  CheckBox.Checked:=Field.Value='1';
 
   If PosEx('_OnCheck;', Scr)<>0 Then
     CheckBox.Checked:=True;
@@ -3122,8 +3100,7 @@ begin
   Field.DCLEditComponent:=TDCLEdit.Create;
   Field.DCLEditComponent.Control:=DateBox;
 
-  If FindParam('ComponentName=', Scr)<>'' Then
-    DateBox.Name:=FindParam('ComponentName=', Scr);
+  DateBox.Name:=Field.ComponentName;
 
   If Field.Hint<>'' Then
   begin
@@ -3140,9 +3117,9 @@ begin
     DateBox.Width:=Field.Width;
 
   NeedValue:=0;
-  If FindParam('_Value=', Scr)<>'' then
+  If Field.Value<>'' then
     NeedValue:=1;
-  If FindParam('SQL=', Scr)<>'' then
+  If Field.SQL<>'' then
     NeedValue:=2;
 
   if not Field.NoDataField then
@@ -3170,14 +3147,13 @@ begin
     S:=DateToStr(Date);
   1:
   begin
-    S:=FindParam('_Value=', Scr);
+    S:=Field.Value;
   end;
   2:
   begin
     ShadowQuery:=TDCLDialogQuery.Create(Self.GetComponent);
     FDBConnector.SetConnector(ShadowQuery);
-    S:=FindParam('SQL=', Scr);
-    ShadowQuery.SQL.Text:=S;
+    ShadowQuery.SQL.Text:=Field.SQL;
     ShadowQuery.Open;
     If FindParam('ReturnField=', Scr)<>'' Then
       KeyField:=FindParam('ReturnField=', Scr)
@@ -3197,18 +3173,16 @@ begin
   end;
   end;
 
-  If FindParam('VariableName=', Scr)<>'' Then
+  If Field.Variable<>'' Then
   begin
-    FIDCLMain.Variables.NewVariable(FNamespace, FindParam('VariableName=', Scr), S);
-    KeyField:=FindParam('VariableName=', Scr);
+    FIDCLMain.Variables.NewVariable(FNamespace, Field.Variable, S);
   end
   Else
   begin
     FIDCLMain.Variables.NewVariable(FNamespace, 'DateBox_'+Field.FieldName, S);
-    KeyField:='DateBox_'+Field.FieldName;
+    Field.Variable:='DateBox_'+Field.FieldName;
   end;
 
-  Field.Variable:=KeyField;
   If S<>'' then
   begin
     DateBox.Date:=StrToDate(S);
@@ -3257,7 +3231,7 @@ begin
   end;
 end;
 
-procedure TDCLGrid.ParseDBFilter(ScrLine: String; const Grid: TDCLGrid);
+function TDCLGrid.ParseCommonFilter(ScrLine: String): TDBFilter;
 var
   FFilter: TDBFilter;
   tmpS: String;
@@ -3267,54 +3241,13 @@ begin
   FFilter.SQL:=FindParam('SQL=', ScrLine);
   If FFilter.SQL='' Then
     FFilter.SQL:=FindParam('DBFilterQuery=', ScrLine);
-  If FFilter.SQL<>'' Then
-  begin
-    FFilter.FilterType:=ftDBFilter;
 
-    FFilter.Caption:=FindParam('Label=', ScrLine);
-    FFilter.Field:=FindParam('FilterField=', ScrLine);
-    FFilter.ListField:=FindParam('List=', ScrLine);
-    FFilter.KeyField:=FindParam('Key=', ScrLine);
-    FFilter.Between:=FindParam('Between=', ScrLine)='1';
+  FFilter.FilterType:=ftNone;
 
-    v1:=FilterWidth;
-    If FindParam('Width=', ScrLine)<>'' then
-      v1:=StrToIntEx(Trim(FindParam('Width=', ScrLine)));
-    FFilter.Width:=v1;
-
-    If FindParam('VariableName=', ScrLine)<>'' then
-    begin
-      FFilter.VarName:=FindParam('VariableName=', ScrLine);
-      FIDCLMain.Variables.NewVariable(FNamespace, FFilter.VarName, '');
-    end;
-
-    tmpS:=FindParam('KeyValue=', ScrLine);
-    If tmpS<>'' Then
-    begin
-      FFilter.KeyValue:=tmpS;
-    end;
-
-    tmpS:=FindParam('FilterMode=', ScrLine);
-    If tmpS<>'' Then
-    begin
-      If PosEx('Partial', tmpS)<>0 Then
-        FFilter.Contains:=True;
-    end;
-
-    Grid.AddFilter(FFilter);
-  end;
-end;
-
-procedure TDCLGrid.ParseContextFilter(ScrLine: String; const Grid: TDCLGrid);
-var
-  FFilter: TDBFilter;
-  tmpS: String;
-  v1: Integer;
-begin
-  FFilter:=TDBFilter.Create;
-  FFilter.FilterType:=ftContextFilter;
   FFilter.Caption:=FindParam('Label=', ScrLine);
   FFilter.Field:=FindParam('FilterField=', ScrLine);
+  FFilter.ListField:=FindParam('List=', ScrLine);
+  FFilter.KeyField:=FindParam('Key=', ScrLine);
   FFilter.Between:=FindParam('Between=', ScrLine)='1';
 
   v1:=FilterWidth;
@@ -3322,16 +3255,13 @@ begin
     v1:=StrToIntEx(Trim(FindParam('Width=', ScrLine)));
   FFilter.Width:=v1;
 
-  If FindParam('VariableName=', ScrLine)<>'' Then
-  begin
-    FFilter.VarName:=FindParam('VariableName=', ScrLine);
-    FIDCLMain.Variables.NewVariable(FNamespace, FFilter.VarName, '');
-  end;
-
   If FindParam('MaxLength=', ScrLine)<>'' Then
   begin
     FFilter.MaxLength:=StrToIntEx(Trim(FindParam('MaxLength=', ScrLine)));
   end;
+
+  FFilter.VarName:=FindParam('VariableName=', ScrLine);
+  FFilter.KeyValue:=FindParam('KeyValue=', ScrLine);
 
   tmpS:=FindParam('WaitForEnter=', ScrLine);
   If tmpS='1' Then
@@ -3349,56 +3279,47 @@ begin
       FFilter.NotLike:=True;
 
     If PosEx('Partial', tmpS)<>0 Then
-      FFilter.Partial:=True;
+      FFilter.Contains:=True;
   end;
 
   If PosEx('ComponentName=', ScrLine)<>0 Then
     FFilter.FilterName:=FindParam('ComponentName=', ScrLine);
 
   FFilter.KeyValue:=FindParam('_Value=', ScrLine);
-
-  Grid.AddFilter(FFilter);
+  Result:=FFilter;
 end;
 
-procedure TDCLGrid.ParseComboFilter(ScrLine: String; const Grid: TDCLGrid);
-var
-  FFilter: TDBFilter;
-  tmpS: String;
-  v1: Integer;
+procedure TDCLGrid.ParseDBFilter(const Filter: TDBFilter; const Grid: TDCLGrid);
 begin
-  FFilter:=TDBFilter.Create;
-  FFilter.FilterType:=ftComboFilter;
-
-  FFilter.Caption:=FindParam('Label=', ScrLine);
-  FFilter.Field:=FindParam('FilterField=', ScrLine);
-  FFilter.ListField:=FindParam('List=', ScrLine);
-  FFilter.Between:=FindParam('Between=', ScrLine)='1';
-
-  v1:=FilterWidth;
-  If FindParam('Width=', ScrLine)<>'' then
-    v1:=StrToIntEx(Trim(FindParam('Width=', ScrLine)));
-  FFilter.Width:=v1;
-
-  If FindParam('VariableName=', ScrLine)<>'' then
+  If Filter.SQL<>'' Then
   begin
-    FFilter.VarName:=FindParam('VariableName=', ScrLine);
-    FIDCLMain.Variables.NewVariable(FNamespace, FFilter.VarName, '');
+    Filter.FilterType:=ftDBFilter;
+    If Filter.VarName<>'' Then
+    begin
+      FIDCLMain.Variables.NewVariable(FNamespace, Filter.VarName, '');
+    end;
+    Grid.AddFilter(Filter);
   end;
+end;
 
-  tmpS:=FindParam('KeyValue=', ScrLine);
-  If tmpS<>'' then
+procedure TDCLGrid.ParseContextFilter(const Filter: TDBFilter; const Grid: TDCLGrid);
+begin
+  Filter.FilterType:=ftContextFilter;
+  If Filter.VarName<>'' Then
   begin
-    FFilter.KeyValue:=tmpS;
+    FIDCLMain.Variables.NewVariable(FNamespace, Filter.VarName, '');
   end;
+  Grid.AddFilter(Filter);
+end;
 
-  tmpS:=FindParam('FilterMode=', ScrLine);
-  If tmpS<>'' Then
+procedure TDCLGrid.ParseComboFilter(const Filter: TDBFilter; const Grid: TDCLGrid);
+begin
+  Filter.FilterType:=ftComboFilter;
+  If Filter.VarName<>'' Then
   begin
-    If PosEx('Partial', tmpS)<>0 Then
-      FFilter.Partial:=True;
+    FIDCLMain.Variables.NewVariable(FNamespace, Filter.VarName, '');
   end;
-
-  Grid.AddFilter(FFilter);
+  Grid.AddFilter(Filter);
 end;
 
 procedure TDCLGrid.OnFilterNotCheckClick(Sender: TObject);
@@ -3581,10 +3502,8 @@ begin
   else
     LookupTable.Height:=LookupTableHeight;
 
-  TempStr:=FindParam('SQL=', Scr);
-  TranslateVal(TempStr, False);
-  LookupTable.DCLGrid.SetSQL(TempStr);
-  if TempStr<>'' then
+  LookupTable.DCLGrid.SetSQL(Field.SQL);
+  if Field.SQL<>'' then
     LookupTable.DCLGrid.Query.Open;
 
   If PosEx('Navigator=', Scr)<>0 then
@@ -3599,7 +3518,7 @@ begin
   LookupTable.DCLGrid.DependField:=FindParam('DependField=', Scr);
   LookupTable.DCLGrid.SetNoDataField(Field.NoDataField);
 
-  LookupTable.DCLGrid.MasterValueVariableName:=FindParam('VariableName=', Scr);
+  LookupTable.DCLGrid.MasterValueVariableName:=Field.Variable;
 
   if not Field.NoDataField then
   If FQuery.Active then
@@ -4185,7 +4104,7 @@ begin
     TempFilter.FilterType:=ftTempFilter;
     TempFilter.NotLike:=True;
     TempFilter.CaseC:=True;
-    TempFilter.Partial:=False;
+    TempFilter.Contains:=False;
     FFilters.Add(TempFilter);
   end;
 
@@ -4639,19 +4558,19 @@ begin
   if IsLexem('DBFilter=', ScrStr) then
   begin
     TranslateVal(ScrStr, True);
-    ParseDBFilter(ScrStr, Self);
+    ParseDBFilter(ParseCommonFilter(ScrStr), Self);
   end;
 
   If IsLexem('ContextFilter=', ScrStr) then
   begin
     TranslateVal(ScrStr, True);
-    ParseContextFilter(ScrStr, Self);
+    ParseContextFilter(ParseCommonFilter(ScrStr), Self);
   end;
 
   If IsLexem('ComboFilter=', ScrStr) Then
   begin
     TranslateVal(ScrStr, True);
-    ParseComboFilter(ScrStr, Self);
+    ParseComboFilter(ParseCommonFilter(ScrStr), Self);
   end;
 
   If IsLexem('SummQuery=', ScrStr) Then
