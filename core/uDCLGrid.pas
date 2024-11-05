@@ -1419,9 +1419,9 @@ begin
 
     FCurrentField.ReadOnly:=FindParam('ReadOnly=', ScrLine)='1';
 
-    S:=RightStr(ScrLine, l-p);
-
     FCurrentField.Hint:=FindParam('Hint=', S);
+
+    S:=RightStr(ScrLine, l-p);
 
     tmpStr:=FindParam('VariableName=', S);
     If tmpStr<>'' Then
@@ -1432,18 +1432,18 @@ begin
     Else
       FCurrentField.PasswordChar:=#0;
 
-    S:=FindParam('Format=', ScrLine);
-    if S<>'' then
+    tmpStr:=FindParam('Format=', ScrLine);
+    if tmpStr<>'' then
     begin
-      If LowerCase(S)='float' Then
+      If LowerCase(tmpStr)='float' Then
       begin
         FCurrentField.FieldTypeFormat:=fftFloat;
       end;
-      if LowerCase(S)='digit' then
+      if LowerCase(tmpStr)='digit' then
       begin
         FCurrentField.FieldTypeFormat:=fftDigit;
       end;
-      if LowerCase(S)='trim' then
+      if LowerCase(tmpStr)='trim' then
       begin
         FCurrentField.FieldTypeFormat:=fftTrim;
       end;
@@ -1463,6 +1463,9 @@ begin
       FCurrentField.CheckState:=1;
     If PosEx('_OffCheck;', ScrLine)<>0 Then
       FCurrentField.CheckState:=-1;
+
+    FCurrentField.KeyField:=FindParam('Key=', ScrLine);
+    FCurrentField.ListField:=FindParam('List=', ScrLine);
 
     FCurrentField.FirstFieldsLine:=S;
     if FGridStyle in TDataGrid then
@@ -1693,9 +1696,13 @@ begin
 
     If (not Field.NoDataField) and FQuery.Active then
     begin
-      If FindParam('SetIndexValue=', Scr)='1' Then
+      if Field.UseIndex then
       begin
         DropList.ItemIndex:=FQuery.FieldByName(Field.FieldName).AsInteger;
+      end
+      else
+      begin
+        DropList.Text:=FQuery.FieldByName(Field.FieldName).AsString;
       end;
     end
     Else
@@ -2578,8 +2585,8 @@ begin
     FIDCLMain.Variables.NewVariableWithTest(FNamespace, Field.Variable);
   end;
 
-  DBLookupControl.KeyField:=FindParam('Key=', Scr);
-  DBLookupControl.ListField:=FindParam('List=', Scr);
+  DBLookupControl.KeyField:=Field.KeyField;
+  DBLookupControl.ListField:=Field.ListField;
 
   TempStr:=FindParam('ModifyingEdit=', Scr);
   If TempStr<>'' Then

@@ -14,7 +14,8 @@ type
   public
     CharCase: TEditCharCase;
     FieldName, Caption, Hint, Variable, Value, CheckValue, UnCheckValue, SQL,
-      FullFieldName, FirstFieldsLine, NotInputValue, ComponentName: String;
+      FullFieldName, FirstFieldsLine, NotInputValue, ComponentName,
+      KeyField, ListField: String;
     PasswordChar: Char;
     Width, Height, MaxLength, CheckState: Integer;
     ReadOnly, NoDataField, UseIndex, Enabled, RequireValue: Boolean;
