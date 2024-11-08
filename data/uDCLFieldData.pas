@@ -5,7 +5,7 @@ interface
 
 uses
   StdCtrls,
-  uDCLData, uDCLConst;
+  uDCLConst;
 
 type
   { TDCLFieldData }

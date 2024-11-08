@@ -1396,6 +1396,7 @@ begin
 
     FCurrentField.Value:=FindParam('_Value=', ScrLine);
     FCurrentField.SQL:=FindParam('SQL=', ScrLine);
+    FCurrentField.UseIndex:=FindParam('UseIndex=', ScrLine)='1';
 
     S:=FindParam('MaxLength=', ScrLine);
     If S<>'' Then
@@ -1691,8 +1692,6 @@ begin
         tmpStr1:=' ';
       DropList.Items.Append(tmpStr1);
     end;
-
-    Field.UseIndex:=FindParam('UseIndex=', Scr)='1';
 
     If (not Field.NoDataField) and FQuery.Active then
     begin
