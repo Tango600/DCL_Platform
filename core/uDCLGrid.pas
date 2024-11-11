@@ -15,7 +15,7 @@ uses
   uDCLCommandButton, uDCLField, uDCLMessages, uDCLImages, cMediaFieldGroup,
   uDCLBaseLayoutManger, uDCLHorizontalFieldLayoutManger, uVariableNamespace,
   uDCLDBAwareTypes, uIDCLCommand, uIDCLGrid, uIDCLForm, uDBControlsTypes,
-  uDCLVerticalFieldLayoutManger;
+  uDCLVerticalFieldLayoutManger, uDCLControls;
 
 type
   TStructureField=class
@@ -25,6 +25,22 @@ type
   TSortField=class
     FieldName: String;
     Order: TSortOrder;
+  end;
+
+  TBrushColor=class
+    Color: TColor;
+    ConditionValue: String;
+  end;
+
+  TDCLQueryStore=class
+    QueryStr: String;
+    QueryRaights: TUserLevelsType;
+    QueryType: TQueryType;
+  end;
+
+  TDCLEvent=class
+    ScriptName: String;
+    EventType: TEventsEnum;
   end;
 
   { TDCLGrid }
@@ -4660,6 +4676,22 @@ var
   FieldsPos: TList<TGridFieldSetting>;
   FieldPos: TGridFieldSetting;
   ButtonClose: TDCLCommandButton;
+
+  procedure FieldWidth(const Field: TDCLField; const FieldType: TFieldType);
+  begin
+    if Field.Width<=0 then
+    begin
+      case FieldType of
+        ftFloat, ftCurrency, ftSmallint, ftInteger, ftWord, ftAutoInc,
+          ftLargeint, ftBCD: Field.Width:=DigitEditWidth;
+        else
+        begin
+          Field.Width:=EditWidth;
+        end;
+      end;
+    end;
+  end;
+
 begin
   CreateToolPanel;
 

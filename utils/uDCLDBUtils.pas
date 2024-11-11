@@ -5,7 +5,7 @@ interface
 
 uses
   SysUtils, DB,
-  uDCLConst, uDCLData, uStringParams, uDCLMultiLang;
+  uStringParams, uDCLMultiLang;
 
 Function GetNameDSState(State: TDataSetState): String;
 

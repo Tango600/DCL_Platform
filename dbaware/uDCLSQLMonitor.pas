@@ -4,7 +4,7 @@ unit uDCLSQLMonitor;
 interface
 
 uses
-  Classes, DB, uDCLTypes, uDCLData, uDCLConst, uStringParams, SysUtils;
+  Classes, DB, SysUtils, uDCLTypes, uStringParams;
 
 type
   RDSS=Record

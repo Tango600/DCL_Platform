@@ -4,7 +4,7 @@ unit uDCLQuery;
 interface
 
 uses
-  SysUtils, Classes, Dialogs, Generics.Collections,
+  SysUtils, Classes, Dialogs, Generics.Collections, DB,
 {$IFDEF ADO}
   WideStrings, ADODB, ADOConst, ADOInt,
 {$ENDIF}
@@ -24,7 +24,7 @@ uses
 {$IFDEF ZEOS}
   //ZConnection, ZDataset, ZSqlUpdate,
 {$ENDIF}
-  DB, uDCLDBAwareTypes, uDCLData, uDCLConst;
+  uDCLDBAwareTypes, uDCLConst;
 
 const
   FetchAllData=True;

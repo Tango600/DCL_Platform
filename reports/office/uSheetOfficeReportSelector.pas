@@ -21,7 +21,7 @@ type
 implementation
 
 uses
-  uDCLData, uDCLUtils, uDCLOfficeSheetReport, uDCLOfficeUtils, uDCLGlobalVariables;
+  uDCLUtils, uDCLOfficeSheetReport, uDCLOfficeUtils, uDCLGlobalVariables;
 
 { TSheetOfficeReportSelector }
 

@@ -5,7 +5,19 @@ interface
 
 uses
   Classes, SysUtils, Generics.Collections,
-  uDCLData, uDCLConst;
+  uDCLConst;
+
+type
+  { TCondition }
+
+  TCondition=class
+    FieldNameLeft: String;
+    ConditionType: TConditionTypes;
+    Values: TList<String>;
+    ItemCondition: TPairCondition;
+
+    constructor Create;
+  end;
 
  function ParseLogicalExpression(S: String): Boolean;
  function LogicalParser(S: String): TList<TCondition>;
@@ -278,6 +290,13 @@ var
 begin
   Conds:=LogicalParser(S);
   Result:=CalcLogicalExpression(Conds);
+end;
+
+{ TCondition }
+
+constructor TCondition.Create;
+begin
+  Values:=TList<String>.Create;
 end;
 
 end.

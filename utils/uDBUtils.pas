@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, DB,
-  uDCLDBAwareTypes, uDCLData, uDCLConst, uDCLDBConnector, uDCLField, uDCLMeasurements;
+  uDCLDBAwareTypes, uDCLData, uDCLConst, uDCLDBConnector;
 
   function TableExists(DBConnector: TDBConnector; TableName: String): Boolean;
   function FieldExists(DBConnector: TDCLDBConnector; TableName, FieldName: String): Boolean; overload;
@@ -13,12 +13,10 @@ uses
   Function NormalizeFieldName(Const FieldName: String): String;
   Function GetDelimiter(Const FieldName: String; Query: TDCLDialogQuery): String;
   Function GetSimplyFieldType(Const FieldName: String; Query: TDCLDialogQuery): TSimplyFieldType; overload;
-  Function GetSimplyFieldType(Const FieldType:TFieldType): TSimplyFieldType; overload;
+  Function GetSimplyFieldType(Const FieldType: TFieldType): TSimplyFieldType; overload;
 
   Function QueryIsEmpty(Query: TDCLDialogQuery): Boolean;
   function GetFieldFromParam(Param: String; Query: TDCLDialogQuery): TField;
-
-  procedure FieldWidth(Field: TDCLField; FieldType: TFieldType);
 
 implementation
 
@@ -49,7 +47,7 @@ Begin
   end;
 End;
 
-Function GetSimplyFieldType(Const FieldType:TFieldType): TSimplyFieldType; overload;
+Function GetSimplyFieldType(Const FieldType: TFieldType): TSimplyFieldType; overload;
 Begin
   If FieldType in TStringTypedFields then
     Result:=sftString
@@ -183,21 +181,6 @@ Begin
     End;
   end;
 End;
-
-procedure FieldWidth(Field: TDCLField; FieldType: TFieldType);
-begin
-  if Field.Width<=0 then
-  begin
-    case FieldType of
-      ftFloat, ftCurrency, ftSmallint, ftInteger, ftWord, ftAutoInc,
-        ftLargeint, ftBCD: Field.Width:=DigitEditWidth;
-      else
-      begin
-        Field.Width:=EditWidth;
-      end;
-    end;
-  end;
-end;
 
 end.
 

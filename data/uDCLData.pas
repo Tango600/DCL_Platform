@@ -4,74 +4,9 @@ unit uDCLData;
 interface
 
 uses
-  StdCtrls, ComCtrls, Controls, Graphics, ExtCtrls, DB, Buttons, Classes,
-  Generics.Collections, SysUtils, Forms, DBCtrls,
-  uDCLConst, uDCLTypes, uDCLDBFilter, uDCLDBAwareTypes;
+  DB, uDCLConst;
 
 type
-  TDCLEdit=class
-    Control: TWinControl;
-    EditType: TFieldBoxType;
-    Variable: String;
-  end;
-
-  TDCLCalendar=class
-    LabelField: TDialogLabel;
-    Control: TDateTimePicker;
-    Caption, Field, Variable, ParamName: String;
-    Value: TDate;
-    Num: Integer;
-    ReOpen: Boolean;
-  end;
-
-  TStructureModify=class
-    ColumnsListCaption, FieldsListCaption: String;
-    ColumnsListField, FieldsListField: String;
-  End;
-
-  TDCLQueryStore=class
-    QueryStr: String;
-    QueryRaights: TUserLevelsType;
-    QueryType: TQueryType;
-  end;
-
-  TDBFilter=class(TDCLDBFilter)
-    FilterNum: Integer;
-    FilterString: String;
-    FilterLabel, NotCheckLabel: TDialogLabel;
-    Control: TWinControl;
-    FilterQuery: TDCLDialogQuery;
-    FilterData: TDataSource;
-    NotCheck: TCheckBox;
-  end;
-
-  TDCLLookup=class
-    LookupQuery: TDCLDialogQuery;
-    LookupDS: TDataSource;
-    NoDataField: Boolean;
-    ModifyEdit: String;
-  end;
-
-  TContextFieldButton=class
-    Button: TDialogSpeedButton;
-    Command: String;
-  End;
-
-  TDCLEvent=class
-    ScriptName: String;
-    EventType: TEventsEnum;
-  end;
-
-  TBrushColor=class
-    Color: TColor;
-    ConditionValue: String;
-  end;
-
-  TFontStyleRec=Record
-    Italic, Bold, Undeline, StrikeThrough: Byte;
-    Center:Boolean;
-  End;
-
   { TReturnValueParams }
 
   TReturnValueParams=class
@@ -82,21 +17,6 @@ type
     Multiselect: Boolean;
     constructor Create(aMode: TChooseMode; aKeyField, aValueField, aKeyEditName, aValueEditName, aKeyModifyField, aValueModifyField,
       aKeyVar, aValueVar, aBatchScript: String; aMultiselect: Boolean);
-  end;
-
-  TComboFilterItem=class
-    Key, Value:String;
-  end;
-
-  { TCondition }
-
-  TCondition=class
-    FieldNameLeft: String;
-    ConditionType: TConditionTypes;
-    Values: TList<String>;
-    ItemCondition: TPairCondition;
-
-    constructor Create;
   end;
 
   TGridFieldSetting=class
@@ -132,13 +52,6 @@ begin
   ValueVar:=aValueVar;
   BatchScript:=aBatchScript;
   Multiselect:=aMultiselect;
-end;
-
-{ TCondition }
-
-constructor TCondition.Create;
-begin
-  Values:=TList<String>.Create;
 end;
 
 Initialization

@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils,
-  uDCLDBAwareTypes, uDCLData;
+  uDCLDBAwareTypes, uDCLControls;
 
 type
   TOrderTypes=(otAsc, otDesck);

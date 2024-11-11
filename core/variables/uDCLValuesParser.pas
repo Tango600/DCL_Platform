@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, DateUtils, DB,
-  uDCLConst, uDCLData, uDCLVariables, uDCLDBAwareTypes, uDCLMD5, uDCLDBConnector;
+  uDCLConst, uDCLVariables, uDCLDBAwareTypes, uDCLMD5, uDCLDBConnector;
 
 type
 

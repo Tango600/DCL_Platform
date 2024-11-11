@@ -6,9 +6,9 @@ interface
 uses
   Classes, SysUtils, Generics.Collections, Forms, Controls, StdCtrls, DB,
   Dialogs, LazFileUtils,
-  uDCLData, uDCLDBAwareTypes, uDCLConst, uDCLGrid, uDCLVariables, uStringUtils,
-  uIDCLMain, uIDCLForm, uIDCLGrid, uStringParams, uDCLDBConnector,
-  uDCLDBStructure, uDCLValuesParser, MathParser, uIDCLCommand,
+  uDCLDBAwareTypes, uDCLConst, uDCLGrid, uDCLVariables, uStringUtils,
+  uIDCLMain, uIDCLForm, uIDCLGrid, uStringParams, uDCLDBConnector, uDCLData,
+  uDCLDBStructure, uDCLValuesParser, MathParser, uIDCLCommand, uDCLControls,
   uVariableNamespace;
 
 type

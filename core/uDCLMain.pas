@@ -12,7 +12,7 @@ uses
   uDCLDBAwareTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenuSelector,
   uDCLNotifier, uIDCLMain, uIDCLForm, uIDCLGrid, uReturnFormValue, uDCLData,
   uDCLConst, uIDCLCommand, uDCLScriptsPackage, uDCLImages, uVariableNamespace,
-  uIDCLProtectionEngine;
+  uIDCLProtectionEngine, uDCLControls;
 
 type
   { TDCLMain }

@@ -4,8 +4,8 @@ unit uDCLField;
 interface
 
 uses
-  Classes, SysUtils, StdCtrls, Generics.Collections,
-  uDCLFieldData, uDCLData, uDCLTypes, uDCLConst;
+  Classes, SysUtils, Generics.Collections,
+  uDCLControls, uDCLFieldData, uDCLTypes;
 
 type
   { TDCLField }

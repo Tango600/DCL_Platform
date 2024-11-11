@@ -4,7 +4,7 @@ unit uDCLDBConnector;
 interface
 
 uses
-  Classes, SysUtils, Forms,
+  Classes, SysUtils,
   {$IFDEF IBX}
   IB, IBDatabase, IBCustomDataSet,
   {$ENDIF}
@@ -15,7 +15,7 @@ uses
   SQLDB, {$IFDEF IBALL}SQLDBLib,{$ENDIF}
   {$ENDIF}
   FileUtil, LazUTF8, LazFileUtils,
-  uDCLData, uDCLConst, uDCLDBAwareTypes, uDCLDebug;
+  uDCLDBAwareTypes, uDCLDebug;
 
 type
   { TDCLDBConnector }
@@ -53,7 +53,7 @@ uses
 
 constructor TDCLDBConnector.Create;
 begin
-  inherited Create(Application);
+  inherited Create(nil);
   Name:='DCL_DBConnector1';
   FErrorCode:=255;
 
@@ -263,7 +263,7 @@ begin
   If GPT.DBPath<>'' Then
   begin
     If Not FilenameIsAbsolute(GPT.DBPath) Then
-      GPT.DBPath:=ExtractFilePath(Application.ExeName)+GPT.DBPath;
+      GPT.DBPath:=ExtractFilePath(ParamStr(0))+GPT.DBPath;
 
     if GPT.Port<>0 then
       Port:=GPT.Port;

@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, Generics.Collections, Controls, DB, DBGrids,
-  uDCLConst, uDCLData, uDCLField, uDCLCommandButton, uDCLQuery;
+  uDCLConst, uDCLControls, uDCLData, uDCLField, uDCLCommandButton, uDCLQuery;
 
 type
   IDCLGrid=interface

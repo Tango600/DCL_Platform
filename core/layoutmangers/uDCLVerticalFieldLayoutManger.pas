@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Controls, Generics.Collections,
-  uDCLBaseLayoutManger, uDCLMeasurements, uDCLConst, uDCLField, uDCLData;
+  uDCLBaseLayoutManger, uDCLMeasurements, uDCLConst, uDCLField, uDCLControls;
 
 type
 

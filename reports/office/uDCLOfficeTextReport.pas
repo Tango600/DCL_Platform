@@ -5,10 +5,14 @@ interface
 
 uses
   Classes, SysUtils, ComObj, Variants, Graphics, LazFileUtils,
-  uDCLConst, uDCLDBAwareTypes, uDCLData, uDCLBaseOfficeReport, uDCLDBConnector,
+  uDCLConst, uDCLDBAwareTypes, uDCLBaseOfficeReport, uDCLDBConnector,
   uDCLValuesParser;
 
 type
+  TFontStyleRec = Record
+    Italic, Bold, Undeline, StrikeThrough: Byte;
+    Center:Boolean;
+  End;
 
   { TDCLOfficeTextReport }
 

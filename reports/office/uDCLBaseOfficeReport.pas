@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, LazFileUtils,
-  uDCLData, uDCLConst, uDCLDBConnector, uDCLValuesParser;
+  uDCLConst, uDCLDBConnector, uDCLValuesParser;
 
 type
 
