@@ -16,7 +16,6 @@ type
     function Start: Boolean;
     procedure RunInterface;
     procedure CreateMenu(MainForm: TForm);
-    function IsNeedLogin: Boolean;
 
     function GetVariables: TVariables;
 
@@ -36,8 +35,6 @@ type
     function CloseDialog(var Form: IDCLForm; Force: Boolean): Boolean;
     procedure ReleaseForm(const Form: IDCLForm);
     procedure GetValueProc(const NameSpace: TVariableNamespace; const Form: IDCLForm; ReturnValue: TReturnFormValue);
-
-    procedure Update;
 
     procedure About;
     procedure ExitApp;

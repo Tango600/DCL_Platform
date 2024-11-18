@@ -6,7 +6,7 @@ interface
 uses
   Classes, SysUtils, Forms, Menus, ComCtrls, Controls, LCLClasses,
   Generics.Collections,
-  uDCLConst, uIDCLMain, uDCLDBAwareTypes, uDCLBaseMenu, uDBUtils;
+  uDCLConst, uIDCLMain, uDCLAbstractMenu, uDCLDBAwareTypes, uDCLBaseMenu;
 
 type
   { TDCLMenuClassic }
@@ -17,14 +17,14 @@ type
   protected
     procedure CreateMenuControls(var Query: TDCLSimplyQuery; Items: TList<TMenuConstructionItem>; ParentControl: TLCLComponent); override;
   public
-    constructor Create(Main: IDCLMain; MainForm: TForm); overload;
+    constructor Create(const Main: IDCLMain; MainForm: TForm); overload;
     destructor Destroy; override;
   end;
 
 implementation
 
 uses
-  uDCLGlobalVariables, uDCLDBStructure;
+  uDCLGlobalVariables, uDCLDBStructure, uDBUtils;
 
 { TDCLMenuClassic }
 
@@ -62,7 +62,7 @@ begin
   end;
 end;
 
-constructor TDCLMenuClassic.Create(Main: IDCLMain; MainForm: TForm);
+constructor TDCLMenuClassic.Create(const Main: IDCLMain; MainForm: TForm);
 begin
   inherited Create(Main, MainForm);
 

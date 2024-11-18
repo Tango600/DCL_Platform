@@ -14,7 +14,7 @@ type
   private
     FDCLMenu: TDCLBaseMenu;
   public
-    constructor Create(Main: IDCLMain; MainForm: TForm); overload;
+    constructor Create(const Main: IDCLMain; MainForm: TForm); overload;
     destructor Destroy; override;
   end;
 
@@ -25,7 +25,7 @@ uses
 
 { TDCLMenu }
 
-constructor TDCLMenuSelector.Create(Main: IDCLMain; MainForm: TForm);
+constructor TDCLMenuSelector.Create(const Main: IDCLMain; MainForm: TForm);
 begin
   case GPT.MenuType of
   mtClassic: FDCLMenu:=TDCLMenuClassic.Create(Main, MainForm);

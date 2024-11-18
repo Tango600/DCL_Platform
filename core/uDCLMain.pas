@@ -98,7 +98,8 @@ implementation
 uses
   uDCLConfig, uDCLDBStructure, uDCLMultiLang, fAbout, uDBUtils, uSystemUtils,
   uDCLGlobalVariables, uDCLUtils, uDCLMessages, uStringParams, uDCLCommand,
-  uDCLProtectionEngine, uDCLUpdaterPackage, uDCLMeasurements, uStringUtils;
+  {$IFDEF PROTECTION}uDCLProtectionEngine,{$ENDIF} uDCLUpdaterPackage,
+  uDCLMeasurements, uStringUtils;
 
 { TDCLMain }
 
@@ -613,7 +614,7 @@ begin
   if not GPT.DisableColorScheme and (GPT.MainColor<>NoColorValue) then
     Application.MainForm.Color:=GPT.MainColor;
 
-  IProtectionEngine:=TDCLProtectionEngine.Create;
+  {$IFDEF PROTECTION}IProtectionEngine:=TDCLProtectionEngine.Create;{$ENDIF}
   if {$IFDEF PROTECTION}IProtectionEngine.GetProtectionStatus{$ELSE}True{$ENDIF} then
   begin
     r:=False;
