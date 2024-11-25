@@ -43,6 +43,8 @@ const
   BinDataField='TEMPL_DATA';
 
   GPTTableName=DCL_TablePrefix+'GLOBAL_PARAMS';
+  GPTParamId='PARAM_ID';
+  GPTParamCaption='PARAM_CAPT';
   GPTNameField='PARAM_NAME';
   GPTValueField='PARAM_VALUE';
   GPTUserIDField='PARAM_USERID';

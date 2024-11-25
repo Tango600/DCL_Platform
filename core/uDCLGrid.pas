@@ -4270,7 +4270,6 @@ begin
 
   FFieldParsingMode:=fpmNone;
   FDataControlType:=SurfType;
-  FReadFieldsMode:=False;
   FToolButtonsCount:=0;
   FFieldsCount:=-1;
   FReadFieldsMode:=False;

@@ -397,6 +397,8 @@ begin
   if CheckParams then
   if Assigned(Grid) then
     Parser.RePlaseParams(Params, Grid.Query);
+
+  FreeAndNil(Parser);
 end;
 
 procedure TDCLForm.FormShow(Sender: TObject);
