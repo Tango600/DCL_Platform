@@ -4,7 +4,6 @@ unit uDCLFieldData;
 interface
 
 uses
-  StdCtrls,
   uDCLConst;
 
 type
@@ -12,7 +11,7 @@ type
 
   TDCLFieldData=class
   public
-    CharCase: TEditCharCase;
+    CharCase: TFieldCharCase;
     FieldName, Caption, Hint, Variable, Value, CheckValue, UnCheckValue, SQL,
       FullFieldName, FirstFieldsLine, NotInputValue, ComponentName,
       KeyField, ListField: String;
@@ -35,7 +34,7 @@ begin
   CheckValue:='1';
   UnCheckValue:='0';
   DataFieldType:=dftDefault;
-  CharCase:=ecNormal;
+  CharCase:=eccNormal;
 end;
 
 end.

@@ -150,6 +150,7 @@ Type
   TPassStatus=(psNone, psConfirmed, psCanceled);
   TFormsNotifyAction=(fnaRefresh, fnaClose, fnaMinimize, fnaMaximaze, fnaSetMDI,
     fnaResetMDI, fnaHide, fnaShow);
+  TFieldCharCase=(eccNormal, eccUpper, eccLower);
   TIsDigitType=(idString, idDigit, idFloatDigit, idHex, idColor, idDateTime, idUserLevel);
   TDataStatus=(dssChanged, dssSaved);
   TNotifyActionsType=(naDone, naScriptRun, naMessage, naExecAndWait, naExec, naExitToTime);

@@ -1469,10 +1469,10 @@ begin
     If FindParam('CharCase=', ScrLine)<>'' then
     begin
       if FindParam('CharCase=', ScrLine).ToLower='lowercase' then
-        FCurrentField.CharCase:=ecLowerCase
+        FCurrentField.CharCase:=eccLower
       else
         if FindParam('CharCase=', ScrLine).ToLower='uppercase' then
-          FCurrentField.CharCase:=ecUppercase;
+          FCurrentField.CharCase:=eccUpper;
     end;
 
     FCurrentField.CheckState:=0;
@@ -1821,6 +1821,15 @@ begin
   Field.DCLEditComponent.Control:=MediaField;
 end;
 
+function ConvertEditCharCase(const CharCase: TFieldCharCase): TEditCharCase;
+begin
+  case CharCase of
+  eccNormal: Result:=ecNormal;
+  eccUpper: Result:=ecUppercase;
+  eccLower: Result:=ecLowercase;
+  end;
+end;
+
 procedure TDCLGrid.AddDBEdit(Field: TDCLField);
 var
   DBEdit: TDBEdit;
@@ -1837,7 +1846,7 @@ begin
     DBEdit.TextHint:=Field.Hint;
     if Field.Hint<>'' then
       DBEdit.ShowHint:=True;
-    DBEdit.CharCase:=Field.CharCase;
+    DBEdit.CharCase:=ConvertEditCharCase(Field.CharCase);
     DBEdit.PasswordChar:=Field.PasswordChar;
     DBEdit.OnClick:=DBEditClick;
     DBEdit.Enabled:=Field.Enabled;
@@ -2224,9 +2233,9 @@ begin
 
   Edit.PasswordChar:=Field.PasswordChar;
 
-  if Field.CharCase<>ecNormal then
+  if Field.CharCase<>eccNormal then
   begin
-    Edit.CharCase:=Field.CharCase;
+    Edit.CharCase:=ConvertEditCharCase(Field.CharCase);
   end;
 
   Edit.ReadOnly:=Field.ReadOnly;
