@@ -21,7 +21,7 @@ type
     destructor Destroy; override;
 
     procedure Print(Grid: TDCLDBGrid; Caption: String);
-    procedure Save(FileName: String);
+    procedure Save(const FileName: String);
   end;
 
 implementation
@@ -151,7 +151,7 @@ begin
   PrintBox.Append(Separator);
 end;
 
-procedure TPrintBase.Save(FileName: String);
+procedure TPrintBase.Save(const FileName: String);
 begin
   if Assigned(PrintBox) then
   begin

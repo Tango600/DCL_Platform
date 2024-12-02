@@ -931,7 +931,7 @@ end;
 
 procedure TDCLGrid.Print(Sender: TObject);
 const
-  tmpFileName='table.tmp';
+  tmpFileName='table.txt';
 var
   Print: TPrintBase;
 begin
