@@ -17,7 +17,7 @@ type
       KeyField, ListField: String;
     PasswordChar: Char;
     Width, Height, MaxLength, CheckState: Integer;
-    ReadOnly, NoDataField, UseIndex, Enabled, RequireValue: Boolean;
+    ReadOnly, NoDataField, UseIndex, Enabled, RequiredValue: Boolean;
     FieldTypeFormat: TFieldFormat;
     DataFieldType: TDCLDataFieldKind;
 

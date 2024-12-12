@@ -1431,7 +1431,7 @@ begin
       FCurrentField.FullFieldName:=FindParam('FullName=', ScrLine);
     end;
 
-    FCurrentField.RequireValue:=FindParam('RequireValue=', ScrLine)='1';
+    FCurrentField.RequiredValue:=FindParam('RequiredValue=', ScrLine)='1';
     FCurrentField.Hint:=FindParam('Hint=', ScrLine);
 
     FCurrentField.ReadOnly:=FindParam('ReadOnly=', ScrLine)='1';
@@ -5182,7 +5182,7 @@ begin
   begin
     for e in FDCLFields do
     begin
-      if e.RequireValue and (e.NotInputValue='') and not e.ReadOnly and e.Enabled then
+      if e.RequiredValue and (e.NotInputValue='') and not e.ReadOnly and e.Enabled then
       begin
         if Assigned(e.DCLEditComponent) and Assigned(e.DCLEditComponent.Control) then
         begin
