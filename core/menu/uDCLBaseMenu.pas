@@ -34,7 +34,7 @@ type
 implementation
 
 uses
-  uDCLGlobalVariables, uDCLQueryUtils, uDCLImages, uDCLScriptsPackage;
+  uDCLGlobalVariables, uDCLQueryUtils, uDCLImages, uDCLScriptsPackage, uDBUtils;
 
 { TDCLMenu }
 
@@ -74,29 +74,32 @@ begin
     end;
   end;
 
-  if ParentID=0 then
-    ParentWhere:=' is null'
-  else
-    ParentWhere:=' = '+IntToStr(ParentID);
-
-  Query.SQL.Text:=GetRolesQueryText(IdentifyField+' between 1 and 20000 and '+ParentField+ParentWhere, GPT.UserID);
-
-  Query.Open;
-  while not Query.EOF do
+  if TableExists(FMain.GetDBConnector, DCLTable) then
   begin
-    if not ExistItemByIdent(ConstructionItems, Query.FieldByName(IdentifyField).AsInteger) then
-    begin
-      ci:=TMenuConstructionItem.Create;
-      ci.Id:=Query.FieldByName(IdentifyField).AsInteger;
-      ci.Parent:=Query.FieldByName(ParentField).AsInteger;
-      ci.Title:=Query.FieldByName(DCLNameField).AsString;
-      ci.Command:=Query.FieldByName(CommandField).AsString;
-      ConstructionItems.Add(ci);
-    end;
+    if ParentID=0 then
+      ParentWhere:=' is null'
+    else
+      ParentWhere:=' = '+IntToStr(ParentID);
 
-    Query.Next;
+    Query.SQL.Text:=GetRolesQueryText(IdentifyField+' between 1 and 20000 and '+ParentField+ParentWhere, GPT.UserID);
+
+    Query.Open;
+    while not Query.EOF do
+    begin
+      if not ExistItemByIdent(ConstructionItems, Query.FieldByName(IdentifyField).AsInteger) then
+      begin
+        ci:=TMenuConstructionItem.Create;
+        ci.Id:=Query.FieldByName(IdentifyField).AsInteger;
+        ci.Parent:=Query.FieldByName(ParentField).AsInteger;
+        ci.Title:=Query.FieldByName(DCLNameField).AsString;
+        ci.Command:=Query.FieldByName(CommandField).AsString;
+        ConstructionItems.Add(ci);
+      end;
+
+      Query.Next;
+    end;
+    Query.Close;
   end;
-  Query.Close;
 
   ConstructionItems.Sort(iComp);
 

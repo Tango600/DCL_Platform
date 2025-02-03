@@ -1,5 +1,4 @@
 {$MODE Delphi}
-///{$mode DelphiUnicode}
 {$codepage utf8}
 {$GOTO OFF}
 
@@ -7,7 +6,9 @@
   {$DEFINE MACOS}
 {$ENDIF}
 
-//{$DEFINE PROTECTION}
+{$DEFINE ALLOWNODCL}  // разрешено запускать при отсутствии структуры DCL в БД
+{$DEFINE NOCHECKSIGN}  // не проверять подпись пакета
+//{$DEFINE PROTECTION}  // включить модуль защиты
 
 //{$DEFINE DCLDEBUG}
 //{$DEFINE DCLDEBUG2}

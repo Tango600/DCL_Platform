@@ -24,6 +24,7 @@ type
 
     procedure OnTick(Sender: TObject);
     procedure MessageToUser(Text: String);
+    function TestNotifierTable: Boolean;
   public
     constructor Create(DCLMain: IDCLMain); overload;
   end;
@@ -31,7 +32,7 @@ type
 implementation
 
 uses
-  uDCLDBStructure, uRunProgram, uDCLMultiLang;
+  uDCLDBStructure, uRunProgram, uDCLMultiLang, uDBUtils;
 
 { TDCLNotifier }
 
@@ -141,6 +142,11 @@ begin
   MessageForm.Show;
 end;
 
+function TDCLNotifier.TestNotifierTable: Boolean;
+begin
+  Result:=FDCLConnector.Connected and TableExists(FDCLConnector, NotifycationsTable);
+end;
+
 constructor TDCLNotifier.Create(DCLMain: IDCLMain);
 begin
   FDCLMain:=DCLMain;
@@ -155,11 +161,14 @@ begin
   ShadowQuery2:=TDCLSimplyQuery.Create(Self);
   FDCLConnector.SetConnector(ShadowQuery2);
 
-  Timer:=TTimer.Create(Self);
-  Timer.Interval:=IntervalTimeNotify;
-  Timer.OnTimer:=OnTick;
+  if TestNotifierTable then
+  begin
+    Timer:=TTimer.Create(Self);
+    Timer.Interval:=IntervalTimeNotify;
+    Timer.OnTimer:=OnTick;
 
-  OnTick(Timer);
+    OnTick(Timer);
+  end;
 end;
 
 end.

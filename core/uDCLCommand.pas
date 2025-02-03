@@ -8,8 +8,7 @@ uses
   Dialogs, LazFileUtils,
   uDCLDBAwareTypes, uDCLConst, uDCLGrid, uDCLVariables, uStringUtils,
   uIDCLMain, uIDCLForm, uIDCLGrid, uStringParams, uDCLDBConnector, uDCLData,
-  uDCLDBStructure, uDCLValuesParser, MathParser, uIDCLCommand, uDCLControls,
-  uVariableNamespace;
+  uDCLValuesParser, MathParser, uIDCLCommand, uDCLControls, uVariableNamespace;
 
 type
 
@@ -586,36 +585,24 @@ procedure TDCLCommand.RunTextReport(constref ScrLine: String; Query: TDCLDialogQ
 var
   tmpDCL: TStringList;
   tmpS, tmpS1: String;
-  v1, RepIdParams, RecCount: Integer;
-  DCLQuery: TDCLSimplyQuery;
+  v1, RepIdParams: Integer;
+  Script: TDCLScript;
   TextReport: TDCLTextReport;
 begin
   tmpDCL:=TStringList.Create;
-  DCLQuery:=TDCLSimplyQuery.Create(nil);
-  FDBConnector.SetConnector(DCLQuery);
-
   RepIdParams:=0;
   tmpS:=FindParam('FromFile=', ScrLine);
   If tmpS='' Then
   begin
     tmpS1:=FindParam('ReportName=', ScrLine);
     TranslateVals(tmpS1, Query);
-    DCLQuery.Close;
-    DCLQuery.SQL.Text:='select Count(*) from '+DCLTable+' where lower('+
-      DCLNameField+')=lower(:RepName)';
-    DCLQuery.ParamByName('RepName').AsString:=tmpS1;
-    DCLQuery.Open;
-    RecCount:=DCLQuery.Fields[0].AsInteger;
-    DCLQuery.Close;
-    If RecCount=1 Then
+
+    Script:=FIDCLMain.GetScript(tmpS1);
+
+    If Assigned(Script) Then
     begin
-      DCLQuery.SQL.Text:='select * from '+DCLTable+' where lower('+
-        DCLNameField+')=lower(:RepName)';
-      DCLQuery.ParamByName('RepName').AsString:=tmpS1;
-      DCLQuery.Open;
-      tmpDCL.Text:=DCLQuery.FieldByName(ScriptField).AsString;
-      RepIdParams:=DCLQuery.FieldByName(IdentifyField).AsInteger;
-      DCLQuery.Close;
+      tmpDCL.Text:=Script.ScriptText.Text;
+      RepIdParams:=Script.Ident;
     end;
   end
   Else
@@ -671,7 +658,6 @@ begin
     TextReport.CloseReport('Report.txt');
   end;
   FreeAndNil(tmpDCL);
-  FreeAndNil(DCLQuery);
 end;
 
 procedure TDCLCommand.RunCommand(Command: String);

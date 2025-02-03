@@ -19,7 +19,8 @@ begin
   end
   else
   begin
-    Result:='select distinct s.'+IdField+', s.'+IdentifyField+', s.'+ParentField+', s.'+DCLNameField+', s.'+CommandField+' from '+
+    Result:='select distinct s.'+IdField+', s.'+IdentifyField+', s.'+ParentField+', s.'+DCLNameField+', s.'+CommandField+
+      ', s.'+ScriptField+' from '+
       DCLTable+' s, '+RolesMenuTable+' rm, '+RolesTable+' r, '+UsersTable+' u, '+
       RolesToUsersTable+' ru '+' where r.'+RolesIDFiled+'=rm.'+RolesMenuIDFiled+' and rm.'+RoleMenuItemIDField+'=s.'+
       IdentifyField+' and ru.'+RolesToUsersRoleIDField+'=r.'+RolesIDFiled+' and u.'+UserIDField+
@@ -29,7 +30,8 @@ end;
 
 function GetOutRolesQueryText(Where: String): String;
 begin
-  Result:='select s.'+IdField+', s.'+IdentifyField+', s.'+ParentField+', s.'+DCLNameField+', s.'+CommandField+' from '+
+  Result:='select s.'+IdField+', s.'+IdentifyField+', s.'+ParentField+', s.'+DCLNameField+', s.'+CommandField+
+    ', s.'+ScriptField+' from '+
     DCLTable+' s where '+Where+' order by s.'+IdentifyField+', s.'+ParentField;
 end;
 

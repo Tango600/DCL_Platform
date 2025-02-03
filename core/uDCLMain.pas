@@ -8,7 +8,8 @@ uses
   Windows,
   {$ENDIF}
   Classes, SysUtils, Generics.Collections, Forms, ExtCtrls, LazFileUtils,
-  Controls, StdCtrls, DB, lcltype, fMain, fDCLLoginForm, fDCLProtectionForm,
+  Controls, StdCtrls, DB, lcltype, Dialogs,
+  fMain, fDCLLoginForm, fDCLProtectionForm,
   uDCLDBAwareTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenuSelector,
   uDCLNotifier, uIDCLMain, uIDCLForm, uIDCLGrid, uReturnFormValue, uDCLData,
   uDCLConst, uIDCLCommand, uDCLScriptsPackage, uDCLImages, uVariableNamespace,
@@ -34,11 +35,16 @@ type
     IProtectionEngine: IDCLProtectionEngine;
 
     function GetScriptText(ScriptName: String): TStringList;
+    function GetScript(ScriptName: String): TDCLScript;
+    function GetScriptByIdent(Ident: Integer; OutRoles: Boolean): TDCLScript;
+    procedure RunScript(IdentFrom, IdentTo: Integer);
 
     procedure WriteBaseID;
     function ReadBaseID: String;
 
     function TestGlobalParamsTable: Boolean;
+    function TestUsersTable: Boolean;
+    function TestScriptTable: Boolean;
     procedure CreateImageList;
 
     function LoadPackage(const FileName: String): TDCLScriptsPackage;
@@ -99,13 +105,20 @@ uses
   uDCLConfig, uDCLDBStructure, uDCLMultiLang, fAbout, uDBUtils, uSystemUtils,
   uDCLGlobalVariables, uDCLUtils, uDCLMessages, uStringParams, uDCLCommand,
   {$IFDEF PROTECTION}uDCLProtectionEngine,{$ENDIF} uDCLUpdaterPackage,
-  uDCLMeasurements, uStringUtils;
+  uDCLMeasurements, uStringUtils, uDCLQueryUtils;
 
 { TDCLMain }
 
 function TDCLMain.IsNeedLogin: Boolean;
 begin
   Result:=False;
+
+  {$IFDEF ALLOWNODCL}
+  if not TestUsersTable then
+  begin
+    Exit;
+  end;
+  {$ENDIF}
 
   LocalQuery.SQL.Text:='select * from '+UsersTable;
   LocalQuery.Open;
@@ -220,8 +233,30 @@ begin
 end;
 
 function TDCLMain.CheckSigned(Package: TDCLScriptsPackage): Boolean;
+var
+  Signer, Password: String;
 begin
   Result:=False;
+  {$IFDEF ALLOWNODCL}
+  if not TestUsersTable then
+  begin
+    {$IFDEF NOCHECKSIGN}
+    Result:=True;
+    Exit;
+    {$ELSE}
+    Signer:=InputBox('Package check', 'Signer', '');
+    if Signer<>'' then
+    begin
+      Password:=PasswordBox('Package check', 'Password');
+      if Package.CheckPackage(Signer, Password) then
+      begin
+        Result:=True;
+      end;
+    end;
+    Exit;
+    {$ENDIF}
+  end;
+  {$ENDIF}
   LocalQuery.Params.Clear;
   LocalQuery.SQL.Text:='select * from '+UsersTable+' where '+UserAdminField+'>=:UL';
   LocalQuery.Prepare;
@@ -675,28 +710,136 @@ end;
 
 function TDCLMain.GetScriptText(ScriptName: String): TStringList;
 var
-  RunItem: TDCLScriptItem;
+  Script: TDCLScript;
 begin
   Result:=TStringList.Create;
+  Script:=GetScript(ScriptName);
+  if Assigned(Script) then
+    Result.Text:=Script.ScriptText.Text;
+  FreeAndNil(Script);
+end;
 
-  for RunItem in FScripts do
+function TDCLMain.GetScript(ScriptName: String): TDCLScript;
+var
+  i: TDCLScriptItem;
+begin
+  Result:=nil;
+
+  for i in FScripts do
   begin
-    if not RunItem.SQL and (RunItem.ScriptName.ToLower=ScriptName.ToLower) then
+    if not i.SQL and (i.ScriptName.ToLower=ScriptName.ToLower) then
     begin
-      Result.Clear;
-      RunItem.ScriptText.Position:=0;
-      Result.LoadFromStream(RunItem.ScriptText);
+      i.ScriptText.Position:=0;
+
+      Result:=TDCLScript.Create;
+      Result.Id:=i.Id;
+      Result.Ident:=i.Ident;
+      Result.Command:=i.Command;
+      Result.ScriptText:=TStringList.Create;
+      Result.ScriptText.LoadFromStream(i.ScriptText);
       Exit;
     end;
   end;
 
-  LocalQuery.Params.Clear;
-  LocalQuery.SQL.Text:='select '+ScriptField+' from '+DCLTable+' where lower('+DCLNameField+') = lower(:sn)';
-  LocalQuery.ParamByName('sn').AsString:=ScriptName;
-  LocalQuery.Open;
-  LocalQuery.First;
-  Result.Text:=LocalQuery.Fields[0].AsString;
-  LocalQuery.Close;
+  if {$IFDEF ALLOWNODCL}TestScriptTable{$ELSE}True{$ENDIF} then
+  begin
+    LocalQuery.Params.Clear;
+    LocalQuery.SQL.Text:='select * from '+DCLTable+' where lower('+DCLNameField+') = lower(:sn)';
+    LocalQuery.ParamByName('sn').AsString:=ScriptName;
+    LocalQuery.Open;
+    LocalQuery.First;
+
+    Result:=TDCLScript.Create;
+    Result.Id:=LocalQuery.FieldByName(IdField).AsInteger;
+    Result.Ident:=LocalQuery.FieldByName(IdentifyField).AsInteger;
+    Result.Command:=LocalQuery.FieldByName(CommandField).AsString;
+
+    Result.ScriptText:=TStringList.Create;
+    Result.ScriptText.Text:=LocalQuery.FieldByName(ScriptField).AsString;
+    LocalQuery.Close;
+  end;
+end;
+
+function TDCLMain.GetScriptByIdent(Ident: Integer; OutRoles: Boolean): TDCLScript;
+var
+  i: TDCLScriptItem;
+begin
+  Result:=nil;
+
+  for i in FScripts do
+  begin
+    if i.Ident=Ident then
+    begin
+      i.ScriptText.Position:=0;
+
+      Result:=TDCLScript.Create;
+      Result.Id:=i.Id;
+      Result.Ident:=i.Ident;
+      Result.Command:=i.Command;
+      Result.ScriptText:=TStringList.Create;
+      Result.ScriptText.LoadFromStream(i.ScriptText);
+      Exit;
+    end;
+  end;
+
+  if {$IFDEF ALLOWNODCL}TestScriptTable{$ELSE}True{$ENDIF} then
+  begin
+    LocalQuery.Params.Clear;
+    if OutRoles then
+      LocalQuery.SQL.Text:=GetOutRolesQueryText(IdentifyField+'='+IntToStr(Ident))
+    else
+      LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+'='+IntToStr(Ident), GPT.UserID);
+    LocalQuery.Open;
+    LocalQuery.First;
+
+    Result:=TDCLScript.Create;
+    Result.Id:=LocalQuery.FieldByName(IdField).AsInteger;
+    Result.Ident:=LocalQuery.FieldByName(IdentifyField).AsInteger;
+    Result.Command:=LocalQuery.FieldByName(CommandField).AsString;
+
+    Result.ScriptText:=TStringList.Create;
+    Result.ScriptText.Text:=LocalQuery.FieldByName(ScriptField).AsString;
+    LocalQuery.Close;
+  end;
+end;
+
+procedure TDCLMain.RunScript(IdentFrom, IdentTo: Integer);
+var
+  I: TDCLScriptItem;
+  Scr: TStringList;
+  LocalQuery: TDCLSimplyQuery;
+begin
+  for I in GetLoadedScripts do
+  begin
+    if (I.Ident>=IdentFrom) and (I.Ident<=IdentTo) then
+    begin
+      if Assigned(I.ScriptText) then
+      begin
+        Scr:=TStringList.Create;
+        I.ScriptText.Position:=0;
+        Scr.LoadFromStream(I.ScriptText);
+
+        RunCommandScript(Scr.Text);
+        FreeAndNil(Scr);
+      end;
+    end;
+  end;
+
+  if TestScriptTable then
+  begin
+    LocalQuery:=TDCLSimplyQuery.Create(nil);
+    FDBConnector.SetConnector(LocalQuery);
+
+    LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+' between '+IntToStr(IdentFrom)+' and '+IntToStr(IdentTo), GPT.UserID);
+    LocalQuery.Open;
+    while not LocalQuery.EOF do
+    begin
+      RunCommandScript(LocalQuery.FieldByName(DCLNameField).AsString);
+      LocalQuery.Next;
+    end;
+    LocalQuery.Close;
+    FreeAndNil(LocalQuery);
+  end;
 end;
 
 procedure TDCLMain.WriteBaseID;
@@ -750,6 +893,16 @@ end;
 function TDCLMain.TestGlobalParamsTable: Boolean;
 begin
   Result:=FDBConnector.Connected and not TableExists(FDBConnector, GPTTableName);
+end;
+
+function TDCLMain.TestUsersTable: Boolean;
+begin
+  Result:=FDBConnector.Connected and TableExists(FDBConnector, RolesTable) and TableExists(FDBConnector, UsersTable);
+end;
+
+function TDCLMain.TestScriptTable: Boolean;
+begin
+  Result:=FDBConnector.Connected and TableExists(FDBConnector, DCLTable);
 end;
 
 procedure TDCLMain.CreateImageList;

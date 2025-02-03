@@ -1,5 +1,5 @@
 unit uDCLMenuClassic;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 
@@ -11,7 +11,7 @@ uses
 type
   { TDCLMenuClassic }
 
-  TDCLMenuClassic=class(TDCLBaseMenu)
+  TDCLMenuClassic = class(TDCLBaseMenu)
   private
     procedure CreateMenuControl(var Query: TDCLSimplyQuery; Item: TMenuConstructionItem; ParentControl: TLCLComponent);
   protected
@@ -66,7 +66,9 @@ constructor TDCLMenuClassic.Create(const Main: IDCLMain; MainForm: TForm);
 begin
   inherited Create(Main, MainForm);
 
+  {$IFnDEF ALLOWNODCL}
   if TableExists(Main.GetDBConnector, DCLTable) then
+  {$ENDIF}
     CreateMenu(LocalQuery, FMainMenu, 0);
 
   CreateAboutItem;

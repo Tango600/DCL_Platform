@@ -20,6 +20,9 @@ type
     function GetVariables: TVariables;
 
     function GetScriptText(ScriptName: String): TStringList;
+    function GetScript(ScriptName: String): TDCLScript;
+    function GetScriptByIdent(Ident: Integer; OutRoles: Boolean): TDCLScript;
+    procedure RunScript(IdentFrom, IdentTo: Integer);
     procedure OpenDialog(DialogName: String; Host: Boolean);
     procedure RunCommandScript(CommandName: String);
     function GetLoadedScripts: TList<TDCLScriptItem>;

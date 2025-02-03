@@ -4,9 +4,15 @@ unit uDCLData;
 interface
 
 uses
-  DB, uDCLConst;
+  DB, Classes, uDCLConst;
 
 type
+  TDCLScript = class
+    Id, Ident, Parent: Integer;
+    ScriptName, Command: String;
+    ScriptText: TStringList;
+  end;
+
   { TReturnValueParams }
 
   TReturnValueParams=class

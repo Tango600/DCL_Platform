@@ -68,8 +68,8 @@ implementation
 
 uses
   ClipBrd,
-  uDCLDBAwareTypes, uDCLConst, uDCLVersion, uDCLDBStructure, fDCLProtectionForm,
-  uDCLScriptsPackage, uDCLGlobalVariables;
+  uDCLConst, uDCLVersion, fDCLProtectionForm, uDCLData, uDCLScriptsPackage,
+  uDCLGlobalVariables;
 
 {$R *.lfm}
 
@@ -127,37 +127,27 @@ end;
 
 function TAboutForm.GetConfigInfo: String;
 var
-  Q: TDCLDialogQuery;
+  Script: TDCLScript;
 begin
   Result:='';
-  if Assigned(FDBConnector) then
-  begin
-    Q:=TDCLDialogQuery.Create(Self);
-    FDBConnector.SetConnector(Q);
-    Q.SQL.Text:='select '+ScriptField+' from '+DCLTable+' where '+IdentifyField+'=60000';
-    Q.Open;
-    Result:=Q.Fields[0].AsString;
-    Q.Close;
+  Script:=FIDCLMain.GetScriptByIdent(60000, True);
 
-    FreeAndNil(Q);
+  if Assigned(Script) then
+  begin
+    Result:=Script.ScriptText.Text;
   end;
 end;
 
 function TAboutForm.GetConfigVersion: String;
 var
-  Q: TDCLDialogQuery;
+  Script: TDCLScript;
 begin
-  Result:='1';
-  if Assigned(FDBConnector) then
-  begin
-    Q:=TDCLDialogQuery.Create(Self);
-    FDBConnector.SetConnector(Q);
-    Q.SQL.Text:='select '+ScriptField+' from '+DCLTable+' where '+IdentifyField+'=60001';
-    Q.Open;
-    Result:=Q.Fields[0].AsString;
-    Q.Close;
+  Result:='';
+  Script:=FIDCLMain.GetScriptByIdent(60001, True);
 
-    FreeAndNil(Q);
+  if Assigned(Script) then
+  begin
+    Result:=Script.ScriptText.Text;
   end;
 end;
 
