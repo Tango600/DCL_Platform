@@ -2263,11 +2263,15 @@ begin
   Edit.MaxLength:=Field.MaxLength;
 
   NeedValue:=0;
-  If Field.Value<>'' Then
-    NeedValue:=1
-  Else
+  NeedValue:=0;
+  If PosEx('_Value=', Scr)<>0 Then
   Begin
-    NeedValue:=3;
+    If FindParam('_Value=', Scr)<>'' Then
+      NeedValue:=1
+    Else
+    Begin
+      NeedValue:=3;
+    End;
   End;
 
   If FindParam('_ValueNotInput=', Scr)<>'' Then
