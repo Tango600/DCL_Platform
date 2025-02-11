@@ -2263,7 +2263,6 @@ begin
   Edit.MaxLength:=Field.MaxLength;
 
   NeedValue:=0;
-  NeedValue:=0;
   If PosEx('_Value=', Scr)<>0 Then
   Begin
     If FindParam('_Value=', Scr)<>'' Then
