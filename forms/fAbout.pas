@@ -15,6 +15,8 @@ type
     ButtonOK: TButton;
     GroupBox1: TGroupBox;
     GroupBox2: TGroupBox;
+    imgNoConfig: TImage;
+    imgNoCheckSign: TImage;
     imgProtectionOn: TImage;
     ImageLogo: TImage;
     Label1: TLabel;
@@ -109,6 +111,12 @@ begin
   imgProtectionOn.Visible:=True;
   pnProtectionStatus.Visible:=True;
   lbProtectionKey.Caption:=IDCLMain.GetProtectionEngine.GetProtectionKey;
+  {$ENDIF}
+  {$IFDEF ALLOWNODCL}
+  imgNoConfig.Visible:=True;
+  {$ENDIF}
+  {$IFDEF NOCHECKSIGN}
+  imgNoCheckSign.Visible:=True;
   {$ENDIF}
 end;
 

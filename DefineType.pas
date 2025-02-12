@@ -6,8 +6,8 @@
   {$DEFINE MACOS}
 {$ENDIF}
 
-{$DEFINE ALLOWNODCL}  // разрешено запускать при отсутствии структуры DCL в БД
-{$DEFINE NOCHECKSIGN}  // не проверять подпись пакета
+//{$DEFINE ALLOWNODCL}  // разрешено запускать при отсутствии структуры DCL в БД
+//{$DEFINE NOCHECKSIGN}  // не проверять подпись пакета
 //{$DEFINE PROTECTION}  // включить модуль защиты
 
 //{$DEFINE DCLDEBUG}
