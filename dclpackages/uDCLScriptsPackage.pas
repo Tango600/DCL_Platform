@@ -53,7 +53,6 @@ type
     procedure ParsePackageHeader(TextPackage: TStringList);
     procedure ParseDependenciesSection(TextPackage: TStringList);
     function CalcPackageHash: String;
-    function GetBase41Sequence: String;
   public
     constructor Create;
 
@@ -84,7 +83,7 @@ type
 implementation
 
 uses
-  uStringParams, uStringUtils, MD5, uLZW, uDCLConst;
+  uBase41, uStringParams, uStringUtils, MD5, uLZW, uDCLConst;
 
 const
   KeySection='Key';
@@ -362,18 +361,12 @@ begin
   Result:=S;
 end;
 
-function TDCLScriptsPackage.GetBase41Sequence: String;
-begin
-  Result:='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-end;
-
 function TDCLScriptsPackage.EncodePackage(RunOnStart: Boolean): TStream;
 var
   RawPackage: TStream;
   I: TDCLScriptItem;
   CompressedPackage: TStream;
-  Base41X, S, HashKey: String;
-  b, b1, w: Word;
+  S, HashKey: String;
   TextPackage: TStringList;
 begin
   Result:=TMemoryStream.Create;
@@ -458,42 +451,14 @@ begin
     RawPackage.Free;
     FreeAndNil(TextPackage);
 
-    Base41X:=GetBase41Sequence;
-
     S:='DCL5;';
     Result.Write(S[1], 5);
 
     S:=PackagesVersion+';';
     Result.Write(S[1], 4);
 
-    w:=9;
     CompressedPackage.Position:=0;
-    b:=0;
-    while CompressedPackage.Read(b, 2)<>0 do
-    begin
-      b1:=b div (41*41);
-      S:=Base41X[b1+1];
-      Result.Write(S[1], 1);
-      inc(w);
-
-      b1:=(b div 41) mod 41;
-      S:=Base41X[b1+1];
-      Result.Write(S[1], 1);
-      inc(w);
-
-      b1:=b mod 41;
-      S:=Base41X[b1+1];
-      Result.Write(S[1], 1);
-      inc(w);
-
-      if w>80 then
-      begin
-        S:=LineEnding;
-        Result.Write(S[1], Length(S));
-        w:=0;
-      end;
-      b:=0;
-    end;
+    Encode(CompressedPackage, Result, True, 0);
     CompressedPackage.Free;
   end
   else
@@ -517,14 +482,11 @@ end;
 
 procedure TDCLScriptsPackage.Load(Package: TStream);
 var
-  w: Word;
-  bp: Integer;
   b: Byte;
-  Base41X, S: String;
+  S: String;
   PackageText: TStream;
   TextPackage: TStringList;
   MS: TStream;
-  Buffer: Array[1..3] of Word;
   FormatBuffer: Array[1..4] of Byte;
 begin
   if Package.Read(FormatBuffer[1], 4)<>0 then
@@ -534,7 +496,7 @@ begin
     begin
       b:=1;
       Package.Read(b, 1);
-      if Package.Read(FormatBuffer[1], 4)<>0 then
+      if (Package.Read(FormatBuffer[1], 4)<>0) and (b=Ord(';')) then
       begin
         if (FormatBuffer[4]=59) then
         begin
@@ -546,29 +508,9 @@ begin
 
           if PackagesVersion=S then
           begin
-            Base41X:=GetBase41Sequence;
-
             MS:=TMemoryStream.Create;
 
-            bp:=1;
-            while Package.Read(b, 1)<>0 do
-            begin
-              if b<Ord('A') then
-              begin
-                Continue;
-              end;
-
-              Buffer[bp]:=FindSegmentNum(Base41X, Chr(b));
-              inc(bp);
-
-              if bp>3 then
-              begin
-                w:=(Buffer[1]*41*41)+(Buffer[2]*41)+Buffer[3];
-                MS.WriteBuffer(w, 2);
-                bp:=1;
-              end;
-            end;
-            MS.Position:=0;
+            Decode(Package, MS, False);
 
             PackageText:=TStringStream.Create('', TEncoding.UTF8);
 
