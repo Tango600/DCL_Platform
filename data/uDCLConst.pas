@@ -160,7 +160,7 @@ Type
   TOfficeDocumentFormat=(odfNone, odfMSO97, odfMSO2007, odfOO, odfPossible);
   TDocumentType=(dtNone, dtSheet, dtText);
   TReportViewMode=(rvmOneRecord, rvmAllDS, rvmGrid, rvmMultitRecordReport, rvmBookmarcks);
-  TFieldBoxType=(fbtDBField, fbtDBCheck, fbtDateBox, fbtOutBox, fbtInputBox, fbtEditBox, fbtSimplyCombo, fbtDBLookup, fbtDBLookupTable, fbtDBCombo, fbtGrid);
+  TFieldBoxType=(fbtDBField, fbtDBCheck, fbtCheck, fbtSimplyCheck, fbtDateBox, fbtOutBox, fbtInputBox, fbtEditBox, fbtSimplyCombo, fbtDBLookup, fbtDBLookupTable, fbtGrid);
   TGraficFileType=(gftNone, gftBMP, gftJPEG, gftPNG, gftIcon, gftGIF, gftTIFF, gftOther);
   TDCLDataFieldKind=(dftDefault, dftDateTime, dftMemo, dftGrafic, dftRichText, dftLogic, dftFloat, dftPickList);
   TSpoolType=(stNone, stSpool, stText);

@@ -2275,23 +2275,7 @@ begin
 
   If FindParam('_ValueNotInput=', Scr)<>'' Then
   Begin
-    S:=FindParam('_ValueNotInput=', Scr);
-
-    if S<>'' then
-    begin
-      Field.NotInputValue:=S;
-      S:='';
-    end;
-  End;
-
-  If FindParam('_ValueIfEmpty=', Scr)<>'' Then
-  Begin
-    S:=FindParam('_ValueIfEmpty=', Scr);
-
-    if S<>'' then
-    begin
-      NeedValue:=6;
-    end;
+    Field.NotInputValue:=FindParam('_ValueNotInput=', Scr);
   End;
 
   if not Field.NoDataField then
@@ -2319,17 +2303,15 @@ begin
   S:='';
   Case NeedValue of
   0:
-  if not Field.NoDataField then
-  If FQuery.Active Then
-    If FieldExists(FQuery, Field.FieldName) Then
-      S:=TrimRight(FQuery.FieldByName(Field.FieldName).AsString);
+  begin
+    if not Field.NoDataField then
+    If FQuery.Active Then
+      If FieldExists(FQuery, Field.FieldName) Then
+        S:=TrimRight(FQuery.FieldByName(Field.FieldName).AsString);
+  end;
   1:
   begin
     S:=Field.Value;
-  end;
-  6:
-  begin
-    S:=FindParam('_ValueIfEmpty=', Scr);
   end;
   2:
   begin
@@ -2351,13 +2333,20 @@ begin
   end;
   3:
   S:='';
-  4:begin
+  4:
+  begin
     S:=FindParam('_ValueIfNull=', Scr);
   end;
-  5:begin
+  5:
+  begin
     S:=FindParam('_ValueIfNotNull=', Scr);
   end;
   end;
+
+  If (S='') and (FindParam('_ValueIfEmpty=', Scr)<>'') Then
+  Begin
+    S:=FindParam('_ValueIfEmpty=', Scr);
+  End;
 
   If Field.Variable<>'' Then
   begin
@@ -3215,7 +3204,7 @@ begin
     FreeAndNil(ShadowQuery);
   end;
   4:begin
-    S:=FindParam('_ValueIfNull', Scr);
+    S:=FindParam('_ValueIfNull=', Scr);
   end;
   end;
 
@@ -5185,25 +5174,37 @@ begin
   begin
     for e in FDCLFields do
     begin
-      if e.RequiredValue and (e.NotInputValue='') and not e.ReadOnly and e.Enabled then
+      if e.RequiredValue and not e.ReadOnly and e.Enabled then
       begin
         if Assigned(e.DCLEditComponent) and Assigned(e.DCLEditComponent.Control) then
         begin
           if (e.DCLEditComponent.Control is TDateTimePicker) and ((e.DCLEditComponent.Control as TDateTimePicker).Text='') then
           begin
-            Result:=False;
+            if e.NotInputValue<>'' then
+              (e.DCLEditComponent.Control as TDateTimePicker).Text:=e.NotInputValue
+            else
+              Result:=False;
           end;
-          if (e.DCLEditComponent.Control is TDBDate) and ((e.DCLEditComponent.Control as TDateTimePicker).Text='') then
+          if (e.DCLEditComponent.Control is TDBDate) and ((e.DCLEditComponent.Control as TDBDate).Text='') then
           begin
-            Result:=False;
+            if e.NotInputValue<>'' then
+              (e.DCLEditComponent.Control as TDBDate).Text:=e.NotInputValue
+            else
+              Result:=False;
           end;
           if (e.DCLEditComponent.Control is TDBEdit) and ((e.DCLEditComponent.Control as TDBEdit).Text='') then
           begin
-            Result:=False;
+            if e.NotInputValue<>'' then
+              (e.DCLEditComponent.Control as TDBEdit).Text:=e.NotInputValue
+            else
+              Result:=False;
           end;
           if (e.DCLEditComponent.Control is TEdit) and ((e.DCLEditComponent.Control as TEdit).Text='') then
           begin
-            Result:=False;
+            if e.NotInputValue<>'' then
+              (e.DCLEditComponent.Control as TEdit).Text:=e.NotInputValue
+            else
+              Result:=False;
           end;
           if (e.DCLEditComponent.Control is TDBLookupComboBox) and VarIsNull((e.DCLEditComponent.Control as TDBLookupComboBox).KeyValue) then
           begin
