@@ -26,3 +26,4 @@
 /data/revision.inc
 /core/protect/backup/
 /core/exceptions/backup/
+/unittest/

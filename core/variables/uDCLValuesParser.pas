@@ -307,7 +307,7 @@ end;
 procedure TDCLValuseParser.RePlaceProc(var Params: String; Query: TDCLDialogQuery);
 var
   Proc, Proc2, ResultStr, ProcParams: String;
-  Pos, FunctionParamsCount, MaxLength, i, FindNum, Skobki, pv1, pv2, EndPos, ParamLen: Integer;
+  P, FunctionParamsCount, MaxLength, i, FindNum, Skobki, pv1, pv2, EndPos, ParamLen: Integer;
   FunctionParams: Array of String;
   DCLConfig: TDCLConfigTable;
 
@@ -322,9 +322,9 @@ Begin
   begin
     while PosEx(ProcPrefix+Proc, Params)<>0 do
     begin
-      Pos:=PosEx(ProcPrefix+Proc, Params);
+      P:=PosEx(ProcPrefix+Proc, Params);
 
-      if Pos<>0 then
+      if P<>0 then
       begin
         MaxLength:=0;
         FindNum:=-1;
@@ -333,7 +333,7 @@ Begin
           Proc2:=ProcNames[i];
           if (MaxLength<Length(Proc2)) and (PosEx(ProcPrefix+Proc2, Params)<>0) then
           begin
-            Pos:=PosEx(ProcPrefix+Proc2, Params);
+            P:=PosEx(ProcPrefix+Proc2, Params);
             FindNum:=i;
             MaxLength:=Length(Proc2);
           end;
@@ -341,7 +341,7 @@ Begin
 
         if FindNum<>-1 then
         begin
-          pv1:=Pos;
+          pv1:=P;
           Repeat
             Inc(pv1);
           Until (Params[pv1]='(') and (ParamLen>pv1);
@@ -378,16 +378,16 @@ Begin
 
           if CompareProcName(FindNum, 'tofloat') then
           Begin
-            if PosEx('.', FunctionParams[1])=0 then
+            if Pos('.', FunctionParams[1])=0 then
               ResultStr:=FunctionParams[1]+'.00'
             Else
             Begin
-              ResultStr:=Copy(FunctionParams[1], PosEx('.', FunctionParams[1])+1,
-                Length(FunctionParams[1])-PosEx('.', FunctionParams[1])+1);
+              i:=Pos('.', FunctionParams[1]);
+              ResultStr:=Copy(FunctionParams[1], Pos('.', FunctionParams[1])+1, 2);
               If Length(ResultStr)=1 Then
-                ResultStr:=ResultStr+'0'
-              Else
-                ResultStr:=FunctionParams[1];
+                ResultStr:=ResultStr+'0';
+
+              ResultStr:=Copy(FunctionParams[1], 1, i)+ResultStr;
             End;
           End
           else if CompareProcName(FindNum, 'deletenonfilessimb') then
@@ -412,7 +412,7 @@ Begin
           Begin
             ResultStr:=ExtractFileName(FunctionParams[1]);
           End
-          else if CompareProcName(FindNum, 'SumWrite')  then
+          else if CompareProcName(FindNum, 'SumWrite') or CompareProcName(FindNum, 'MoneyToString') then
           Begin
             ResultStr:=FunctionParams[1];
             If Length(FunctionParams)>2 then
@@ -431,7 +431,7 @@ Begin
           End
           else if CompareProcName(FindNum, 'Count') then
           Begin
-            ResultStr:=IntToStr(ParamsCount(FunctionParams[1]));
+            ResultStr:=IntToStr(Length(FunctionParams)-1);
           End
           else if CompareProcName(FindNum, 'IndexOf') then
           Begin
@@ -440,7 +440,7 @@ Begin
             begin
               If LowerCase(Trim(FunctionParams[1]))=LowerCase(Trim(FunctionParams[i])) then
               Begin
-                ResultStr:=IntToStr(i);
+                ResultStr:=IntToStr(i-1);
                 Break;
               End;
             end;
@@ -553,8 +553,8 @@ Begin
             ResultStr:=IntToStr(DayOf(StrToDate(FunctionParams[1])));
           end;
 
-          Delete(Params, Pos, MaxLength+Length(ProcPrefix)+1+(EndPos-pv2));
-          Insert(GetClearParam(ResultStr), Params, Pos);
+          Delete(Params, P, MaxLength+Length(ProcPrefix)+1+(EndPos-pv2));
+          Insert(GetClearParam(ResultStr), Params, P);
         End;
       end;
     end;
