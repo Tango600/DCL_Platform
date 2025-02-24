@@ -19,6 +19,7 @@ Function TrimSymbols(const S: String; TrimS: String): String;
 Function InitCap(const S: String): String;
 function Any(const StrSet, S: String): Boolean;
 function TrimChars(const CharsSet, S: String): String;
+function DCLCompareStrings(const S1, S2: String): Integer;
 
 implementation
 
@@ -306,6 +307,50 @@ begin
   end;
 end;
 
+function DCLCompareStrings(const S1, S2: String): Integer;
+var
+  l1, l2, i1, i2: Integer;
+  c1, c2: Char;
+  isSame: Boolean;
+begin
+  isSame:=False;
+  l1:=Length(S1);
+  l2:=Length(S2);
+  if (l1=0) and (l2=0) then Exit(0);
+  if l1<l2 then
+    Exit(1)
+  else
+  begin
+    if l2<l1 then
+      Exit(-1)
+    else
+    begin
+      for i1:=1 to l1 do
+      begin
+        c1:=S1[i1];
+        c2:=S2[i1];
+
+        if c1=c2 then
+        begin
+          isSame:=True;
+          Continue;
+        end;
+        if c1<c2 then
+        begin
+          Exit(1);
+        end
+        else
+        begin
+          Exit(-1);
+        end;
+      end;
+    end;
+  end;
+
+  if isSame then
+  begin
+    Exit(0);
+  end;
+end;
 
 end.
-

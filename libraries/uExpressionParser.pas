@@ -26,7 +26,7 @@ type
 implementation
 
 uses
-   uStringParams;
+   uStringParams, uStringUtils;
 
 function LogicalParser(S: String): TList<TCondition>;
 var
@@ -224,27 +224,27 @@ begin
     begin
       case CondItem.ConditionType of
       ctEq: begin
-        LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft=CondItem.Values[0], LastResult);
+        LastResult:=GetPairCondition(CondItem.ItemCondition, DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[0])=0, LastResult);
       end;
       ctNotEq: begin
-        LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft<>CondItem.Values[0], LastResult);
+        LastResult:=GetPairCondition(CondItem.ItemCondition, DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[0])<>0, LastResult);
       end;
       ctGt: begin
-        LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft>CondItem.Values[0], LastResult);
+        LastResult:=GetPairCondition(CondItem.ItemCondition, DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[0])=-1, LastResult);
       end;
       ctGtEq: begin
-        LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft>=CondItem.Values[0], LastResult);
+        LastResult:=GetPairCondition(CondItem.ItemCondition, DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[0])<=0, LastResult);
       end;
       ctLe: begin
-        LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft<CondItem.Values[0], LastResult);
+        LastResult:=GetPairCondition(CondItem.ItemCondition, DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[0])=1, LastResult);
       end;
       ctLeEq: begin
-        LastResult:=GetPairCondition(CondItem.ItemCondition, CondItem.FieldNameLeft<=CondItem.Values[0], LastResult);
+        LastResult:=GetPairCondition(CondItem.ItemCondition, DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[0])>=0, LastResult);
       end;
       ctBt, ctNotBt: begin
         case CondItem.ConditionType of
         ctBt: begin
-          if (CondItem.Values.Count>=2) and (CondItem.FieldNameLeft<=CondItem.Values[0]) and (CondItem.FieldNameLeft<=CondItem.Values[1]) then
+          if (CondItem.Values.Count>=2) and (DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[0])<=0) and (DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[1])>=0) then
           begin
             LastResult:=GetPairCondition(CondItem.ItemCondition, True, LastResult);
           end
@@ -252,7 +252,7 @@ begin
             LastResult:=GetPairCondition(CondItem.ItemCondition, False, LastResult);
         end;
         ctNotBt: begin
-          if (CondItem.Values.Count>=2) and (not ((CondItem.FieldNameLeft<=CondItem.Values[0]) and (CondItem.FieldNameLeft<=CondItem.Values[1]))) then
+          if (CondItem.Values.Count>=2) and not ((DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[0])<=0) and (DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[1])>=0)) then
           begin
             LastResult:=GetPairCondition(CondItem.ItemCondition, True, LastResult);
           end
