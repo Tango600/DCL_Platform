@@ -351,7 +351,7 @@ uses
   EditBtn, LCLProc, uRunProgram, uReturnFormValue, cMyFilterCombo, StrUtils,
   uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, LazUTF8, uDCLException,
   uPrintBase, uDCLGlobalVariables, uDCLMD5, uExpressionParser, uDCLCommand,
-  uConvertEx, uStringUtils;
+  uConvertEx, uStringUtils, uSQLUtils;
 
 { TLookupTable }
 
@@ -1225,13 +1225,11 @@ function TDCLGrid.SortDB(var SQL: String): String;
 var
   OrderBy: String;
   OrderField: TSortField;
-  Parser: TSQLParser;
 begin
   Result:='';
   if FOrdersFields.Count>0 then
   begin
-    Parser:=TSQLParser.Create;
-    Parser.ExcludeOrderBy(SQL);
+    ExcludeOrderBy(SQL);
 
     OrderBy:='';
     for OrderField in FOrdersFields do
@@ -1251,7 +1249,7 @@ begin
   end
   else
   begin
-    Parser.ExcludeOrderBy(SQL);
+    ExcludeOrderBy(SQL);
     Result:='';
   end;
 end;
@@ -3050,18 +3048,16 @@ end;
 function TDCLGrid.GetSummQuery: String;
 var
   SQL: String;
-  Parser: TSQLParser;
 begin
   If Assigned(FQuery) Then
   begin
     SQL:=FQuery.SQL.Text;
     If SQL<>'' Then
     begin
-      Parser:=TSQLParser.Create;
-      Parser.ExcludeOrderBy(SQL);
-      Parser.ExcludeGroupBy(SQL);
+      ExcludeOrderBy(SQL);
+      ExcludeGroupBy(SQL);
 
-      Result:=Parser.ReplaseSQLFields(SQL, FSummFieldsSet);
+      Result:=ReplaseSQLFields(SQL, FSummFieldsSet);
     end
     Else
       Result:='';
@@ -3457,19 +3453,17 @@ end;
 function TDCLGrid.QueryBuilder: String;
 var
   SQL, OrderBy, GroupBy, AddWhere: String;
-  Parser: TSQLParser;
 begin
   Result:='';
   SQL:=GetSQLFromStorage;
   if SQL<>'' then
   begin
-    Parser:=TSQLParser.Create;
-    AddWhere:=Parser.ConcatSQLWhere(GetConditionsFromFindGrid, GetConditionsFromFilters);
+    AddWhere:=ConcatSQLWhere(GetConditionsFromFindGrid, GetConditionsFromFilters);
 
     OrderBy:=SortDB(SQL);
-    GroupBy:=Parser.ExcludeGroupBy(SQL);
+    GroupBy:=ExcludeGroupBy(SQL);
 
-    Result:=Parser.ConcatWhereToSQL(SQL, AddWhere)+' '+GroupBy+' '+OrderBy;
+    Result:=ConcatWhereToSQL(SQL, AddWhere)+' '+GroupBy+' '+OrderBy;
   end;
 end;
 
@@ -3482,8 +3476,6 @@ begin
   Result:='';
   if Assigned(FindGrid) then
   begin
-    Parser:=TSQLParser.Create;
-
     StrIndex:=1;
     if Assigned(FDBGrid) then
       StrIndex:=0;
@@ -3491,7 +3483,7 @@ begin
     for i:=1 to FindGrid.ColCount-1 do
     begin
       Cond:=Parser.GetFindGridCondition(FQuery, FindGrid.Cells[i, StrIndex], FindFields[i-1]);
-      Result:=Parser.ConcatSQLWhere(Result, Cond);
+      Result:=ConcatSQLWhere(Result, Cond);
     end;
     Result:=Result+' ';
   end
@@ -3511,7 +3503,7 @@ begin
   for Filter in FFilters do
   begin
     Cond:=Parser.GetFilterCondition(FQuery, Filter, LastFilter);
-    Result:=Parser.ConcatSQLWhere(Result, Cond);
+    Result:=ConcatSQLWhere(Result, Cond);
     LastFilter:=Filter;
   end;
   Result:=Result+' ';

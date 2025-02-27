@@ -8,6 +8,8 @@ uses
 
 type
   TDCLDBFilter=class
+    FilterNum: Integer;
+    FilterString: String;
     Width, WaitForKey, MaxLength: Integer;
     Contains, Between, NotLike, CaseC, NotFilter: Boolean;
     FilterName, Field, KeyField, ListField: String;

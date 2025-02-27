@@ -6,11 +6,15 @@ interface
 uses
   Classes, SysUtils;
 
-
 Function IsReturningQuery(SQQL: String): Boolean;
 function TrimSQLComment(SQLText: String): String;
 function FindSQLToken(SQL, FindToken:String):Integer;
 Function ReplaceSQLFields(SQL, Fields: String): String;
+function ConcatSQLWhere(Where1, Where2: String): String;
+function ExcludeOrderBy(var SQL: String): String;
+function ExcludeGroupBy(var SQL: String): String;
+function ConcatWhereToSQL(SQL, Where: String): String;
+function ReplaseSQLFields(SQL, NewFieldsSet: String): String;
 
 implementation
 
@@ -125,6 +129,113 @@ begin
   end;
 end;
 
+function ConcatSQLWhere(Where1, Where2: String): String;
+begin
+  Result:='';
+  if Trim(Where1)='' then
+    Result:=Where2
+  else if Trim(Where2)='' then
+    Result:=Where1
+  else if (Trim(Where1)<>'') and (Trim(Where2)<>'') then
+  begin
+    Result:=Where1+' and '+Where2;
+  end;
+end;
+
+function ExcludeOrderBy(var SQL: String): String;
+var
+  pos: Integer;
+begin
+  pos:=FindSQLToken(SQL, 'order by');
+  if pos<>0 then
+  begin
+    Result:=Copy(SQL, pos, Length(SQL)-pos+1);
+    Delete(SQL, pos, Length(SQL)-pos+1);
+  end
+  else
+    Result:='';
+end;
+
+function ExcludeGroupBy(var SQL: String): String;
+var
+  gbPos, obPos: Integer;
+begin
+  Result:='';
+  gbPos:=FindSQLToken(SQL, 'group by');
+  obPos:=FindSQLToken(SQL, 'order by');
+  if obPos=0 then
+    obPos:=Length(SQL);
+  if gbPos<>0 then
+  begin
+    Result:=Copy(SQL, gbPos, obPos-gbPos+1);
+    Delete(SQL, gbPos, obPos-gbPos+1);
+  end
+  else
+    Result:='';
+end;
+
+function ConcatWhereToSQL(SQL, Where: String): String;
+var
+  WhereExists: Boolean;
+begin
+  Result:=SQL;
+  if Trim(Where)<>'' then
+  begin
+    WhereExists:=FindSQLToken(SQL, 'where')<>0;
+    If WhereExists Then
+      Result:=SQL+' and '+Where
+    else
+      Result:=SQL+' where '+Where;
+  end;
+end;
+
+function ReplaseSQLFields(SQL, NewFieldsSet: String): String;
+var
+  i, f, skb, t: Integer;
+  OpenerSet, CloseerSet, FindToken: String;
+begin
+  Result:='';
+
+  FindToken:=' from';
+  i:=Pos('select ', LowerCase(SQL));
+  if i>0 then
+  begin
+    OpenerSet:='(';
+    CloseerSet:=')';
+    i:=1;
+    t:=1;
+    skb:=0;
+    while i<Length(SQL) do
+    Begin
+      If Pos(SQL[i], OpenerSet)<>0 then
+        Inc(skb)
+      Else
+        If Pos(SQL[i], CloseerSet)<>0 then
+          Dec(skb);
+
+      if skb=0 then
+      If SQL[i]=FindToken[t] then
+      Begin
+        If i+Length(FindToken)<Length(SQL) then
+        Begin
+          if t=Length(FindToken) then
+          begin
+            f:=i;
+            Break;
+          end;
+        End;
+        Inc(t);
+      End
+      Else
+      Begin
+        t:=1;
+      End;
+      Inc(i);
+    End;
+
+    Result:='select ' + NewFieldsSet + ' from ' +Copy(SQL, f+1, Length(SQL));
+  end;
+end;
 
 end.
 

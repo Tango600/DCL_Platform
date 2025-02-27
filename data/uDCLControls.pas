@@ -23,14 +23,12 @@ type
     ReOpen: Boolean;
   end;
 
-  TStructureModify=class
+  TFieldsStructureModify=class
     ColumnsListCaption, FieldsListCaption: String;
     ColumnsListField, FieldsListField: String;
   End;
 
   TDBFilter=class(TDCLDBFilter)
-    FilterNum: Integer;
-    FilterString: String;
     FilterLabel, NotCheckLabel: TDialogLabel;
     Control: TWinControl;
     FilterQuery: TDCLDialogQuery;
