@@ -162,7 +162,7 @@ begin
     End;
 
     If Not FilenameIsAbsolute(GPT.DBPath) Then
-      GPT.DBPath:=ExtractFilePath(Application.ExeName)+GPT.DBPath;
+      GPT.DBPath:=ExtractFilePath(ParamStr(0))+GPT.DBPath;
 
     If IsUNCPath(GPT.DBPath) Then
     begin
@@ -349,7 +349,7 @@ begin
     If GPT.DBPath<>'' Then
     begin
       If Not FilenameIsAbsolute(GPT.DBPath) Then
-        GPT.DBPath:=ExtractFilePath(Application.ExeName)+GPT.DBPath;
+        GPT.DBPath:=ExtractFilePath(ParamStr(0))+GPT.DBPath;
 
       ConnectorType:=GPT.DBType;
       If GPT.ServerName<>'' Then
