@@ -4912,6 +4912,7 @@ begin
         FDBGrid.Options:=FDBGrid.Options-[dgEditing];
         FDBGrid.Options:=FDBGrid.Options+[dgDisableDelete];
         FDBGrid.Options:=FDBGrid.Options+[dgDisableInsert];
+        FDBGrid.ReadOnly:=FReadOnly;
       end;
 
       FDBGrid.DataSource:=FData;
