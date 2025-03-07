@@ -6,7 +6,7 @@ interface
 uses
   Classes, SysUtils,
   {$IFDEF IBX}
-  IB, IBDatabase, IBCustomDataSet,
+  IB, IBDatabase, IBCustomDataSet, uDCLConst,
   {$ENDIF}
   {$IFDEF ZEOS}
   ZDbcIntfs,
@@ -90,7 +90,7 @@ begin
 
       Params.Clear;
       If Not FilenameIsAbsolute(GPT.DBPath) Then
-        GPT.DBPath:=ExtractFilePath(Application.ExeName)+GPT.DBPath;
+        GPT.DBPath:=ExtractFilePath(ParamStr(0))+GPT.DBPath;
 
       If IsUNCPath(GPT.DBPath) Then
       begin
