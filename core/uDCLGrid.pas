@@ -3480,6 +3480,7 @@ begin
     if Assigned(FDBGrid) then
       StrIndex:=0;
 
+    Parser:=TSQLParser.Create;
     for i:=1 to FindGrid.ColCount-1 do
     begin
       Cond:=Parser.GetFindGridCondition(FQuery, FindGrid.Cells[i, StrIndex], FindFields[i-1]);
