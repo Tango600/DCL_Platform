@@ -1,8 +1,13 @@
 FMainPanel
   FToolsPanel
     FToolBar
-
+  
   FFieldsPanel | FDBGrid
+
+---splitter
+
+  FTablePartsPages
+    FTablePartsTabs, FTablePartsTabs, FTablePartsTabs
 
 FButtonPanel
   FButtonFlowPanel
