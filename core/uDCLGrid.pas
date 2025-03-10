@@ -3486,6 +3486,7 @@ begin
       Cond:=Parser.GetFindGridCondition(FQuery, FindGrid.Cells[i, StrIndex], FindFields[i-1]);
       Result:=ConcatSQLWhere(Result, Cond);
     end;
+    Parser.Free;
     Result:=Result+' ';
   end
   else
@@ -3507,6 +3508,7 @@ begin
     Result:=ConcatSQLWhere(Result, Cond);
     LastFilter:=Filter;
   end;
+  Parser.Free;
   Result:=Result+' ';
 end;
 
