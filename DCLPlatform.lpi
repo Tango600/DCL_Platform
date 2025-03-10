@@ -71,6 +71,9 @@
     </RunParams>
     <RequiredPackages>
       <Item>
+        <PackageName Value="ibnongui"/>
+      </Item>
+      <Item>
         <PackageName Value="LCL"/>
       </Item>
     </RequiredPackages>
