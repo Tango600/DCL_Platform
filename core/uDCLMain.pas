@@ -1179,10 +1179,7 @@ begin
   begin
     LoginForm:=TLoginForm.Create(GetDBConnector);
 
-    if LoginForm.ShowModal<>mrOK then
-    begin
-      TimeToTerm:=True;
-    end;
+    TimeToTerm:=LoginForm.ShowModal<>mrOK;
     LoginForm.Release;
   end;
 
