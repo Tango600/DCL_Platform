@@ -129,6 +129,7 @@ const
   DefaultDateFormat='dd'+DefaultDateSeparator+'mm'+DefaultDateSeparator+'yyyy';
   DefaultTimeFormat='hh'+DefaultTimeSeparator+'mm'+DefaultTimeSeparator+'ss';
   DefaultTimeStampFormat=DefaultDateFormat+' '+DefaultTimeFormat;
+  DefaultDecimalSeparator=',';
 
   ToolCommandsCount=3;
   ToolButtonsCmd: Array [1..ToolCommandsCount] Of String=('structure', 'print', 'find');

@@ -1049,10 +1049,12 @@ begin
   GPT.OfficeFormat:=ofMSO;
   //GPT.OfficeDocumentFormat:=odfMSO2007;
 
-  GPT.TimeFormat:=DefaultTimeFormat;
-  GPT.DateFormat:=DefaultDateFormat;
-  GPT.DateSeparator:=DefaultDateSeparator;
-  GPT.TimeSeparator:=DefaultTimeSeparator;
+  GPT.TimeFormat:='';  // DefaultTimeFormat;
+  GPT.DateFormat:='';  // DefaultDateFormat;
+  GPT.DateSeparator:=#0;  // DefaultDateSeparator;
+  GPT.TimeSeparator:=#0;  // DefaultTimeSeparator;
+  GPT.DecimalSeparator:=#0;  // DefaultDecimalSeparator;
+  GPT.ThousandSeparator:=#0;
 
   Path:=ExtractFilePath(Application.ExeName);
   SetCurrentDir(Path);
@@ -1146,13 +1148,19 @@ begin
   SysUtils.GetFormatSettings;
 {$ENDIF}
 
-  FormatSettings.TimeSeparator:=GPT.TimeSeparator;
-  FormatSettings.DateSeparator:=GPT.DateSeparator;
-  FormatSettings.ShortDateFormat:=GPT.DateFormat;
-  FormatSettings.LongTimeFormat:=GPT.TimeFormat;
+  if GPT.TimeSeparator<>#0 then
+    FormatSettings.TimeSeparator:=GPT.TimeSeparator;
+  if GPT.DateSeparator<>#0 then
+    FormatSettings.DateSeparator:=GPT.DateSeparator;
+  if GPT.DateFormat<>'' then
+    FormatSettings.ShortDateFormat:=GPT.DateFormat;
+  if GPT.TimeFormat<>'' then
+    FormatSettings.LongTimeFormat:=GPT.TimeFormat;
 
-  FormatSettings.ThousandSeparator:=GPT.ThousandSeparator;
-  FormatSettings.DecimalSeparator:=GPT.DecimalSeparator;
+  if GPT.ThousandSeparator<>#0 then
+    FormatSettings.ThousandSeparator:=GPT.ThousandSeparator;
+  if GPT.DecimalSeparator<>#0 then
+    FormatSettings.DecimalSeparator:=GPT.DecimalSeparator;
 
   {$IFNDEF NODCLMESSAGES}
   If GPT.UseMessages then
