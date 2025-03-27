@@ -33,7 +33,6 @@ function GetUserDocumentsDir: String;
 
 procedure OpenDir(Dir: String);
 
-function GetScreen:TBitmap;
 function ConvertToJPEG(const BitMap: TBitmap; Quality: Byte=JPEGCompressionQuality): TJpegImage;
 
 function GetGUIDString: String;
@@ -211,41 +210,6 @@ var
 begin
   CreateGUID(guid);
   Result:=GUIDToString(guid);
-end;
-
-function GetScreen: TBitmap;
-var
-  DC:HDC;
-{$IFNDEF FPC}
-  r:TRect;
-  c:TCanvas;
-  w, h:Word;
-{$ENDIF}
-begin
-  Result:=TBitmap.Create;
-{$IFNDEF FPC}
-  w:=GetSystemMetrics(SM_CXSCREEN);
-  h:=GetSystemMetrics(SM_CYSCREEN);
-  c:=TCanvas.Create;
-  DC:=GetDesktopWindow;
-  c.Handle:=GetWindowDC(DC);
-  try
-    r:=Rect(0, 0, w, h);
-    Result.Width:=w;
-    Result.Height:=h;
-    Result.Canvas.CopyRect(r, c, r);
-  finally
-    ReleaseDC(DC, c.Handle);
-    c.Free;
-  end;
-{$ELSE}
-  DC:=WidgetSet.GetDC(0);
-  try
-    Result.LoadFromDevice(DC);
-  finally
-    WidgetSet.ReleaseDC(0, DC);
-  end;
-{$ENDIF}
 end;
 
 function ConvertToJPEG(const BitMap: TBitmap; Quality: Byte=JPEGCompressionQuality): TJpegImage;
