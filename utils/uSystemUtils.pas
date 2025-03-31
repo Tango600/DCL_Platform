@@ -92,7 +92,7 @@ Begin
   Result:=GetEnvironmentVariable('HOME')+PathDelim;
 {$ENDIF}
 {$IFDEF MSWINDOWS}
-  Result:=GetSpecialPath(CSIDL_PERSONAL)+PathDelim;
+  Result:=GetSpecialPath(CSIDL_APPDATA)+PathDelim;
 {$ENDIF}
 End;
 
@@ -102,7 +102,7 @@ Begin
   Result:=GetEnvironmentVariable('HOME')+PathDelim;
 {$ENDIF}
 {$IFDEF MSWINDOWS}
-  Result:=GetSpecialPath(CSIDL_MYDOCUMENTS)+PathDelim;
+  Result:=GetSpecialPath(CSIDL_PERSONAL)+PathDelim;
 {$ENDIF}
 End;
 
