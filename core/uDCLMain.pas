@@ -170,7 +170,7 @@ begin
 
   for S in Files do
   begin
-    if NoFileExt(S) then
+    if IsNoFileExt(S) then
       fn:=S+PackagesFileExt
     else
       fn:=S;

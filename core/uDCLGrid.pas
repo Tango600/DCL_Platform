@@ -1666,7 +1666,7 @@ begin
     If Field.SQL<>'' Then
     begin
       ShadowQuery:=TDCLDialogQuery.Create(Self.GetComponent);
-      ShadowQuery.Name:='DropBoxQ_'+IntToStr(UpTime);
+      ShadowQuery.Name:=Field.ComponentName;
       FDBConnector.SetConnector(ShadowQuery);
 
       ShadowQuery.SQL.Text:=Field.SQL;

@@ -66,7 +66,7 @@ begin
     FileName:=GPT.AppConfigDir+FileName;
 
   BookmarkFromLayot:=False;
-  If NoFileExt(FileName) then
+  If IsNoFileExt(FileName) then
   begin
     OfficeDocumentFormat:=odfOO;
     if FileExists(FileName+'.'+TemplateExt) then
@@ -249,7 +249,7 @@ begin
   If not FilenameIsAbsolute(FileName) then
     FileName:=GPT.AppConfigDir+FileName;
 
-  If NoFileExt(FileName) then
+  If IsNoFileExt(FileName) then
   begin
     OfficeDocumentFormat:=odfOO;
     if FileExists(FileName+'.'+TemplateExt) then
@@ -292,7 +292,6 @@ begin
     end;
 
     DCLQuery:=TDCLDialogQuery.Create(Self);
-    DCLQuery.Name:='OfficeReport_'+IntToStr(UpTime);
     FDCLConnector.SetConnector(DCLQuery);
     try
       If VarIsEmpty(OO) Then

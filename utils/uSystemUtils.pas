@@ -4,24 +4,20 @@ unit uSystemUtils;
 interface
 
 uses
-  uDCLConst,
 {$IFDEF MSWINDOWS}
   Windows, ShlObj,
-{$ENDIF}
-{$IFDEF FPC}
-  InterfaceBase, LCLType,
 {$ENDIF}
 {$IFDEF UNIX}
   cwstring, lclintf,
 {$ENDIF}
-  Classes, Graphics, SysUtils;
+  Classes, Graphics, SysUtils, uDCLConst;
 
 function ValidObject(const AObj: TObject): Boolean;
 function FindCommandStrParam(Str: String): String;
 
 Function KeyState(Key: Integer): Boolean;
 Function ShiftDown: Boolean;
-Function NoFileExt(const FileName:String): Boolean;
+Function IsNoFileExt(const FileName:String): Boolean;
 Function AddToFileName(Const FileName, AddStr: String): String;
 Function GetTempFileName(const Ext: String): String;
 
@@ -33,10 +29,8 @@ function GetUserDocumentsDir: String;
 
 procedure OpenDir(Dir: String);
 
-function ConvertToJPEG(const BitMap: TBitmap; Quality: Byte=JPEGCompressionQuality): TJpegImage;
-
 function GetGUIDString: String;
-Function UpTime: Cardinal;
+Function UpTime: QWord;
 function IntToColor(Value: Integer): TColor;
 
 function NegativeColor(Color: TColor): TColor;
@@ -137,7 +131,7 @@ Begin
   Result:=KeyState(VK_SHIFT);
 End;
 
-Function UpTime: Cardinal;
+Function UpTime: QWord;
 Begin
   Result:={$IFDEF MSWINDOWS}{$IFDEF CPU64}GetTickCount64{$ELSE}GetTickCount{$ENDIF}
 {$ELSE}
@@ -156,7 +150,7 @@ begin
 {$ENDIF}
 end;
 
-Function NoFileExt(const FileName:String): Boolean;
+Function IsNoFileExt(const FileName:String): Boolean;
 begin
   Result:=ExtractFileExt(FileName)='';
 end;
@@ -210,20 +204,6 @@ var
 begin
   CreateGUID(guid);
   Result:=GUIDToString(guid);
-end;
-
-function ConvertToJPEG(const BitMap: TBitmap; Quality: Byte=JPEGCompressionQuality): TJpegImage;
-begin
-  if Quality=0 then
-    Quality:=JPEGCompressionQuality;
-  Result:=TJpegImage.Create;
-  Result.ProgressiveEncoding:=True;
-  try
-    Result.CompressionQuality:=Quality;
-    Result.Assign(BitMap);
-  finally
-    ///
-  end;
 end;
 
 end.
