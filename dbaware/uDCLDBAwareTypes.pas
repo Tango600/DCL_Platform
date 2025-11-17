@@ -21,6 +21,9 @@ uses
   {$IFDEF ODBC}
   odbcconn,
   {$ENDIF}
+  {$IFDEF SQLdbMySQL}
+  mysql80conn,
+  {$ENDIF}
   {$ENDIF}
   Classes;
 
@@ -63,6 +66,9 @@ type
   {$ENDIF}
   {$IFDEF ODBC}
     TDBConnector=TODBCConnection;
+  {$ENDIF}
+  {$IFDEF SQLdbMySQL}
+    TDBConnector=TMySQL80Connection;
   {$ENDIF}
   {$ENDIF}
 

@@ -10,7 +10,7 @@ type
   // EnableSQLTrace,
     DebugMesseges, ExitCnf, UseMessages, IDEReadOnly,
     DialogsSettings, DisableColors, DisableFieldsList,
-    DisableUnload, DisableLoad, EasyIdentMode, IBAll: Boolean;
+    DisableUnload, DisableLoad, EasyIdentMode, IBAll, MySQL: Boolean;
     OneCopy: TOneCopyMode;
     Port: Integer;
     MainColor, TablePartColor, GridColor, GridAlternateColor: TColor;

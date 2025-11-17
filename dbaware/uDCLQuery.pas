@@ -885,6 +885,35 @@ begin
         Result:=Copy(Result, 1, Length(Result)-1);
     End;
   End;
+
+  If GPT.MySQL then
+  Begin
+    If (TableName<>'') and Assigned(ShadowQuery) then
+    Begin
+      if not Assigned(GetDBConnector(ShadowQuery)) then
+        SetDCLDBConnector(ShadowQuery);
+
+      ShadowQuery.Params.Clear;
+      ShadowQuery.SQL.Text:='select COLUMN_NAME '+
+        'from INFORMATION_SCHEMA.COLUMNS c '+
+        'where upper(c.TABLE_SCHEMA) = upper(:SCHEMA) and upper(C.TABLE_NAME) = upper(:TABLENAME) and '+
+              'C.COLUMN_KEY = ''PRI'' and c.extra = ''auto_increment'' ';
+
+      ShadowQuery.ParamByName('SCHEMA').AsString:=FDBConnector.DatabaseName;
+      ShadowQuery.ParamByName('TABLENAME').AsString:=TableName;
+      ShadowQuery.Open;
+      while not ShadowQuery.Eof do
+      Begin
+        Result:=Result+Trim(ShadowQuery.Fields[0].AsString)+',';
+        if OneField then
+          break;
+        ShadowQuery.Next;
+      End;
+      ShadowQuery.Close;
+      If Result<>'' then
+        Result:=Copy(Result, 1, Length(Result)-1);
+    End;
+  End;
 end;
 
 function TDCLQuery.GetGeneratorName(TableName: String): String;

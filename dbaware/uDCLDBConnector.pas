@@ -446,6 +446,73 @@ begin
     end;
   end;
   {$ENDIF}
+  {$IFDEF SQLdbMySQL}
+  if GPT.ServerCodePage='' then
+    GPT.ServerCodePage:='utf8';
+
+  GPT.MySQL:=True;
+  UniversalTransaction:=TTransaction.Create(Self);
+  UniversalTransaction.Params.Clear;
+  UniversalTransaction.Params.Append('nowait');
+  UniversalTransaction.Params.Append('read_committed');
+  UniversalTransaction.Params.Append('rec_version');
+  UniversalTransaction.Action:=caCommit;
+  UniversalTransaction.DataBase:=Self;
+  Transaction:=UniversalTransaction;
+// IBTransaction.Action:=TACommitRetaining;
+
+  If GPT.LibPath<>'' Then
+  begin
+    FSQLDBLibraryLoader:=TSQLDBLibraryLoader.Create(Self);
+    FSQLDBLibraryLoader.ConnectionType:='MySQL 8.0';
+    FSQLDBLibraryLoader.LibraryName:=GPT.LibPath;
+    FSQLDBLibraryLoader.Enabled:=True;
+  end;
+
+  If (GPT.DataBaseName<>'') and (GPT.ServerName<>'') Then
+  begin
+    DatabaseName:=GPT.DataBaseName;
+    DebugProc('  Schama: '+GPT.DataBaseName);
+
+    if GPT.Port<>0 then
+      Port:=GPT.Port;
+
+    SkipLibraryVersionCheck:=True;
+    UserName:=GPT.DBUserName;
+    DebugProc('  USER NAME='+GPT.DBUserName);
+    If GPT.DBPassword<>'' Then
+    begin
+      Password:=GPT.DBPassword;
+      LoginPrompt:=False;
+    end
+    Else
+      LoginPrompt:=True;
+
+    If GPT.ServerCodePage='' Then
+      Charset:='utf8'
+    Else
+      Charset:=ReplaseCPtoWIN(GPT.ServerCodePage);
+
+    If GPT.ServerName<>'' Then
+    begin
+      HostName:=GPT.ServerName;
+      DebugProc('  Server: '+GPT.ServerName);
+    end;
+
+    KeepConnection:=True;
+    try
+      DebugProc('Connected...');
+      Open;
+      FErrorCode:=0;
+      DebugProc('  ... OK');
+    Except
+      On E: Exception do
+      begin
+        DebugProc('  ... Fail');
+      end;
+    end;
+  end;
+  {$ENDIF}
 end;
 
 procedure TDCLDBConnector.SetConnector(Query: TDCLDialogQuery);

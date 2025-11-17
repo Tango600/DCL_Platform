@@ -143,6 +143,9 @@ Begin
         If IsParameter('DSN=', cs) then
           GPT.DataBaseName:=FindParam('DSN=', cs);
 
+        If IsParameter('DatabaseName=', cs) then
+          GPT.DataBaseName:=FindParam('DatabaseName=', cs);
+
 {$IFDEF SERVERDB}
         If IsParameter('UserName=', cs) then
           GPT.DBUserName:=FindParam('UserName=', cs);
