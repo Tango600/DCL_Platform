@@ -5,9 +5,6 @@ interface
 
 uses
   SysUtils, Classes, Generics.Collections, DB,
-{$IFDEF ADO}
-  WideStrings, ADODB, ADOConst, ADOInt,
-{$ENDIF}
 {$IFDEF FPC}
   {$IFDEF IBX}
   IB, IBDatabase, IBCustomDataSet, IBQuery, uIBUpdateSQLW,
@@ -386,14 +383,6 @@ Begin
   If TableName<>'' Then
   Begin
     FMainTable:=TableName;
-{$IFDEF ADO}
-    If ToOpen then
-      If not Active Then
-        If SQL.Text<>'' Then
-          inherited Open;
-    If Active Then
-      Properties['Unique Table'].Value:=TableName;
-{$ENDIF}
 
     If KeyField<>'' then
     Begin
@@ -518,6 +507,7 @@ Begin
         lInsertSQL:='insert into '+TableName+'('+UpdatesFieldsSet+') values('+
           KeyFieldsWhereSet+')';
 
+      {$IFnDEF CACHEDDB}
       {$IFDEF REFRESHSQLDB}
       KeyFieldsWhereSet:='';
       For FieldN in KeyFields do
@@ -528,6 +518,7 @@ Begin
       lRefreshSQL:='select * from '+TableName+' where '+KeyFieldsWhereSet;
       if FUpdateSQL.RefreshSQL.Text<>lRefreshSQL then
         FUpdateSQL.RefreshSQL.Text:=lRefreshSQL;
+      {$ENDIF}
       {$ENDIF}
 
       if FUpdateSQL.{$IFNDEF SQLdbFamily}ModifySQL{$ELSE}UpdateSQL{$ENDIF}.Text<>lUpdateSQL then
@@ -560,9 +551,6 @@ end;
 
 procedure TDCLQuery.SetDBConnector(Database: TDBConnector);
 begin
-  {$IFDEF ADO}
-  Connection:=Database;
-  {$ENDIF}
   {$IFDEF IBX}
   Self.DataBase:=Database;
   {$ENDIF}
@@ -588,9 +576,6 @@ end;
 function TDCLQuery.GetConnector: TDatabaseObject;
 begin
   Result:=
-  {$IFDEF ADO}
-  Self.Connection
-  {$ENDIF}
   {$IFDEF IBX}
   Self.DataBase
   {$ENDIF}
@@ -604,9 +589,6 @@ end;
 
 procedure TDCLQuery.SetDCLDBConnector(Query: TDCLSimplyQuery);
 begin
-  {$IFDEF ADO}
-  Query.Connection:=Self.Connection;
-  {$ENDIF}
   {$IFDEF IBX}
   Query.DataBase:=Self.DataBase;
   {$ENDIF}
@@ -635,9 +617,6 @@ end;
 function TDCLQuery.GetDBConnector(Query: TDCLSimplyQuery): TDatabaseObject;
 begin
   Result:=
-  {$IFDEF ADO}
-  Query.Connection
-  {$ENDIF}
   {$IFDEF IBX}
   Query.DataBase
   {$ENDIF}
@@ -941,7 +920,6 @@ begin
 
       if Empty then
       begin
-        ShadowQuery.Params.Clear;
         ShadowQuery.SQL.Text:='select ff.rdb$generator_name from RDB$RELATION_FIELDS ff where ff.rdb$relation_name = upper(:TABLENAME) and ff.rdb$field_name=(select RDB$FIELD_NAME '+
           'from RDB$RELATION_CONSTRAINTS C, RDB$INDICES I, RDB$INDEX_SEGMENTS S '+
           'where upper(C.RDB$RELATION_NAME) = upper(:TABLENAME) and '+
@@ -959,7 +937,6 @@ begin
       end
       else
       begin
-        ShadowQuery.Params.Clear;
         ShadowQuery.SQL.Text:='select tr.rdb$trigger_name from RDB$DEPENDENCIES dp, RDB$TRIGGERS tr where dp.rdb$dependent_name=tr.rdb$trigger_name and '+
           'tr.rdb$relation_name=dp.rdb$depended_on_name and dp.rdb$dependent_type=2 and '+
           'dp.rdb$depended_on_name=upper(:TABLENAME) and dp.rdb$field_name=(select RDB$FIELD_NAME '+

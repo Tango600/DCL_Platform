@@ -66,8 +66,8 @@ const
 
   BaiseUIDParamName='BaseUID';
 
-  DBTypeFirebird='firebird';
-  DBTypeInterbase='interbase';
+  DBTypeFirebird='Firebird';
+  DBTypeInterbase='Interbase';
 
   UserLevelsSet='Undefined,Deny,ReadOnly,Write,Execute,Level1,Level2,Level3,Level4,Updater,Signer,Developer';
 

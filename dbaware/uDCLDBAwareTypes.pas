@@ -12,6 +12,9 @@ uses
   {$ENDIF}
   {$IFDEF SQLdbFamily}
   sqldb, DB,
+  {$IFDEF SQLdb}
+  IBConnection, mysql80conn,
+  {$ENDIF}
   {$IFDEF SQLdbIB}
   IBConnection,
   {$ENDIF}

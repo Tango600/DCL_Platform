@@ -12,7 +12,7 @@ uses
   ZDbcIntfs,
   {$ENDIF}
   {$IFDEF SQLdbFamily}
-  SQLDB, {$IFDEF IBALL}SQLDBLib,{$ENDIF}
+  SQLDB, SQLDBLib,
   {$ENDIF}
   FileUtil, LazUTF8, LazFileUtils,
   uDCLDBAwareTypes, uDCLDebug;
@@ -24,9 +24,7 @@ type
   private
     FErrorCode: Integer;
 {$IFDEF SQLdbFamily}
-  {$IFDEF IBALL}
     FSQLDBLibraryLoader: TSQLDBLibraryLoader;
-  {$ENDIF}
 {$ENDIF}
 {$IFDEF TRANSACTIONDB}
     UniversalTransaction: TTransaction;
@@ -47,7 +45,7 @@ type
 implementation
 
 uses
-  uSystemUtils, uDCLGlobalVariables;
+  uDCLConst, uStringUtils, uSystemUtils, uDCLGlobalVariables;
 
 { TDCLDBConnector }
 
@@ -321,6 +319,7 @@ begin
     GPT.IBAll:=True;
     GPT.DBType:=DBTypeFirebird;
   End;
+
   If Not Assigned(Transaction) Then
   Begin
     UniversalTransaction:=TTransaction.Create(Self);

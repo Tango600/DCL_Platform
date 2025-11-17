@@ -65,13 +65,13 @@ begin
 
   If GPT.UserID<>'' then
   begin
-    ShadowQuery.SQL.Text:='select first 1 NOTIFY_ACTION, NOTIFY_TIME, NOTIFY_ID, NOTIFY_TEXT from '+
+    ShadowQuery.SQL.Text:='select NOTIFY_ACTION, NOTIFY_TIME, NOTIFY_ID, NOTIFY_TEXT from '+
       NotifycationsTable+' where USER_ID='+GPT.UserID+' and NOTIFY_STATE<>0 '+
       'order by NOTIFY_TIME, NOTIFY_ACTION';
   end
   else
   begin
-    ShadowQuery.SQL.Text:='select first 1 NOTIFY_ACTION, NOTIFY_TIME, NOTIFY_ID, NOTIFY_TEXT from '+
+    ShadowQuery.SQL.Text:='select NOTIFY_ACTION, NOTIFY_TIME, NOTIFY_ID, NOTIFY_TEXT from '+
       NotifycationsTable+' where NOTIFY_STATE<>0 '+
       'order by NOTIFY_TIME, NOTIFY_ACTION';
   end;
@@ -125,6 +125,7 @@ begin
       except
         ///
       end;
+      break;
     end;
 
     ShadowQuery.Next;
