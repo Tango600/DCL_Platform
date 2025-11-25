@@ -33,6 +33,7 @@ type
   { TDCLQuery }
   TDCLQuery=class(TDCLDialogQuery)
   private
+    FDBConnector: TDatabaseObject;
     ShadowQuery: TDCLSimplyQuery;
     FUpdateSQL: TUpdateObj;
     {$IFDEF TRANSACTIONDB}
@@ -48,7 +49,6 @@ type
     FFieldsDefsDefined:Boolean;
     FieldsDefs:Array of TField;
     {$ENDIF}
-    FDBConnector: TDBConnector;
 
     function GetPrimaryKeyField(TableName: String; OneField: Boolean): String;
     function GetGeneratorName(TableName: String): String;
@@ -93,6 +93,7 @@ type
 
     procedure SetDCLDBConnector(Query: TDCLSimplyQuery);
     function GetDBConnector(Query: TDCLSimplyQuery): TDatabaseObject;
+    function GetSelfDBConnector: TDatabaseObject;
 
     procedure Init;
   public
@@ -106,7 +107,7 @@ type
     procedure Edit;
     procedure Delete; {$IFDEF FPC}override;{$ENDIF}
     procedure Post; override;
-    procedure SetUpdateSQL(TableName, KeyField: String);
+    procedure SetUpdateSQL(const TableName, KeyField: String);
     procedure ExecSQL; {$IFDEF SQLdbFamily}override;{$ENDIF}
 
     procedure SaveDB;
@@ -119,7 +120,7 @@ type
     property KeyField: String read FKeyField;
     property MainTable: String read FMainTable;
   published
-    property Connector: TDBConnector read FDBConnector write FDBConnector;
+    property Connector: TDatabaseObject read GetSelfDBConnector;
     property SQL:{$IFDEF WITH_WIDEDATASET}TWideStrings{$ELSE}TStringList{$ENDIF} read GetSQL write SetSQL;
     property AfterDelete: TDataSetNotifyEvent read GetAfterDeleteEvent write SetAfterDeleteEvent;
     property AfterPost: TDataSetNotifyEvent read GetAfterPostEvent write SetAfterPostEvent;
@@ -628,6 +629,11 @@ begin
   {$ENDIF};
 end;
 
+function TDCLQuery.GetSelfDBConnector: TDatabaseObject;
+begin
+  Result:=GetDBConnector(Self);
+end;
+
 procedure TDCLQuery.Init;
 begin
   FNotAllowOperations:=TOperationsTypes.Create;
@@ -899,7 +905,7 @@ begin
         'where upper(c.TABLE_SCHEMA) = upper(:SCHEMA) and upper(C.TABLE_NAME) = upper(:TABLENAME) and '+
               'C.COLUMN_KEY = ''PRI'' and c.extra = ''auto_increment'' ';
 
-      ShadowQuery.ParamByName('SCHEMA').AsString:=FDBConnector.DatabaseName;
+      ShadowQuery.ParamByName('SCHEMA').AsString:=Connector.DatabaseName;
       ShadowQuery.ParamByName('TABLENAME').AsString:=TableName;
       ShadowQuery.Open;
       while not ShadowQuery.Eof do
@@ -1210,7 +1216,7 @@ Begin
 {$ENDIF}
 end;
 
-procedure TDCLQuery.SetUpdateSQL(TableName, KeyField: String);
+procedure TDCLQuery.SetUpdateSQL(const TableName, KeyField: String);
 begin
   inherited Close;
   FillDatasetUpdateSQL(KeyField, TableName);
