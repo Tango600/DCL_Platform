@@ -57,10 +57,6 @@ const
   AccessLibVersion=laz_version;
 {$ENDIF}
 
-{$IFnDEF IDEMODE}
-{$I revision.inc}
-{$ENDIF}
-
   JPEGCompressionQuality=85;
 
   ShowFormPanel=True;
@@ -71,7 +67,7 @@ const
   BaiseUIDParamName='BaseUID';
 
   DBTypeFirebird='Firebird';
-  DBTypeInterbase='Interbase';
+  DBTypeInterbase='interbase';
 
   UserLevelsSet='Undefined,Deny,ReadOnly,Write,Execute,Level1,Level2,Level3,Level4,Updater,Signer,Developer';
 

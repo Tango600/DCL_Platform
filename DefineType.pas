@@ -1,4 +1,4 @@
-{$MODE Delphi}
+{$MODE Delphi}{$H+}
 {$codepage utf8}
 {$GOTO OFF}
 
@@ -16,10 +16,13 @@
 //{$DEFINE EMBEDDED}
 
 //{$DEFINE ZEOS}
-//{$DEFINE SQLdb}
-{$DEFINE SQLdbIB}
+{$DEFINE SQLdb}
+//{$DEFINE SQLdbMySQL}
+//{$DEFINE SQLdbIB}
 //{$DEFINE IBX}
 //{$DEFINE ODBC}
+
+//{$DEFINE IDEMODE}
 
 //{$DEFINE ZVComponents}
 

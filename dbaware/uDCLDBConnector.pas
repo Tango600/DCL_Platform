@@ -309,12 +309,7 @@ begin
   {$ENDIF}
   {$IFDEF SQLdb}
   DebugProc('Creating Connection...');
-  If PosEx(DBTypeFirebird, GPT.DBType)>0 then
-  Begin
-    GPT.IBAll:=True;
-    GPT.DBType:=DBTypeFirebird;
-  End;
-  If PosEx(DBTypeInterbase, GPT.DBType)>0 then
+  If (PosEx(DBTypeFirebird, GPT.DBType)>0) or (PosEx(DBTypeInterbase, GPT.DBType)>0) then
   Begin
     GPT.IBAll:=True;
     GPT.DBType:=DBTypeFirebird;

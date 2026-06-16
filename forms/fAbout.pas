@@ -164,7 +164,7 @@ begin
   lbVersion.Caption:=DCLVersion;
   lbDBLib.Caption:=DBEngineType;
   lbDBLibVersion.Caption:=AccessLibVersion;
-  lbRevision.Caption:=RevisionStr;
+  lbRevision.Caption:='';
 
   lbIniFile.Caption:=GPT.IniFileName;
 
