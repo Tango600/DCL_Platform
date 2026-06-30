@@ -2555,11 +2555,8 @@ begin
   DBLookupControl.DropDownRows:=DropDownRows;
   DBLookupControl.ShowHint:=True;
   DBLookupControl.Hint:=Field.Hint;
-  {$IFDEF FPC}
+
   DBLookupControl.OnSelect:=LookupOnClick;
-  {$ELSE}
-  DBLookupControl.OnClick:=LookupOnClick;
-  {$ENDIF}
 
   Field.DCLEditComponent:=TDCLEdit.Create;
   Field.DCLEditComponent.Control:=DBLookupControl;
@@ -2612,6 +2609,7 @@ begin
   If Field.Value<>'' Then
   begin
     DBLookupControl.KeyValue:=Field.Value;
+    LookupOnClick(DBLookupControl);
     If (Not NoDataField) and FQuery.CanModify Then
     begin
       If (Not (FQuery.State in dsEditModes))and FQuery.Active and(Not NoDataField) Then
@@ -2655,7 +2653,10 @@ begin
 
     if DCLLookup.Variable<>'' then
     begin
-      tmpSQL1:=(DCLLookup.DCLEditComponent.Control as TDBLookupComboBox).KeyValue;
+      if VarIsNull((DCLLookup.DCLEditComponent.Control as TDBLookupComboBox).KeyValue) then
+        tmpSQL1:=''
+      else
+        tmpSQL1:=(DCLLookup.DCLEditComponent.Control as TDBLookupComboBox).KeyValue;
       FIDCLMain.Variables[FNamespace.CurrentNamespace, DCLLookup.Variable]:=tmpSQL1;
     end;
   end;
