@@ -12,7 +12,9 @@ uses
   ZDbcIntfs,
   {$ENDIF}
   {$IFDEF SQLdbFamily}
-  SQLDB, SQLDBLib,
+  // добавить сюда модули Коннектров тех типов БД, с которыми предпологается
+  // работать через SQLdb
+  SQLDB, SQLDBLib, IBConnection,
   {$ENDIF}
   FileUtil, LazUTF8, LazFileUtils,
   uDCLDBAwareTypes, uDCLDebug;

@@ -13,7 +13,7 @@ uses
   {$IFDEF SQLdbFamily}
   sqldb, DB,
   {$IFDEF SQLdb}
-  IBConnection, mysql80conn,
+  mysql80conn,
   {$ENDIF}
   {$IFDEF SQLdbIB}
   IBConnection,
