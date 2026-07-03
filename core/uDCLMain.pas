@@ -33,6 +33,7 @@ type
     ProtectionForm: TProtectionForm;
     FImages: TImageList;
     IProtectionEngine: IDCLProtectionEngine;
+    TerminateByLastDialog: Boolean;
 
     function GetScriptText(ScriptName: String): TStringList;
     function GetScript(ScriptName: String): TDCLScript;
@@ -55,6 +56,7 @@ type
     procedure RunInterface;
 
     procedure ReleaseForm(const Form: IDCLForm);
+    procedure CheckLastDialog;
 
     procedure CloseAllDialogs;
 
@@ -84,7 +86,6 @@ type
       const ParentForm: IDCLForm; const Grid: IDCLGrid; UserLevel: TUserLevelsType;
       ReturnValueParams: TReturnValueParams; Modal: Boolean): IDCLForm;
     function CloseForm(const Form: IDCLForm; Force: Boolean): IDCLForm;
-    function CloseDialog(var Form: IDCLForm; Force: Boolean): Boolean;
     procedure GetValueProc(const NameSpace: TVariableNamespace; const Form: IDCLForm; ReturnValue: TReturnFormValue);
     function HasChildForm(const Form: IDCLForm): Boolean;
     function HasParentForm(const Form: IDCLForm): Boolean;
@@ -536,49 +537,6 @@ begin
   end;
 end;
 
-function TDCLMain.CloseDialog(var Form: IDCLForm; Force: Boolean): Boolean;
-var
-  NewForm: IDCLForm;
-  level, l: Integer;
-  Parent, F, C: IDCLForm;
-begin
-  Result:=True;
-  if Force then
-    Result:=not HasChildForm(Form);
-
-  if Result then
-  begin
-    Parent:=Form.ParentDialog;
-    if Assigned(Parent) then
-    begin
-      NewForm:=Parent
-    end
-    else
-    begin
-      level:=Form.StackLevel;
-      l:=0;
-      C:=nil;
-      for F in FForms do
-      begin
-        if F.StackLevel<level then
-        if l<F.StackLevel then
-        begin
-          l:=F.StackLevel;
-          C:=F;
-        end;
-      end;
-      NewForm:=C;
-    end;
-
-    if Force then
-      Form.ForceClose
-    else
-      Form.Close;
-
-    Form:=NewForm;
-  end;
-end;
-
 procedure TDCLMain.ReleaseForm(const Form: IDCLForm);
 
   procedure CloseChild(const F: IDCLForm);
@@ -606,13 +564,23 @@ procedure TDCLMain.ReleaseForm(const Form: IDCLForm);
 
 begin
   CloseChild(Form);
+  CheckLastDialog;
+end;
+
+procedure TDCLMain.CheckLastDialog;
+begin
+  if TerminateByLastDialog then
+  if FForms.Count=0 then
+  begin
+    ExitApp;
+  end;
 end;
 
 procedure TDCLMain.RunInterface;
 var
   i, p:Integer;
-  r: Boolean;
-  S, vn, v, DialogName, ScriptName, Variables: String;
+  run: Boolean;
+  S, vn, v, DialogName, ScriptName, PackageName, Variables: String;
 
   function FindDialogCall: String;
   begin
@@ -644,6 +612,11 @@ var
     Result:=FindCommandStrParam('MainMenu')='0';
   end;
 
+  function FindTerminateByLastDialog: Boolean;
+  begin
+    Result:=FindCommandStrParam('TerminateByLast')='1';
+  end;
+
 begin
   (Application.MainForm as TMainForm).SetDCLMain(Self);
   if not GPT.DisableColorScheme and (GPT.MainColor<>NoColorValue) then
@@ -652,7 +625,8 @@ begin
   {$IFDEF PROTECTION}IProtectionEngine:=TDCLProtectionEngine.Create;{$ENDIF}
   if {$IFDEF PROTECTION}IProtectionEngine.GetProtectionStatus{$ELSE}True{$ENDIF} then
   begin
-    r:=False;
+    TerminateByLastDialog:=FindTerminateByLastDialog;
+
     Variables:=FindVariablesParams;
     if Variables<>'' then
     begin
@@ -675,14 +649,17 @@ begin
     end;
 
     Update;
-    S:=FindPackageFileLoad;
-    if S='' then
+    run:=False;
+    PackageName:=FindPackageFileLoad;
+    if PackageName='' then
     begin
-      S:=FindPackageFileRun;
-      r:=True;
+      PackageName:=FindPackageFileRun;
+      run:=True;
     end;
-    If S<>'' then
-      LoadPackageFromFile(S, r);
+    If PackageName<>'' then
+    begin
+      LoadPackageFromFile(PackageName, run);
+    end;
 
     ScriptName:=FindScriptName;
     if ScriptName<>'' then

@@ -1096,10 +1096,6 @@ begin
         FDCLForm:=FIDCLMain.CloseForm(FDCLForm, True);
         if Assigned(FDCLForm) then
           FDCLGrid:=FDCLForm.GetCurrentGrid;
-
-        {if FIDCLMain.CloseDialog(FDCLForm, True) then
-          if Assigned(FDCLForm) then
-            FDCLGrid:=FDCLForm.GetCurrentGrid;}
       End;
     end;
 
