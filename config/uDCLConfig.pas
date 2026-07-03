@@ -57,8 +57,8 @@ procedure TDCLConfig.SetIniFileName(const FileName: String);
 begin
   if FileExists(FileName) then
   begin
-    GPT.IniFileName:=FileName;
-    IniFileName:=FileName;
+    IniFileName:=ExpandFileName(FileName);
+    GPT.IniFileName:=IniFileName;
   end;
 end;
 
