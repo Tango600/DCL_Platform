@@ -35,7 +35,6 @@ type
       const ParentForm: IDCLForm; const Grid: IDCLGrid; UserLevel: TUserLevelsType;
       ReturnValueParams: TReturnValueParams; Modal: Boolean): IDCLForm;
     function CloseForm(const Form: IDCLForm; Force: Boolean): IDCLForm;
-    function CloseDialog(var Form: IDCLForm; Force: Boolean): Boolean;
     procedure ReleaseForm(const Form: IDCLForm);
     procedure GetValueProc(const NameSpace: TVariableNamespace; const Form: IDCLForm; ReturnValue: TReturnFormValue);
 

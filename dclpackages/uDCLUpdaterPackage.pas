@@ -416,9 +416,8 @@ begin
         FQuery.Prepare;
         FQuery.Params.ParamByName('ID').AsInteger:=PackageID;
         FQuery.Params.ParamByName('LAST_UPDATE').AsDateTime:=Now;
-        FQuery.Params.ParamByName('STATE').AsInteger:=Ord(pusDone);
+        FQuery.Params.ParamByName('STATE').AsInteger:=Ord(UpdateState);
         FQuery.ExecSQL;
-        UpdateState:=pusDone;
       end;
 
       {$IFDEF TRANSACTIONDB}
