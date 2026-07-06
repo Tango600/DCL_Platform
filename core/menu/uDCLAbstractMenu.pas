@@ -25,7 +25,6 @@ type
   protected
     FMain: IDCLMain;
     FDBConnector: TDCLDBConnector;
-    iComp: IComparer<TMenuConstructionItem>;
     LocalQuery: TDCLSimplyQuery;
     FMenuTitle: String;
     NoDCLTable: Boolean;
@@ -148,7 +147,6 @@ constructor TDCLAbstractMenu.Create(const Main: IDCLMain);
 begin
   FMain:=Main;
   FDBConnector:=Main.GetDBConnector;
-  iComp:=TComparerMenuItem.Create;
 
   LocalQuery:=TDCLSimplyQuery.Create(Self);
   FDBConnector.SetConnector(LocalQuery);
@@ -183,6 +181,7 @@ end;
 destructor TDCLAbstractMenu.Destroy;
 begin
   CloseActions;
+  FMain:=nil;
   inherited Destroy;
 end;
 

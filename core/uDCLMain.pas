@@ -1228,6 +1228,7 @@ var
 begin
   Command:=TDCLCommand.Create(Self, TVariableNamespace.Create('', ''), nil, nil);
   Command.RunCommandScript(CommandName);
+  Command:=nil;
 end;
 
 procedure TDCLMain.About;

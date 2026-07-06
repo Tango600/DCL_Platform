@@ -132,6 +132,7 @@ begin
   FreeAndNil(FParser);
   FDCLGrid:=nil;
   FDCLForm:=nil;
+  FIDCLMain:=nil;
   inherited Destroy;
 end;
 

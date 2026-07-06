@@ -26,7 +26,8 @@ type
     procedure MessageToUser(Text: String);
     function TestNotifierTable: Boolean;
   public
-    constructor Create(DCLMain: IDCLMain); overload;
+    constructor Create(const DCLMain: IDCLMain); overload;
+    destructor Destroy; override;
   end;
 
 implementation
@@ -148,7 +149,7 @@ begin
   Result:=FDCLConnector.Connected and TableExists(FDCLConnector, NotifycationsTable);
 end;
 
-constructor TDCLNotifier.Create(DCLMain: IDCLMain);
+constructor TDCLNotifier.Create(const DCLMain: IDCLMain);
 begin
   FDCLMain:=DCLMain;
   FDCLConnector:=FDCLMain.GetDBConnector;
@@ -170,6 +171,12 @@ begin
 
     OnTick(Timer);
   end;
+end;
+
+destructor TDCLNotifier.Destroy;
+begin
+  FDCLMain:=nil;
+  inherited Destroy;
 end;
 
 end.

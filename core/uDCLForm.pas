@@ -280,7 +280,6 @@ begin
   FTab.Parent:=FPages;
   FTab.Caption:=GetDCLMessageString(msPage)+' '+IntToStr(pc+1);
   FTab.Name:='Page_'+IntToStr(pc+1);
-  //FTab.PageControl:=FPages;
 
   FPages.ActivePage.Align:=alClient;
   FParentPanel:=FTab;
@@ -752,6 +751,7 @@ destructor TDCLForm.Destroy;
 begin
   FParentForm:=nil;
   FParentPanel:=nil;
+  FIDCLMain:=nil;
   inherited Destroy;
 end;
 

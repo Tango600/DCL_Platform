@@ -104,6 +104,7 @@ begin
   ConstructionItems.Sort(iComp);
 
   CreateMenuControls(Query, ConstructionItems, ParentControl);
+  iComp:=nil;
 end;
 
 constructor TDCLBaseMenu.Create(const Main: IDCLMain; MainForm: TForm);
