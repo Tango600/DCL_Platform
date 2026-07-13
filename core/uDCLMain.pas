@@ -206,6 +206,7 @@ begin
                 begin
                   Command:=TDCLCommand.Create(Self, TVariableNamespace.Create('', ''), nil, nil);
                   Command.RunCommandScript(RunItem.ScriptName);
+                  Command:=nil;
                 end
                 else
                 begin
@@ -451,6 +452,8 @@ begin
     begin
       Command.RunCommandScript(ReturnValue.FinishScript);
     end;
+
+    Command:=nil;
   end;
 end;
 

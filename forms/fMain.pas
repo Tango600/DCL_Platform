@@ -28,7 +28,7 @@ type
     procedure WMSysCommand(var message: TWMSysCommand); message WM_SysCommand;
     {$ENDIF}
   public
-    procedure SetDCLMain(DCLMain: IDCLMain);
+    procedure SetDCLMain(const DCLMain: IDCLMain);
   end;
 
 {$IFDEF MSWINDOWS}
@@ -57,7 +57,7 @@ begin
 end;
 {$ENDIF}
 
-procedure TMainForm.SetDCLMain(DCLMain: IDCLMain);
+procedure TMainForm.SetDCLMain(const DCLMain: IDCLMain);
 begin
   FIMain:=DCLMain;
 end;
@@ -67,7 +67,8 @@ var
   ConfigPath, SectionName: String;
   Settings: TIniFile;
 begin
-  FIMain.CloseAllDialogs;
+  if Assigned(FIMain) then
+    FIMain.CloseAllDialogs;
 
   if GPT.DialogsSettings and (Self.WindowState=wsNormal) then
   begin
@@ -91,6 +92,8 @@ begin
       FreeAndNil(Settings);
     end;
   end;
+
+  FIMain:=nil;
 end;
 
 procedure TMainForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);

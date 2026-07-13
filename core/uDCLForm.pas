@@ -722,6 +722,7 @@ begin
         FCurrentGrid.ExecScriptLine(SrcLine);
       end;
     end;
+    Command:=nil;
   end;
 
   FieldsCount:=0;

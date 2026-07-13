@@ -990,6 +990,7 @@ begin
         end;
       end;
     end;
+    CommandObj:=nil;
   end;
 end;
 
@@ -1939,6 +1940,7 @@ begin
               CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
               CommandObj.DisableAutoRefresh:=True;
               CommandObj.SelectRunType(DCLCommand.Command);
+              CommandObj:=nil;
             end;
           end;
         end;
@@ -1953,6 +1955,7 @@ begin
 
           CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
           CommandObj.SelectRunType(DCLCommand.ExecAfter);
+          CommandObj:=nil;
         end;
 
         ReFreshData;
@@ -1970,6 +1973,7 @@ begin
 
         CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
         CommandObj.SelectRunType(DCLCommand.Command);
+        CommandObj:=nil;
       end;
     end;
   end;
@@ -1996,7 +2000,7 @@ begin
   FTablePartsTabs:=TTabSheet.Create(FTablePartsPages);
   FTablePartsTabs.Parent:=FTablePartsPages;
   FTablePartsTabs.Name:='TablePart_'+IntToStr(pc+1);
-  FTablePartsTabs.PageControl:=FTablePartsPages;
+
   if not GPT.DisableColorScheme and (GPT.TablePartColor<>NoColorValue) then
     FTablePartsTabs.Color:=GPT.TablePartColor;
 
@@ -2201,6 +2205,7 @@ begin
   begin
     Command:=TDCLCommand.Create(FIDCLMain, FNameSpace, FForm, Self);
     Command.SelectRunType(Button.Command);
+    Command:=nil;
   end;
 end;
 
@@ -3646,6 +3651,7 @@ begin
       begin
         CommandObj:=TDCLCommand.Create(FIDCLMain, FNameSpace, FForm, Self);
         CommandObj.RunCommandScript(ReturnValueParams.InitScript);
+        CommandObj:=nil;
       end;
 
       ReturnValue.Values:=TList<TGetValueItem>.Create;
@@ -4354,6 +4360,7 @@ begin
   FreeAndNil(FTableParts);
   FreeAndNil(FLookupTables);
   FForm:=nil;
+  FIDCLMain:=nil;
 
   inherited Destroy;
 end;
