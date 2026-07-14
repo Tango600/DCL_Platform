@@ -15,7 +15,6 @@ type
     procedure CloseAllDialogs;
     function Start: Boolean;
     procedure RunInterface;
-    procedure CreateMenu(MainForm: TForm);
 
     function GetVariables: TVariables;
 
