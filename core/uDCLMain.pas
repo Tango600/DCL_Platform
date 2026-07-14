@@ -53,7 +53,7 @@ type
     function GetProtectionEngine: IDCLProtectionEngine;
 
     function Start: Boolean;
-    procedure RunInterface;
+    procedure RunInterface(MainForm: TForm);
 
     procedure ReleaseForm(const Form: IDCLForm);
     procedure CheckLastDialog;
@@ -579,7 +579,7 @@ begin
   end;
 end;
 
-procedure TDCLMain.RunInterface;
+procedure TDCLMain.RunInterface(MainForm: TForm);
 var
   i, p:Integer;
   run: Boolean;
@@ -621,7 +621,7 @@ var
   end;
 
 begin
-  (Application.MainForm as TMainForm).SetDCLMain(Self);
+  FMainForm:=MainForm;
   if not GPT.DisableColorScheme and (GPT.MainColor<>NoColorValue) then
     Application.MainForm.Color:=GPT.MainColor;
 
@@ -677,7 +677,7 @@ begin
     end;
 
     if not FindMainMenuDesabled then
-      CreateMenu(Application.MainForm);
+      CreateMenu(MainForm);
   end
   else
   begin
@@ -1216,7 +1216,6 @@ end;
 
 procedure TDCLMain.CreateMenu(MainForm: TForm);
 begin
-  FMainForm:=MainForm;
   FDCLMenuSelector:=TDCLMenuSelector.Create(Self, FMainForm);
 end;
 

@@ -37,7 +37,8 @@ begin
   if not DCL.Start then
   begin
     Application.CreateForm(TMainForm, MainForm);
-    DCL.RunInterface;
+    MainForm.SetDCLMain(DCL);
+    DCL.RunInterface(MainForm);
     Application.Run;
   end;
 

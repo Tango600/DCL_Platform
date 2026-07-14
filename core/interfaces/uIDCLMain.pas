@@ -9,12 +9,15 @@ uses
   uVariableNamespace;
 
 type
+
+  { IDCLMain }
+
   IDCLMain=interface
     function GetDBConnector: TDCLDBConnector;
     function GetForms: TList<IDCLForm>;
     procedure CloseAllDialogs;
     function Start: Boolean;
-    procedure RunInterface;
+    procedure RunInterface(MainForm: TForm);
 
     function GetVariables: TVariables;
 
