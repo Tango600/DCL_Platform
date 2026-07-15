@@ -860,12 +860,8 @@ end;
 
 procedure TDCLForm.DeleteAllStatus;
 begin
-  if FStatusBar.Panels.Count>StatusInfo+1 then
-  begin
-    repeat
-      FStatusBar.Panels.Delete(FStatusBar.Panels.Count-1);
-    until FStatusBar.Panels.Count<=StatusInfo+1;
-  end;
+  while FStatusBar.Panels.Count>StatusInfo+1 do
+    FStatusBar.Panels.Delete(FStatusBar.Panels.Count-1);
 end;
 
 procedure TDCLForm.GetValueProc(Value: TReturnFormValue);
