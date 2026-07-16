@@ -40,6 +40,7 @@ begin
     MainForm.SetDCLMain(DCL);
     DCL.RunInterface(MainForm);
     Application.Run;
+    DCL.Finalize;
   end;
 
   DCL:=nil;

@@ -22,23 +22,22 @@ type
   { TDCLAbstractMenu }
 
   TDCLAbstractMenu=class(TComponent)
+  private
+    FMenuTitle: String;
+    NoDCLTable: Boolean;
+
+    function GetMenuCommandById(Ident: Integer): String;
   protected
     FMain: IDCLMain;
     FDBConnector: TDCLDBConnector;
     LocalQuery: TDCLSimplyQuery;
-    FMenuTitle: String;
-    NoDCLTable: Boolean;
+
+    function TestDCLTable: Boolean;
   public
     constructor Create(const Main: IDCLMain); overload;
     destructor Destroy; override;
 
     procedure About;
-    procedure InitActions;
-    procedure CloseActions;
-
-    function TestDCLTable: Boolean;
-
-    function GetMenuCommandById(Ident: Integer): String;
 
     procedure RunMenu(const Ident: Integer);
     function ExistItemByIdent(var List: TList<TMenuConstructionItem>; Id: Integer): Boolean;
@@ -56,16 +55,6 @@ uses
 procedure TDCLAbstractMenu.About;
 begin
   FMain.About;
-end;
-
-procedure TDCLAbstractMenu.InitActions;
-begin
-  FMain.RunScript(40001, 40100);
-end;
-
-procedure TDCLAbstractMenu.CloseActions;
-begin
-  FMain.RunScript(40101, 40200);
 end;
 
 function TDCLAbstractMenu.TestDCLTable: Boolean;
@@ -145,6 +134,7 @@ end;
 
 constructor TDCLAbstractMenu.Create(const Main: IDCLMain);
 begin
+  NoDCLTable:=False;
   FMain:=Main;
   FDBConnector:=Main.GetDBConnector;
 
@@ -155,8 +145,6 @@ begin
   if not TestDCLTable then
     NoDCLTable:=True;
   {$ENDIF}
-
-  InitActions;
 
   FMenuTitle:='';
   if not NoDCLTable then
@@ -180,7 +168,6 @@ end;
 
 destructor TDCLAbstractMenu.Destroy;
 begin
-  CloseActions;
   FMain:=nil;
   inherited Destroy;
 end;

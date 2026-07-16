@@ -24,7 +24,10 @@ begin
       DCLTable+' s, '+RolesMenuTable+' rm, '+RolesTable+' r, '+UsersTable+' u, '+
       RolesToUsersTable+' ru '+' where r.'+RolesIDFiled+'=rm.'+RolesMenuIDFiled+' and rm.'+RoleMenuItemIDField+'=s.'+
       IdentifyField+' and ru.'+RolesToUsersRoleIDField+'=r.'+RolesIDFiled+' and u.'+UserIDField+
-      '=ru.'+RolesToUsersUserIDField+' and u.'+UserIDField+'='+UserID+' and '+Where+' order by s.'+IdentifyField+', s.'+ParentField;
+      '=ru.'+RolesToUsersUserIDField;
+    if UserID<>'' then
+      Result:=Result+' and u.'+UserIDField+'='+UserID+' and ';
+    Result:=Result+Where+' order by s.'+IdentifyField+', s.'+ParentField;
   end;
 end;
 

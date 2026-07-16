@@ -24,7 +24,7 @@ type
 implementation
 
 uses
-  uDCLGlobalVariables, uDCLDBStructure, uDBUtils;
+  uDCLGlobalVariables;
 
 { TDCLMenuClassic }
 
@@ -67,7 +67,7 @@ begin
   inherited Create(Main, MainForm);
 
   {$IFnDEF ALLOWNODCL}
-  if TableExists(Main.GetDBConnector, DCLTable) then
+  if TestDCLTable then
   {$ENDIF}
     CreateMenu(LocalQuery, FMainMenu, 0);
 

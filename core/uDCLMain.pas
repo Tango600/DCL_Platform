@@ -66,7 +66,7 @@ type
     function GetForms: TList<IDCLForm>;
     function GetDBConnector: TDCLDBConnector;
 
-    procedure CreateMenu(MainForm: TForm);
+    procedure CreateMenu;
 
     procedure OpenDialog(DialogName: String; Host: Boolean);
     procedure RunCommandScript(CommandName: String);
@@ -95,6 +95,13 @@ type
     procedure ClearScriptPool;
     function GetLoadedScripts: TList<TDCLScriptItem>;
     function GetPackages: TList<TPackageInfo>;
+
+    procedure InitActions;
+    procedure CloseActions;
+
+    procedure StartNotifier(const DCLMain: IDCLMain);
+    procedure StopNotifier;
+    procedure Finalize;
   public
     constructor Create; overload;
     destructor Destroy; override;
@@ -291,6 +298,39 @@ end;
 function TDCLMain.GetPackages: TList<TPackageInfo>;
 begin
   Result:=FPackages;
+end;
+
+procedure TDCLMain.InitActions;
+begin
+  RunScript(40001, 40100);
+end;
+
+procedure TDCLMain.CloseActions;
+begin
+  RunScript(40101, 40200);
+end;
+
+procedure TDCLMain.StartNotifier(const DCLMain: IDCLMain);
+begin
+  {$IFNDEF NODCLMESSAGES}
+  FDCLNotifier:=TDCLNotifier.Create(DCLMain);
+  {$ENDIF}
+end;
+
+procedure TDCLMain.StopNotifier;
+begin
+  {$IFNDEF NODCLMESSAGES}
+  if Assigned(FDCLNotifier) then
+    FreeAndNil(FDCLNotifier);
+  {$ENDIF}
+end;
+
+procedure TDCLMain.Finalize;
+begin
+  CloseActions;
+  StopNotifier;
+  if Assigned(FDCLMenuSelector) then
+    FreeAndNil(FDCLMenuSelector);
 end;
 
 procedure TDCLMain.NotifyForms(Action: TFormsNotifyAction);
@@ -623,7 +663,7 @@ var
 begin
   FMainForm:=MainForm;
   if not GPT.DisableColorScheme and (GPT.MainColor<>NoColorValue) then
-    Application.MainForm.Color:=GPT.MainColor;
+    MainForm.Color:=GPT.MainColor;
 
   {$IFDEF PROTECTION}IProtectionEngine:=TDCLProtectionEngine.Create;{$ENDIF}
   if {$IFDEF PROTECTION}IProtectionEngine.GetProtectionStatus{$ELSE}True{$ENDIF} then
@@ -677,7 +717,11 @@ begin
     end;
 
     if not FindMainMenuDesabled then
-      CreateMenu(MainForm);
+    begin
+      CreateMenu;
+    end;
+
+    InitActions;
   end
   else
   begin
@@ -1151,6 +1195,7 @@ end;
 destructor TDCLMain.Destroy;
 begin
   CloseAllDialogs;
+  StopNotifier;
   if Assigned(FDCLMenuSelector) then
     FreeAndNil(FDCLMenuSelector);
   FreeAndNil(LocalQuery);
@@ -1214,7 +1259,7 @@ begin
   Result:=FDBConnector;
 end;
 
-procedure TDCLMain.CreateMenu(MainForm: TForm);
+procedure TDCLMain.CreateMenu;
 begin
   FDCLMenuSelector:=TDCLMenuSelector.Create(Self, FMainForm);
 end;

@@ -49,6 +49,8 @@ type
     procedure LoadPackageFromFile(const FileName: String; Run: Boolean);
     procedure ClearScriptPool;
 
+    procedure Finalize;
+
     function GetProtectionEngine: IDCLProtectionEngine;
 
     property Variables: TVariables read GetVariables;

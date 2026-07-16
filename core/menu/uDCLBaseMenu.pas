@@ -144,7 +144,6 @@ end;
 
 destructor TDCLBaseMenu.Destroy;
 begin
-  CloseActions;
   inherited Destroy;
 end;
 
