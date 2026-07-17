@@ -4,12 +4,9 @@
 interface
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, translations,
 {$IFDEF FPC}
   LazUTF8,
-{$ENDIF}
-{$IFDEF MSWINDOWS}
-  Windows, 
 {$ENDIF}
   uDCLConst;
 
@@ -44,23 +41,22 @@ type
     msPackageSignNotValid, msFildsNotInputValue);
 
 
-procedure LoadLangRes(Lang:TLangName; Path:String);
+procedure LoadLangRes(Lang: TLangName; const Path: String);
 function GetDCLMessageString(MessID: TStringMessages): String;
 function GetDCLErrorString(ErrorCode: Integer; AddText: String=''):string;
-function LoadTranscodeFile(DataType:TTranscodeDataType; FileName:String; Lang:TLangName):Boolean;
+function LoadTranscodeFile(DataType:TTranscodeDataType; const FileName:String; Lang:TLangName):Boolean;
 Function Transcode(DataType:TTranscodeDataType; const Buf: String): String;
 function GetLacalaizedMonthName(MonthNum:Integer):string;
 Function GetFileNameToTranslite(Const FullFileName: String): String;
 
-function GetSystemLanguage: String;
 procedure InitLangEnv;
 
 const
   DefaultLangDir='Lang';
-  DefaultLanguage='RUS';
+  DefaultLanguage='ru';
 
 var
-  LangName:TLangName;
+  LangName: TLangName;
 
 implementation
 
@@ -380,10 +376,9 @@ var
   StringMessages:array[TStringMessages] of string;
   TranscodeData:array[TTranscodeDataType] of Array of TTranscodeData;
 
-
 function GetDCLMessageStringDefault(MesID: TStringMessages): String;
 begin
-  If LangName=DefaultLanguage then
+  If LangName.Equals(DefaultLanguage, True) then
   Begin
     case MesID of
     msNone:
@@ -814,7 +809,7 @@ begin
   Data.TranscodeType:=ttDirect;
 end;
 
-function LoadTranscodeFile(DataType:TTranscodeDataType; FileName:String; Lang:TLangName):Boolean;
+function LoadTranscodeFile(DataType:TTranscodeDataType; const FileName:String; Lang:TLangName):Boolean;
 var
   LangResFile:TStringList;
   S, c, vs1, tmp1:String;
@@ -823,14 +818,14 @@ var
   lt:TIsDigitType;
 begin
   If not FileExists(FileName) then
-    FileName:=FileName+'.'+UpperCase(Lang);
+    S:=FileName+'.'+LowerCase(Lang);
 
   Result:=False;
 {$IFNDEF SINGLELANG}
-  If FileExists(FileName) then
+  If FileExists(S) then
   Begin
     LangResFile:=TStringList.Create;
-    LangResFile.LoadFromFile(FileName, TEncoding.UTF8);
+    LangResFile.LoadFromFile(S, TEncoding.UTF8);
 
     For ii:=1 to LangResFile.Count do
     Begin
@@ -1129,11 +1124,11 @@ begin
   End;
 end;
 
-procedure LoadLangRes(Lang:TLangName; Path:String);
+procedure LoadLangRes(Lang: TLangName; const Path: String);
 var
   FileName:string;
 begin
-  FileName:=IncludeTrailingPathDelimiter(DefaultLangDir)+'DCLTranslate.'+UpperCase(Lang);
+  FileName:=IncludeTrailingPathDelimiter(DefaultLangDir)+'DCLTranslate.'+LowerCase(Lang);
 
   LoadLangFile(Path+FileName);
   If not LoadTranscodeFile(tdtUTF8, 'DCLTranscodeUTF8', Lang) then
@@ -1150,7 +1145,7 @@ begin
     Result:='';
 end;
 
-function GetISO639LangCode(LangCode: String): String;
+{function GetISO639LangCode(LangCode: String): String;
 var
   tmpLang: String;
 begin
@@ -1159,32 +1154,17 @@ begin
   if tmpLang='en' then Result:='ENG';
   if tmpLang='pl' then Result:='POL';
   if tmpLang='be' then Result:='BEL';
-end;
+end;}
 
 function GetSystemLanguage: String;
 var
-{$IFDEF MSWINDOWS}
-  OutputBuffer: PChar;
-{$ENDIF}
-{$IFDEF UNIX}
-  S:string;
-{$ENDIF}
+  LanguageID: TLanguageID;
 begin
-{$IFDEF MSWINDOWS}
-  Result:=DefaultLanguage;
-  OutputBuffer:=StrAlloc(90);     //alocate memory for the PChar
-  try
-    GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SABBREVLANGNAME, OutputBuffer, 89);
-    Result:=UpperCase(OutputBuffer);
-  finally
-    StrDispose(OutputBuffer);   //alway's free the memory alocated
-  end;
-{$ENDIF}
-{$IFDEF UNIX}
-  S:='';
-  lazutf8.LazGetShortLanguageID(S);
-  Result:=GetISO639LangCode(S);
-{$ENDIF}
+  LanguageID:=GetLanguageID;
+  if LanguageID.LanguageCode='' then
+    Result:=DefaultLanguage
+  else
+    Result:=LanguageID.LanguageCode.ToLower;
 end;
 
 Function GetFileNameToTranslite(Const FullFileName: String): String;
