@@ -74,8 +74,8 @@ function TDCLProtectionEngine.GetProtectionKey: String;
 var
   S: String;
 begin
-  S:=MD5String(KeyFolder+'\'+MD5String(HWKeyEngine.GetKey)+'\windows');
-  Result:=MD5String(S+KeyFolder+'windows');
+  S:=MD5String('DCL5\'+MD5String(HWKeyEngine.GetKey)+'\windows');
+  Result:=MD5String(S+'DCL5windows');
 end;
 
 function TDCLProtectionEngine.GetSoftwareKey: String;
@@ -132,7 +132,7 @@ begin
     S:=GetProtectionKey;
     for i:=0 to 7 do
     begin
-      S:=MD5String(S+KeyFolder+'\'+S+'\');
+      S:=MD5String(S+'DCL5\'+S+'\');
     end;
 
     S2:=NormalizeKey(Key);
@@ -153,7 +153,7 @@ begin
           S:=GetProtectionKey+';'+Periods[p]+';'+AddChar('0', IntToStr(YearOf(IncDay(Today, -d))-2020), 2)+CharsTab[MonthOf(IncDay(Today, -d))]+CharsTab[DayOf(IncDay(Today, -d))];
           for i:=0 to 7 do
           begin
-            S:=MD5String(S+KeyFolder+'\'+S+'\');
+            S:=MD5String(S+'DCL5\'+S+'\');
           end;
 
           if S.ToLowerInvariant=S2.ToLowerInvariant then
