@@ -282,9 +282,9 @@ type
     function GetPrintTool: Boolean;
 
     procedure Structure(Sender: TObject);
-    function IsGridColumnExists(FieldName: String): Boolean;
+    function IsGridColumnExists(const FieldName: String): Boolean;
 
-    procedure AddPopupItem(Caption: String; Action: TPopupMenuAction; AChortCutKey: String; PictType: TPicturesTypes);
+    procedure AddPopupItem(const Caption: String; Action: TPopupMenuAction; const ChortCutKey: String; PictType: TPicturesTypes);
     procedure AddPopupSeparator;
     procedure OnPopupMenuClick(Sender: TObject);
     procedure PopupMenuOnPopup(Sender: TObject);
@@ -314,13 +314,13 @@ type
     procedure Prepeare;
 
     procedure SetSQL(SQL: String);
-    procedure SetNavigatorButtonsSet(ButtonsExpr: String);
-    procedure ParseNavigatorButtons(ButtonsExpr: String);
+    procedure SetNavigatorButtonsSet(const ButtonsExpr: String);
+    procedure ParseNavigatorButtons(const ButtonsExpr: String);
 
     procedure AddButton(Button: TDCLCommandButton);
     procedure AddFilter(Filter: TDBFilter);
 
-    procedure AddEvent(EventType: TEventsEnum; ScriptName: String);
+    procedure AddEvent(EventType: TEventsEnum; const ScriptName: String);
 
     function CheckEdits: Boolean;
     procedure NotifyEditFieldError(Field: TDCLField);
@@ -4030,7 +4030,7 @@ begin
   end;
 end;
 
-function TDCLGrid.IsGridColumnExists(FieldName: String): Boolean;
+function TDCLGrid.IsGridColumnExists(const FieldName: String): Boolean;
 var
   i: Integer;
 begin
@@ -4045,15 +4045,15 @@ begin
   end;
 end;
 
-procedure TDCLGrid.AddPopupItem(Caption: String; Action: TPopupMenuAction;
-  AChortCutKey: String; PictType: TPicturesTypes);
+procedure TDCLGrid.AddPopupItem(const Caption: String; Action: TPopupMenuAction;
+  const ChortCutKey: String; PictType: TPicturesTypes);
 var
   ItemMenu: TMenuItem;
 begin
   ItemMenu:=TMenuItem.Create(PopupGridMenu);
   ItemMenu.Tag:=Ord(Action);
   ItemMenu.Caption:=Caption;
-  ItemMenu.ShortCut:=TextToShortCut(AChortCutKey);
+  ItemMenu.ShortCut:=TextToShortCut(ChortCutKey);
   ItemMenu.OnClick:=OnPopupMenuClick;
   ItemMenu.ImageIndex:=FIDCLMain.GetImageIndex(PictType);
 
@@ -5061,12 +5061,12 @@ begin
   end;
 end;
 
-procedure TDCLGrid.SetNavigatorButtonsSet(ButtonsExpr: String);
+procedure TDCLGrid.SetNavigatorButtonsSet(const ButtonsExpr: String);
 begin
   FNavigButtonsExpr:=ButtonsExpr;
 end;
 
-procedure TDCLGrid.ParseNavigatorButtons(ButtonsExpr: String);
+procedure TDCLGrid.ParseNavigatorButtons(const ButtonsExpr: String);
 var
   i: TDBNavButtonType;
   AllowEdit, HideNavig: Boolean;
@@ -5156,7 +5156,7 @@ begin
   end;
 end;
 
-procedure TDCLGrid.AddEvent(EventType: TEventsEnum; ScriptName: String);
+procedure TDCLGrid.AddEvent(EventType: TEventsEnum; const ScriptName: String);
 var
   Event: TDCLEvent;
 begin

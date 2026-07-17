@@ -20,11 +20,11 @@ type
     procedure Prepeare;
 
     procedure SetSQL(SQL: String);
-    procedure SetNavigatorButtonsSet(ButtonsExpr: String);
+    procedure SetNavigatorButtonsSet(const ButtonsExpr: String);
 
     procedure AddButton(Button: TDCLCommandButton);
 
-    procedure AddEvent(EventType: TEventsEnum; ScriptName: String);
+    procedure AddEvent(EventType: TEventsEnum; const ScriptName: String);
 
     function CheckEdits: Boolean;
     procedure NotifyEditFieldError(Field: TDCLField);
