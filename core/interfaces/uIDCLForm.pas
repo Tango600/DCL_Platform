@@ -16,9 +16,9 @@ type
     procedure SetRecordsStatus(RecNo, RecordCount: LongInt); overload;
     procedure SetDBStatus(Str: String);
 
-    procedure SetInfoStatus(Str: String);
-    procedure AddInfoStatus(Str: String; Width: Integer);
-    procedure SetStatusNum(Str: String; Num, Width: Integer);
+    procedure SetInfoStatus(const Str: String);
+    procedure AddInfoStatus(const Str: String; Width: Integer);
+    procedure SetStatusNum(const Str: String; Num, Width: Integer);
     procedure DeleteStatus(Num: Integer);
     procedure DeleteAllStatus;
 
@@ -36,7 +36,7 @@ type
     function GetIsSingle: Boolean;
 
     function GetCapt: String;
-    procedure SetCapt(Value: String);
+    procedure SetCapt(const Value: String);
 
     property Grids: TList<IDCLGrid> read GetGrids;
     property CurrentGrid: IDCLGrid read GetCurrentGrid;

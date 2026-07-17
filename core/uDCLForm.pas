@@ -45,7 +45,7 @@ type
     function GetWindowState: TWindowState;
     function GetShowing: Boolean;
     function GetCapt: String;
-    procedure SetCapt(Value: String);
+    procedure SetCapt(const Value: String);
     function GetModalResult: TModalResult;
     procedure SetModalResult(Value: TModalResult);
     function GetFormStyle: TFormStyle;
@@ -69,8 +69,8 @@ type
     function AddGrid(const ParentControl: TWinControl; SurfType: TDataControlType;
       const Query: TDCLQuery; const Data: TDataSource): IDCLGrid;
 
-    procedure AddMainItem(Caption: String; Action: TNotifyEvent);
-    procedure AddSubItem(Caption: String; Pict: TPicturesTypes; Action: TNotifyEvent);
+    procedure AddMainItem(const Caption: String; Action: TNotifyEvent);
+    procedure AddSubItem(const Caption: String; Pict: TPicturesTypes; Action: TNotifyEvent);
     procedure AddCloseFormItem;
     procedure AddSplitter;
 
@@ -88,7 +88,7 @@ type
     procedure OnFormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure OnDestroyForm(Sender: TObject);
 
-    procedure SetRecordsStatus(Str: String); overload;
+    procedure SetRecordsStatus(const Str: String); overload;
 
     function GetCurrentGrid: IDCLGrid;
     function GetDialogName: String;
@@ -102,9 +102,9 @@ type
     procedure SetRecordsStatus(RecNo, RecordCount: LongInt); overload;
     procedure SetDBStatus(Str: String);
 
-    procedure SetInfoStatus(Str: String);
-    procedure AddInfoStatus(Str: String; Width: Integer);
-    procedure SetStatusNum(Str: String; Num, Width: Integer);
+    procedure SetInfoStatus(const Str: String);
+    procedure AddInfoStatus(const Str: String; Width: Integer);
+    procedure SetStatusNum(const Str: String; Num, Width: Integer);
     procedure DeleteStatus(Num: Integer);
     procedure DeleteAllStatus;
 
@@ -160,7 +160,7 @@ begin
   Result:=FForm.Caption;
 end;
 
-procedure TDCLForm.SetCapt(Value: String);
+procedure TDCLForm.SetCapt(const Value: String);
 begin
   FForm.Caption:=Value;
 end;
@@ -299,7 +299,7 @@ begin
   Result:=grid;
 end;
 
-procedure TDCLForm.AddMainItem(Caption: String; Action: TNotifyEvent);
+procedure TDCLForm.AddMainItem(const Caption: String; Action: TNotifyEvent);
 begin
   FMainItemMenu:=TMenuItem.Create(FFormMenu);
   FMainItemMenu.ImageIndex:=FIDCLMain.GetImageIndex(ptTools);
@@ -308,7 +308,7 @@ begin
   FFormMenu.Items.Add(FMainItemMenu);
 end;
 
-procedure TDCLForm.AddSubItem(Caption: String; Pict: TPicturesTypes; Action: TNotifyEvent);
+procedure TDCLForm.AddSubItem(const Caption: String; Pict: TPicturesTypes; Action: TNotifyEvent);
 var
   ItemMenu, ToItem: TMenuItem;
 begin
@@ -481,7 +481,7 @@ begin
     FIDCLMain.ReleaseForm(Self);
 end;
 
-procedure TDCLForm.SetRecordsStatus(Str: String);
+procedure TDCLForm.SetRecordsStatus(const Str: String);
 begin
   FStatusBar.Panels[StatusRecords].Text:=Str;
 end;
@@ -814,12 +814,12 @@ begin
   end;
 end;
 
-procedure TDCLForm.SetInfoStatus(Str: String);
+procedure TDCLForm.SetInfoStatus(const Str: String);
 begin
   FStatusBar.Panels[StatusInfo].Text:=Str;
 end;
 
-procedure TDCLForm.AddInfoStatus(Str: String; Width: Integer);
+procedure TDCLForm.AddInfoStatus(const Str: String; Width: Integer);
 var
   Panel: TStatusPanel;
 begin
@@ -829,7 +829,7 @@ begin
     Panel.Width:=Width;
 end;
 
-procedure TDCLForm.SetStatusNum(Str: String; Num, Width: Integer);
+procedure TDCLForm.SetStatusNum(const Str: String; Num, Width: Integer);
 begin
   if Num=-1 then
   begin
