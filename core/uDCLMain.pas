@@ -99,7 +99,7 @@ type
     procedure InitActions;
     procedure CloseActions;
 
-    procedure StartNotifier(const DCLMain: IDCLMain);
+    procedure StartNotifier;
     procedure StopNotifier;
     procedure Finalize;
   public
@@ -310,10 +310,10 @@ begin
   RunScript(40101, 40200);
 end;
 
-procedure TDCLMain.StartNotifier(const DCLMain: IDCLMain);
+procedure TDCLMain.StartNotifier;
 begin
   {$IFNDEF NODCLMESSAGES}
-  FDCLNotifier:=TDCLNotifier.Create(DCLMain);
+  FDCLNotifier:=TDCLNotifier.Create(Self);
   {$ENDIF}
 end;
 
