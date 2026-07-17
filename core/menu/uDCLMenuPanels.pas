@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Menus, ComCtrls, Controls, ExtCtrls, Buttons,
-  LCLClasses, Generics.Collections, //System.UItypes,
+  LCLClasses, Generics.Collections,
   uIDCLMain, uDCLAbstractMenu, uDCLBaseMenu, uDCLDBAwareTypes;
 
 type
@@ -24,7 +24,7 @@ type
 implementation
 
 uses
-  uDCLGlobalVariables, uDCLMeasurements;
+  uDCLMeasurements;
 
 { TDCLMenuPanels }
 

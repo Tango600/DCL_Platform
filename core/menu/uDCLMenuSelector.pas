@@ -14,20 +14,17 @@ type
   private
     FDCLMenu: TDCLBaseMenu;
   public
-    constructor Create(const Main: IDCLMain; MainForm: TForm); overload;
+    constructor Create(const Main: IDCLMain; const MainForm: TForm; const MenuType: TMenuType); overload;
     destructor Destroy; override;
   end;
 
 implementation
 
-uses
-  uDCLGlobalVariables;
-
 { TDCLMenu }
 
-constructor TDCLMenuSelector.Create(const Main: IDCLMain; MainForm: TForm);
+constructor TDCLMenuSelector.Create(const Main: IDCLMain; const MainForm: TForm; const MenuType: TMenuType);
 begin
-  case GPT.MenuType of
+  case MenuType of
   mtClassic: FDCLMenu:=TDCLMenuClassic.Create(Main, MainForm);
   mtPanels: FDCLMenu:=TDCLMenuPanels.Create(Main, MainForm);
   end;

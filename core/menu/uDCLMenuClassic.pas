@@ -23,9 +23,6 @@ type
 
 implementation
 
-uses
-  uDCLGlobalVariables;
-
 { TDCLMenuClassic }
 
 procedure TDCLMenuClassic.CreateMenuControl(var Query: TDCLSimplyQuery;
@@ -66,9 +63,7 @@ constructor TDCLMenuClassic.Create(const Main: IDCLMain; MainForm: TForm);
 begin
   inherited Create(Main, MainForm);
 
-  {$IFnDEF ALLOWNODCL}
-  if TestDCLTable then
-  {$ENDIF}
+  if Main.TestScriptTable then
     CreateMenu(LocalQuery, FMainMenu, 0);
 
   CreateAboutItem;

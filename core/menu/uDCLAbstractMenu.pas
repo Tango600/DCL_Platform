@@ -31,13 +31,11 @@ type
     FMain: IDCLMain;
     FDBConnector: TDCLDBConnector;
     LocalQuery: TDCLSimplyQuery;
-
-    function TestDCLTable: Boolean;
   public
     constructor Create(const Main: IDCLMain); overload;
     destructor Destroy; override;
 
-    procedure About;
+    procedure About(Sender: TObject);
 
     procedure RunMenu(const Ident: Integer);
     function ExistItemByIdent(var List: TList<TMenuConstructionItem>; Id: Integer): Boolean;
@@ -55,11 +53,6 @@ uses
 procedure TDCLAbstractMenu.About;
 begin
   FMain.About;
-end;
-
-function TDCLAbstractMenu.TestDCLTable: Boolean;
-begin
-  Result:=FMain.GetDBConnector.Connected and TableExists(FMain.GetDBConnector, DCLTable);
 end;
 
 function TDCLAbstractMenu.GetMenuCommandById(Ident: Integer): String;
@@ -103,7 +96,7 @@ begin
   else
   begin
     if Ident=-999 then
-      About;
+      About(nil);
   end;
 end;
 
@@ -142,7 +135,7 @@ begin
   FDBConnector.SetConnector(LocalQuery);
 
   {$IFDEF ALLOWNODCL}
-  if not TestDCLTable then
+  if not FMain.TestScriptTable then
     NoDCLTable:=True;
   {$ENDIF}
 

@@ -27,7 +27,6 @@ type
     constructor Create(const Main: IDCLMain; MainForm: TForm); overload;
     destructor Destroy; override;
 
-    procedure About;
     procedure CreateAboutItem;
   end;
 
@@ -37,11 +36,6 @@ uses
   uDCLGlobalVariables, uDCLQueryUtils, uDCLImages, uDCLScriptsPackage, uDBUtils;
 
 { TDCLMenu }
-
-procedure TDCLBaseMenu.About;
-begin
-  FMain.About;
-end;
 
 procedure TDCLBaseMenu.ClickMenu(Sender: TObject);
 var
@@ -154,7 +148,7 @@ begin
   ItemMenu:=TMenuItem.Create(FMainMenu);
   ItemMenu.Tag:=-999;
   ItemMenu.Caption:='О...';
-  ItemMenu.OnClick:=ClickMenu;
+  ItemMenu.OnClick:=About;  // ClickMenu;
   FMainMenu.Items.Add(ItemMenu);
 end;
 

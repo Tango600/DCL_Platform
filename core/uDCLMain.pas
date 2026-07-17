@@ -1089,13 +1089,12 @@ begin
   if FDCLConfig.FileName<>'' then
   begin
     FDCLConfig.LoadConfig(FDCLConfig.FileName);
-    FDCLConfig.GetParamsStructure;
   end
   else
   begin
     FDCLConfig.LoadConfig(GPT.IniFileName);
-    FDCLConfig.GetParamsStructure;
   end;
+  FDCLConfig.GetParamsStructure;
 
   FVariables:=TVariables.Create;
   FForms:=TList<IDCLForm>.Create;
@@ -1194,6 +1193,7 @@ end;
 
 destructor TDCLMain.Destroy;
 begin
+  IProtectionEngine:=nil;
   CloseAllDialogs;
   StopNotifier;
   if Assigned(FDCLMenuSelector) then
@@ -1261,7 +1261,7 @@ end;
 
 procedure TDCLMain.CreateMenu;
 begin
-  FDCLMenuSelector:=TDCLMenuSelector.Create(Self, FMainForm);
+  FDCLMenuSelector:=TDCLMenuSelector.Create(Self, FMainForm, GPT.MenuType);
 end;
 
 procedure TDCLMain.OpenDialog(DialogName: String; Host: Boolean);

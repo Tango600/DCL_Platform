@@ -45,6 +45,7 @@ type
     function GetImageList: TImageList;
     function GetImageIndex(PictureType: TPicturesTypes): Integer;
     function GetImageIndexes: TDictionary<TPicturesTypes, Integer>;
+    function TestScriptTable: Boolean;
 
     procedure LoadPackageFromFile(const FileName: String; Run: Boolean);
     procedure ClearScriptPool;
