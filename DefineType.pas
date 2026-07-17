@@ -9,11 +9,11 @@
 //{$DEFINE ALLOWNODCL}  // разрешено запускать при отсутствии структуры DCL в БД
 //{$DEFINE NOCHECKSIGN}  // не проверять подпись пакета
 //{$DEFINE PROTECTION}  // включить модуль защиты
+//{$DEFINE NODCLMESSAGES}  // отключение рассылки уведомлений
 
 //{$DEFINE DCLDEBUG}
-//{$DEFINE DCLDEBUG2}
-
-//{$DEFINE EMBEDDED}
+//{$DEFINE EMBEDDED}  // для встраивания (не используется)
+//{$DEFINE IDEMODE}  // режим среды разработки (не используется)
 
 //{$DEFINE ZEOS}
 //{$DEFINE SQLdb}
@@ -21,10 +21,6 @@
 {$DEFINE SQLdbIB}
 //{$DEFINE IBX}
 //{$DEFINE ODBC}
-
-//{$DEFINE IDEMODE}
-
-//{$DEFINE ZVComponents}
 
 {$IFDEF IBX}
   {$DEFINE TRANSACTIONDB}
@@ -93,10 +89,6 @@
   {$DEFINE SQLdbFamily}
   {$DEFINE NODSBOOKMARKS}
   {$DEFINE READONLYPROPERTY}
-{$ENDIF}
-
-{$IFDEF EMBEDDED}
-  {$DEFINE NODCLMESSAGES}
 {$ENDIF}
 
 {$DEFINE NOONTOP}
