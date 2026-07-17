@@ -21,12 +21,12 @@ type
 
     function GetVariables: TVariables;
 
-    function GetScriptText(ScriptName: String): TStringList;
-    function GetScript(ScriptName: String): TDCLScript;
+    function GetScriptText(const ScriptName: String): TStringList;
+    function GetScript(const ScriptName: String): TDCLScript;
     function GetScriptByIdent(Ident: Integer; OutRoles: Boolean): TDCLScript;
     procedure RunScript(IdentFrom, IdentTo: Integer);
-    procedure OpenDialog(DialogName: String; Host: Boolean);
-    procedure RunCommandScript(CommandName: String);
+    procedure OpenDialog(const DialogName: String; Host: Boolean);
+    procedure RunCommandScript(const CommandName: String);
     function GetLoadedScripts: TList<TDCLScriptItem>;
     function GetPackages: TList<TPackageInfo>;
 

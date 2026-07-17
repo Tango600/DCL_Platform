@@ -35,8 +35,8 @@ type
     IProtectionEngine: IDCLProtectionEngine;
     TerminateByLastDialog: Boolean;
 
-    function GetScriptText(ScriptName: String): TStringList;
-    function GetScript(ScriptName: String): TDCLScript;
+    function GetScriptText(const ScriptName: String): TStringList;
+    function GetScript(const ScriptName: String): TDCLScript;
     function GetScriptByIdent(Ident: Integer; OutRoles: Boolean): TDCLScript;
     procedure RunScript(IdentFrom, IdentTo: Integer);
 
@@ -68,8 +68,8 @@ type
 
     procedure CreateMenu;
 
-    procedure OpenDialog(DialogName: String; Host: Boolean);
-    procedure RunCommandScript(CommandName: String);
+    procedure OpenDialog(const DialogName: String; Host: Boolean);
+    procedure RunCommandScript(const CommandName: String);
     procedure About;
 
     procedure ExitApp;
@@ -732,7 +732,7 @@ begin
   end;
 end;
 
-function TDCLMain.GetScriptText(ScriptName: String): TStringList;
+function TDCLMain.GetScriptText(const ScriptName: String): TStringList;
 var
   Script: TDCLScript;
 begin
@@ -743,7 +743,7 @@ begin
   FreeAndNil(Script);
 end;
 
-function TDCLMain.GetScript(ScriptName: String): TDCLScript;
+function TDCLMain.GetScript(const ScriptName: String): TDCLScript;
 var
   i: TDCLScriptItem;
 begin
@@ -1264,12 +1264,12 @@ begin
   FDCLMenuSelector:=TDCLMenuSelector.Create(Self, FMainForm, GPT.MenuType);
 end;
 
-procedure TDCLMain.OpenDialog(DialogName: String; Host: Boolean);
+procedure TDCLMain.OpenDialog(const DialogName: String; Host: Boolean);
 begin
   CreateDialog(TVariableNamespace.Create('', ''), DialogName, True, nil, nil, GPT.AccessLevel, nil, False);
 end;
 
-procedure TDCLMain.RunCommandScript(CommandName: String);
+procedure TDCLMain.RunCommandScript(const CommandName: String);
 var
   Command: IDCLCommand;
 begin
