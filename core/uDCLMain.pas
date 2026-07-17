@@ -49,7 +49,7 @@ type
     procedure CreateImageList;
 
     function LoadPackage(const FileName: String): TDCLScriptsPackage;
-    procedure UpdateFromPackages(PackagePath: String);
+    procedure UpdateFromPackages(const PackagePath: String);
     function GetProtectionEngine: IDCLProtectionEngine;
 
     function Start: Boolean;
@@ -980,7 +980,7 @@ begin
   end;
 end;
 
-procedure TDCLMain.UpdateFromPackages(PackagePath: String);
+procedure TDCLMain.UpdateFromPackages(const PackagePath: String);
 var
   SRec: TSearchRec;
   retval: Integer;
