@@ -11,8 +11,6 @@ uses
   uDCLConst;
 
 type
-  TLangName=String;
-
   TTranscodeDataType=(tdtUTF8, tdtTranslit);
   TStringMessages=(msNone, msClose, msOpen, msEdit, msDelete, msModified, msInputVulues, msInBegin,
     msInEnd, msPrior, msNext, msCancel, msRefresh, msInsert, msPost, msEmptyUserName, msPage, msApplay,
@@ -41,22 +39,22 @@ type
     msPackageSignNotValid, msFildsNotInputValue);
 
 
-procedure LoadLangRes(Lang: TLangName; const Path: String);
-function GetDCLMessageString(MessID: TStringMessages): String;
-function GetDCLErrorString(ErrorCode: Integer; AddText: String=''):string;
-function LoadTranscodeFile(DataType:TTranscodeDataType; const FileName:String; Lang:TLangName):Boolean;
-Function Transcode(DataType:TTranscodeDataType; const Buf: String): String;
-function GetLacalaizedMonthName(MonthNum:Integer):string;
-Function GetFileNameToTranslite(Const FullFileName: String): String;
+  procedure LoadLangRes(const Lang, Path: String);
+  function GetDCLMessageString(MessID: TStringMessages): String;
+  function GetDCLErrorString(ErrorCode: Integer; const AddText: String=''): String;
+  function LoadTranscodeFile(DataType: TTranscodeDataType; const FileName, Lang: String): Boolean;
+  Function Transcode(DataType: TTranscodeDataType; const Buf: String): String;
+  function GetLacalaizedMonthName(MonthNum: Integer): String;
+  Function GetFileNameToTranslite(Const FullFileName: String): String;
 
-procedure InitLangEnv;
+  procedure InitLangEnv;
 
 const
   DefaultLangDir='Lang';
   DefaultLanguage='ru';
 
 var
-  LangName: TLangName;
+  LangName: String;
 
 implementation
 
@@ -71,9 +69,9 @@ type
   TTranscodeType=(ttDirect, ttSub, ttAdd, ttVarLen);
 
   TTranscodeData=Record
-    CodeFrom1, CodeFrom2, TargetGap:Integer;
-    SourceLiteral, TagertCode:String;
-    TranscodeType:TTranscodeType;
+    CodeFrom1, CodeFrom2, TargetGap: Integer;
+    SourceLiteral, TagertCode: String;
+    TranscodeType: TTranscodeType;
   end;
 
 const
@@ -348,8 +346,8 @@ const
     );
 
 var
-  StringMessages:array[TStringMessages] of string;
-  TranscodeData:array[TTranscodeDataType] of Array of TTranscodeData;
+  StringMessages: Array[TStringMessages] of String;
+  TranscodeData: Array[TTranscodeDataType] of Array of TTranscodeData;
 
 function GetDCLMessageStringDefault(MesID: TStringMessages): String;
 begin
@@ -715,7 +713,7 @@ begin
   Result:=StringMessages[MessID];
 end;
 
-function GetDCLErrorString(ErrorCode: Integer; AddText: String=''):string;
+function GetDCLErrorString(ErrorCode: Integer; const AddText: String=''): String;
 Var
   MessageText: String;
 Begin
@@ -774,7 +772,7 @@ Begin
   Result:=MessageText+LineEnding+AddText;
 End;
 
-procedure ClearTranscodeData(var Data:TTranscodeData);
+procedure ClearTranscodeData(var Data: TTranscodeData);
 begin
   Data.CodeFrom1:=0;
   Data.CodeFrom2:=0;
@@ -784,13 +782,13 @@ begin
   Data.TranscodeType:=ttDirect;
 end;
 
-function LoadTranscodeFile(DataType:TTranscodeDataType; const FileName:String; Lang:TLangName):Boolean;
+function LoadTranscodeFile(DataType: TTranscodeDataType; const FileName, Lang: String): Boolean;
 var
-  LangResFile:TStringList;
-  S, c, vs1, tmp1:String;
-  ii, p, k, d, v1, l:Integer;
-  simbcodeflg:Boolean;
-  lt:TIsDigitType;
+  LangResFile: TStringList;
+  S, c, vs1, tmp1: String;
+  ii, p, k, d, v1, l: Integer;
+  simbcodeflg: Boolean;
+  lt: TIsDigitType;
 begin
   If not FileExists(FileName) then
     S:=FileName+'.'+LowerCase(Lang);
@@ -925,11 +923,11 @@ begin
 {$ENDIF}  
 end;
 
-Function Transcode(DataType:TTranscodeDataType; const Buf: String): String;
+Function Transcode(DataType: TTranscodeDataType; const Buf: String): String;
 Var
-  i, j, k: Cardinal;
-  Match:Boolean;
-  ts:String;
+  i, j, k: LongInt;
+  Match: Boolean;
+  ts: String;
 begin
   Result:='';
   i:=1;
@@ -1004,11 +1002,11 @@ begin
   End;
 end;
 
-procedure LoadLangFile(FileName:String);
+procedure LoadLangFile(const FileName: String);
 var
-  LangResFile:TStringList;
+  LangResFile: TStringList;
   MessID: TStringMessages;
-  S, msID, MessageString:string;
+  S, msID, MessageString: String;
   i, p, k, Delims, StartDelim, EndDelim: Integer;
 begin
 {$IFNDEF SINGLELANG}
@@ -1101,9 +1099,9 @@ begin
   End;
 end;
 
-procedure LoadLangRes(Lang: TLangName; const Path: String);
+procedure LoadLangRes(const Lang, Path: String);
 var
-  FileName:string;
+  FileName: String;
 begin
   FileName:=IncludeTrailingPathDelimiter(DefaultLangDir)+'DCLTranslate.'+LowerCase(Lang);
 
@@ -1114,7 +1112,7 @@ begin
     SetDefaultTranslite;
 end;
 
-function GetLacalaizedMonthName(MonthNum:Integer):string;
+function GetLacalaizedMonthName(MonthNum: Integer): String;
 begin
   If (MonthNum>0) and (MonthNum<13) then
     Result:=GetDCLMessageString(TStringMessages(MonthNum+Ord(msJanuary)-1))
