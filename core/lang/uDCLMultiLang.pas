@@ -4,7 +4,7 @@
 interface
 
 uses
-  SysUtils, Classes, translations,
+  SysUtils, Classes, translations, TypInfo,
 {$IFDEF FPC}
   LazUTF8,
 {$ENDIF}
@@ -65,31 +65,6 @@ uses
 
 const
   StringDelim=#39;
-  NamedStringMessages:Array[TStringMessages] of String=('msNone', 'msClose', 'msOpen', 'msEdit', 'msDelete', 'msModified', 'msInputVulues', 'msInBegin',
-    'msInEnd', 'msPrior', 'msNext', 'msCancel', 'msRefresh', 'msInsert', 'msPost', 'msEmptyUserName', 'msPage', 'msApplay',
-    'msConnectDBError', 'msClearContent', 'msConnectionStringIncorrect', 'msNoField', 'msDeleteRecord',
-    'msLoad', 'msClear', 'msSave', 'msNotAllow', 'msOpenForm', 'msExecuteApps', 'msText', 'msAll', 'msFormated',
-    'msConfigurationFile', 'msNotFoundM', 'msNotFoundF', 'msTable', 'msAppRunning', 'msNot', 'msNotSupportedS',
-    'msPaths', 'msTheProduct', 'msProducer', 'msVersion', 'msStatus', 'msUser', 'msRole', 'msDataBase', 'msConfiguration',
-    'msDebugMode', 'msInformationAbout', 'msBuildOf', 'msOS', 'msLang', 'msUsers', 'msDoYouWontTerminate', 'msClearAllFind',
-    'msApplication', 'msDownloadInProgress', 'msFind', 'msFindCurrCell', 'msPrint', 'msCopy', 'msCut', 'msPast', 'msBookmark',
-    'msStructure', 'msGotoBookmark', 'msOldFormat', 'msVersionsGap', 'msOldVersion', 'msDeleteTempFilter',
-    'msChangePassord', 'msOldM', 'msNewM', 'msPassword', 'msConfirm', 'msHashed', 'msToHashing', 'msToAll', 'msIn',
-    'msLogonToSystem', 'msUserName', 'msNoYes', 'msDenyMessageDev', 'msDenyMessageUsr', 'msAccessLevelsSet', 'msNotifyActionsSet',
-    'msCodePage', 'msLock', 'msUnLock', 'msChoose', 'msEditings', 'msData', 'msReset', 'msSettings', 'msFields',
-    'msBookmarks', 'msHour', 'msMinute', 'msSecond', 'msMSecond', 'msModeOff', 'msModeOn', 'msStringNum', 'msVisualCommand',
-    'msConnectionError', 'msErrorQuery', 'msBadFindParams', 'msErrorInExpression', 'msErrorQueryInExpression',
-    'msTooMachParams', 'msBadFieldFormad', 'msNoDATARegion', 'msNoTemplatesTable', 'msTemplateNotFound', 'msLabelNotFound',
-    'msTemplFileNotFound', 'msTableUsersNotFound', 'msOONotInstalled', 'msFailOpenDocument', 'msMSNotInstalled', 'msWord2000Req',
-    'msNoOfficeInstalled', 'msConvertionError', 'msAppRunError', 'msFileNotFound', 'msErrorInRaightExpression', 'msFieldNotFound',
-    'msJanuary', 'msFebruary', 'msMarch', 'msApril', 'msMay', 'msJune', 'msJuly', 'msAugust', 'msSeptember', 'msOctober', 'msNovember',
-    'msDecember', 'msMonday', 'msTuesday', 'msWednesday', 'msThursday', 'msFriday', 'msSaturday', 'msSunday', 'msEditPassword',
-    'msOldPassword', 'msNewPassword', 'msHashPassword', 'msResetAllFieldsSettings', 'msResetAllFieldsSettingsQ',
-    'msResetFieldsSettings', 'msResetFieldsSettingsQ', 'msDeleteAllBookmarks', 'msDeleteAllBookmarksQ', 'msSaveFieldsSettings',
-    'msNotAllowOpenForm', 'msDeleteRecordQ', 'msNotAllowExecuteApps', 'msPathsNotSupported', 'msSaveEditings', 'msSaveEditingsQ',
-    'msDoYouWontTerminateApplicationQ', 'msConfigurationFileNotFound', 'msClearContentQ', 'msNotifycation', 'msForUser',
-    'msLoading', 'msTimeToExit', 'msDSStateSet', 'msCloseDialogQuery', 'msNotFilter', 'msCantOpenForUpdatePackage',
-    'msPackageSignNotValid', 'msFildsNotInputValue');
 
 type
   TCharToUTF8Table=array [0..255] of String;
@@ -1032,8 +1007,9 @@ end;
 procedure LoadLangFile(FileName:String);
 var
   LangResFile:TStringList;
+  MessID: TStringMessages;
   S, msID, MessageString:string;
-  i, p, k, Delims, StartDelim, EndDelim:Integer;
+  i, p, k, Delims, StartDelim, EndDelim: Integer;
 begin
 {$IFNDEF SINGLELANG}
   If FileExists(FileName) then
@@ -1063,29 +1039,28 @@ begin
             End;
           End
           Else
+          begin
             If Delims=0 then
               If S[k]=StringDelim then
               Begin
                 Dec(Delims);
                 EndDelim:=k-1;
               End;
+          end;
         End;
 
         If (StartDelim<EndDelim) and (StartDelim>0) then
         Begin
           MessageString:=Copy(S, StartDelim, EndDelim-StartDelim+1);
 
-          For k:=0 to Ord(High(NamedStringMessages)) do
-          Begin
-            If LowerCase(NamedStringMessages[TStringMessages(k)])=msID then
-            Begin
-              If MessageString<>'' then
-                StringMessages[TStringMessages(k)]:=MessageString
-              Else
-                StringMessages[TStringMessages(k)]:=GetDCLMessageStringDefault(TStringMessages(k));
+          k:=GetEnumValue(TypeInfo(TStringMessages), msID);
 
-              Break;
-            End;
+          if k<>-1 then
+          Begin
+            If MessageString<>'' then
+              StringMessages[TStringMessages(k)]:=MessageString
+            Else
+              StringMessages[TStringMessages(k)]:=GetDCLMessageStringDefault(TStringMessages(k));
           End;
         End;
       End;
@@ -1095,8 +1070,10 @@ begin
   End
   Else
 {$ENDIF}
-    For k:=0 to Ord(High(NamedStringMessages)) do
-      StringMessages[TStringMessages(k)]:=GetDCLMessageStringDefault(TStringMessages(k));
+    For MessID in TStringMessages do
+    begin
+      StringMessages[TStringMessages(MessID)]:=GetDCLMessageStringDefault(TStringMessages(MessID));
+    end;
 end;
 
 procedure SetDefaultTranscodeUTF8;
@@ -1144,17 +1121,6 @@ begin
   Else
     Result:='';
 end;
-
-{function GetISO639LangCode(LangCode: String): String;
-var
-  tmpLang: String;
-begin
-  tmpLang:=LowerCase(LangCode);
-  if tmpLang='ru' then Result:='RUS';
-  if tmpLang='en' then Result:='ENG';
-  if tmpLang='pl' then Result:='POL';
-  if tmpLang='be' then Result:='BEL';
-end;}
 
 function GetSystemLanguage: String;
 var
