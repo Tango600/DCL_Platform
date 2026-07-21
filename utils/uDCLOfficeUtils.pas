@@ -114,31 +114,25 @@ End;
 
 Function FileNameToURL(const FileName: String): Variant;
 Var
-  CodePointLen: LongInt;
-  i, l, CodePoint: LongWord;
   j: Byte;
-  utf8ch: String;
+  Bytes: TBytes;
 Begin
   Result:='';
-  l:=UTF8Length(FileName);
-  For i:=1 To l Do
+  Bytes:=TEncoding.UTF8.GetBytes(UnicodeString(FileName));
+  for j in Bytes do
   Begin
-    utf8ch:=UTF8Copy(FileName, i, 1);
-    CodePoint:=UTF8CodepointToUnicode(PChar(utf8ch), CodePointLen);
-
-    Case CodePoint Of
+    Case j Of
     $00..$7F:Begin
-      Case CodePoint of
+      Case j of
       $20:Result:=Result+'%20';
       $5C:Result:=Result+'/';
       $40:Result:=Result+'%40';
       Else
-        Result:=Result+utf8ch;
+        Result:=Result+Chr(j);
       End;
     End;
-    $80..$FFFFFFFF: Begin
-      for j:=1 to Length(utf8ch) do
-        Result:=Result+'%'+IntToHex(ord(utf8ch[j]), 2);
+    $80..$FF: Begin
+      Result:=Result+'%'+IntToHex(j, 2);
     End;
     End;
   End;
