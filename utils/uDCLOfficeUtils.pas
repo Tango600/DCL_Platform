@@ -4,7 +4,7 @@ unit uDCLOfficeUtils;
 interface
 
 uses
-  SysUtils, Variants, Classes, ComObj,
+  SysUtils, Variants, Classes, ComObj, lazutf8,
   uDCLConst;
 
 Procedure ExcelQuit(var Excel: OleVariant);
@@ -34,7 +34,7 @@ Function GetDocumentType(const FileName: String): TOfficeDocumentFormat;
 implementation
 
 uses
-  uDCLOLE, uDCLMultiLang, uDCLMessages;
+  uDCLOLE, uDCLMessages;
 
 var
   WordRuning: Boolean;
@@ -114,27 +114,31 @@ End;
 
 Function FileNameToURL(const FileName: String): Variant;
 Var
-  i: Integer;
+  CodePointLen: LongInt;
+  i, l, CodePoint: LongWord;
   j: Byte;
   utf8ch: String;
 Begin
   Result:='';
-  For i:=1 To Length(FileName) Do
+  l:=UTF8Length(FileName);
+  For i:=1 To l Do
   Begin
-    Case Ord(FileName[i]) Of
+    utf8ch:=UTF8Copy(FileName, i, 1);
+    CodePoint:=UTF8CodepointToUnicode(PChar(utf8ch), CodePointLen);
+
+    Case CodePoint Of
     $00..$7F:Begin
-      Case Ord(FileName[i]) of
+      Case CodePoint of
       $20:Result:=Result+'%20';
       $5C:Result:=Result+'/';
       $40:Result:=Result+'%40';
       Else
-        Result:=Result+FileName[i];
+        Result:=Result+utf8ch;
       End;
     End;
-    $80..$FF:Begin
-      utf8ch:=Transcode(tdtUTF8, FileName[i]);
-      For j:=1 to Length(utf8ch) do
-        Result:=Result+'%'+IntToHex(Ord(utf8ch[j]), 2);
+    $80..$FFFFFFFF: Begin
+      for j:=1 to Length(utf8ch) do
+        Result:=Result+'%'+IntToHex(ord(utf8ch[j]), 2);
     End;
     End;
   End;
