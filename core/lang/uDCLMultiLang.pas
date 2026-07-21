@@ -38,6 +38,7 @@ type
     msPackageSignNotValid, msFildsNotInputValue);
 
 
+  procedure LoadLangFile(const FileName: String);
   procedure LoadLangRes(const Lang, Path: String);
   function GetDCLMessageString(MessID: TStringMessages): String;
   function GetDCLErrorString(ErrorCode: Integer; const AddText: String=''): String;
@@ -48,20 +49,13 @@ type
 const
   DefaultLangDir='lang';
   DefaultLanguage='ru';
-
-var
-  LangName: String;
-
-implementation
-
-uses
-  uDCLUtils, uStringParams;
-
-const
   StringDelim=#39;
 
 var
+  LangName: String;
   StringMessages: Array[TStringMessages] of String;
+
+implementation
 
 function GetDCLMessageStringDefault(MesID: TStringMessages): String;
 begin
