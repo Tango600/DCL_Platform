@@ -141,7 +141,6 @@ begin
 
       For BookmarckNum:=0 to LayotCount-1 do
       begin
-        ToWrite:=False;
         FontSize:=0;
 
         FontStyleRec.Bold:=0;
@@ -150,6 +149,7 @@ begin
         FontStyleRec.Center:=False;
         FontStyleRec.StrikeThrough:=0;
 
+        ToWrite:=False;
         If BookmarkFromLayot Then
         begin
           LayotItem:=Layout[BookmarckNum];
@@ -374,10 +374,9 @@ begin
 
           if lastBookmarks=0 then break;
 
+          ToWrite:=False;
           If BookmarkFromLayot Then
           begin
-            ToWrite:=False;
-
             FontStyleRec.Bold:=0;
             FontStyleRec.italic:=0;
             FontStyleRec.Undeline:=0;
