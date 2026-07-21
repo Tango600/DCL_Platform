@@ -381,6 +381,9 @@
       <Unit>
         <Filename Value="utils\uBase41.pas"/>
       </Unit>
+      <Unit>
+        <Filename Value="utils\uDCLTranscode.pas"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -113,7 +113,7 @@ uses
   uDCLConfig, uDCLDBStructure, uDCLMultiLang, fAbout, uDBUtils, uSystemUtils,
   uDCLGlobalVariables, uDCLUtils, uDCLMessages, uStringParams, uDCLCommand,
   {$IFDEF PROTECTION}uDCLProtectionEngine,{$ENDIF} uDCLUpdaterPackage,
-  uDCLMeasurements, uStringUtils, uDCLQueryUtils;
+  uDCLMeasurements, uStringUtils, uDCLQueryUtils, uDCLTranscode;
 
 { TDCLMain }
 
@@ -1102,9 +1102,10 @@ begin
   GPT.AccessLevel:=ulExecute;
 
   InitLangEnv;
-  CreateImageList;
-
   LoadLangRes(LangName, Path);
+  LoadTranscodeRes(LangName, Path);
+
+  CreateImageList;
 
   {$IFDEF MSWINDOWS}
   If GPT.OneCopy=ocmApp Then

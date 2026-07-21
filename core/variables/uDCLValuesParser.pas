@@ -35,7 +35,7 @@ type
 implementation
 
 uses
-  uDCLUtils, uSystemUtils, uDCLMultiLang, uDBUtils, uConvertEx,
+  uDCLUtils, uSystemUtils, uDCLMultiLang, uDBUtils, uConvertEx, uDCLTranscode,
   uDCLDBUtils, uDCLGlobalVariables, uDCLVersion, uDCLConfigTable,
   uExpressionParser, uStringParams, SumProps, uStringUtils;
 
