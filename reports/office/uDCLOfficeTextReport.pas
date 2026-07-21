@@ -234,6 +234,7 @@ var
   ToPDF, ToHTML, ToWrite, BookmarkFromLayot: Boolean;
   FontStyleRec: TFontStyleRec;
 begin
+  BookmarkFromLayot:=False;
   Ext:='odt';
   TemplateExt:='ott';
   Layot:=TStringList.Create;
@@ -359,7 +360,7 @@ begin
       CursorPointer:=TextPointer.CreateTextCursor;
 
       BookmarksSupplier:=Document.getBookmarks;
-      If (Not BookmarkFromLayot)and(LayotCount=0) Then
+      If (Not BookmarkFromLayot) and (LayotCount=0) Then
         LayotCount:=BookmarksSupplier.Count;
 
       For BookmarckNum:=0 to LayotCount-1 do
