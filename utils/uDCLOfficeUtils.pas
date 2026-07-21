@@ -113,29 +113,36 @@ Begin
 End;
 
 Function FileNameToURL(const FileName: String): Variant;
-Var
+var
+  UTF8Str: RawByteString;
   j: Byte;
-  Bytes: TBytes;
-Begin
+  i: Integer;
+begin
   Result:='';
-  Bytes:=TEncoding.UTF8.GetBytes(UnicodeString(FileName));
-  for j in Bytes do
-  Begin
-    Case j Of
-    $00..$7F:Begin
-      Case j of
-      $20:Result:=Result+'%20';
-      $5C:Result:=Result+'/';
-      $40:Result:=Result+'%40';
-      Else
-        Result:=Result+Chr(j);
-      End;
-    End;
-    $80..$FF: Begin
-      Result:=Result+'%'+IntToHex(j, 2);
-    End;
-    End;
-  End;
+  UTF8Str:=UTF8Encode(FileName);
+  for i:=1 to Length(UTF8Str) do
+  begin
+    j:=Ord(UTF8Str[i]);
+    if j<=$7F then
+    begin
+      case j of
+        $20: Result:=Result+'%20';  // Пробел
+        $22: Result:=Result+'%22';  // Кавычка "
+        $23: Result:=Result+'%23';  // # (hash)
+        $25: Result:=Result+'%25';  // % (процент)
+        $26: Result:=Result+'%26';  // & (амперсанд)
+        $2B: Result:=Result+'%2B';  // + (плюс)
+        $5C: Result:=Result+'/';  // \ (обратный слеш)
+        else
+          Result:=Result+Char(j);
+      end;
+    end
+    else
+    begin
+      // Многобайтовые UTF-8 символы (кодируем каждый байт)
+      Result:=Result+'%'+UpperCase(IntToHex(j, 2));
+    end;
+  end;
   Result:=VarAsType('file:///'+Result, varOleStr);
 End;
 
