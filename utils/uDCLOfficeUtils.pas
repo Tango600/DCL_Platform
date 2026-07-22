@@ -30,6 +30,7 @@ Function FileNameToURL(const FileName: String): Variant;
 Function MakePropertyValue(ServiceManager, PropertyName, PropertyValue: Variant): Variant;
 function GetPossibleOffice(DocType: TDocumentType; OfficeType, SettingOffice: TOfficeFormat): TOfficeFormat;
 Function GetDocumentType(const FileName: String): TOfficeDocumentFormat;
+function TestGotoRange(CursorPointer, GetStart: Variant): Boolean;
 
 implementation
 
@@ -371,5 +372,15 @@ Procedure ExcelQuit(var Excel: OleVariant);
 Begin
   Excel.Quit;
 End;
+
+function TestGotoRange(CursorPointer, GetStart: Variant): Boolean;
+begin
+  try
+    CursorPointer.GotoRange(GetStart, False);
+    Result:=True;
+  except
+    Result:=False;
+  end;
+end;
 
 end.

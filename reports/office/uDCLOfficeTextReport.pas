@@ -419,19 +419,22 @@ begin
             Else
               InsStr:=Trim(DCLQuery.FieldByName(BookMarkName).AsString);
 
-            CursorPointer.GotoRange(BookMark.GetStart, False);
-            If FontStyleRec.italic=1 Then
-              CursorPointer.setPropertyValue('CharPosture', Ord(fsItalic));
-            If FontStyleRec.Bold=1 Then
-              CursorPointer.setPropertyValue('CharWeight', Ord(fsBold));
-            If FontStyleRec.StrikeThrough=1 Then
-              CursorPointer.setPropertyValue('CharStrikeout', Ord(fsStrikeout));
-            If FontStyleRec.Undeline=1 Then
-              CursorPointer.setPropertyValue('CharUnderline', Ord(fsUnderLine));
-            If FontSize<>0 Then
-              CursorPointer.setPropertyValue('CharHeight', FontSize);
+            if not VarIsNull(BookMark.GetStart) and TestGotoRange(CursorPointer, BookMark.GetStart) then
+            begin
+              CursorPointer.GotoRange(BookMark.GetStart, False);
+              If FontStyleRec.italic=1 Then
+                CursorPointer.setPropertyValue('CharPosture', Ord(fsItalic));
+              If FontStyleRec.Bold=1 Then
+                CursorPointer.setPropertyValue('CharWeight', Ord(fsBold));
+              If FontStyleRec.StrikeThrough=1 Then
+                CursorPointer.setPropertyValue('CharStrikeout', Ord(fsStrikeout));
+              If FontStyleRec.Undeline=1 Then
+                CursorPointer.setPropertyValue('CharUnderline', Ord(fsUnderLine));
+              If FontSize<>0 Then
+                CursorPointer.setPropertyValue('CharHeight', FontSize);
 
-            CursorPointer.setString(InsStr);
+              CursorPointer.setString(InsStr);
+            end;
           end;
         Except
           OOSetVisible(Document, True);
