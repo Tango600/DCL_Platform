@@ -42,16 +42,16 @@ var
   StV: OleVariant;
   SQLStr, FileName, OutFileName, Ext, TemplateExt, LayoutStr, Layouttem, BookmarckName: String;
   Layout: TStringList;
-  DocNum, BookmarckNum, LayotCount, FontSize: Integer;
+  DocNum, BookmarckNum, LayoutCount, FontSize: Integer;
 
-  ToWrite, BookmarkFromLayot, OneDoc, Hide: Boolean;
+  ToWrite, BookmarkFromLayout, OneDoc, Hide: Boolean;
   FontStyleRec: TFontStyleRec;
   DCLQuery: TDCLDialogQuery;
 begin
   Ext:='docx';
   TemplateExt:='dotx';
 
-  LayotCount:=0;
+  LayoutCount:=0;
   Hide:=Save and Close;
 
   if FindParam('TemplateName=', ParamStr)<>'' then
@@ -64,7 +64,7 @@ begin
   If not FilenameIsAbsolute(FileName) then
     FileName:=GPT.AppConfigDir+FileName;
 
-  BookmarkFromLayot:=False;
+  BookmarkFromLayout:=False;
   If IsNoFileExt(FileName) then
   begin
     OfficeDocumentFormat:=odfOO;
@@ -100,10 +100,10 @@ begin
     If LayoutStr<>'' Then
     begin
       Layout.Clear;
-      LayotCount:=ParamsCount(LayoutStr);
+      LayoutCount:=ParamsCount(LayoutStr);
       For BookmarckNum:=1 to ParamsCount(LayoutStr) do
       begin
-        BookmarkFromLayot:=True;
+        BookmarkFromLayout:=True;
         Layouttem:=GetParam(LayoutStr, BookmarckNum);
 
         Layout.Append(Layouttem);
@@ -135,10 +135,10 @@ begin
       if Hide then
         MsWord.Visible:=False;
 
-      If (Not BookmarkFromLayot)and(LayotCount=0) Then
-        LayotCount:=MsWord.ActiveDocument.BookMarks.Count;
+      If (Not BookmarkFromLayout)and(LayoutCount=0) Then
+        LayoutCount:=MsWord.ActiveDocument.BookMarks.Count;
 
-      For BookmarckNum:=0 to LayotCount-1 do
+      For BookmarckNum:=0 to LayoutCount-1 do
       begin
         FontSize:=0;
 
@@ -149,7 +149,7 @@ begin
         FontStyleRec.StrikeThrough:=0;
 
         ToWrite:=False;
-        If BookmarkFromLayot Then
+        If BookmarkFromLayout Then
         begin
           Layouttem:=Layout[BookmarckNum];
           BookmarckName:=ExtractSection(Layouttem);
@@ -225,19 +225,19 @@ end;
 procedure TDCLOfficeTextReport.Writer(ParamStr: String; Save, Close: Boolean);
 var
   TextPointer, CursorPointer, BookmarksSupplier, BookMark: Variant;
-  DocNum, BookmarckNum, LayotCount, FontSize, lastBookmarks: Integer;
+  DocNum, BookmarckNum, LayoutCount, FontSize, lastBookmarks: Integer;
   SQLStr, FileName, OutFileName, Ext, TemplateExt, InsStr, BookMarkName, LayoutStr, LayoutItem: String;
   Layout: TStringList;
   DCLQuery: TDCLDialogQuery;
 
-  ToPDF, ToHTML, ToWrite, BookmarkFromLayot: Boolean;
+  ToPDF, ToHTML, ToWrite, BookmarkFromLayout: Boolean;
   FontStyleRec: TFontStyleRec;
 begin
-  BookmarkFromLayot:=False;
+  BookmarkFromLayout:=False;
   Ext:='odt';
   TemplateExt:='ott';
   Layout:=TStringList.Create;
-  LayotCount:=0;
+  LayoutCount:=0;
 
   if FindParam('TemplateName=', ParamStr)<>'' then
   begin
@@ -281,10 +281,10 @@ begin
     If LayoutStr<>'' Then
     begin
       Layout.Clear;
-      LayotCount:=ParamsCount(LayoutStr);
+      LayoutCount:=ParamsCount(LayoutStr);
       For BookmarckNum:=1 to ParamsCount(LayoutStr) do
       begin
-        BookmarkFromLayot:=True;
+        BookmarkFromLayout:=True;
         LayoutItem:=GetParam(LayoutStr, BookmarckNum);
 
         Layout.Append(LayoutItem);
@@ -359,10 +359,10 @@ begin
       CursorPointer:=TextPointer.CreateTextCursor;
 
       BookmarksSupplier:=Document.getBookmarks;
-      If (Not BookmarkFromLayot) and (LayotCount=0) Then
-        LayotCount:=BookmarksSupplier.Count;
+      If (Not BookmarkFromLayout) and (LayoutCount=0) Then
+        LayoutCount:=BookmarksSupplier.Count;
 
-      For BookmarckNum:=0 to LayotCount-1 do
+      For BookmarckNum:=0 to LayoutCount-1 do
       begin
         try
           FontSize:=0;
@@ -374,7 +374,7 @@ begin
           if lastBookmarks=0 then break;
 
           ToWrite:=False;
-          If BookmarkFromLayot Then
+          If BookmarkFromLayout Then
           begin
             FontStyleRec.Bold:=0;
             FontStyleRec.italic:=0;
