@@ -11,7 +11,7 @@ uses
 type
   TFontStyleRec = Record
     Italic, Bold, Undeline, StrikeThrough: Byte;
-    Center:Boolean;
+    Center: Boolean;
   End;
 
   { TDCLOfficeTextReport }
@@ -40,10 +40,9 @@ uses
 procedure TDCLOfficeTextReport.Word(ParamStr: String; Save, Close: Boolean);
 var
   StV: OleVariant;
-  SQLStr, FileName, OutFileName, Ext, TemplateExt, LayotStr, LayotItem, BookmarckName: String;
+  SQLStr, FileName, OutFileName, Ext, TemplateExt, LayoutStr, Layouttem, BookmarckName: String;
   Layout: TStringList;
-  DocNum: Cardinal;
-  BookmarckNum, LayotCount, FontSize: Integer;
+  DocNum, BookmarckNum, LayotCount, FontSize: Integer;
 
   ToWrite, BookmarkFromLayot, OneDoc, Hide: Boolean;
   FontStyleRec: TFontStyleRec;
@@ -97,17 +96,17 @@ begin
   Layout:=TStringList.Create;
   If FileExists(FileName) Then
   begin
-    LayotStr:=FindParam('Layot=', ParamStr);
-    If LayotStr<>'' Then
+    LayoutStr:=FindParam('Layout=', ParamStr);
+    If LayoutStr<>'' Then
     begin
       Layout.Clear;
-      LayotCount:=ParamsCount(LayotStr);
-      For BookmarckNum:=1 to ParamsCount(LayotStr) do
+      LayotCount:=ParamsCount(LayoutStr);
+      For BookmarckNum:=1 to ParamsCount(LayoutStr) do
       begin
         BookmarkFromLayot:=True;
-        LayotItem:=GetParam(LayotStr, BookmarckNum);
+        Layouttem:=GetParam(LayoutStr, BookmarckNum);
 
-        Layout.Append(LayotItem);
+        Layout.Append(Layouttem);
       end;
     end;
 
@@ -152,27 +151,27 @@ begin
         ToWrite:=False;
         If BookmarkFromLayot Then
         begin
-          LayotItem:=Layout[BookmarckNum];
-          BookmarckName:=ExtractSection(LayotItem);
-          LayotStr:=ExtractSection(LayotItem);
-          If PosEx('B', LayotStr)<>0 Then
+          Layouttem:=Layout[BookmarckNum];
+          BookmarckName:=ExtractSection(Layouttem);
+          LayoutStr:=ExtractSection(Layouttem);
+          If PosEx('B', LayoutStr)<>0 Then
             FontStyleRec.Bold:=1;
-          If PosEx('I', LayotStr)<>0 Then
+          If PosEx('I', LayoutStr)<>0 Then
             FontStyleRec.italic:=1;
-          If PosEx('U', LayotStr)<>0 Then
+          If PosEx('U', LayoutStr)<>0 Then
             FontStyleRec.Undeline:=1;
-          If PosEx('C', LayotStr)<>0 Then
+          If PosEx('C', LayoutStr)<>0 Then
             FontStyleRec.Center:=True;
-          If PosEx('S', LayotStr)<>0 Then
+          If PosEx('S', LayoutStr)<>0 Then
             FontStyleRec.StrikeThrough:=1;
 
-          LayotStr:=ExtractSection(LayotItem);
-          If LayotStr<>'' Then
-            FontSize:=StrToIntEx(LayotStr);
+          LayoutStr:=ExtractSection(Layouttem);
+          If LayoutStr<>'' Then
+            FontSize:=StrToIntEx(LayoutStr);
 
-          LayotStr:=ExtractSection(LayotItem);
-          If LayotStr<>'' Then
-            ToWrite:=PosEx('W', LayotStr)<>0;
+          LayoutStr:=ExtractSection(Layouttem);
+          If LayoutStr<>'' Then
+            ToWrite:=PosEx('W', LayoutStr)<>0;
         end
         Else
           BookmarckName:=MsWord.ActiveDocument.BookMarks.Item(BookmarckNum+1).Name;
@@ -227,8 +226,8 @@ procedure TDCLOfficeTextReport.Writer(ParamStr: String; Save, Close: Boolean);
 var
   TextPointer, CursorPointer, BookmarksSupplier, BookMark: Variant;
   DocNum, BookmarckNum, LayotCount, FontSize, lastBookmarks: Integer;
-  SQLStr, FileName, OutFileName, Ext, TemplateExt, InsStr, BookMarkName, LayotStr, LayotItem: String;
-  Layot: TStringList;
+  SQLStr, FileName, OutFileName, Ext, TemplateExt, InsStr, BookMarkName, LayoutStr, LayoutItem: String;
+  Layout: TStringList;
   DCLQuery: TDCLDialogQuery;
 
   ToPDF, ToHTML, ToWrite, BookmarkFromLayot: Boolean;
@@ -237,7 +236,7 @@ begin
   BookmarkFromLayot:=False;
   Ext:='odt';
   TemplateExt:='ott';
-  Layot:=TStringList.Create;
+  Layout:=TStringList.Create;
   LayotCount:=0;
 
   if FindParam('TemplateName=', ParamStr)<>'' then
@@ -278,17 +277,17 @@ begin
 
   If FileExists(FileName) Then
   begin
-    LayotStr:=FindParam('Layot=', ParamStr);
-    If LayotStr<>'' Then
+    LayoutStr:=FindParam('Layout=', ParamStr);
+    If LayoutStr<>'' Then
     begin
-      Layot.Clear;
-      LayotCount:=ParamsCount(LayotStr);
-      For BookmarckNum:=1 to ParamsCount(LayotStr) do
+      Layout.Clear;
+      LayotCount:=ParamsCount(LayoutStr);
+      For BookmarckNum:=1 to ParamsCount(LayoutStr) do
       begin
         BookmarkFromLayot:=True;
-        LayotItem:=GetParam(LayotStr, BookmarckNum);
+        LayoutItem:=GetParam(LayoutStr, BookmarckNum);
 
-        Layot.Append(LayotItem);
+        Layout.Append(LayoutItem);
       end;
     end;
 
@@ -383,27 +382,27 @@ begin
             FontStyleRec.Center:=False;
             FontStyleRec.StrikeThrough:=0;
 
-            LayotItem:=Layot[BookmarckNum];
-            BookMarkName:=ExtractSection(LayotItem);
-            LayotStr:=ExtractSection(LayotItem);
-            If PosEx('B', LayotStr)<>0 Then
+            LayoutItem:=Layout[BookmarckNum];
+            BookMarkName:=ExtractSection(LayoutItem);
+            LayoutStr:=ExtractSection(LayoutItem);
+            If PosEx('B', LayoutStr)<>0 Then
               FontStyleRec.Bold:=1;
-            If PosEx('I', LayotStr)<>0 Then
+            If PosEx('I', LayoutStr)<>0 Then
               FontStyleRec.italic:=1;
-            If PosEx('U', LayotStr)<>0 Then
+            If PosEx('U', LayoutStr)<>0 Then
               FontStyleRec.Undeline:=1;
-            If PosEx('C', LayotStr)<>0 Then
+            If PosEx('C', LayoutStr)<>0 Then
               FontStyleRec.Center:=True;
-            If PosEx('S', LayotStr)<>0 Then
+            If PosEx('S', LayoutStr)<>0 Then
               FontStyleRec.StrikeThrough:=1;
 
-            LayotStr:=ExtractSection(LayotItem);
-            If LayotStr<>'' Then
-              FontSize:=StrToIntEx(LayotStr);
+            LayoutStr:=ExtractSection(LayoutItem);
+            If LayoutStr<>'' Then
+              FontSize:=StrToIntEx(LayoutStr);
 
-            LayotStr:=ExtractSection(LayotItem);
-            If LayotStr<>'' Then
-              If PosEx('W', LayotStr)<>0 Then
+            LayoutStr:=ExtractSection(LayoutItem);
+            If LayoutStr<>'' Then
+              If PosEx('W', LayoutStr)<>0 Then
                 ToWrite:=True
               Else
                 ToWrite:=False;
@@ -494,7 +493,7 @@ begin
     end;
     DCLQuery.Close;
 
-    FreeAndNil(Layot);
+    FreeAndNil(Layout);
   end
   Else
     ShowErrorMessage( - 5006, FileName);
