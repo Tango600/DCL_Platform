@@ -250,4 +250,14 @@ object ProtectionForm: TProtectionForm
       CC3B6AB43CF655C62B8FC7F28E1E8F3CF649FE03027DBD40
     }
   end
+  object ActionList: TActionList
+    Left = 208
+    Top = 64
+    object aExitByEsc: TAction
+      Caption = 'Закрыть'
+      Hint = 'Закрыть'
+      ShortCut = 27
+      OnExecute = aExitByEscExecute
+    end
+  end
 end

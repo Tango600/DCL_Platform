@@ -15,10 +15,11 @@ type
     ButtonOK: TButton;
     GroupBox1: TGroupBox;
     GroupBox2: TGroupBox;
-    imgNoConfig: TImage;
-    imgNoCheckSign: TImage;
-    imgProtectionOn: TImage;
+    imgNoMessages: TImage;
     ImageLogo: TImage;
+    imgNoCheckSign: TImage;
+    imgNoConfig: TImage;
+    imgProtectionOn: TImage;
     Label1: TLabel;
     lbIniFile: TLabel;
     lbProtectionKey: TLabel;
@@ -28,9 +29,7 @@ type
     Label5: TLabel;
     Label6: TLabel;
     Label7: TLabel;
-    Label8: TLabel;
     Label9: TLabel;
-    lbRevision: TLabel;
     lbBuildDate: TLabel;
     lbBuildType: TLabel;
     lbCompillerName: TLabel;
@@ -46,6 +45,7 @@ type
     MenuItem1: TMenuItem;
     miCopy: TMenuItem;
     PageControl1: TPageControl;
+    FeaturesIconsPanel: TPanel;
     pnProtectionStatus: TPanel;
     pmPackages: TPopupMenu;
     pmProtectionInfo: TPopupMenu;
@@ -118,13 +118,16 @@ begin
   {$IFDEF NOCHECKSIGN}
   imgNoCheckSign.Visible:=True;
   {$ENDIF}
+  {$IFDEF NODCLMESSAGES}
+  imgNoMessages.Visible:=True;
+  {$ENDIF}
 end;
 
 procedure TAboutForm.MenuItem1Click(Sender: TObject);
 var
   ProtectionForm: TProtectionForm;
 begin
-  ProtectionForm:=TProtectionForm.Create(Application, FIDCLMain);
+  ProtectionForm:=TProtectionForm.Create(Application, FIDCLMain, True);
   ProtectionForm.ShowModal;
 end;
 
@@ -164,8 +167,6 @@ begin
   lbVersion.Caption:=DCLVersion;
   lbDBLib.Caption:=DBEngineType;
   lbDBLibVersion.Caption:=AccessLibVersion;
-  lbRevision.Caption:='';
-
   lbIniFile.Caption:=GPT.IniFileName;
 
   lbCompillerName.Caption:=InternalAppNameSuffix{$IFDEF FPC}+' '+fpcVersion{$ENDIF};

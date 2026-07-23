@@ -8,13 +8,15 @@ uses
   Windows, Messages, LazUTF8,
   {$ENDIF}
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, Buttons,
-  Menus, ExtCtrls, uIDCLProtectionEngine, uIDCLMain;
+  Menus, ExtCtrls, ActnList, uIDCLProtectionEngine, uIDCLMain;
 
 type
 
   { TProtectionForm }
 
   TProtectionForm = class(TForm)
+    aExitByEsc: TAction;
+    ActionList: TActionList;
     btApplay: TButton;
     edRegistrationKey: TEdit;
     edProgramKey: TEdit;
@@ -27,8 +29,8 @@ type
     MainMenu1: TMainMenu;
     miAbout: TMenuItem;
     sbCopyKey: TSpeedButton;
+    procedure aExitByEscExecute(Sender: TObject);
     procedure btApplayClick(Sender: TObject);
-    constructor Create(AOwner: TComponent; const DCLMain: IDCLMain); overload;
     procedure edRegistrationKeyChange(Sender: TObject);
     procedure edRegistrationKeyClick(Sender: TObject);
     procedure edRegistrationKeyExit(Sender: TObject);
@@ -44,6 +46,7 @@ type
     procedure WMSysCommand(var message: TWMSysCommand); message WM_SysCommand;
     {$ENDIF}
   public
+    constructor Create(AOwner: TComponent; const DCLMain: IDCLMain; FromAbout: Boolean); overload;
 
   end;
 
@@ -73,7 +76,7 @@ begin
 end;
 {$ENDIF}
 
-constructor TProtectionForm.Create(AOwner: TComponent; const DCLMain: IDCLMain);
+constructor TProtectionForm.Create(AOwner: TComponent; const DCLMain: IDCLMain; FromAbout: Boolean);
 var
   Key: TKeyData;
 begin
@@ -81,6 +84,7 @@ begin
   FDCLMain:=DCLMain;
   FProtectionEngine:=DCLMain.GetProtectionEngine;
 
+  miAbout.Visible:=not FromAbout;
   lbExpire.Caption:='-';
   edProgramKey.Text:=FProtectionEngine.GetProtectionKey;
   Key:=FProtectionEngine.GetKeyData;
@@ -199,6 +203,11 @@ begin
       edRegistrationKey.Clear;
     end;
   end;
+end;
+
+procedure TProtectionForm.aExitByEscExecute(Sender: TObject);
+begin
+  Close;
 end;
 
 end.

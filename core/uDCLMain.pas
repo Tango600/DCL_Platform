@@ -725,7 +725,7 @@ begin
   end
   else
   begin
-    ProtectionForm:=TProtectionForm.Create(Application, Self);
+    ProtectionForm:=TProtectionForm.Create(Application, Self, False);
     ProtectionForm.ShowModal;
 
     Application.Terminate;
