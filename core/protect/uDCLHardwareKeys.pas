@@ -22,14 +22,15 @@ type
 
   TDCLHardwareKeys = class
   private
+    FHWInfo:
     {$IFDEF MSWINDOWS}
-    FHDDInfoWin: THDDInfo;
+    THDDInfo;
     {$ENDIF}
     {$IFDEF LINUX}
-    FPartsInfo: TDiskPartInfo;
+    TDiskPartInfo;
     {$ENDIF}
     {$IFDEF DARWIN}
-    SystemUUID: TSystemUUID;
+    TSystemUUID;
     {$ENDIF}
 
     FHWData: String;
@@ -47,30 +48,22 @@ implementation
 constructor TDCLHardwareKeys.Create;
 begin
 {$IFDEF MSWINDOWS}
-  FHDDInfoWin:=THDDInfo.Create;
-  FHWData:=FHDDInfoWin.SerialNumber;
+  FHWInfo:=THDDInfo.Create;
+  FHWData:=FHWInfo.SerialNumber;
 {$ENDIF}
 {$IFDEF LINUX}
-  FPartsInfo:=TDiskPartInfo.Create;
-  FHWData:=FPartsInfo.PartitionID;
+  FHWInfo:=TDiskPartInfo.Create;
+  FHWData:=FHWInfo.PartitionID;
 {$ENDIF}
 {$IFDEF DARWIN}
-  SystemUUID:=TSystemUUID.Create;
-  FHWData:=SystemUUID.UUID;
+  FHWInfo:=TSystemUUID.Create;
+  FHWData:=FHWInfo.UUID;
 {$ENDIF}
 end;
 
 destructor TDCLHardwareKeys.Destroy;
 begin
-{$IFDEF MSWINDOWS}
-  FreeAndNil(FHDDInfoWin);
-{$ENDIF}
-{$IFDEF LINUX}
-  FreeAndNil(FPartsInfo);
-{$ENDIF}
-{$IFDEF DARWIN}
-  FreeAndNil(SystemUUID);
-{$ENDIF}
+  FreeAndNil(FHWInfo);
   inherited Destroy;
 end;
 
