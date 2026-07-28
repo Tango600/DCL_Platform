@@ -8,7 +8,7 @@ uses
   Windows, ShlObj,
 {$ENDIF}
 {$IFDEF UNIX}
-  cwstring, lclintf,
+  cwstring, lclintf, lcltype,
 {$ENDIF}
   Classes, Graphics, SysUtils, uDCLConst;
 
