@@ -233,7 +233,7 @@ begin
       Inc(i);
     End;
 
-    Result:='select ' + NewFieldsSet + ' from ' +Copy(SQL, f+1, Length(SQL));
+    Result:='select ' + NewFieldsSet + ' from ' +Trim(Copy(SQL, f+1, Length(SQL)));
   end;
 end;
 
