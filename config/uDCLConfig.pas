@@ -287,7 +287,7 @@ Begin
 
         If IsParameter('UserLocalProfile=', cs) then
         Begin
-          GPT.AppConfigDir:=IncludeTrailingPathDelimiter(Trim(FindParam('UserLocalProfile=', cs)));
+          GPT.AppConfigDir:=ExcludeTrailingPathDelimiter(Trim(FindParam('UserLocalProfile=', cs)))+PathDelim;
         End;
 
         If IsParameter('WordOLEExtension=', cs) then
