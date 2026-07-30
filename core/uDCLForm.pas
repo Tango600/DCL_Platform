@@ -603,6 +603,8 @@ begin
       TB.OnClick:=ToolButtonClick;
       TB.Constraints.MinWidth:=100;
       TB.Constraints.MaxWidth:=FormPanelButtonWidth;
+      TB.Constraints.MinHeight:=FormPanelButtonHeight;
+      TB.Constraints.MaxHeight:=FormPanelButtonHeight;
       TB.Tag:=FForm.Tag;
       TB.Margin:=PanelButtonTextRight;
       TB.ImageIndex:=NewDialogImage;

@@ -64,8 +64,7 @@ const
   ScrollHeight=20;
   LookupTableHeight=145;
   FieldsStepLeft=17;
-  FormPanelHeight=28;
-  FormPanelButtonHeight=FormPanelHeight-5;
+  FormPanelButtonHeight=22;
   FormPanelButtonWidth=130;
   PanelButtonTextRight=3;
   SummGridHeight=27;

@@ -121,7 +121,6 @@ begin
     FImages.Add(DrawBMPButton(ptFormDotActive), nil);
     FImages.Add(DrawBMPButton(ptFormDotInActive), nil);
 
-    FormBar.Height:=FormPanelHeight;
     FormBar.ButtonWidth:=FormPanelButtonWidth;
     FormBar.Images:=FImages;
     FormBar.Show;
