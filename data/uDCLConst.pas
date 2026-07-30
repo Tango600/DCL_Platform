@@ -12,7 +12,7 @@ uses
 {$IFDEF ZEOS}
   ZClasses,
 {$ENDIF}
-  LazVersion;
+  Graphics, LazVersion;
 
 const
 {$IFDEF MSWINDOWS}
@@ -135,6 +135,8 @@ const
   ToolButtonsCmd: Array [1..ToolCommandsCount] Of String=('structure', 'print', 'find');
 
   TransParams=True;
+
+  NoColorValue=clBlack;
 
 Type
   TEventsEnum=(evtScroll, evtBeforeScroll, evtDelete, evtAfterOpen, evtAfterPost, evtCancel,
