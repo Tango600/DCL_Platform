@@ -22,7 +22,6 @@ Function AddToFileName(Const FileName, AddStr: String): String;
 Function GetTempFileName(const Ext: String): String;
 
 function ReplaseCPtoWIN(const CodePageName: String): String;
-function ReplaseWINtoCP(const CodePageName: String): String;
 
 function GetUserProfileDir: String;
 function GetUserDocumentsDir: String;
@@ -186,15 +185,6 @@ begin
   If Pos('cp', LowerCase(CodePageName))=1 then
   Begin
     Result:='WIN'+Copy(CodePageName, 3, Length(CodePageName));
-  End;
-end;
-
-function ReplaseWINtoCP(const CodePageName: String): String;
-begin
-  Result:='';
-  If Pos('win', LowerCase(CodePageName))=1 then
-  Begin
-    Result:='cp'+Copy(CodePageName, 4, Length(CodePageName));
   End;
 end;
 
