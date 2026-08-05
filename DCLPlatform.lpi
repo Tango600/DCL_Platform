@@ -177,24 +177,24 @@
       </Unit>
       <Unit>
         <Filename Value="forms\fMain.pas"/>
+        <IsPartOfProject Value="True"/>
         <ComponentName Value="MainForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="forms\fChangePasswordForm.pas"/>
+        <IsPartOfProject Value="True"/>
         <ComponentName Value="FormChangePassword"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="forms\fAbout.pas"/>
+        <IsPartOfProject Value="True"/>
         <ComponentName Value="AboutForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="utils\uSQLParser.pas"/>
@@ -214,17 +214,17 @@
       </Unit>
       <Unit>
         <Filename Value="forms\fDCLLoginForm.pas"/>
+        <IsPartOfProject Value="True"/>
         <ComponentName Value="LoginForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="forms\fMessageForm.pas"/>
+        <IsPartOfProject Value="True"/>
         <ComponentName Value="MessageForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="core\uDCLMain.pas"/>
@@ -408,10 +408,10 @@
       </Unit>
       <Unit>
         <Filename Value="core\protect\fDCLProtectionForm.pas"/>
+        <IsPartOfProject Value="True"/>
         <ComponentName Value="ProtectionForm"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="core\protect\uIDCLProtectionEngine.pas"/>
