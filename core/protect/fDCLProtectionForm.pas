@@ -53,7 +53,7 @@ type
 implementation
 
 uses
-  Clipbrd, {$IFDEF LINUX}gtk2, gdk2,{$ENDIF}
+  Clipbrd,
   uDCLConst, uDCLMultiLang, uDCLVersion, uKeyData;
 
 {$R *.lfm}
@@ -157,21 +157,8 @@ begin
 end;
 
 procedure TProtectionForm.sbCopyKeyClick(Sender: TObject);
-{$IFDEF LINUX}
-var
-  c: PGtkClipboard;
-  t: String;
-{$ENDIF}
 begin
-  {$IFDEF MSWINDOWS}
   Clipboard.AsText:=edProgramKey.Text;
-  {$ENDIF}
-  {$IFDEF LINUX}
-  c:=gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
-  t:=edProgramKey.Text;
-  gtk_clipboard_set_text(c, PChar(t), Length(t));
-  gtk_clipboard_store(c);
-  {$ENDIF}
 end;
 
 procedure TProtectionForm.ShowAbout;

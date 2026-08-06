@@ -32,7 +32,7 @@ object ProtectionForm: TProtectionForm
     Top = 30
     Width = 272
     BorderSpacing.Top = 5
-    Enabled = False
+    Color = clForm
     ReadOnly = True
     TabOrder = 0
   end
