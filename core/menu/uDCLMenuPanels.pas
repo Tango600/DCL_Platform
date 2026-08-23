@@ -24,7 +24,7 @@ type
 implementation
 
 uses
-  uDCLMeasurements;
+  uDCLMeasurements, uDCLGlobalVariables, uDCLConst, uSystemUtils;
 
 { TDCLMenuPanels }
 
@@ -78,7 +78,13 @@ begin
         FButtonFlowPanel.Parent:=ParentControl as TWinControl;
         FButtonFlowPanel.Name:='MenuFlow';
         FButtonFlowPanel.Caption:='';
-        FButtonFlowPanel.Color:=$F0FBFF;
+        if not GPT.DisableColorScheme and (GPT.MainColor<>NoColorValue) then
+        begin
+          FButtonFlowPanel.Color:=GPT.MainColor;
+          FButtonFlowPanel.Font.Color:=NegativeColor(GPT.MainColor);
+        end
+        else
+          FButtonFlowPanel.Color:=$F0FBFF;
         FButtonFlowPanel.Align:=alClient;
         FButtonFlowPanel.FlowStyle:=fsTopBottomLeftRight;
         FButtonFlowPanel.BevelInner:=bvLowered;

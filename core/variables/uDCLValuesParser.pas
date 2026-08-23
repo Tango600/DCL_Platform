@@ -4,7 +4,7 @@ unit uDCLValuesParser;
 interface
 
 uses
-  Classes, SysUtils, DateUtils, DB,
+  Classes, SysUtils, DateUtils, DB, lazutf8,
   uDCLConst, uDCLVariables, uDCLDBAwareTypes, uDCLMD5, uDCLDBConnector;
 
 type
@@ -49,11 +49,12 @@ const
     '_YEAR_', '_DSSTATE_', '_DSSTATENAME_', '_APPDATAPATH_', '_OS_', '_USERPROFILE_', // 31
     '_USERDOC_', '_DCLINI_', '_ACCESSLEVEL_', '_LASTDIALOGRESULT_'); // 35
 
-  ProcCount=24;
-  ProcNames: Array [1..ProcCount] Of String=('ToFloat', 'DeleteNonFilesSimb', 'GetFileNameToTranslite', //3
+  ProcCount=27;
+  ProcNames: Array [1..ProcCount] Of String=('ToFloat', 'DeleteNoneFilesSimb', 'GetFileNameToTranslite', //3
     'ExtractFileName', 'MoneyToString', 'ByIndex', 'Count', 'IndexOf', 'ReadConfig', 'WriteConfig', // 10
     'NVL', 'iif', 'GetTempFileName', 'DaysInMonth', 'GetMonthName', 'LeadingZero', 'GetAccessLevelByName', // 17
-    'Upper', 'Lower', 'MD5File', 'MD5String', 'YearOf', 'MonthOf', 'DayOf'); // 24
+    'Upper', 'Lower', 'MD5File', 'MD5String', 'YearOf', 'MonthOf', 'DayOf', // 24
+    'Trim', 'TrimLeft', 'TrimRight'); // 27
 
 { TDCLValuseParser }
 
@@ -306,8 +307,8 @@ end;
 
 procedure TDCLValuseParser.RePlaceProc(var Params: String; Query: TDCLDialogQuery);
 var
-  Proc, Proc2, ResultStr, ProcParams: String;
-  P, FunctionParamsCount, MaxLength, i, FindNum, Skobki, pv1, pv2, EndPos, ParamLen: Integer;
+  Proc, Proc2, ResultStr, ProcParams, S: String;
+  P, FunctionParamsCount, MaxLength, i, FindNum, Skobki, pv1, pv2, pv3, EndPos, ParamLen: Integer;
   FunctionParams: Array of String;
   DCLConfig: TDCLConfigTable;
 
@@ -371,12 +372,12 @@ Begin
           FunctionParamsCount:=ParamsCount(ProcParams);
           SetLength(FunctionParams, FunctionParamsCount+1);
           FunctionParams[0]:=ProcNames[FindNum];
-          For pv1:=1 To FunctionParamsCount Do
+          For i:=1 To FunctionParamsCount Do
           Begin
-            FunctionParams[pv1]:=GetParam(ProcParams, pv1);
+            FunctionParams[i]:=GetParam(ProcParams, i);
           End;
 
-          if CompareProcName(FindNum, 'tofloat') then
+          if CompareProcName(FindNum, 'ToFloat') then
           Begin
             if Pos('.', FunctionParams[1])=0 then
               ResultStr:=FunctionParams[1]+'.00'
@@ -390,7 +391,7 @@ Begin
               ResultStr:=Copy(FunctionParams[1], 1, i)+ResultStr;
             End;
           End
-          else if CompareProcName(FindNum, 'deletenonfilessimb') then
+          else if CompareProcName(FindNum, 'DeleteNoneFilesSimb') then
           Begin
             ParamLen:=Length(FunctionParams[1]);
             While ParamLen<>0 Do
@@ -504,6 +505,24 @@ Begin
               If Length(ResultStr)<StrToInt(FunctionParams[2]) then
                 For pv1:=1 to StrToInt(FunctionParams[2]) do
                   ResultStr:='0'+ResultStr;
+            End
+            Else
+            Begin
+              If Length(ResultStr)>1 then
+              begin
+                pv1:=1;
+                For i:=1 to Length(ResultStr) do
+                begin
+                  if ResultStr[i]='0' then
+                    inc(pv1)
+                  else
+                    break;
+                end;
+                if pv1<=Length(ResultStr) then
+                  ResultStr:=Copy(ResultStr, pv1, Length(ResultStr))
+                else
+                  ResultStr:='';
+              end;
             End;
           End
           else if CompareProcName(FindNum, 'GetAccessLevelByName') then
@@ -523,11 +542,11 @@ Begin
           End
           else if CompareProcName(FindNum, 'Upper') then
           Begin
-            ResultStr:=UpperCase(FunctionParams[1]);
+            ResultStr:=UTF8UpperCase(FunctionParams[1]);
           End
           else if CompareProcName(FindNum, 'Lower') then
           Begin
-            ResultStr:=AnsiLowerCase(FunctionParams[1]);
+            ResultStr:=UTF8LowerCase(FunctionParams[1]);
           End
           else if CompareProcName(FindNum, 'MD5File') then
           Begin
@@ -551,6 +570,91 @@ Begin
           else if CompareProcName(FindNum, 'DayOf') then
           begin
             ResultStr:=IntToStr(DayOf(StrToDate(FunctionParams[1])));
+          end
+          else if CompareProcName(FindNum, 'Trim') then
+          begin
+            If FunctionParamsCount=1 Then
+            Begin
+              ResultStr:=UTF8Trim(FunctionParams[1]);
+            End
+            Else
+            If (FunctionParamsCount=2) and (FunctionParams[2]<>'') Then
+            Begin
+              pv1:=1;
+              for i:=1 to UTF8Length(FunctionParams[1]) do
+              begin
+                if FunctionParams[1][i]=UTF8Trim(FunctionParams[2])[1] then
+                begin
+                  inc(pv1);
+                end
+                else
+                  break;
+              end;
+
+              pv3:=UTF8Length(FunctionParams[1]);
+              for i:=UTF8Length(FunctionParams[1]) downto 1 do
+              begin
+                if FunctionParams[1][i]=Trim(FunctionParams[2])[1] then
+                begin
+                  dec(pv3);
+                end
+                else
+                  break;
+              end;
+
+              if pv1<=pv3 then
+                ResultStr:=Copy(FunctionParams[1], pv1, pv3-pv1+1);
+            End;
+          end
+          else if CompareProcName(FindNum, 'TrimLeft') then
+          begin
+            If FunctionParamsCount=1 Then
+            Begin
+              ResultStr:=UTF8Trim(FunctionParams[1], [u8tKeepEnd]);
+            End
+            Else
+            If (FunctionParamsCount=2) and (FunctionParams[2]<>'') Then
+            Begin
+              pv1:=1;
+              for i:=1 to Length(FunctionParams[1]) do
+              begin
+                if FunctionParams[1][i]=Trim(FunctionParams[2])[1] then
+                begin
+                  inc(pv1);
+                end
+                else
+                  break;
+              end;
+
+              pv3:=Length(FunctionParams[1]);
+              if pv1<=pv3 then
+                ResultStr:=Copy(FunctionParams[1], pv1, pv3-pv1+1);
+            End;
+          end
+          else if CompareProcName(FindNum, 'TrimRight') then
+          begin
+            If FunctionParamsCount=1 Then
+            Begin
+              ResultStr:=UTF8Trim(FunctionParams[1], [u8tKeepStart]);
+            End
+            Else
+            If (FunctionParamsCount=2) and (FunctionParams[2]<>'') Then
+            Begin
+              pv1:=1;
+              pv3:=UTF8Length(FunctionParams[1]);
+              for i:=UTF8Length(FunctionParams[1]) downto 1 do
+              begin
+                if FunctionParams[1][i]=Trim(FunctionParams[2])[1] then
+                begin
+                  dec(pv3);
+                end
+                else
+                  break;
+              end;
+
+              if pv1<=pv3 then
+                ResultStr:=Copy(FunctionParams[1], pv1, pv3-pv1+1);
+            End;
           end;
 
           Delete(Params, P, MaxLength+Length(ProcPrefix)+1+(EndPos-pv2));

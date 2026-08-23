@@ -2907,6 +2907,7 @@ begin
 
   Calendar.Control.OnChange:=CalendarOnChange;
   Inc(FFilterLeft, FieldsStepLeft+Calendar.Control.Width);
+  Inc(FTop, CompenentTopStep);
   AdjustFilterPanel(Ftop);
 
   FCalendars.Add(Calendar);
