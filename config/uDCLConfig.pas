@@ -78,6 +78,7 @@ begin
   If GPT.IniFileName='' Then
     GPT.IniFileName:=lPath+'DCL.ini';
 
+  SetIniFileName(GPT.IniFileName);
   if ParamCount>0 then
   begin
     if LowerCase(ExtractFileExt(ParamStr(1)))='.ini' then

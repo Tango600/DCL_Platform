@@ -54,20 +54,21 @@ type
     procedure ParseDependenciesSection(TextPackage: TStringList);
     function CalcPackageHash: String;
   public
-    constructor Create;
+    constructor Create; overload;
 
     procedure Load(Package: TStream);
-    function EncodePackage(RunOnStart: Boolean): TStream;
+    function EncodePackage: TStream;
 
     procedure ClearFiles;
     procedure AddScriptFile(const FileName: String; const Ident: Integer; RunType: TRunType);
-    function AddMenuItem(Title, Command: String; Ident, Parent: Integer): TDCLScriptItem;
+    function AddMenuItem(Title, Command: String; Ident, Parent: Integer): TDCLScriptItem;  overload;
+    procedure AddMenuItem(const Item: TDCLScriptItem);  overload;
     procedure AddUpdate(FileName: String; Order: Integer);
     procedure AddDelete(const ScriptName: String; Ident, Order: Integer);
 
     procedure DeleteScript(Name: String);
     procedure DeleteMenuItem(Id: Integer);
-    procedure SetScriptRunType(Name: String; RunType: TRunType);
+    procedure SetScriptRunType(const Name: String; RunType: TRunType);
     procedure Delete(Item: TDCLScriptItem);
 
     function CheckPackage(Login, Password: String): Boolean;
@@ -234,7 +235,7 @@ begin
 end;
 
 function TDCLScriptsPackage.AddMenuItem(Title, Command: String; Ident,
-  Parent: Integer): TDCLScriptItem;
+  Parent: Integer): TDCLScriptItem;  overload;
 var
   si: TDCLScriptItem;
 begin
@@ -254,6 +255,21 @@ begin
   Result.Parent:=Parent;
 
   FPackage.Scripts.Add(Result);
+end;
+
+procedure TDCLScriptsPackage.AddMenuItem(const Item: TDCLScriptItem); overload;
+var
+  si: TDCLScriptItem;
+begin
+  for si in FPackage.Scripts do
+  begin
+    if si.Ident=Item.Ident then
+    begin
+      Exit;
+    end;
+  end;
+
+  FPackage.Scripts.Add(Item);
 end;
 
 procedure TDCLScriptsPackage.AddUpdate(FileName: String; Order: Integer);
@@ -317,7 +333,7 @@ begin
   end;
 end;
 
-procedure TDCLScriptsPackage.SetScriptRunType(Name: String; RunType: TRunType);
+procedure TDCLScriptsPackage.SetScriptRunType(const Name: String; RunType: TRunType);
 var
   I: TDCLScriptItem;
 begin
@@ -361,7 +377,7 @@ begin
   Result:=S;
 end;
 
-function TDCLScriptsPackage.EncodePackage(RunOnStart: Boolean): TStream;
+function TDCLScriptsPackage.EncodePackage: TStream;
 var
   RawPackage: TStream;
   I: TDCLScriptItem;
@@ -380,7 +396,7 @@ begin
     S:='';
     if FPackage.PackageInfo.Name<>'' then
       S:=PackageNameSection+'='+FPackage.PackageInfo.Name+';';
-    if RunOnStart then
+    if FPackage.PackageInfo.RunOnStart then
       S:=S+RunOnStartSection+'=1;';
     if FPackage.PackageInfo.ForUpdate then
       S:=S+ForUpdateSection+'=1;';
@@ -703,7 +719,7 @@ begin
     begin
       FPackage.PackageInfo.ForUpdate:=FindParam(ForUpdateSection+'=', S)='1';
       FPackage.PackageInfo.Sign:=FindParam(SignHashSection+'=', S);
-      FPackage.PackageInfo.Name:=FindParam(PackageNameSection+'=', S);
+      FPackage.PackageInfo.Name:=ExtractFileNameOnly(FindParam(PackageNameSection+'=', S));
       FPackage.PackageInfo.RunOnStart:=FindParam(RunOnStartSection+'=', S)='1';
       FPackage.PackageInfo.Version:=FindParam('Version=', S);
       Break;

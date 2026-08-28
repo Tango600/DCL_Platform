@@ -127,7 +127,7 @@ type
     procedure ClickNavigator(Sender: TObject; Button: TNavigateBtn);
 
     procedure SetDataStatus(Status: TDataStatus);
-    procedure UpdateAllControls;
+    procedure UpdateAllDBControls;
 
     procedure SetQueryEvents(Query: TDCLQuery);
     procedure ParseEvents(ScrStr: String; const Grid: IDCLGrid);
@@ -270,7 +270,7 @@ type
     procedure GridDrawDataCell(Sender: TObject; Const Rect: TRect; DataCol: Integer;
       Column: TColumn; State: TGridDrawState);
 
-    function GetFieldSetting(var List: TList<TGridFieldSetting>; FieldName: String): TGridFieldSetting;
+    function GetFieldSetting(var List: TList<TGridFieldSetting>; const FieldName: String): TGridFieldSetting;
 
     function CalculateSeed: String;
     function GetGridSeed: String;
@@ -322,6 +322,7 @@ type
 
     procedure AddEvent(EventType: TEventsEnum; const ScriptName: String);
 
+    procedure UpdateAllControlsVariables;
     function CheckEdits: Boolean;
     procedure NotifyEditFieldError(Field: TDCLField);
 
@@ -626,7 +627,7 @@ begin
   end;
 end;
 
-procedure TDCLGrid.UpdateAllControls;
+procedure TDCLGrid.UpdateAllDBControls;
 var
   Edit: TDCLField;
   S: String;
@@ -704,7 +705,7 @@ begin
     SetDataStatus(dssChanged);
   end;
 
-  UpdateAllControls;
+  UpdateAllDBControls;
 end;
 
 procedure TDCLGrid.ScrollDB(Data: TDataSet);
@@ -714,7 +715,7 @@ begin
     if Assigned(FQuery) and FQuery.Active then
       FForm.SetRecordsStatus(FQuery.RecNo, FQuery.RecordCount);
 
-  UpdateAllControls;
+  UpdateAllDBControls;
 end;
 
 function TDCLGrid.GetControlType: TDataControlType;
@@ -739,7 +740,7 @@ begin
   If GetUserLevel<ulWrite Then
     Data.Cancel;
 
-  UpdateAllControls;
+  UpdateAllDBControls;
 end;
 
 procedure TDCLGrid.AfterPost(Data: TDataSet);
@@ -747,7 +748,7 @@ begin
   ExecEvents(evtAfterPost);
   ReFreshData;
   FIDCLMain.NotifyForms(fnaRefresh);
-  UpdateAllControls;
+  UpdateAllDBControls;
   SetDataStatus(dssSaved);
 end;
 
@@ -790,14 +791,14 @@ begin
   if CheckEdits then
   begin
     ExecEvents(evtBeforePost);
-    UpdateAllControls;
+    UpdateAllDBControls;
   end;
 end;
 
 procedure TDCLGrid.OnDelete(Data: TDataSet);
 begin
   ExecEvents(evtDelete);
-  UpdateAllControls;
+  UpdateAllDBControls;
 end;
 
 function TDCLGrid.GetQuery: TDCLQuery;
@@ -1916,6 +1917,7 @@ begin
     end
     else if DCLCommand.ChoiceButton then
     begin
+      UpdateAllControlsVariables;
       Choose;
       FForm.ModalResult:=mrOk;
     end
@@ -1925,6 +1927,7 @@ begin
       begin
         if (FGridStyle in TDataGrid) and FMultiSelectMode then
         begin
+          UpdateAllControlsVariables;
           for Bookmark in FDBGrid.SelectedRows do
           begin
             if Assigned(Bookmark) then
@@ -1947,6 +1950,7 @@ begin
 
         if DCLCommand.ExecAfter<>'' then
         begin
+          UpdateAllControlsVariables;
           if DCLCommand.Host then
           begin
             ns:=TVariableNamespace.Create(FNameSpace.CurrentNamespace, GetGUIDString);
@@ -1963,6 +1967,7 @@ begin
     end
     else
     begin
+      UpdateAllControlsVariables;
       if CheckEdits then
       begin
         if DCLCommand.Host then
@@ -3895,7 +3900,7 @@ begin
   end;
 end;
 
-function TDCLGrid.GetFieldSetting(var List: TList<TGridFieldSetting>; FieldName: String): TGridFieldSetting;
+function TDCLGrid.GetFieldSetting(var List: TList<TGridFieldSetting>; const FieldName: String): TGridFieldSetting;
 var
   Item: TGridFieldSetting;
 begin
@@ -5167,6 +5172,45 @@ begin
     Event.EventType:=EventType;
     Event.ScriptName:=ScriptName;
     FEvents.Add(Event);
+  end;
+end;
+
+procedure TDCLGrid.UpdateAllControlsVariables;
+var
+  Edit: TDCLField;
+  S: String;
+begin
+  For Edit in FDCLFields do
+  begin
+    if Assigned(Edit.DCLEditComponent) and Assigned(Edit.DCLEditComponent.Control) and (Edit.Variable<>'') then
+    begin
+      if Edit.DCLEditComponent.Control is TEdit then
+      begin
+        FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:=(Edit.DCLEditComponent.Control as TEdit).Text;
+      end;
+
+      if Edit.DCLEditComponent.Control is TCheckBox then
+      begin
+        if (Edit.DCLEditComponent.Control as TCheckBox).Checked then
+        begin
+          FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:=Edit.CheckValue;
+        end
+        else
+        begin
+          FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:=Edit.UnCheckValue;
+        end;
+      end;
+
+      if Edit.DCLEditComponent.Control is TDateTimePicker then
+      begin
+        FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:=DateToStr((Edit.DCLEditComponent.Control as TDateTimePicker).Date);
+      end;
+
+      if Edit.DCLEditComponent.Control is TComboBox then
+      begin
+        FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:=IntToStr((Edit.DCLEditComponent.Control as TComboBox).ItemIndex);
+      end;
+    end;
   end;
 end;
 
