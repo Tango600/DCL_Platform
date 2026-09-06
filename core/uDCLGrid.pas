@@ -130,7 +130,7 @@ type
     procedure UpdateAllDBControls;
 
     procedure SetQueryEvents(Query: TDCLQuery);
-    procedure ParseEvents(ScrStr: String; const Grid: IDCLGrid);
+    procedure ParseEvents(const ScrStr: String; const Grid: IDCLGrid);
     procedure ExecEvents(EventType: TEventsEnum);
 
     // DataEvents
@@ -179,7 +179,7 @@ type
     function GetEdits: TList<TDCLEdit>;
 
     procedure AddColumn(Field: TDCLField);
-    procedure ParseFields(ScrLine: String);
+    procedure ParseFields(const Scr: String);
     procedure AddAstericsFields;
 
     procedure CreateToolPanel;
@@ -216,10 +216,11 @@ type
     procedure FieldBoxOnEdit(Sender: TObject);
     procedure FieldBoxKeyPress(Sender: TObject; var Key: Char);
 
-    procedure AddLookUp(Field: TDCLField; Scr: String);
+    procedure AddLookUp(Field: TDCLField; const Scr: String);
+    procedure LookupOnSelect(Sender: TObject);
     procedure LookupOnClick(Sender: TObject);
 
-    procedure AddLookupTable(Field: TDCLField; Scr: String);
+    procedure AddLookupTable(Field: TDCLField; const Scr: String);
 
     procedure AddCalendar(ScrLine: String);
     procedure CalendarOnChange(Sender: TObject);
@@ -798,7 +799,10 @@ end;
 procedure TDCLGrid.OnDelete(Data: TDataSet);
 begin
   ExecEvents(evtDelete);
+  ReFreshData;
+  FIDCLMain.NotifyForms(fnaRefresh);
   UpdateAllDBControls;
+  SetDataStatus(dssSaved);
 end;
 
 function TDCLGrid.GetQuery: TDCLQuery;
@@ -1378,67 +1382,68 @@ begin
   end;
 end;
 
-procedure TDCLGrid.ParseFields(ScrLine: String);
+procedure TDCLGrid.ParseFields(const Scr: String);
 var
   p, l: Integer;
-  FieldNameCapt, S, tmpStr: String;
+  Line, FieldNameCapt, S, tmpStr: String;
 begin
-  TranslateVal(ScrLine, True);
   p:=0;
-  l:=Length(ScrLine);
+  Line:=Scr;
   case FFieldParsingMode of
   fpmNone: ;
   fpmCaption:
   begin
     FCurrentField:=TDCLField.Create;
-    p:=Pos('\', ScrLine);
+    p:=Pos('\', Line);
     if p=0 then
-      p:=Pos(';', ScrLine);
+      p:=Pos(';', Line);
     if p=0 then
-      FieldNameCapt:=ScrLine
+      FieldNameCapt:=Line
     else
-      FieldNameCapt:=LeftStr(ScrLine, p-1);
+      FieldNameCapt:=LeftStr(Line, p-1);
 
-    FCurrentField.ComponentName:=FindParam('ComponentName=', ScrLine);
+    FCurrentField.SQL:=FindParam('SQL=', Line);
+
+    TranslateVal(Line, True);
+    l:=Length(Line);
+    FCurrentField.ComponentName:=FindParam('ComponentName=', Line);
 
     FCurrentField.Caption:=FieldNameCapt;
-    if FindParam('Width=', ScrLine)<>'' then
-      FCurrentField.Width:=StrToIntEx(FindParam('Width=', ScrLine));
+    if FindParam('Width=', Line)<>'' then
+      FCurrentField.Width:=StrToIntEx(FindParam('Width=', Line));
 
-    If FindParam('Height=', ScrLine)<>'' Then
+    If FindParam('Height=', Line)<>'' Then
     begin
-      FCurrentField.Height:=StrToIntEx(FindParam('Height=', ScrLine));
+      FCurrentField.Height:=StrToIntEx(FindParam('Height=', Line));
     end;
 
-    FCurrentField.Value:=FindParam('_Value=', ScrLine);
-    FCurrentField.SQL:=FindParam('SQL=', ScrLine);
-    FCurrentField.UseIndex:=FindParam('UseIndex=', ScrLine)='1';
+    FCurrentField.Value:=FindParam('_Value=', Line);
+    FCurrentField.UseIndex:=FindParam('UseIndex=', Line)='1';
 
-    S:=FindParam('MaxLength=', ScrLine);
+    S:=FindParam('MaxLength=', Line);
     If S<>'' Then
       FCurrentField.MaxLength:=StrToIntEx(Trim(S));
 
-    If FindParam('Disabled=', ScrLine)='1' then
+    If FindParam('Disabled=', Line)='1' then
       FCurrentField.Enabled:=False;
 
-    If FindParam('NoDataField=', ScrLine)='1' Then
+    If FindParam('NoDataField=', Line)='1' Then
     Begin
       FCurrentField.NoDataField:=True;
     End;
 
-    if FindParam('FullName=', ScrLine)<>'' then
+    if FindParam('FullName=', Line)<>'' then
     begin
-      FCurrentField.FullFieldName:=FindParam('FullName=', ScrLine);
+      FCurrentField.FullFieldName:=FindParam('FullName=', Line);
     end;
 
-    FCurrentField.RequiredValue:=FindParam('RequiredValue=', ScrLine)='1';
-    FCurrentField.Hint:=FindParam('Hint=', ScrLine);
+    FCurrentField.RequiredValue:=FindParam('RequiredValue=', Line)='1';
 
-    FCurrentField.ReadOnly:=FindParam('ReadOnly=', ScrLine)='1';
+    FCurrentField.ReadOnly:=FindParam('ReadOnly=', Line)='1';
 
     FCurrentField.Hint:=FindParam('Hint=', S);
 
-    S:=RightStr(ScrLine, l-p);
+    S:=RightStr(Line, l-p);
 
     tmpStr:=FindParam('VariableName=', S);
     If tmpStr<>'' Then
@@ -1449,7 +1454,7 @@ begin
     Else
       FCurrentField.PasswordChar:=#0;
 
-    tmpStr:=FindParam('Format=', ScrLine);
+    tmpStr:=FindParam('Format=', Line);
     if tmpStr<>'' then
     begin
       If LowerCase(tmpStr)='float' Then
@@ -1466,23 +1471,23 @@ begin
       end;
     end;
 
-    If FindParam('CharCase=', ScrLine)<>'' then
+    If FindParam('CharCase=', Line)<>'' then
     begin
-      if FindParam('CharCase=', ScrLine).ToLower='lowercase' then
+      if FindParam('CharCase=', Line).ToLower='lowercase' then
         FCurrentField.CharCase:=eccLower
       else
-        if FindParam('CharCase=', ScrLine).ToLower='uppercase' then
+        if FindParam('CharCase=', Line).ToLower='uppercase' then
           FCurrentField.CharCase:=eccUpper;
     end;
 
     FCurrentField.CheckState:=0;
-    If PosEx('_OnCheck;', ScrLine)<>0 Then
+    If PosEx('_OnCheck;', Line)<>0 Then
       FCurrentField.CheckState:=1;
-    If PosEx('_OffCheck;', ScrLine)<>0 Then
+    If PosEx('_OffCheck;', Line)<>0 Then
       FCurrentField.CheckState:=-1;
 
-    FCurrentField.KeyField:=FindParam('Key=', ScrLine);
-    FCurrentField.ListField:=FindParam('List=', ScrLine);
+    FCurrentField.KeyField:=FindParam('Key=', Line);
+    FCurrentField.ListField:=FindParam('List=', Line);
 
     FCurrentField.FirstFieldsLine:=S;
     if FGridStyle in TDataGrid then
@@ -1492,52 +1497,54 @@ begin
   end;
 
   fpmField:begin
-    p:=Pos('\', ScrLine);
+    p:=Pos('\', Line);
     if p=0 then
-      p:=Pos(';', ScrLine);
+      p:=Pos(';', Line);
     if p=0 then
-      FieldNameCapt:=ScrLine
+      FieldNameCapt:=Line
     else
-      FieldNameCapt:=LeftStr(ScrLine, p-1);
+      FieldNameCapt:=LeftStr(Line, p-1);
 
     FDCLFields.Add(FCurrentField);
 
-    If PosEx('As_Logic;', ScrLine)<>0 Then
+    If PosEx('As_Logic;', Line)<>0 Then
     begin
       FCurrentField.DataFieldType:=dftLogic;
-      TmpStr:=Trim(FindParam('ValueChecked=', ScrLine));
+      TmpStr:=Trim(FindParam('ValueChecked=', Line));
       If TmpStr<>'' Then
         FCurrentField.CheckValue:=TmpStr;
-      TmpStr:=Trim(FindParam('ValueUnChecked=', ScrLine));
+      TmpStr:=Trim(FindParam('ValueUnChecked=', Line));
       If TmpStr<>'' Then
         FCurrentField.UnCheckValue:=TmpStr;
     end;
 
-    If PosEx('As_Graphic;', ScrLine)<>0 Then
+    If PosEx('As_Graphic;', Line)<>0 Then
     begin
       FCurrentField.DataFieldType:=dftGrafic;
     end;
 
-    If PosEx('As_Date;', ScrLine)<>0 Then
+    If PosEx('As_Date;', Line)<>0 Then
     begin
       FCurrentField.DataFieldType:=dftDateTime;
     end;
 
-    If PosEx('As_Memo;', ScrLine)<>0 Then
+    If PosEx('As_Memo;', Line)<>0 Then
     begin
       FCurrentField.DataFieldType:=dftMemo;
     end;
 
-    If PosEx('As_RichText;', ScrLine)<>0 Then
+    If PosEx('As_RichText;', Line)<>0 Then
     begin
       FCurrentField.DataFieldType:=dftRichText;
     end;
 
-    If PosEx('As_Float;', ScrLine)<>0 Then
+    If PosEx('As_Float;', Line)<>0 Then
     begin
       FCurrentField.DataFieldType:=dftFloat;
     end;
 
+    TranslateVal(Line, True);
+    l:=Length(Line);
     FCurrentField.FieldName:=FieldNameCapt;
 
     if FGridStyle in TDataFields then
@@ -1858,6 +1865,11 @@ begin
 
     Field.DCLEditComponent:=TDCLEdit.Create;
     Field.DCLEditComponent.Control:=DBEdit;
+
+    If Field.Variable<>'' Then
+    begin
+      FIDCLMain.Variables.NewVariableWithTest(FNamespace, Field.Variable);
+    end;
   end;
 end;
 
@@ -1910,6 +1922,8 @@ begin
 
   if Assigned(DCLCommand) then
   begin
+    UpdateAllControlsVariables;
+
     ns:=FNameSpace;
     if DCLCommand.CloseButton then
     begin
@@ -1917,7 +1931,6 @@ begin
     end
     else if DCLCommand.ChoiceButton then
     begin
-      UpdateAllControlsVariables;
       Choose;
       FForm.ModalResult:=mrOk;
     end
@@ -1927,7 +1940,6 @@ begin
       begin
         if (FGridStyle in TDataGrid) and FMultiSelectMode then
         begin
-          UpdateAllControlsVariables;
           for Bookmark in FDBGrid.SelectedRows do
           begin
             if Assigned(Bookmark) then
@@ -1940,6 +1952,7 @@ begin
                 FIDCLMain.Variables.RegisterNamespace(ns);
               end;
 
+              UpdateAllControlsVariables;
               CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
               CommandObj.DisableAutoRefresh:=True;
               CommandObj.SelectRunType(DCLCommand.Command);
@@ -1950,13 +1963,13 @@ begin
 
         if DCLCommand.ExecAfter<>'' then
         begin
-          UpdateAllControlsVariables;
           if DCLCommand.Host then
           begin
             ns:=TVariableNamespace.Create(FNameSpace.CurrentNamespace, GetGUIDString);
             FIDCLMain.Variables.RegisterNamespace(ns);
           end;
 
+          UpdateAllControlsVariables;
           CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
           CommandObj.SelectRunType(DCLCommand.ExecAfter);
           CommandObj:=nil;
@@ -1967,7 +1980,6 @@ begin
     end
     else
     begin
-      UpdateAllControlsVariables;
       if CheckEdits then
       begin
         if DCLCommand.Host then
@@ -2527,7 +2539,7 @@ begin
   end;
 end;
 
-procedure TDCLGrid.AddLookUp(Field: TDCLField; Scr: String);
+procedure TDCLGrid.AddLookUp(Field: TDCLField; const Scr: String);
 var
   NoDataField: Boolean;
   TempStr: String;
@@ -2535,7 +2547,7 @@ var
 begin
   Field.LookupData:=TDCLLookup.Create;
   TempStr:=Field.SQL;
-  If Field.SQL<>'' Then
+  If TempStr<>'' Then
   begin
     Field.LookupData.LookupQuery:=TDCLDialogQuery.Create(Self.GetComponent);
     FDBConnector.SetConnector(Field.LookupData.LookupQuery);
@@ -2566,7 +2578,8 @@ begin
   DBLookupControl.ShowHint:=True;
   DBLookupControl.Hint:=Field.Hint;
 
-  DBLookupControl.OnSelect:=LookupOnClick;
+  DBLookupControl.OnSelect:=LookupOnSelect;
+  DBLookupControl.OnDropDown:=LookupOnClick;
 
   Field.DCLEditComponent:=TDCLEdit.Create;
   Field.DCLEditComponent.Control:=DBLookupControl;
@@ -2619,7 +2632,7 @@ begin
   If Field.Value<>'' Then
   begin
     DBLookupControl.KeyValue:=Field.Value;
-    LookupOnClick(DBLookupControl);
+    LookupOnSelect(DBLookupControl);
     If (Not NoDataField) and FQuery.CanModify Then
     begin
       If (Not (FQuery.State in dsEditModes))and FQuery.Active and(Not NoDataField) Then
@@ -2629,7 +2642,7 @@ begin
   end;
 end;
 
-procedure TDCLGrid.LookupOnClick(Sender: TObject);
+procedure TDCLGrid.LookupOnSelect(Sender: TObject);
 var
   tmpSQL1: String;
   f, DCLLookup: TDCLField;
@@ -2668,6 +2681,42 @@ begin
       else
         tmpSQL1:=(DCLLookup.DCLEditComponent.Control as TDBLookupComboBox).KeyValue;
       FIDCLMain.Variables[FNamespace.CurrentNamespace, DCLLookup.Variable]:=tmpSQL1;
+    end;
+  end;
+end;
+
+procedure TDCLGrid.LookupOnClick(Sender: TObject);
+var
+  tmpSQL1: String;
+  f, DCLLookup: TDCLField;
+begin
+  DCLLookup:=nil;
+  for f in FDCLFields do
+  begin
+    if Assigned(f.LookupData) and Assigned(f.DCLEditComponent) and (f.DCLEditComponent.Control=(Sender as TDBLookupComboBox)) then
+    begin
+      DCLLookup:=f;
+      break;
+    end;
+  end;
+
+  if Assigned(DCLLookup) then
+  begin
+    if DCLLookup.SQL<>'' then
+    begin
+      tmpSQL1:=DCLLookup.SQL;
+      TranslateVal(tmpSQL1, False);
+      DCLLookup.LookupData.LookupQuery.SQL.Text:=tmpSQL1;
+      try
+        DCLLookup.LookupData.LookupQuery.Open;
+        DCLLookup.LookupData.LookupQuery.Last;
+        DCLLookup.LookupData.LookupQuery.First;
+      Except
+        on E: Exception do
+        begin
+          raise TDCLException.Create( - 1115, E.Message);
+        end;
+      end;
     end;
   end;
 end;
@@ -3524,7 +3573,7 @@ begin
   Result:=Result+' ';
 end;
 
-procedure TDCLGrid.AddLookupTable(Field: TDCLField; Scr: String);
+procedure TDCLGrid.AddLookupTable(Field: TDCLField; const Scr: String);
 var
   TempStr, TmpStr, FieldName: String;
   v1, v2, v3: Integer;
@@ -3544,8 +3593,10 @@ begin
   else
     LookupTable.Height:=LookupTableHeight;
 
-  LookupTable.DCLGrid.SetSQL(Field.SQL);
-  if Field.SQL<>'' then
+  TempStr:=Field.SQL;
+  TranslateVal(TempStr, False);
+  LookupTable.DCLGrid.SetSQL(TempStr);
+  if TempStr<>'' then
     LookupTable.DCLGrid.Query.Open;
 
   If PosEx('Navigator=', Scr)<>0 then
@@ -3727,7 +3778,7 @@ begin
     Result:=FQueryes[qtMain].QueryStr;
 end;
 
-procedure TDCLGrid.ParseEvents(ScrStr: String; const Grid: IDCLGrid);
+procedure TDCLGrid.ParseEvents(const ScrStr: String; const Grid: IDCLGrid);
 var
   S: String;
 begin
@@ -5189,6 +5240,19 @@ begin
         FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:=(Edit.DCLEditComponent.Control as TEdit).Text;
       end;
 
+      if Edit.DCLEditComponent.Control is TDBEdit then
+      begin
+        FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:=(Edit.DCLEditComponent.Control as TDBEdit).Text;
+      end;
+
+      if Edit.DCLEditComponent.Control is TDBLookupComboBox then
+      begin
+        if not (VarIsNull((Edit.DCLEditComponent.Control as TDBLookupComboBox).KeyValue) or VarIsEmpty((Edit.DCLEditComponent.Control as TDBLookupComboBox).KeyValue)) then
+          FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:=(Edit.DCLEditComponent.Control as TDBLookupComboBox).KeyValue
+        else
+          FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:='';
+      end;
+
       if Edit.DCLEditComponent.Control is TCheckBox then
       begin
         if (Edit.DCLEditComponent.Control as TCheckBox).Checked then
@@ -5208,7 +5272,10 @@ begin
 
       if Edit.DCLEditComponent.Control is TComboBox then
       begin
-        FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:=IntToStr((Edit.DCLEditComponent.Control as TComboBox).ItemIndex);
+        if Edit.UseIndex then
+          FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:=IntToStr((Edit.DCLEditComponent.Control as TComboBox).ItemIndex)
+        else
+          FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:=(Edit.DCLEditComponent.Control as TComboBox).Text;
       end;
     end;
   end;
