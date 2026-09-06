@@ -396,10 +396,10 @@ Begin
             ParamLen:=Length(FunctionParams[1]);
             While ParamLen<>0 Do
             Begin
-              If (FunctionParams[1][ParamLen]='"') Or (FunctionParams[1][ParamLen]=CrossDelim) Or
-                (FunctionParams[1][ParamLen]=':') or (FunctionParams[1][ParamLen]='*') Or
-                (FunctionParams[1][ParamLen]='>') Or
-                (FunctionParams[1][ParamLen]='<') Then
+              If (FunctionParams[1][ParamLen]='"') or (FunctionParams[1][ParamLen]=CrossDelim) or
+                (FunctionParams[1][ParamLen]=':') or (FunctionParams[1][ParamLen]='*') or
+                (FunctionParams[1][ParamLen]='>') or
+                (FunctionParams[1][ParamLen]='<') or (FunctionParams[1][ParamLen]='~') Then
                 Delete(FunctionParams[1], ParamLen, 1);
               Dec(ParamLen);
             End;
@@ -594,7 +594,7 @@ Begin
               pv3:=UTF8Length(FunctionParams[1]);
               for i:=UTF8Length(FunctionParams[1]) downto 1 do
               begin
-                if FunctionParams[1][i]=Trim(FunctionParams[2])[1] then
+                if FunctionParams[1][i]=UTF8Trim(FunctionParams[2])[1] then
                 begin
                   dec(pv3);
                 end
@@ -603,7 +603,7 @@ Begin
               end;
 
               if pv1<=pv3 then
-                ResultStr:=Copy(FunctionParams[1], pv1, pv3-pv1+1);
+                ResultStr:=UTF8Copy(FunctionParams[1], pv1, pv3-pv1+1);
             End;
           end
           else if CompareProcName(FindNum, 'TrimLeft') then
@@ -618,7 +618,7 @@ Begin
               pv1:=1;
               for i:=1 to Length(FunctionParams[1]) do
               begin
-                if FunctionParams[1][i]=Trim(FunctionParams[2])[1] then
+                if FunctionParams[1][i]=UTF8Trim(FunctionParams[2])[1] then
                 begin
                   inc(pv1);
                 end
@@ -628,7 +628,7 @@ Begin
 
               pv3:=Length(FunctionParams[1]);
               if pv1<=pv3 then
-                ResultStr:=Copy(FunctionParams[1], pv1, pv3-pv1+1);
+                ResultStr:=UTF8Copy(FunctionParams[1], pv1, pv3-pv1+1);
             End;
           end
           else if CompareProcName(FindNum, 'TrimRight') then
@@ -644,7 +644,7 @@ Begin
               pv3:=UTF8Length(FunctionParams[1]);
               for i:=UTF8Length(FunctionParams[1]) downto 1 do
               begin
-                if FunctionParams[1][i]=Trim(FunctionParams[2])[1] then
+                if FunctionParams[1][i]=UTF8Trim(FunctionParams[2])[1] then
                 begin
                   dec(pv3);
                 end
@@ -653,7 +653,7 @@ Begin
               end;
 
               if pv1<=pv3 then
-                ResultStr:=Copy(FunctionParams[1], pv1, pv3-pv1+1);
+                ResultStr:=UTF8Copy(FunctionParams[1], pv1, pv3-pv1+1);
             End;
           end;
 
