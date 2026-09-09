@@ -53,7 +53,7 @@ const
   FilterLabelTop=7;
   NotCheckTopStep=30;
 
-  ColumnsLongerThis=1000;
+  ColumnsLongerThis=500;
   DefaultColumnSize=350;
 
   BevelWidth=4;

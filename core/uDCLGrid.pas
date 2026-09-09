@@ -263,7 +263,6 @@ type
     function GetSQLFromStorage: String;
 
     procedure ClearNotAllowedOperations;
-    procedure ExcludeNotAllowedOperation(Operation: TNotAllowedOperation);
     procedure AddNotAllowedOperation(Operation: TNotAllowedOperation);
     function FindNotAllowedOperation(Operation: TNotAllowedOperation): Boolean;
 
@@ -1795,8 +1794,6 @@ procedure TDCLGrid.AddDBDateEdit(Field: TDCLField);
 var
   DateEdit: TDBDate;
 begin
-  Field.DCLEditComponent:=TDCLEdit.Create;
-
   DateEdit:=TDBDate.Create(FFieldsPanel);
   DateEdit.Parent:=FFieldsPanel;
   if Field.Width>0 then
@@ -1814,7 +1811,13 @@ begin
   if Field.Hint<>'' then
     DateEdit.ShowHint:=True;
 
+  Field.DCLEditComponent:=TDCLEdit.Create;
   Field.DCLEditComponent.Control:=DateEdit;
+
+  If Field.Variable<>'' Then
+  begin
+    FIDCLMain.Variables.NewVariableWithTest(FNamespace, Field.Variable);
+  end;
 end;
 
 procedure TDCLGrid.AddMediaFieldGroup(Field: TDCLField; GroupType: TGroupType);
@@ -2855,11 +2858,7 @@ begin
           (Filter.Control as TComboBox).AddItem(Copy(S, Pos('/', S)+1, Length(S)), Item);
         end;
         (Filter.Control as TComboBox).ItemIndex:=0;
-    {$IFDEF FPC}
         (Filter.Control as TComboBox).OnSelect:=ExecFilter;
-    {$ELSE}
-        (Filter.Control as TComboBox).OnClick:=ExecFilter;
-    {$ENDIF}
       end;
 
       If Filter.KeyValue<>'' Then
@@ -3839,28 +3838,13 @@ begin
   FNotAllowedOperations.Clear;
 end;
 
-procedure TDCLGrid.ExcludeNotAllowedOperation(Operation: TNotAllowedOperation);
-var
-  O: TNotAllowedOperation;
-begin
-  for O in FNotAllowedOperations do
-  begin
-    if O=Operation then
-    begin
-      FNotAllowedOperations.Remove(O);
-      break;
-    end;
-  end;
-end;
-
 procedure TDCLGrid.AddNotAllowedOperation(Operation: TNotAllowedOperation);
 begin
   if not FindNotAllowedOperation(Operation) then
     FNotAllowedOperations.Add(Operation);
 end;
 
-function TDCLGrid.FindNotAllowedOperation(Operation: TNotAllowedOperation
-  ): Boolean;
+function TDCLGrid.FindNotAllowedOperation(Operation: TNotAllowedOperation): Boolean;
 var
   O: TNotAllowedOperation;
 begin
@@ -3942,10 +3926,7 @@ begin
       TDBGrid(Sender).Canvas.Brush.Color:=Brush.Color;
       TDBGrid(Sender).Canvas.Font.Color:=RowTextColor;
 
-      With (Sender as TDBGrid).Canvas do
-      begin
-        FillRect(Rect);
-      end;
+      TDBGrid(Sender).Canvas.FillRect(Rect);
       TDBGrid(Sender).DefaultDrawColumnCell(Rect, DataCol, Column, State);
     end;
   end;
