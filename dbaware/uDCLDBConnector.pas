@@ -238,9 +238,6 @@ begin
   end;
   {$ENDIF}
   {$IFDEF SQLdbIB}
-  if GPT.ServerCodePage='' then
-    GPT.ServerCodePage:='utf8';
-
   GPT.IBAll:=True;
   UniversalTransaction:=TTransaction.Create(Self);
   UniversalTransaction.Params.Clear;
@@ -291,7 +288,7 @@ begin
       LoginPrompt:=True;
 
     If GPT.ServerCodePage='' Then
-      Charset:='utf8'
+      Charset:=DefaultCodePage
     Else
       Charset:=ReplaseCPtoWIN(GPT.ServerCodePage);
 

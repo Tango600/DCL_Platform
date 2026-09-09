@@ -66,6 +66,18 @@ const
 
   BaiseUIDParamName='BaseUID';
 
+  {$IFDEF IBALL}
+  DefaultPort=3050;
+  {$ELSE}
+  {$IFDEF SQLdbMySQL}
+  DefaultPort=3306;
+  {$ELSE}
+  DefaultPort=0;
+  {$ENDIF}
+  {$ENDIF}
+  DefaultStringDelimiter=#39;
+  DefaultCodePage='utf8';
+
   DBTypeFirebird='Firebird';
   DBTypeInterbase='interbase';
 

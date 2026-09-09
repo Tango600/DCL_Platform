@@ -12,10 +12,12 @@ var
 
 implementation
 
+uses
+  uDCLConst;
 
 Initialization
 
-  GPT.StringTypeChar:='''';
+  GPT.StringTypeChar:=DefaultStringDelimiter;
   GPT.DialogsSettings:=True;
 end.
 
