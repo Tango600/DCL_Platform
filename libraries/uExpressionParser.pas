@@ -19,14 +19,15 @@ type
     constructor Create;
   end;
 
- function ParseLogicalExpression(S: String): Boolean;
+ function ParseLogicalExpression(const S: String): Boolean;
  function LogicalParser(S: String): TList<TCondition>;
  function CalcLogicalExpression(var Conditions: TList<TCondition>): Boolean;
+ function CompareNumbersOrStrings(const ValueLeft, ValueRight: String; ConditionType: TConditionTypes): Boolean;
 
 implementation
 
 uses
-   uStringParams, uStringUtils;
+   uStringParams, uStringUtils, uDCLUtils;
 
 function LogicalParser(S: String): TList<TCondition>;
 var
@@ -224,37 +225,37 @@ begin
     begin
       case CondItem.ConditionType of
       ctEq: begin
-        LastResult:=GetPairCondition(CondItem.ItemCondition, DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[0])=0, LastResult);
+        LastResult:=GetPairCondition(CondItem.ItemCondition, CompareNumbersOrStrings(CondItem.FieldNameLeft, CondItem.Values[0], CondItem.ConditionType), LastResult);
       end;
       ctNotEq: begin
-        LastResult:=GetPairCondition(CondItem.ItemCondition, DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[0])<>0, LastResult);
+        LastResult:=GetPairCondition(CondItem.ItemCondition, CompareNumbersOrStrings(CondItem.FieldNameLeft, CondItem.Values[0], CondItem.ConditionType), LastResult);
       end;
       ctGt: begin
-        LastResult:=GetPairCondition(CondItem.ItemCondition, DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[0])=-1, LastResult);
+        LastResult:=GetPairCondition(CondItem.ItemCondition, CompareNumbersOrStrings(CondItem.FieldNameLeft, CondItem.Values[0], CondItem.ConditionType), LastResult);
       end;
       ctGtEq: begin
-        LastResult:=GetPairCondition(CondItem.ItemCondition, DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[0])<=0, LastResult);
+        LastResult:=GetPairCondition(CondItem.ItemCondition, CompareNumbersOrStrings(CondItem.FieldNameLeft, CondItem.Values[0], CondItem.ConditionType), LastResult);
       end;
       ctLe: begin
-        LastResult:=GetPairCondition(CondItem.ItemCondition, DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[0])=1, LastResult);
+        LastResult:=GetPairCondition(CondItem.ItemCondition, CompareNumbersOrStrings(CondItem.FieldNameLeft, CondItem.Values[0], CondItem.ConditionType), LastResult);
       end;
       ctLeEq: begin
-        LastResult:=GetPairCondition(CondItem.ItemCondition, DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[0])>=0, LastResult);
+        LastResult:=GetPairCondition(CondItem.ItemCondition, CompareNumbersOrStrings(CondItem.FieldNameLeft, CondItem.Values[0], CondItem.ConditionType), LastResult);
       end;
       ctBt, ctNotBt: begin
         case CondItem.ConditionType of
         ctBt: begin
-          if (CondItem.Values.Count>=2) and (DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[0])<=0) and (DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[1])>=0) then
+          if CondItem.Values.Count=2 then
           begin
-            LastResult:=GetPairCondition(CondItem.ItemCondition, True, LastResult);
+            LastResult:=GetPairCondition(CondItem.ItemCondition, CompareNumbersOrStrings(CondItem.FieldNameLeft, CondItem.Values[0], ctGtEq) and CompareNumbersOrStrings(CondItem.FieldNameLeft, CondItem.Values[1], ctLeEq), LastResult);
           end
           else
             LastResult:=GetPairCondition(CondItem.ItemCondition, False, LastResult);
         end;
         ctNotBt: begin
-          if (CondItem.Values.Count>=2) and not ((DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[0])<=0) and (DCLCompareStrings(CondItem.FieldNameLeft, CondItem.Values[1])>=0)) then
+          if CondItem.Values.Count=2 then
           begin
-            LastResult:=GetPairCondition(CondItem.ItemCondition, True, LastResult);
+            LastResult:=GetPairCondition(CondItem.ItemCondition, not CompareNumbersOrStrings(CondItem.FieldNameLeft, CondItem.Values[0], ctGtEq) and CompareNumbersOrStrings(CondItem.FieldNameLeft, CondItem.Values[1], ctLeEq), LastResult);
           end
           else
             LastResult:=GetPairCondition(CondItem.ItemCondition, False, LastResult);
@@ -265,7 +266,7 @@ begin
         LocalResult:=CondItem.ConditionType=ctNotIn;
         for S in CondItem.Values do
         begin
-          if S=CondItem.FieldNameLeft then
+          if CompareNumbersOrStrings(S, CondItem.FieldNameLeft, ctEq) then
           begin
             LocalResult:=CondItem.ConditionType=ctIn;
             break;
@@ -277,14 +278,105 @@ begin
     end
     else
     begin
-      LastResult:=GetPairCondition(CondItem.ItemCondition, False, LastResult);
+      LastResult:=GetPairCondition(CondItem.ItemCondition, True, LastResult);
     end;
   end;
 
   Result:=LastResult;
 end;
 
-function ParseLogicalExpression(S: String): Boolean;
+function CompareNumbersOrStrings(const ValueLeft, ValueRight: String;
+  ConditionType: TConditionTypes): Boolean;
+var
+  LeftValueType, RightValueType: TIsDigitType;
+  i1, i2: LongInt;
+  r1, r2: Real;
+begin
+  Result:=True;
+  LeftValueType:=GetStringDataType(ValueLeft);
+  RightValueType:=GetStringDataType(ValueRight);
+
+  if (LeftValueType=idDigit) and (RightValueType=idDigit) then
+  begin
+    if TryStrToInt(ValueLeft, i1) and TryStrToInt(ValueRight, i2) then
+    begin
+      case ConditionType of
+      ctEq: begin
+        Result:=i1=i2;
+      end;
+      ctNotEq: begin
+        Result:=i1<>i2;
+      end;
+      ctGt: begin
+        Result:=i1>i2;
+      end;
+      ctGtEq: begin
+        Result:=i1>=i2;
+      end;
+      ctLe: begin
+        Result:=i1<i2;
+      end;
+      ctLeEq: begin
+        Result:=i1<=i2;
+      end;
+      end;
+
+      Exit;
+    end;
+  end;
+
+  if (LeftValueType=idFloatDigit) and (RightValueType=idFloatDigit) then
+  begin
+    if TryStrToFloat(ValueLeft, r1) and TryStrToFloat(ValueRight, r2) then
+    begin
+      case ConditionType of
+      ctEq: begin
+        Result:=r1=r2;
+      end;
+      ctNotEq: begin
+        Result:=r1<>r2;
+      end;
+      ctGt: begin
+        Result:=r1>r2;
+      end;
+      ctGtEq: begin
+        Result:=r1>=r2;
+      end;
+      ctLe: begin
+        Result:=r1<r2;
+      end;
+      ctLeEq: begin
+        Result:=r1<=r2;
+      end;
+      end;
+
+      Exit;
+    end;
+  end;
+
+  case ConditionType of
+  ctEq: begin
+    Result:=DCLCompareStrings(ValueLeft, ValueRight)=0;
+  end;
+  ctNotEq: begin
+    Result:=DCLCompareStrings(ValueLeft, ValueRight)<>0;
+  end;
+  ctGt: begin
+    Result:=DCLCompareStrings(ValueLeft, ValueRight)=-1;
+  end;
+  ctGtEq: begin
+    Result:=DCLCompareStrings(ValueLeft, ValueRight)<=0;
+  end;
+  ctLe: begin
+    Result:=DCLCompareStrings(ValueLeft, ValueRight)=1;
+  end;
+  ctLeEq: begin
+    Result:=DCLCompareStrings(ValueLeft, ValueRight)>=0;
+  end;
+  end;
+end;
+
+function ParseLogicalExpression(const S: String): Boolean;
 var
   Conds: TList<TCondition>;
 begin

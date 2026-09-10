@@ -31,6 +31,7 @@ procedure OpenDir(Dir: String);
 function GetGUIDString: String;
 Function UpTime: QWord;
 function IntToColor(Value: Integer): TColor;
+function ColorToHex(Color: TColor): String;
 
 function NegativeColor(Color: TColor): TColor;
 
@@ -47,6 +48,18 @@ end;
 function IntToColor(Value: Integer): TColor;
 begin
   Result:=RGBToColor(Value and $ff0000 div $00ffff, Value and $00ff00 div $ff, Value and $0000ff);
+end;
+
+function ColorToHex(Color: TColor): String;
+var
+  c, r, g, b: LongInt;
+begin
+  c:=ColorToRGB(Color);
+  r:=c and $ff;
+  g:=c and $ff00 div $ff;
+  b:=c and $ff0000 div $ff00;
+
+  Result:=HexStr(r, 2)+HexStr(g, 2)+HexStr(b, 2);
 end;
 
 function FindCommandStrParam(Str: String): String;

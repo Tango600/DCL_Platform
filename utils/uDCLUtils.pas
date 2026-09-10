@@ -81,72 +81,59 @@ Var
   iI: Integer;
 Begin
   Result:=idString;
-  If S<>'' Then
+  If Length(S)>0 then
   Begin
-    If Length(S)>1 then
+    If (PosEx('cl', S)=1) and (Length(S)>4) Then
     Begin
-      If (PosEx('cl', S)=1) and (Length(S)>4) Then
+      Result:=idColor;
+      Exit;
+    End;
+    If (PosEx('ul', S)=1) and (Length(S)>5) and (IndexInSet(UserLevelsSet, S.Substring(2))<>0) then
+    Begin
+      Result:=idUserLevel;
+      Exit;
+    End;
+    If (LowerCase(S[1])='h') or (S[1]='$') Then
+    Begin
+      For iI:=2 To Length(S) Do
       Begin
-        Result:=idColor;
-        Exit;
-      End;
-      If (PosEx('ul', S)=1) and (Length(S)>5) and (IndexInSet(UserLevelsSet, S.Substring(2))<>0) then
-      Begin
-        Result:=idUserLevel;
-        Exit;
-      End;
-      If (LowerCase(S[1])='h') or (S[1]='$') Then
-      Begin
-        For iI:=2 To Length(S) Do
+        If PosEx(S[iI], '0123456789ABCDEF')=0 then
         Begin
-          If PosEx(S[iI], '0123456789ABCDEF')=0 then
-          Begin
-            Result:=idString;
-            Exit;
-          End;
-        End;
-        Result:=idHex;
-        Exit;
-      End;
-      For iI:=1 To Length(S) Do
-      Begin
-        If Pos(S[iI], '0123456789-.,')=0 then
-        Begin
-          If (Pos(S[iI], '0123456789-.: ')<>0) and (Length(S)>=9) then
-          Begin
-            Result:=idDateTime;
-            Exit;
-          End;
           Result:=idString;
           Exit;
-        End
-        Else
-        Begin
-          If Pos(S[iI], '0123456789-')<>0 then
-            Result:=idDigit
-          Else
-            If Pos(S[iI], '0123456789-,.')<>0 then
-              Result:=idFloatDigit;
-          Exit;
         End;
       End;
-    End
-    Else
+      Result:=idHex;
+      Exit;
+    End;
+    For iI:=1 To Length(S) Do
     Begin
-      If Pos(S, '0123456789')=0 then
+      If Pos(S[iI], '0123456789-.,')=0 then
       Begin
+        If (Pos(S[iI], '0123456789-.:')<>0) and (Length(S)>=9) then
+        Begin
+          Result:=idDateTime;
+          Exit;
+        End;
         Result:=idString;
         Exit;
       End
       Else
       Begin
-        Result:=idDigit;
+        If Pos(S[iI], '0123456789-')<>0 then
+          Result:=idDigit
+        Else
+          If Pos(S[iI], '0123456789-,.')<>0 then
+            Result:=idFloatDigit;
         Exit;
       End;
     End;
   End
   Else
-    Result:=idString;
+  Begin
+    Result:=idNone;
+    Exit;
+  End;
 End;
 
 function GetGraficFileType(const FileName: string): TGraficFileType;

@@ -975,26 +975,14 @@ begin
   begin
     if Event.EventType=EventType then
     begin
-      IsExist:=True;
-      break;
-    end;
-  end;
-
-  if IsExist then
-  begin
-    CommandObj:=TDCLCommand.Create(FIDCLMain, FNameSpace, FForm, Self);
-    for Event in FEvents do
-    begin
-      if Event.EventType=EventType then
+      CommandObj:=TDCLCommand.Create(FIDCLMain, FNameSpace, FForm, Self);
+      IsExist:=CommandObj.RunCommandScript(Event.ScriptName);
+      if not IsExist then
       begin
-        IsExist:=CommandObj.RunCommandScript(Event.ScriptName);
-        if not IsExist then
-        begin
-          CommandObj.RunCommand(Event.ScriptName+';');
-        end;
+        CommandObj.RunCommand(Event.ScriptName+';');
       end;
+      CommandObj:=nil;
     end;
-    CommandObj:=nil;
   end;
 end;
 
@@ -2920,10 +2908,8 @@ begin
   Calendar:=TDCLCalendar.Create;
   Calendar.Caption:=FindParam('Label=', ScrLine);
 
-  if FindParam('ParamName=', ScrLine)<>'' then
-    Calendar.ParamName:=FindParam('ParamName=', ScrLine)
-  else
-    Calendar.Variable:=FindParam('VariableName=', ScrLine);
+  Calendar.ParamName:=FindParam('ParamName=', ScrLine);
+  Calendar.Variable:=FindParam('VariableName=', ScrLine);
 
   tmpS:=FindParam('DefaultValue=', ScrLine);
   If tmpS<>'' Then
@@ -2984,8 +2970,8 @@ begin
   begin
     Calendar.Value:=(Sender as TDateTimePicker).Date;
     if (Calendar.ParamName<>'') and Assigned(FQuery.ParamByName(Calendar.ParamName)) then
-      FQuery.ParamByName(Calendar.ParamName).AsDate:=Calendar.Value
-    else if Calendar.Variable<>'' then
+      FQuery.ParamByName(Calendar.ParamName).AsDate:=Calendar.Value;
+    if Calendar.Variable<>'' then
       FIDCLMain.Variables[FNamespace.CurrentNamespace, Calendar.Variable]:=DateToStr(Calendar.Value);
 
     If Calendar.ReOpen Then

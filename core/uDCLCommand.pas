@@ -663,7 +663,7 @@ end;
 
 procedure TDCLCommand.RunCommand(Command: String);
 var
-  tmpS, tmpS1, tmpS2, tmpS3: String;
+  tmpS, tmpS1, tmpS2, tmpS3, tmpS4: String;
   v1, v2: Integer;
   Wait, Flg1, Flg2: Boolean;
   tmpDCLForm, vForm: IDCLForm;
@@ -848,21 +848,37 @@ begin
       tmpS2:=FindParam('VariableName=', Command);
       FVariables.NewVariableWithTest(FNamespace, tmpS2);
 
-      If LowerCase(tmpS3)='yesno' Then
+      for v1:=1 to ParamsCount(tmpS3) do
       begin
-        DialogResult:=ShowErrorMessage(10, tmpS)=1;
-        If DialogResult Then
-          FVariables.Variables[FNamespace.CurrentNamespace, tmpS2]:='1'
-        Else
-          FVariables.Variables[FNamespace.CurrentNamespace, tmpS2]:='0';
-      end
-      Else If LowerCase(tmpS3)='input' Then
-      begin
-        tmpS3:=FindParam('DefaultValue=', Command);
-        tmpS1:='';
-        DialogResult:=InputQuery(tmpS, tmpS, tmpS1);
-        if DialogResult then
-          FVariables.Variables[FNamespace.CurrentNamespace, tmpS2]:=tmpS1;
+        tmpS4:=GetParam(tmpS3, v1, ',', #39);
+        If LowerCase(tmpS4)='yesno' Then
+        begin
+          DialogResult:=ShowErrorMessage(10, tmpS)=1;
+          If DialogResult Then
+            FVariables.Variables[FNamespace.CurrentNamespace, tmpS2]:='1'
+          Else
+            FVariables.Variables[FNamespace.CurrentNamespace, tmpS2]:='0';
+          Break;
+        end
+        Else If LowerCase(tmpS4)='input' Then
+        begin
+          tmpS1:=FindParam('DefaultValue=', Command);
+          DialogResult:=InputQuery(tmpS, tmpS, tmpS1);
+          if DialogResult then
+            FVariables.Variables[FNamespace.CurrentNamespace, tmpS2]:=tmpS1;
+
+          Break;
+        end
+        Else If LowerCase(tmpS4)='error' Then
+        begin
+          ShowErrorMessage(0, tmpS);
+          Break;
+        end
+        Else If LowerCase(tmpS4)='warning' Then
+        begin
+          ShowErrorMessage(1, tmpS);
+          Break;
+        end;
       end;
     end
     Else
