@@ -297,11 +297,7 @@ Begin
 End;
 
 procedure LoadTranscodeRes(const Lang, Path: String);
-var
-  FileName: String;
 begin
-  FileName:=IncludeTrailingPathDelimiter(DefaultLangDir)+'DCLTranslate.'+LowerCase(Lang);
-
   If not LoadTranscodeFile(tdtTranslit, 'DCLTranslite', Lang) then
     SetDefaultTranslite;
 end;
