@@ -140,7 +140,7 @@ begin
   for i in FShadowItems do
   begin
     s:=i.Value;
-    if (Exemple='') or (not FPartial and UTF8LowerCase(s).StartsWith(UTF8LowerCase(Exemple))) or (FPartial and UTF8LowerCase(s).Contains(UTF8LowerCase(Exemple), True)) then
+    if (Exemple='') or (not FPartial and UTF8LowerCase(s).StartsWith(UTF8LowerCase(Exemple))) or (FPartial and UTF8LowerCase(s).Contains(UTF8LowerCase(Exemple))) then
     begin
       if Exemple<>'' then
         FInFilterMode:=True;

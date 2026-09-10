@@ -59,7 +59,7 @@ implementation
 
 function GetDCLMessageStringDefault(MesID: TStringMessages): String;
 begin
-  If LangName.Equals(DefaultLanguage, True) then
+  If LangName.ToLower=DefaultLanguage then
   Begin
     case MesID of
     msNone:
