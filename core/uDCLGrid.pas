@@ -4778,12 +4778,12 @@ begin
   if Assigned(FNavig) then
   begin
     If FindNotAllowedOperation(dsoDelete) Then
+    begin
       FNavig.VisibleButtons:=FNavig.VisibleButtons-[nbDelete];
+    end;
     If FindNotAllowedOperation(dsoInsert) Then
     begin
       FNavig.VisibleButtons:=FNavig.VisibleButtons-[nbInsert];
-      FNavig.VisibleButtons:=FNavig.VisibleButtons-[nbPost];
-      FNavig.VisibleButtons:=FNavig.VisibleButtons-[nbCancel];
     end;
     If FindNotAllowedOperation(dsoEdit) Then
     begin
@@ -4949,6 +4949,15 @@ begin
         FDBGrid.Options:=FDBGrid.Options+[dgDisableInsert];
         FDBGrid.ReadOnly:=FReadOnly;
       end;
+
+      if FindNotAllowedOperation(dsoDelete) then
+        FDBGrid.Options:=FDBGrid.Options+[dgDisableDelete];
+
+      if FindNotAllowedOperation(dsoEdit) then
+        FDBGrid.Options:=FDBGrid.Options-[dgEditing];
+
+      if FindNotAllowedOperation(dsoInsert) then
+        FDBGrid.Options:=FDBGrid.Options-[dgDisableInsert];
 
       FDBGrid.DataSource:=FData;
       if FBrushColors.Count=0 then
@@ -5133,7 +5142,7 @@ begin
       If IsButton('edit', ButtonsExpr) Then
         NavigVisiButtonsVar[nbEdit]:=[nbEdit];
 
-      if FNotAllowedOperations.Count=0 then
+      if not FindNotAllowedOperation(dsoEdit) then
       begin
         If IsButton('post', ButtonsExpr) Then
           NavigVisiButtonsVar[nbPost]:=[nbPost];

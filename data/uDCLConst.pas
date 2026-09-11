@@ -158,7 +158,7 @@ Type
   TGridStyle=(gsFields, gsFieldsHorizontal, gsGrid);
   TDataControlType=(dctNone, dctMainGrid, dctSideGrid, dctTablePart, dctLookupGrid);
 
-  TNotAllowedOperation=(dsoNone, dsoDelete, dsoInsert, dsoEdit);
+  TNotAllowedOperation=(dsoDelete, dsoInsert, dsoEdit);
 
   TChooseMode=(cmNone, cmChooseAndClose, cmChooseAndContinue);
   TLogOnStatus=(lsUnInitaliced, lsLogonOK, lsRejected, lsNotNeed);
