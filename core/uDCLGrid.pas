@@ -352,7 +352,7 @@ uses
   EditBtn, LCLProc, uRunProgram, uReturnFormValue, cMyFilterCombo, StrUtils,
   uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, LazUTF8, uDCLException,
   uPrintBase, uDCLGlobalVariables, uDCLMD5, uExpressionParser, uDCLCommand,
-  uConvertEx, uStringUtils, uSQLUtils;
+  uDetectDataType, uConvertEx, uStringUtils, uSQLUtils;
 
 { TLookupTable }
 
@@ -422,7 +422,6 @@ var
   flg: Boolean;
   tmpS: String;
   v1: Integer;
-  DigitType: TIsDigitType;
 
   Function FindDisableAction(const Action: String): Boolean;
   Var
@@ -445,11 +444,11 @@ begin
     If tmpS<>'' Then
     begin
       flg:=False;
-      DigitType:=GetStringDataType(tmpS);
-      Case DigitType of
-        idDigit: flg:=TranslateDigitToUserLevel(StrToIntEx(FindParam('AccessLevel=', ScrLine)))<=GetUserLevel;
-        idUserLevel: flg:=TranslateDigitToUserLevel(FindParam('AccessLevel=', ScrLine))<=GetUserLevel;
-      end;
+      if IsUserLevel(tmpS) then
+        flg:=TranslateStrToUserLevel(FindParam('AccessLevel=', ScrLine))<=GetUserLevel
+      else
+      if IsDigit(tmpS) then
+        flg:=TranslateDigitToUserLevel(StrToIntEx(FindParam('AccessLevel=', ScrLine)))<=GetUserLevel;
     end;
 
     If flg Then
@@ -666,7 +665,7 @@ begin
       if Edit.DCLEditComponent.Control is TComboBox then
         If (not Edit.NoDataField) and FieldExists(FQuery, Edit.FieldName) Then
         begin
-          If GetStringDataType(FQuery.FieldByName(Edit.FieldName).AsString)=idDigit then
+          If IsDigit(FQuery.FieldByName(Edit.FieldName).AsString) then
             (Edit.DCLEditComponent.Control as TComboBox).ItemIndex:=FQuery.FieldByName(Edit.FieldName).AsInteger
           Else
             (Edit.DCLEditComponent.Control as TComboBox).ItemIndex:=(Edit.DCLEditComponent.Control as TComboBox).Items.IndexOf(FQuery.FieldByName(Edit.FieldName).AsString);
@@ -2437,7 +2436,7 @@ begin
     inFormat:=True;
     case Field.FieldTypeFormat of
     fftDigit:begin
-      if not IsDigits(EdText) then
+      if not IsDigit(EdText) then
       begin
         inFormat:=False;
       end;
@@ -3855,14 +3854,14 @@ begin
     BrushColor:=TBrushColor.Create;
     Color:=FindParam('Color=', Line);
 
-    Case GetStringDataType(Color) of
-    idDigit:
-    BrushColor.Color:=IntToColor(StrToIntEx(Color));
-    idHex:
-    BrushColor.Color:=IntToColor(Hex2Dec(Color));
-    idColor:
-    BrushColor.Color:=StringToColor(Color);
-    end;
+    if IsDigit(Color) then
+      BrushColor.Color:=IntToColor(StrToIntEx(Color))
+    else
+    if IsHex(Color) then
+      BrushColor.Color:=IntToColor(Hex2Dec(Color))
+    else
+    if IsColor(Color) then
+      BrushColor.Color:=StringToColor(Color);
 
     BrushColor.ConditionValue:=FindParam('Condition=', Line);
 

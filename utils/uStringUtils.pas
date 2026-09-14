@@ -11,7 +11,7 @@ Procedure DeleteNonPrintSimb(Var S: String);
 Function CopyStrings(const FromString, ToString: String; Where: TStringList): TStringList;
 Function ExtractSection(Var SectionStr: String): String;
 Function CopyCut(Var S: String; From, Count: Integer): String;
-function IsDigits(const Value: String): Boolean;
+function OnlyDigits(const Value: String): Boolean;
 function OnlyLitters(const S: String): String;
 function NormalizeCase(const S: String): String;
 Function DCLStringEquals(const S1, S2: String): Boolean;
@@ -276,7 +276,7 @@ Begin
   End;
 End;
 
-function IsDigits(const Value: String): Boolean;
+function OnlyDigits(const Value: String): Boolean;
 var
   i: Integer;
 begin
@@ -285,7 +285,7 @@ begin
   if Length(Value)>0 then
   begin
   for I:=1 to Length(Value) do
-    if not ((Value[i] in ['0'..'9']) or (Value[I] in ['-', '+'])) then
+    if not (Value[i] in ['0'..'9']) then
     begin
       exit;
     end;

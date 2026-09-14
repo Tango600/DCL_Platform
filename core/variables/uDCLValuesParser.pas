@@ -527,7 +527,7 @@ Begin
           End
           else if CompareProcName(FindNum, 'GetAccessLevelByName') then
           Begin
-            ResultStr:=IntToStr(Ord(TranslateDigitToUserLevel(FunctionParams[1])));
+            ResultStr:=IntToStr(Ord(TranslateStrToUserLevel(FunctionParams[1])));
           End
           else if CompareProcName(FindNum, 'MonthByDate') then
           Begin

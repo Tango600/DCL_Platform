@@ -136,7 +136,7 @@ implementation
 uses
   IniFiles,
   uDCLCommand, uDCLGrid, uDCLValuesParser, uDCLMessages, uDCLGlobalVariables,
-  uConvertEx, uStringUtils;
+  uDetectDataType, uConvertEx, uStringUtils;
 
 { TDCLForm }
 
@@ -642,12 +642,12 @@ begin
         tmpS:=SrcLine;
         TranslateVal(tmpS, FCurrentGrid, True);
         tmpS:=FindParam('SetAccessLevel=', tmpS);
-        Case GetStringDataType(tmpS) of
-        idDigit:
+
+        if IsUserLevel(tmpS) then
+          FUserLevel:=TranslateStrToUserLevel(tmpS)
+        else
+        if IsDigit(tmpS) then
           FUserLevel:=TranslateDigitToUserLevel(StrToIntEx(tmpS));
-        idUserLevel:
-          FUserLevel:=TranslateDigitToUserLevel(tmpS);
-        end;
       end;
 
       If IsLexem('UserAccessRaight=', SrcLine) then
@@ -655,12 +655,13 @@ begin
         tmpS:=SrcLine;
         TranslateVal(tmpS, FCurrentGrid, True);
         tmpS:=FindParam('UserAccessRaight=', tmpS);
-        Case GetStringDataType(tmpS) of
-        idDigit:
+
+        if IsUserLevel(tmpS) then
+          UserLevelLocal:=TranslateStrToUserLevel(tmpS)
+        else
+        if IsDigit(tmpS) then
           UserLevelLocal:=TranslateDigitToUserLevel(StrToIntEx(tmpS));
-        idUserLevel:
-          UserLevelLocal:=TranslateDigitToUserLevel(tmpS);
-        end;
+
         If UserLevelLocal>FUserLevel Then
         begin
           ShowErrorMessage(0, GetDCLMessageString(msNotAllowOpenForm));

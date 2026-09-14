@@ -5,13 +5,14 @@ interface
 
 uses
   SysUtils, Classes, DateUtils,
-  uDCLConst, uStringUtils, uStringParams;
+  uDCLConst, uStringUtils, uDetectDataType, uStringParams;
 
 Function ConvertOfficeType(const OfficeType: String): TOfficeFormat;
 
-Function TranslateDigitToUserLevel(Level: byte): TUserLevelsType; overload;
-Function TranslateDigitToUserLevel(Level: String): TUserLevelsType; overload;
-Function GetStringDataType(const S: String): TIsDigitType;
+Function TranslateDigitToUserLevel(Level: byte): TUserLevelsType;
+Function TranslateStrToUserLevel(Level: String): TUserLevelsType;
+Function IsUserLevel(const S: String): Boolean;
+
 function CheckStrFmtType(const S: String; SimplyFormatType: TSimplyFieldType): Boolean;
 
 function GetGraficFileType(const FileName: String): TGraficFileType;
@@ -23,9 +24,9 @@ function CheckStrFmtType(const S: String; SimplyFormatType: TSimplyFieldType): B
 Begin
   Case SimplyFormatType of
   sftNotDefine, sftString:Result:=True;
-  sftDigit:Result:=GetStringDataType(S)=idDigit;
-  sftFloat:Result:=GetStringDataType(S)=idFloatDigit;
-  sftDateTime:Result:=GetStringDataType(S)=idDateTime;
+  sftDigit:Result:=IsDigit(S);
+  sftFloat:Result:=IsFloat(S);
+  sftDateTime:Result:=IsTime(S) or IsDate(S) or IsDateTime(S);
   End;
 End;
 
@@ -39,12 +40,12 @@ Begin
     Result:=ofPossible;
 End;
 
-Function TranslateDigitToUserLevel(Level: Byte): TUserLevelsType; overload;
+Function TranslateDigitToUserLevel(Level: Byte): TUserLevelsType;
 Begin
   Result:=TUserLevelsType(Level);
 End;
 
-Function TranslateDigitToUserLevel(Level: String): TUserLevelsType; overload;
+Function TranslateStrToUserLevel(Level: String): TUserLevelsType;
 const
   ulPrefix='ul';
 Begin
@@ -76,65 +77,10 @@ Begin
     Result:=ulUndefined;
 End;
 
-Function GetStringDataType(const S: String): TIsDigitType;
-Var
-  iI: Integer;
-Begin
-  Result:=idString;
-  If Length(S)>0 then
-  Begin
-    If (PosEx('cl', S)=1) and (Length(S)>4) Then
-    Begin
-      Result:=idColor;
-      Exit;
-    End;
-    If (PosEx('ul', S)=1) and (Length(S)>5) and (IndexInSet(UserLevelsSet, S.Substring(2))<>0) then
-    Begin
-      Result:=idUserLevel;
-      Exit;
-    End;
-    If (LowerCase(S[1])='h') or (S[1]='$') Then
-    Begin
-      For iI:=2 To Length(S) Do
-      Begin
-        If PosEx(S[iI], '0123456789ABCDEF')=0 then
-        Begin
-          Result:=idString;
-          Exit;
-        End;
-      End;
-      Result:=idHex;
-      Exit;
-    End;
-    For iI:=1 To Length(S) Do
-    Begin
-      If Pos(S[iI], '0123456789-.,')=0 then
-      Begin
-        If (Pos(S[iI], '0123456789-.:')<>0) and (Length(S)>=9) then
-        Begin
-          Result:=idDateTime;
-          Exit;
-        End;
-        Result:=idString;
-        Exit;
-      End
-      Else
-      Begin
-        If Pos(S[iI], '0123456789-')<>0 then
-          Result:=idDigit
-        Else
-          If Pos(S[iI], '0123456789-,.')<>0 then
-            Result:=idFloatDigit;
-        Exit;
-      End;
-    End;
-  End
-  Else
-  Begin
-    Result:=idNone;
-    Exit;
-  End;
-End;
+function IsUserLevel(const S: String): Boolean;
+begin
+  Result:=TranslateStrToUserLevel(S)<>ulUndefined;
+end;
 
 function GetGraficFileType(const FileName: string): TGraficFileType;
 var

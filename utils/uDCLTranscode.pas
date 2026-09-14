@@ -15,7 +15,7 @@ type
 implementation
 
 uses
-  uDCLUtils, uStringParams, uDCLConst;
+  uDetectDataType, uStringParams, uDCLConst;
 
 type
   TTranscodeType=(ttDirect, ttSub, ttAdd, ttVarLen);
@@ -52,23 +52,19 @@ begin
   Data.TranscodeType:=ttDirect;
 end;
 
-function LoadTranscodeFile(DataType: TTranscodeDataType; const FileName, Lang: String): Boolean;
+function LoadTranscodeFile(DataType: TTranscodeDataType; const FileName: String): Boolean;
 var
   LangResFile: TStringList;
   S, c, vs1, tmp1: String;
   ii, p, k, d, v1, l: Integer;
   simbcodeflg: Boolean;
-  lt: TIsDigitType;
 begin
-  If not FileExists(FileName) then
-    S:=FileName+'.'+LowerCase(Lang);
-
   Result:=False;
 {$IFNDEF SINGLELANG}
-  If FileExists(S) then
+  If FileExists(FileName) then
   Begin
     LangResFile:=TStringList.Create;
-    LangResFile.LoadFromFile(S, TEncoding.UTF8);
+    LangResFile.LoadFromFile(FileName, TEncoding.UTF8);
 
     For ii:=1 to LangResFile.Count do
     Begin
@@ -85,45 +81,31 @@ begin
           If (Pos('-', vs1)=0) then
           Begin
             tmp1:=GetClearParam(Copy(S, 1, p-1), #39);
-            lt:=GetStringDataType(tmp1);
-            Case lt of
-            idDigit, idHex:Begin
-              If lt=idHex then
-                k:=StrToInt(tmp1)
-              Else
-                k:=StrToInt(tmp1);
+            if IsDigit(tmp1) or IsHex(tmp1) then
+            begin
+              k:=StrToInt(tmp1);
               TranscodeData[DataType][l].CodeFrom1:=k;
               TranscodeData[DataType][l].CodeFrom2:=k;
-            End;
-            idString:Begin
+            end
+            else
+            begin
               TranscodeData[DataType][l].SourceLiteral:=tmp1;
-            End;
             End;
           End
           Else
           Begin
             tmp1:=GetClearParam(Copy(S, 1, Pos('-', vs1)-1), #39);
-            lt:=GetStringDataType(tmp1);
-            Case lt of
-            idDigit, idHex:Begin
-              If lt=idHex then
-                k:=StrToInt(tmp1)
-              Else
-                k:=StrToInt(tmp1);
+            if IsDigit(tmp1) or IsHex(tmp1) then
+            Begin
+              k:=StrToInt(tmp1);
               TranscodeData[DataType][l].CodeFrom1:=k;
-            end;
             end;
 
             tmp1:=Copy(S, Pos('-', vs1)+1, p-1-Pos('-', vs1));
-            lt:=GetStringDataType(tmp1);
-            Case lt of
-            idDigit, idHex:Begin
-              If lt=idHex then
-                k:=StrToInt(tmp1)
-              Else
-                k:=StrToInt(tmp1);
+            if IsDigit(tmp1) or IsHex(tmp1) then
+            Begin
+              k:=StrToInt(tmp1);
               TranscodeData[DataType][l].CodeFrom2:=k;
-            End;
             End;
           End;
 
@@ -297,8 +279,11 @@ Begin
 End;
 
 procedure LoadTranscodeRes(const Lang, Path: String);
+Var
+  FileName: String;
 begin
-  If not LoadTranscodeFile(tdtTranslit, 'DCLTranslite', Lang) then
+  FileName:=IncludeTrailingPathDelimiter(DefaultLangDir)+'DCLTranslite.'+LowerCase(Lang);
+  If not LoadTranscodeFile(tdtTranslit, Path+FileName) then
     SetDefaultTranslite;
 end;
 

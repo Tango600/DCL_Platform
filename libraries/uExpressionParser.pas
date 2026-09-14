@@ -27,7 +27,7 @@ type
 implementation
 
 uses
-   uStringParams, uStringUtils, uDCLUtils;
+   uStringParams, uStringUtils, uDetectDataType;
 
 function LogicalParser(S: String): TList<TCondition>;
 var
@@ -255,7 +255,7 @@ begin
         ctNotBt: begin
           if CondItem.Values.Count=2 then
           begin
-            LastResult:=GetPairCondition(CondItem.ItemCondition, not CompareNumbersOrStrings(CondItem.FieldNameLeft, CondItem.Values[0], ctGtEq) and CompareNumbersOrStrings(CondItem.FieldNameLeft, CondItem.Values[1], ctLeEq), LastResult);
+            LastResult:=GetPairCondition(CondItem.ItemCondition, not (CompareNumbersOrStrings(CondItem.FieldNameLeft, CondItem.Values[0], ctGtEq) and CompareNumbersOrStrings(CondItem.FieldNameLeft, CondItem.Values[1], ctLeEq)), LastResult);
           end
           else
             LastResult:=GetPairCondition(CondItem.ItemCondition, False, LastResult);
@@ -288,15 +288,12 @@ end;
 function CompareNumbersOrStrings(const ValueLeft, ValueRight: String;
   ConditionType: TConditionTypes): Boolean;
 var
-  LeftValueType, RightValueType: TIsDigitType;
   i1, i2: LongInt;
   r1, r2: Real;
 begin
   Result:=True;
-  LeftValueType:=GetStringDataType(ValueLeft);
-  RightValueType:=GetStringDataType(ValueRight);
 
-  if (LeftValueType=idDigit) and (RightValueType=idDigit) then
+  if (IsDigit(ValueLeft)) and (IsDigit(ValueRight)) then
   begin
     if TryStrToInt(ValueLeft, i1) and TryStrToInt(ValueRight, i2) then
     begin
@@ -325,7 +322,7 @@ begin
     end;
   end;
 
-  if (LeftValueType=idFloatDigit) and (RightValueType=idFloatDigit) then
+  if IsFloat(ValueLeft) and IsFloat(ValueRight) then
   begin
     if TryStrToFloat(ValueLeft, r1) and TryStrToFloat(ValueRight, r2) then
     begin
