@@ -5217,7 +5217,7 @@ begin
 
       if Edit.DCLEditComponent.Control is TDBLookupComboBox then
       begin
-        if not (VarIsNull((Edit.DCLEditComponent.Control as TDBLookupComboBox).KeyValue) or VarIsEmpty((Edit.DCLEditComponent.Control as TDBLookupComboBox).KeyValue)) then
+        if not VarIsNullOrEmpty((Edit.DCLEditComponent.Control as TDBLookupComboBox).KeyValue) then
           FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:=(Edit.DCLEditComponent.Control as TDBLookupComboBox).KeyValue
         else
           FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:='';

@@ -4,7 +4,7 @@ unit uDCLUtils;
 interface
 
 uses
-  SysUtils, Classes, DateUtils,
+  SysUtils, Classes, DateUtils, Variants,
   uDCLConst, uStringUtils, uDetectDataType, uStringParams;
 
 Function ConvertOfficeType(const OfficeType: String): TOfficeFormat;
@@ -17,6 +17,8 @@ function CheckStrFmtType(const S: String; SimplyFormatType: TSimplyFieldType): B
 
 function GetGraficFileType(const FileName: String): TGraficFileType;
 function GetExtByType(FileType: TGraficFileType): String;
+
+function VarIsNullOrEmpty(const Value: Variant): Boolean;
 
 implementation
 
@@ -105,5 +107,10 @@ Begin
   gftTIFF:Result:='tiff';
   end;
 End;
+
+function VarIsNullOrEmpty(const Value: Variant): Boolean;
+begin
+  Result:=VarIsNull(Value) or VarIsEmpty(Value);
+end;
 
 end.
