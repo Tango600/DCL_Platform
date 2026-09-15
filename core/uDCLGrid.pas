@@ -323,6 +323,7 @@ type
     procedure AddEvent(EventType: TEventsEnum; const ScriptName: String);
 
     procedure UpdateAllControlsVariables;
+    procedure UpdateVariablesToControls;
     function CheckEdits: Boolean;
     procedure NotifyEditFieldError(Field: TDCLField);
 
@@ -1942,6 +1943,8 @@ begin
               CommandObj.DisableAutoRefresh:=True;
               CommandObj.SelectRunType(DCLCommand.Command);
               CommandObj:=nil;
+
+              UpdateVariablesToControls;
             end;
           end;
         end;
@@ -1958,6 +1961,8 @@ begin
           CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
           CommandObj.SelectRunType(DCLCommand.ExecAfter);
           CommandObj:=nil;
+
+          UpdateVariablesToControls;
         end;
 
         ReFreshData;
@@ -1976,6 +1981,8 @@ begin
         CommandObj:=TDCLCommand.Create(FIDCLMain, ns, FForm, Self);
         CommandObj.SelectRunType(DCLCommand.Command);
         CommandObj:=nil;
+
+        UpdateVariablesToControls;
       end;
     end;
   end;
@@ -5246,6 +5253,55 @@ begin
           FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:=IntToStr((Edit.DCLEditComponent.Control as TComboBox).ItemIndex)
         else
           FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:=(Edit.DCLEditComponent.Control as TComboBox).Text;
+      end;
+    end;
+  end;
+end;
+
+procedure TDCLGrid.UpdateVariablesToControls;
+var
+  Edit: TDCLField;
+  S, v: String;
+begin
+  For Edit in FDCLFields do
+  begin
+    if Assigned(Edit.DCLEditComponent) and Assigned(Edit.DCLEditComponent.Control) and (Edit.Variable<>'') and (not Edit.ReadOnly) then
+    begin
+      if (Edit.DCLEditComponent.Control is TEdit) and (Edit.DCLEditComponent.EditType in [fbtOutBox, fbtEditBox]) then
+      begin
+        (Edit.DCLEditComponent.Control as TEdit).Text:=FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable];
+      end;
+
+      if Edit.DCLEditComponent.Control is TDBLookupComboBox then
+      begin
+        v:=FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable];
+        if v<>'' then
+          (Edit.DCLEditComponent.Control as TDBLookupComboBox).KeyValue:=v
+        else
+          (Edit.DCLEditComponent.Control as TDBLookupComboBox).KeyValue:=Unassigned;
+      end;
+
+      if Edit.DCLEditComponent.Control is TCheckBox then
+      begin
+        v:=FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable];
+        if v<>'' then
+          (Edit.DCLEditComponent.Control as TCheckBox).Checked:=v=Edit.CheckValue;
+      end;
+
+      if Edit.DCLEditComponent.Control is TDateTimePicker then
+      begin
+        v:=FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable];
+        if IsDate(v) then
+          (Edit.DCLEditComponent.Control as TDateTimePicker).Date:=StrToDate(FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]);
+      end;
+
+      if Edit.DCLEditComponent.Control is TComboBox then
+      begin
+        v:=FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable];
+        if Edit.UseIndex and IsDigit(v) then
+          (Edit.DCLEditComponent.Control as TComboBox).ItemIndex:=StrToInt(v)
+        else
+          (Edit.DCLEditComponent.Control as TComboBox).Text:=v;
       end;
     end;
   end;
