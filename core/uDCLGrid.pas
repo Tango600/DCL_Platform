@@ -633,43 +633,38 @@ var
 begin
   For Edit in FDCLFields do
   begin
-    if Assigned(Edit.DCLEditComponent) and Assigned(Edit.DCLEditComponent.Control) then
+    if Assigned(Edit.DCLEditComponent) and Assigned(Edit.DCLEditComponent.Control) and not Edit.NoDataField and FieldExists(FQuery, Edit.FieldName) then
     begin
       if Edit.DCLEditComponent.Control is TEdit then
       begin
-        If (Edit.DCLEditComponent.EditType in [fbtOutBox, fbtEditBox]) and not Edit.NoDataField Then
+        If (Edit.DCLEditComponent.EditType in [fbtOutBox, fbtEditBox]) Then
         begin
-          If FieldExists(FQuery, Edit.FieldName) Then
-            (Edit.DCLEditComponent.Control as TEdit).Text:=TrimRight(FQuery.FieldByName(Edit.FieldName).AsString);
+          (Edit.DCLEditComponent.Control as TEdit).Text:=TrimRight(FQuery.FieldByName(Edit.FieldName).AsString);
         end;
       end;
 
       if Edit.DCLEditComponent.Control is TCheckBox then
       begin
-        If (not Edit.NoDataField) and FieldExists(FQuery, Edit.FieldName) Then
-        begin
-          S:=TrimRight(FQuery.FieldByName(Edit.FieldName).AsString);
-          If (S='0') or (S='') Then
-            (Edit.DCLEditComponent.Control as TCheckBox).Checked:=False;
-          If S='1' Then
-            (Edit.DCLEditComponent.Control as TCheckBox).Checked:=True;
-        end;
+        S:=TrimRight(FQuery.FieldByName(Edit.FieldName).AsString);
+        If (S='0') or (S='') Then
+          (Edit.DCLEditComponent.Control as TCheckBox).Checked:=False;
+        If S='1' Then
+          (Edit.DCLEditComponent.Control as TCheckBox).Checked:=True;
       end;
 
       if Edit.DCLEditComponent.Control is TDateTimePicker then
-      If (not Edit.NoDataField) and FieldExists(FQuery, Edit.FieldName) then
       begin
         (Edit.DCLEditComponent.Control as TDateTimePicker).Date:=FQuery.FieldByName(Edit.FieldName).AsDateTime;
       end;
 
       if Edit.DCLEditComponent.Control is TComboBox then
-        If (not Edit.NoDataField) and FieldExists(FQuery, Edit.FieldName) Then
-        begin
-          If IsDigit(FQuery.FieldByName(Edit.FieldName).AsString) then
-            (Edit.DCLEditComponent.Control as TComboBox).ItemIndex:=FQuery.FieldByName(Edit.FieldName).AsInteger
-          Else
-            (Edit.DCLEditComponent.Control as TComboBox).ItemIndex:=(Edit.DCLEditComponent.Control as TComboBox).Items.IndexOf(FQuery.FieldByName(Edit.FieldName).AsString);
-        end;
+      begin
+        S:=TrimRight(FQuery.FieldByName(Edit.FieldName).AsString);
+        If Edit.UseIndex and IsDigit(S) then
+          (Edit.DCLEditComponent.Control as TComboBox).ItemIndex:=FQuery.FieldByName(Edit.FieldName).AsInteger
+        Else
+          (Edit.DCLEditComponent.Control as TComboBox).ItemIndex:=(Edit.DCLEditComponent.Control as TComboBox).Items.IndexOf(S);
+      end;
     end;
   end;
 end;
@@ -5210,7 +5205,7 @@ begin
   begin
     if Assigned(Edit.DCLEditComponent) and Assigned(Edit.DCLEditComponent.Control) and (Edit.Variable<>'') then
     begin
-      if Edit.DCLEditComponent.Control is TEdit then
+      if (Edit.DCLEditComponent.Control is TEdit) and (not (Edit.DCLEditComponent.EditType in [fbtInputBox, fbtOutBox])) then
       begin
         FIDCLMain.Variables[FNamespace.CurrentNamespace, Edit.Variable]:=(Edit.DCLEditComponent.Control as TEdit).Text;
       end;
