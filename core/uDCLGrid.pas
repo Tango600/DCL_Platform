@@ -5265,7 +5265,7 @@ var
 begin
   For Edit in FDCLFields do
   begin
-    if Assigned(Edit.DCLEditComponent) and Assigned(Edit.DCLEditComponent.Control) and (Edit.Variable<>'') and (not Edit.ReadOnly) then
+    if Assigned(Edit.DCLEditComponent) and Assigned(Edit.DCLEditComponent.Control) and (Edit.Variable<>'') then
     begin
       if (Edit.DCLEditComponent.Control is TEdit) and (Edit.DCLEditComponent.EditType in [fbtOutBox, fbtEditBox]) then
       begin
