@@ -290,6 +290,7 @@ function CompareNumbersOrStrings(const ValueLeft, ValueRight: String;
 var
   i1, i2: LongInt;
   r1, r2: Real;
+  t1, t2: TDateTime;
 begin
   Result:=True;
 
@@ -344,6 +345,64 @@ begin
       end;
       ctLeEq: begin
         Result:=r1<=r2;
+      end;
+      end;
+
+      Exit;
+    end;
+  end;
+
+  if IsDate(ValueLeft) and IsDate(ValueRight) then
+  begin
+    if TryStrToDate(ValueLeft, t1) and TryStrToDate(ValueRight, t2) then
+    begin
+      case ConditionType of
+      ctEq: begin
+        Result:=t1=t2;
+      end;
+      ctNotEq: begin
+        Result:=t1<>t2;
+      end;
+      ctGt: begin
+        Result:=t1>t2;
+      end;
+      ctGtEq: begin
+        Result:=t1>=t2;
+      end;
+      ctLe: begin
+        Result:=t1<t2;
+      end;
+      ctLeEq: begin
+        Result:=t1<=t2;
+      end;
+      end;
+
+      Exit;
+    end;
+  end;
+
+  if IsTime(ValueLeft) and IsTime(ValueRight) then
+  begin
+    if TryStrToTime(ValueLeft, t1) and TryStrToTime(ValueRight, t2) then
+    begin
+      case ConditionType of
+      ctEq: begin
+        Result:=t1=t2;
+      end;
+      ctNotEq: begin
+        Result:=t1<>t2;
+      end;
+      ctGt: begin
+        Result:=t1>t2;
+      end;
+      ctGtEq: begin
+        Result:=t1>=t2;
+      end;
+      ctLe: begin
+        Result:=t1<t2;
+      end;
+      ctLeEq: begin
+        Result:=t1<=t2;
       end;
       end;
 
