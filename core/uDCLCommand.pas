@@ -373,7 +373,7 @@ end;
 procedure TDCLCommand.SetValue(constref S: String);
 var
   tmp1, tmp2, VarName, SQLText, ReturnField, KeyField: String;
-  sv_v2, v2: Integer;
+  v2: Integer;
   Grid, PartGrid: IDCLGrid;
   DCLQuery: TDCLDialogQuery;
   {$IFDEF TRANSACTIONDB}
@@ -405,36 +405,36 @@ begin
     Else
       TranslateVals(tmp2);
 
-    sv_v2:=Pos('=', tmp2)-1;
-    If sv_v2<=0 Then
-      sv_v2:=Length(tmp2);
-    VarName:=Copy(LowerCase(tmp2), 1, sv_v2);
-    If FVariables.Exists(FNameSpace.CurrentNamespace, VarName) Then
-      If Pos('=', tmp2)<>0 Then
+    v2:=Pos('=', tmp2)-1;
+    If v2<=0 Then
+      v2:=Length(tmp2);
+    VarName:=Copy(LowerCase(tmp2), 1, v2);
+
+    If Pos('=', tmp2)<>0 Then
+    begin
+      v2:=Pos('=', tmp2)-1;
+      Delete(tmp2, 1, v2+1);
+
+      KeyField:=Trim(FindParam('TablePart=', S));
+      If KeyField<>'' Then
       begin
-        sv_v2:=Pos('=', tmp2)-1;
-        Delete(tmp2, 1, sv_v2+1);
-
-        KeyField:=Trim(FindParam('TablePart=', S));
-        If KeyField<>'' Then
+        v2:=StrToIntEx(KeyField)-1;
+        If v2>=0 Then
         begin
-          v2:=StrToIntEx(KeyField)-1;
-          If v2>=0 Then
-          begin
-            PartGrid:=FDCLForm.CurrentGrid.TableParts[v2];
-            If Assigned(PartGrid) Then
-              If PartGrid.Query.Active Then
-                TranslateVals(tmp2, PartGrid.Query);
-          end;
-        end
-        Else
-          TranslateVals(tmp2);
-
-        TranslateVals(tmp2);
-        FVariables.Variables[FNameSpace.CurrentNamespace, VarName]:=tmp2;
+          PartGrid:=FDCLForm.CurrentGrid.TableParts[v2];
+          If Assigned(PartGrid) Then
+            If PartGrid.Query.Active Then
+              TranslateVals(tmp2, PartGrid.Query);
+        end;
       end
       Else
-        FVariables.Variables[FNameSpace.CurrentNamespace, VarName]:='';
+        TranslateVals(tmp2);
+
+      TranslateVals(tmp2);
+      FVariables.NewVariable(FNameSpace, VarName, tmp2);
+    end
+    Else
+      FVariables.NewVariable(FNameSpace, VarName, '');
   end;
 
   If (PosEx('ReturnQuery=', S)<>0)or(PosEx('SQL=', S)<>0) Then
@@ -469,20 +469,26 @@ begin
         Screen.Cursor:=crDefault;
       end;
 
-      ReturnField:=DCLQuery.Fields[0].FieldName;
-
       tmp2:=FindParam('SetValue=', S);
-      sv_v2:=Pos('=', tmp2)-1;
-      If sv_v2<=0 Then
-        sv_v2:=Length(tmp2);
-      tmp1:=Copy(LowerCase(tmp2), 1, sv_v2);
+      v2:=Pos('=', tmp2)-1;
+      If v2<=0 Then
+        v2:=Length(tmp2);
+      tmp1:=Copy(LowerCase(tmp2), 1, v2);
 
-      tmp2:=TrimRight(DCLQuery.FieldByName(ReturnField).AsString);
-      TranslateVals(tmp2);
+      for v2:=1 to ParamsCount(tmp1) do
+      begin
+        if DCLQuery.Fields.Count>=v2 then
+          ReturnField:=DCLQuery.Fields[v2-1].FieldName;
+
+        VarName:=GetParam(tmp1, v2);
+
+        tmp2:=TrimRight(DCLQuery.FieldByName(ReturnField).AsString);
+        TranslateVals(tmp2);
+
+        FVariables.NewVariable(FNamespace, VarName, tmp2);
+      end;
       DCLQuery.Close;
       FreeAndNil(DCLQuery);
-
-      FVariables.NewVariable(FNamespace, tmp1, tmp2);
 
       {$IFDEF TRANSACTIONDB}
       tmp_Transaction.Commit;

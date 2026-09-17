@@ -28,7 +28,7 @@ function FindWholeWord(const Example, S: String): Integer;
 implementation
 
 const
-  StopSimbols=';( )[],=\/+-^<>.%:;&$#@*'#39#10#13;
+  StopSimbols='( )[]{},=\/|+-^<>@~?.%:;&$#№@*'#39#10#13#9;
 
 function IsLexem(const Lexem, S: String): Boolean;
 var
@@ -206,7 +206,7 @@ begin
 
   pices:=ParamsSet.Split(SeparateChar, DelimLeft, DelimRight, ParamNo, TStringSplitOptions.None);
   l:=Length(pices);
-  Result:=pices[l-1];
+  Result:=Trim(pices[l-1]);
 end;
 
 Function IndexInSet(const SetValue, S: String; const SepChar: String=DefaultValuesSeparator;
