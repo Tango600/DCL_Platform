@@ -51,7 +51,7 @@ type
     {$ENDIF}
 
     function GetPrimaryKeyField(TableName: String; OneField: Boolean): String;
-    function GetGeneratorName(TableName: String): String;
+    function GetGeneratorName(const TableName: String): String;
     function GetMainQueryTable: string;
 
     procedure SetRequiredFields;
@@ -101,7 +101,7 @@ type
     constructor Create(AOwner : TComponent); {$IFDEF FPC}override;{$ELSE}overload;{$ENDIF}
     destructor Destroy; override;
 
-    procedure Open; overload;
+    procedure Open;
     procedure Append;
     procedure Insert;
     procedure Edit;
@@ -534,8 +534,7 @@ Begin
   end;
 End;
 
-function TDCLQuery.FindNotAllowedOperation(Value: TNotAllowedOperation
-  ): Boolean;
+function TDCLQuery.FindNotAllowedOperation(Value: TNotAllowedOperation): Boolean;
 Var
   i: TNotAllowedOperation;
 Begin
@@ -799,7 +798,7 @@ begin
   begin
     if p>1 then
     begin
-      stopSymbols:=' /\=-+~`"<>!@#%^&*()[]|?,.'#10#13#39;
+      stopSymbols:=' /\=-+~`"<>!@#%^&*()[]{}|?,.:;'#10#13#39#9;
       while (Pos(S[p], stopSymbols)<>0) do
       begin
         Inc(p);
@@ -922,7 +921,7 @@ begin
   End;
 end;
 
-function TDCLQuery.GetGeneratorName(TableName: String): String;
+function TDCLQuery.GetGeneratorName(const TableName: String): String;
 var
   Empty: Boolean;
   Triggers: TList<String>;
