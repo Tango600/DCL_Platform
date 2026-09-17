@@ -6,22 +6,22 @@ interface
 uses
   Classes, SysUtils;
 
-Function StrToIntEx(const St: String): LongInt;
-Function StrToFloatEx(const St: String): Real;
+Function StrToIntEx(const S: String): LongInt;
+Function StrToFloatEx(const S: String): Real;
 
 implementation
 
-Function StrToIntEx(const St: String): LongInt;
+Function StrToIntEx(const S: String): LongInt;
 Var
-  iI, L: Integer;
+  i, L: Integer;
   tmpS: String;
 Begin
-  L:=Length(St);
+  L:=Length(S);
   tmpS:='';
-  For iI:=1 To L Do
+  For i:=1 To L Do
   Begin
-    If (St[iI]>='0')And(St[iI]<='9')Or(St[iI]='-') Then
-      tmpS:=tmpS+St[iI];
+    If (S[i]>='0') and (S[i]<='9') or (S[i]='-') or (S[i]='e') Then
+      tmpS:=tmpS+S[i];
   End;
   If tmpS='' Then
     tmpS:='0';
@@ -32,19 +32,19 @@ Begin
   End;
 End;
 
-Function StrToFloatEx(const St: String): Real;
+Function StrToFloatEx(const S: String): Real;
 Var
-  iI, L: Integer;
+  i, L: Integer;
   tmpS: String;
 Begin
-  L:=Length(St);
+  L:=Length(S);
   tmpS:='';
-  For iI:=1 To L Do
+  For i:=1 To L Do
   Begin
-    If Pos(St[iI], '.,')<>0 Then
+    If Pos(S[i], '.,')<>0 Then
       tmpS:=tmpS+FormatSettings.DecimalSeparator;
-    If (St[iI]>='0')And(St[iI]<='9')Or(St[iI]='-')Or(St[iI]='.')Or(St[iI]=',') Then
-      tmpS:=tmpS+St[iI];
+    If ((S[i]>='0') and (S[i]<='9')) or ((S[i]='-') or (S[i]=FormatSettings.DecimalSeparator) or (S[i]='e')) Then
+      tmpS:=tmpS+S[i];
   End;
   If tmpS='' Then
     tmpS:='0';

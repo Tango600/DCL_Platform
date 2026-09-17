@@ -10,7 +10,7 @@ uses
 Function ConvertOfficeType(const OfficeType: String): TOfficeFormat;
 
 Function TranslateDigitToUserLevel(Level: byte): TUserLevelsType;
-Function TranslateStrToUserLevel(Level: String): TUserLevelsType;
+Function TranslateStrToUserLevel(const Level: String): TUserLevelsType;
 Function IsUserLevel(const S: String): Boolean;
 
 function CheckStrFmtType(const S: String; SimplyFormatType: TSimplyFieldType): Boolean;
@@ -47,7 +47,7 @@ Begin
   Result:=TUserLevelsType(Level);
 End;
 
-Function TranslateStrToUserLevel(Level: String): TUserLevelsType;
+Function TranslateStrToUserLevel(const Level: String): TUserLevelsType;
 const
   ulPrefix='ul';
 Begin
