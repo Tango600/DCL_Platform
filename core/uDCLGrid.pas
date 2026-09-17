@@ -1654,6 +1654,7 @@ begin
       FIDCLMain.Variables.NewVariableWithTest(FNamespace, Field.Variable);
     end;
 
+    TranslateVal(Field.SQL, True);
     If Field.SQL<>'' Then
     begin
       ShadowQuery:=TDCLDialogQuery.Create(Self.GetComponent);
@@ -2329,6 +2330,8 @@ begin
   begin
     ShadowQuery:=TDCLDialogQuery.Create(Self.GetComponent);
     FDBConnector.SetConnector(ShadowQuery);
+
+    TranslateVal(Field.SQL, True);
     ShadowQuery.SQL.Text:=Field.SQL;
     ShadowQuery.Open;
     If FindParam('ReturnField=', Scr)<>'' Then
@@ -2543,7 +2546,7 @@ begin
   begin
     Field.LookupData.LookupQuery:=TDCLDialogQuery.Create(Self.GetComponent);
     FDBConnector.SetConnector(Field.LookupData.LookupQuery);
-    TranslateVal(TempStr, False);
+    TranslateVal(TempStr, True);
     Field.LookupData.LookupQuery.SQL.Text:=TempStr;
     try
       Field.LookupData.LookupQuery.Open;
@@ -3580,7 +3583,7 @@ begin
     LookupTable.Height:=LookupTableHeight;
 
   TempStr:=Field.SQL;
-  TranslateVal(TempStr, False);
+  TranslateVal(TempStr, True);
   LookupTable.DCLGrid.SetSQL(TempStr);
   if TempStr<>'' then
     LookupTable.DCLGrid.Query.Open;
