@@ -38,7 +38,6 @@ type
     msPackageSignNotValid, msFildsNotInputValue);
 
 
-  procedure LoadLangFile(const FileName: String);
   procedure LoadLangRes(const Lang, Path: String);
   function GetDCLMessageString(MessID: TStringMessages): String;
   function GetDCLErrorString(ErrorCode: Integer; const AddText: String=''): String;

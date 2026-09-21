@@ -245,7 +245,7 @@ Begin
 
         If IsParameter('Language=', cs) then
         Begin
-          ///LangName:=Trim(FindParam('Language=', cs));
+          GPT.LangName:=Trim(FindParam('Language=', cs));
         End;
 
         If IsParameter('DateSeparator=', cs) then

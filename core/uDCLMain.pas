@@ -1102,6 +1102,10 @@ begin
   GPT.AccessLevel:=ulExecute;
 
   InitLangEnv;
+  if GPT.LangName<>'' then
+  begin
+    LangName:=GPT.LangName;
+  end;
   LoadLangRes(LangName, Path);
   LoadTranscodeRes(LangName, Path);
 

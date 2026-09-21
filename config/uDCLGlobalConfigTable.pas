@@ -16,7 +16,7 @@ type
     MainColor, TablePartColor, GridColor, GridAlternateColor: TColor;
     DateSeparator, TimeSeparator, ThousandSeparator, DecimalSeparator: Char;
     ServerCodePage, DateFormat, TimeFormat, Viewer, MainFormCaption,
-    DataBaseName, ScriptDir, DBPath, ServerName, DBType,
+    DataBaseName, ScriptDir, DBPath, ServerName, DBType, LangName,
     Signer, SignerPass: String;
     SQLDialect: Byte;
     NoParamsTable, NoUsersTable, DisableLogOnWithoutUser, DisableColorScheme: Boolean;
