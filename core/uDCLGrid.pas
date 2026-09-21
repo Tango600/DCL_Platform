@@ -3951,7 +3951,7 @@ begin
   begin
     for FN in FQuery.Fields do
     begin
-      S:=OnlyLitters(FN.FieldName).ToLowerInvariant;
+      S:=FilterOnlyLitters(FN.FieldName).ToLowerInvariant;
       if S<>'' then
       begin
         if not Fields.Contains(S) then

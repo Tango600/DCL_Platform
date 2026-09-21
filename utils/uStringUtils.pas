@@ -8,16 +8,14 @@ uses
 
 Function PosEx(const SubStr, S: String): Integer;
 Procedure DeleteNonPrintSimb(Var S: String);
-Function CopyStrings(const FromString, ToString: String; Where: TStringList): TStringList;
 Function ExtractSection(Var SectionStr: String): String;
+Function CopyStringsBlock(const FromString, ToString: String; Where: TStringList): TStringList;
 Function CopyCut(Var S: String; From, Count: Integer): String;
-function OnlyDigits(const Value: String): Boolean;
-function OnlyLitters(const S: String): String;
+function FilterOnlyLitters(const S: String): String;
 function NormalizeCase(const S: String): String;
 Function DCLStringEquals(const S1, S2: String): Boolean;
 Function TrimSymbols(const S: String; TrimS: String): String;
 Function InitCap(const S: String): String;
-function Any(const StrSet, S: String): Boolean;
 function TrimChars(const CharsSet, S: String): String;
 function DCLCompareStrings(const S1, S2: String): Integer;
 
@@ -28,7 +26,7 @@ const
 
 Function DCLStringEquals(const S1, S2: String): Boolean;
 Begin
-  Result:=LowerCase(S1)=LowerCase(S2);
+  Result:=DCLCompareStrings(S1, S2)=0;
 End;
 
 Function PosEx(const SubStr, S: String): Integer;
@@ -135,11 +133,11 @@ Begin
   L:=Length(S);
   While L<>0 Do
   Begin
-    If S[L]=#10 Then
+    If (S[L]=#9) or (S[L]=#10) Then
       S[L]:=' ';
     If S[L]=#9 Then
     Begin
-      For i:=1 To TabSize Do
+      For i:=1 To TabSize-1 Do
         Insert(' ', S, L);
     End;
     If (S[L]=#13)Or(S[L]=#0) Then
@@ -148,99 +146,15 @@ Begin
   End;
 End;
 
-Function TextToString(Text: String): String;
-Var
-  L: Integer;
-  itabsize: byte;
-Begin
-  Result:='';
-  L:=Length(Text);
-  While L<>0 Do
-  Begin
-    If Text[L]=#10 Then
-      Text[L]:=' ';
-    If Text[L]=#9 Then
-    Begin
-      For itabsize:=1 To TabSize Do
-        Insert(' ', Text, L);
-    End;
-    If (Text[L]=#13)Or(Text[L]=#0) Then
-      Delete(Text, L, 1);
-    Dec(L);
-  End;
-
-  Result:=Text;
-End;
-
-Function CountSimb(S: String; C: Char): Integer;
-Var
-  L: Integer;
-Begin
-  Result:=0;
-  For L:=1 To Length(S) Do
-    If S[L]=C Then
-      Inc(Result, 1);
-End;
-
-function FindSubstrInString(AText: String; AValues: Array of String):Integer;
-var
-  i, MaxLong:Integer;
-Begin
-  Result:=-1;
-  MaxLong:=0;
-  For I := Low(AValues) to High(AValues) do
-    If Pos(AValues[I].ToLower, AText.ToLower)<>0 then
-    begin
-      If MaxLong<Length(AValues[I]) then
-      Begin
-        MaxLong:=Length(AValues[I]);
-        Result:=i;
-      End;
-    end;
-End;
-
-Function InString(Const Sub, S: String; FullMatch: Boolean): Integer;
-Var
-  i: Integer;
-Begin
-  Result:=0;
-  If FullMatch Then
-  Begin
-    Result:=Pos(Sub, S);
-  End
-  Else
-    For i:=1 To Length(Sub) Do
-    Begin
-      Result:=Pos(Sub[i], S);
-      If Result<>0 Then
-        Break;
-    End;
-End;
-
 Function CopyCut(Var S: String; From, Count: Integer): String;
 Begin
   Result:=Copy(S, From, Count);
   Delete(S, From, Count);
 End;
 
-function PosInSet(const SimbolsSet, SourceStr: String): Integer;
-Var
-  i: Integer;
-begin
-  Result:=0;
-  For i:=1 to Length(SourceStr) do
-  Begin
-    If Pos(LowerCase(SourceStr[i]), SimbolsSet.ToLower)<>0 then
-    Begin
-      Result:=i;
-      Break;
-    End;
-  End;
-end;
-
 Function ExtractSection(Var SectionStr: String): String;
 Var
-  PosD: Word;
+  PosD: Integer;
 Begin
   PosD:=Pos('/', SectionStr);
   If PosD=0 Then
@@ -255,7 +169,7 @@ Begin
   End;
 End;
 
-Function CopyStrings(const FromString, ToString: String; Where: TStringList): TStringList;
+Function CopyStringsBlock(const FromString, ToString: String; Where: TStringList): TStringList;
 Var
   li, FromPos, CurrPos: Integer;
 Begin
@@ -276,24 +190,7 @@ Begin
   End;
 End;
 
-function OnlyDigits(const Value: String): Boolean;
-var
-  i: Integer;
-begin
-  Result:=False;
-
-  if Length(Value)>0 then
-  begin
-  for I:=1 to Length(Value) do
-    if not (Value[i] in ['0'..'9']) then
-    begin
-      exit;
-    end;
-  end;
-  Result:=True;
-end;
-
-function OnlyLitters(const S: String): String;
+function FilterOnlyLitters(const S: String): String;
 var
   c: Char;
 begin
@@ -334,7 +231,8 @@ begin
         begin
           isSame:=True;
           Continue;
-        end;
+        end
+        else
         if c1<c2 then
         begin
           Exit(1);

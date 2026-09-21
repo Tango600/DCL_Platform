@@ -400,13 +400,13 @@ begin
   FDialogRes:=mrOk;
   GrabFormYes:=False;
 
-  InitSkrypts:=CopyStrings('[INIT REP]', '[END INIT]', FScrypt);
-  GlobalSQL:=CopyStrings('[GLOBALQUERY]', '[END GLOBALQUERY]', FScrypt);
-  RepParams:=CopyStrings('[PARAMS]', '[END PARAMS]', FScrypt);
-  HeadLine:=CopyStrings('[HEADLINE]', '[END HEADLINE]', FScrypt);
-  Template:=CopyStrings('[BODY]', '[END BODY]', FScrypt);
-  Futer:=CopyStrings('[FUTER]', '[END FUTER]', FScrypt);
-  EndSkrypts:=CopyStrings('[CLOSE REP]', '[END CLOSE]', FScrypt);
+  InitSkrypts:=CopyStringsBlock('[INIT REP]', '[END INIT]', FScrypt);
+  GlobalSQL:=CopyStringsBlock('[GLOBALQUERY]', '[END GLOBALQUERY]', FScrypt);
+  RepParams:=CopyStringsBlock('[PARAMS]', '[END PARAMS]', FScrypt);
+  HeadLine:=CopyStringsBlock('[HEADLINE]', '[END HEADLINE]', FScrypt);
+  Template:=CopyStringsBlock('[BODY]', '[END BODY]', FScrypt);
+  Futer:=CopyStringsBlock('[FUTER]', '[END FUTER]', FScrypt);
+  EndSkrypts:=CopyStringsBlock('[CLOSE REP]', '[END CLOSE]', FScrypt);
 
   // ParamsSet
   If FParamsSetID<>0 Then
@@ -757,8 +757,7 @@ begin
   Body.Append(BodyText);
 end;
 
-procedure TDCLTextReport.OpenReport(FileName: String; ViewMode: TReportViewMode
-  );
+procedure TDCLTextReport.OpenReport(FileName: String; ViewMode: TReportViewMode);
 // 0-Normal 1 Record;  1-All Records;  2-Bookmarks; 3-All records (Num)
 var
   BookMark: TBookmark;
