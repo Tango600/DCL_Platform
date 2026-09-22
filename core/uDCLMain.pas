@@ -660,9 +660,14 @@ var
     Result:=FindCommandStrParam('TerminateByLast')='1';
   end;
 
+  function FindKioskMode: Boolean;
+  begin
+    Result:=FindCommandStrParam('KioskMode')='1';
+  end;
+
 begin
   FMainForm:=MainForm;
-  if not GPT.DisableColorScheme and (GPT.MainColor<>NoColorValue) then
+  if not GPT.DisableColorScheme and (GPT.MainColor<>NoColorValue) and Assigned(FMainForm) then
     MainForm.Color:=GPT.MainColor;
 
   {$IFDEF PROTECTION}IProtectionEngine:=TDCLProtectionEngine.Create;{$ENDIF}
@@ -714,6 +719,11 @@ begin
     if DialogName<>'' then
     begin
       OpenDialog(DialogName, False);
+    end;
+
+    if FindKioskMode or GPT.KioskMode then
+    begin
+      GPT.KioskMode:=True;
     end;
 
     if not FindMainMenuDesabled then
@@ -1266,7 +1276,8 @@ end;
 
 procedure TDCLMain.CreateMenu;
 begin
-  FDCLMenuSelector:=TDCLMenuSelector.Create(Self, FMainForm, GPT.MenuType);
+  if Assigned(FMainForm) then
+    FDCLMenuSelector:=TDCLMenuSelector.Create(Self, FMainForm, GPT.MenuType);
 end;
 
 procedure TDCLMain.OpenDialog(const DialogName: String; Host: Boolean);

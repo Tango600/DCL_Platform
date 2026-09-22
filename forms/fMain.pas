@@ -137,6 +137,12 @@ begin
   end;
   {$ENDIF}
 
+  if GPT.KioskMode then
+  begin
+    WindowState:=wsMaximized;
+    BorderIcons:=[biSystemMenu];
+  end;
+
   if MDI or FindMDI then
   begin
     FormStyle:=fsMDIForm;
@@ -156,7 +162,7 @@ var
   ConfigPath, SectionName: String;
   Settings: TIniFile;
 begin
-  if GPT.DialogsSettings then
+  if GPT.DialogsSettings and not GPT.KioskMode then
   begin
     ConfigPath:=GPT.AppConfigDir+FormConfigDir+PathDelim+'Base_'+GPT.BaseID+PathDelim;
     if DirectoryExists(ConfigPath) and FileExists(ConfigPath+'MainForm.ini') then

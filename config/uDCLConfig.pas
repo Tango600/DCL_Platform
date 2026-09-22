@@ -335,6 +335,12 @@ Begin
         Begin
           GPT.GridAlternateColor:=IntToColor(StrToInt(FindParam('GridAlternateColor=', cs)));
         End;
+        If IsParameter('KioskMode=', cs) then
+        Begin
+          GPT.KioskMode:=Trim(FindParam('KioskMode=', cs))='1';
+          if GPT.KioskMode then
+            GPT.MenuType:=mtPanels;
+        End;
       End;
     End;
     if lUser<> '' then

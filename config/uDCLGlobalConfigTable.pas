@@ -9,7 +9,7 @@ type
   TGPT=record
   // EnableSQLTrace,
     DebugMesseges, ExitCnf, UseMessages, IDEReadOnly,
-    DialogsSettings, DisableColors, DisableFieldsList,
+    DialogsSettings, DisableColors, DisableFieldsList, KioskMode,
     DisableUnload, DisableLoad, EasyIdentMode, IBAll, MySQL: Boolean;
     OneCopy: TOneCopyMode;
     Port: Integer;

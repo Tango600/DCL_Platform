@@ -18,8 +18,8 @@ type
   public
     constructor Create(DBConnector: TDCLDBConnector); overload;
 
-    function ReadConfig(ConfigName, UserId: String): String;
-    procedure WriteConfig(ConfigName, NewValue, UserId: String);
+    function ReadConfig(const ConfigName, UserId: String): String;
+    procedure WriteConfig(const ConfigName, NewValue, UserId: String);
   end;
 
 implementation
@@ -34,7 +34,7 @@ begin
   FDBConnector:=DBConnector;
 end;
 
-function TDCLConfigTable.ReadConfig(ConfigName, UserId: String): String;
+function TDCLConfigTable.ReadConfig(const ConfigName, UserId: String): String;
 var
   ParamsQuery: TDCLSimplyQuery;
 begin
@@ -59,7 +59,7 @@ begin
   end;
 end;
 
-procedure TDCLConfigTable.WriteConfig(ConfigName, NewValue, UserId: String);
+procedure TDCLConfigTable.WriteConfig(const ConfigName, NewValue, UserId: String);
 var
   ParamsQuery: TDCLSimplyQuery;
 begin

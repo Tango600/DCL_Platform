@@ -405,7 +405,7 @@ var
   ConfigPath, Section: String;
   Settings: TIniFile;
 begin
-  if GPT.DialogsSettings then
+  if GPT.DialogsSettings and not GPT.KioskMode then
   begin
     ConfigPath:=GPT.AppConfigDir+FormConfigDir+PathDelim+'Base_'+GPT.BaseID+PathDelim+'Forms'+PathDelim+FDialogName+PathDelim;
     if DirectoryExists(ConfigPath) and FileExists(ConfigPath+'Settings.ini') then
@@ -739,6 +739,12 @@ begin
   begin
     FForm.Height:=(56*8)+110;
     FForm.Width:=((FieldsCount div 8)+1)*(EditWidth+FieldsStepLeft*3);
+  end;
+
+  If GPT.KioskMode then
+  begin
+    WindowState:=wsMaximized;
+    FForm.BorderIcons:=[biSystemMenu];
   end;
 
   {$IFNDEF NOONTOP}
