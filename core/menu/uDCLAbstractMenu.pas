@@ -16,7 +16,7 @@ type
   { TComparerMenuItem }
 
   TComparerMenuItem = class(TInterfacedObject, IComparer<TMenuConstructionItem>)
-    function Compare(const Left, Right: TMenuConstructionItem): Integer; overload;
+    function Compare(constref Left, Right: TMenuConstructionItem): Integer; overload;
   end;
 
   { TDCLAbstractMenu }
@@ -115,7 +115,7 @@ begin
   end;
 end;
 
-function TComparerMenuItem.Compare(const Left, Right: TMenuConstructionItem): Integer;
+function TComparerMenuItem.Compare(constref Left, Right: TMenuConstructionItem): Integer;
 begin
   if Left.Id<Right.Id then
     Result:=-1
