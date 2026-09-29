@@ -116,9 +116,8 @@ begin
   FQuery.First;
   Result:=not FQuery.IsEmpty;
   if Result then
-    Result:=(edPassword.Text=FQuery.FieldByName(UserPassField).AsString)
-  else
-    Result:=False;
+    Result:=(edPassword.Text=FQuery.FieldByName(UserPassField).AsString);
+
   FQuery.Close;
   FreeAndNil(FQuery);
 end;

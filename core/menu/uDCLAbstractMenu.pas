@@ -142,7 +142,7 @@ begin
   FMenuTitle:='';
   if not NoDCLTable then
   begin
-    LocalQuery.SQL.Text:=GetOutRolesQueryText(IdentifyField+'=0');
+    LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+'=0', '');
     LocalQuery.Open;
     LocalQuery.First;
     FMenuTitle:=LocalQuery.FieldByName(DCLNameField).AsString;
@@ -152,7 +152,7 @@ begin
     LocalQuery.Open;
     while not LocalQuery.EOF do
     begin
-      FMenuTitle:=FMenuTitle+TrimRight(LocalQuery.FieldByName(DCLNameField).AsString);
+      FMenuTitle:=FMenuTitle+' '+TrimRight(LocalQuery.FieldByName(DCLNameField).AsString);
       LocalQuery.Next;
     end;
     LocalQuery.Close;

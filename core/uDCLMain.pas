@@ -820,7 +820,7 @@ begin
   begin
     LocalQuery.Params.Clear;
     if OutRoles then
-      LocalQuery.SQL.Text:=GetOutRolesQueryText(IdentifyField+'='+IntToStr(Ident))
+      LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+'='+IntToStr(Ident), '')
     else
       LocalQuery.SQL.Text:=GetRolesQueryText(IdentifyField+'='+IntToStr(Ident), GPT.UserID);
     LocalQuery.Open;
