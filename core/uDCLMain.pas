@@ -113,7 +113,7 @@ uses
   uDCLConfig, uDCLDBStructure, uDCLMultiLang, fAbout, uDBUtils, uSystemUtils,
   uDCLGlobalVariables, uDCLUtils, uDCLMessages, uStringParams, uDCLCommand,
   {$IFDEF PROTECTION}uDCLProtectionEngine,{$ENDIF} uDCLUpdaterPackage,
-  uDCLMeasurements, uStringUtils, uDCLQueryUtils, uDCLTranscode;
+  uStringUtils, uDCLQueryUtils, uDCLTranscode;
 
 { TDCLMain }
 
@@ -1223,12 +1223,18 @@ var
   TimeToTerm: Boolean;
 begin
   TimeToTerm:=False;
-  if IsNeedLogin or KeyState(vk_Shift) then
+  if FDBConnector.Connected and IsNeedLogin or KeyState(vk_Shift) then
   begin
     LoginForm:=TLoginForm.Create(GetDBConnector);
 
     TimeToTerm:=LoginForm.ShowModal<>mrOK;
     LoginForm.Release;
+  end
+  else
+  if not FDBConnector.Connected then
+  begin
+    TimeToTerm:=True;
+    ShowErrorMessage(0, GetDCLMessageString(msConnectDBError));
   end;
 
   Result:=TimeToTerm;

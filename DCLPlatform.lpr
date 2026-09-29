@@ -11,7 +11,8 @@ uses
   {$IFDEF FPC}
   Interfaces,
   {$ENDIF}
-  Classes, Forms, SysUtils, uIDCLMain, fMain, uDCLMain, uDCLConst
+  Classes, Forms, SysUtils, uIDCLMain, fMain,
+  uDCLMain, uDCLConst, uDCLException
   ;
 
 {$R *.res}
@@ -31,18 +32,29 @@ begin
   RequireDerivedFormResource:=False;
   Application.Scaled:=True;
   OnGetApplicationName:=GetAppName;
-  Application.Initialize;
 
-  DCL:=TDCLMain.Create;
-  if not DCL.Start then
-  begin
-    Application.CreateForm(TMainForm, MainForm);
-    MainForm.SetDCLMain(DCL);
-    DCL.RunInterface(MainForm);
-    Application.Run;
-    DCL.Finalize;
+  try
+    Application.Initialize;
+
+    DCL:=TDCLMain.Create;
+    if not DCL.Start then
+    begin
+      Application.CreateForm(TMainForm, MainForm);
+      MainForm.SetDCLMain(DCL);
+      DCL.RunInterface(MainForm);
+      Application.Run;
+      DCL.Finalize;
+    end;
+  except
+    on E: TDCLException do
+    begin
+      // пропуск перехваченных исключений
+    end;
+    on E: Exception do
+    begin
+      raise TDCLException.Create(-1, E.Message);
+    end;
   end;
-
   DCL:=nil;
 end.
 

@@ -47,14 +47,14 @@ type
 implementation
 
 uses
-  uDCLConst, uStringUtils, uSystemUtils, uDCLGlobalVariables;
+  uDCLConst, uSystemUtils, uDCLGlobalVariables, uDCLException;
 
 { TDCLDBConnector }
 
 constructor TDCLDBConnector.Create;
 begin
   inherited Create(nil);
-  Name:='DCL_DBConnector1';
+  Name:='DCL_DBConnector';
   FErrorCode:=255;
 
   {$IFDEF IBX}
@@ -77,77 +77,60 @@ begin
   Else
     UniversalTransaction:=DefaultTransaction;
 
-  If Not Connected Then
+  If GPT.DBPath<>'' Then
   begin
-    If GPT.DBPath<>'' Then
+    {$IFDEF FPC}
+    If GPT.LibPath<>'' Then
+      FirebirdLibraryPathName:=GPT.LibPath
+    Else
+      FirebirdLibraryPathName:=DefaultLibraryLocation;
+    {$ENDIF}
+
+    Params.Clear;
+    If Not FilenameIsAbsolute(GPT.DBPath) Then
+      GPT.DBPath:=ExtractFilePath(ParamStr(0))+GPT.DBPath;
+
+    If IsUNCPath(GPT.DBPath) Then
     begin
-      {$IFDEF FPC}
-      If GPT.LibPath<>'' Then
-        FirebirdLibraryPathName:=GPT.LibPath
-      Else
-        FirebirdLibraryPathName:=DefaultLibraryLocation;
-      {$ENDIF}
-
-      Params.Clear;
-      If Not FilenameIsAbsolute(GPT.DBPath) Then
-        GPT.DBPath:=ExtractFilePath(ParamStr(0))+GPT.DBPath;
-
-      If IsUNCPath(GPT.DBPath) Then
-      begin
-        DebugProc('  DBPath: '+GPT.DBPath);
-        DebugProc('UNC paths not supported.');
-        Exit;
-      end;
-
-      If GPT.ServerName<>'' Then
-      begin
-        DatabaseName:=GPT.ServerName+':'+GPT.DBPath;
-        DebugProc('  DBPath: '+GPT.ServerName+':'+GPT.DBPath);
-      end
-      Else
-      begin
-        DatabaseName:=GPT.DBPath;
-        DebugProc('  DBPath: '+GPT.DBPath);
-      end;
-      Params.Append('USER_NAME='+GPT.DBUserName);
-      DebugProc('  USER NAME='+GPT.DBUserName);
-      If GPT.DBPassword<>'' Then
-      begin
-        Params.Append('PASSWORD='+GPT.DBPassword);
-        LoginPrompt:=False;
-      end
-      Else
-        LoginPrompt:=True;
-
-      If GPT.ServerCodePage='' Then
-      Begin
-        raise Exception.Create('Server code page not define!');
-      End
-      Else
-        Params.Append('lc_ctype='+UpperCase(ReplaseCPtoWIN(GPT.ServerCodePage)));
-
-      SQLDialect:=GPT.SQLDialect;
-      try
-        DebugProc('Connected...');
-        Open;
-
-        UniversalTransaction.DefaultAction:=TACommit; // Retaining;
-        UniversalTransaction.DefaultDataBase:=Self;
-        DefaultTransaction:=UniversalTransaction;
-
-        FErrorCode:=0;
-        DebugProc('  ... OK');
-      Except
-        On E: Exception do
-        begin
-          DebugProc('  ... Fail');
-        end;
-      end;
+      DebugProc('  DBPath: '+GPT.DBPath);
+      DebugProc('UNC paths not supported.');
+      Exit;
     end;
+
+    If GPT.ServerName<>'' Then
+    begin
+      DatabaseName:=GPT.ServerName+':'+GPT.DBPath;
+      DebugProc('  DBPath: '+GPT.ServerName+':'+GPT.DBPath);
+    end
+    Else
+    begin
+      DatabaseName:=GPT.DBPath;
+      DebugProc('  DBPath: '+GPT.DBPath);
+    end;
+    Params.Append('USER_NAME='+GPT.DBUserName);
+    DebugProc('  USER NAME='+GPT.DBUserName);
+    If GPT.DBPassword<>'' Then
+    begin
+      Params.Append('PASSWORD='+GPT.DBPassword);
+      LoginPrompt:=False;
+    end
+    Else
+      LoginPrompt:=True;
+
+    If GPT.ServerCodePage='' Then
+    Begin
+      raise Exception.Create('Server code page not define!');
+    End
+    Else
+      Params.Append('lc_ctype='+UpperCase(ReplaseCPtoWIN(GPT.ServerCodePage)));
+
+    SQLDialect:=GPT.SQLDialect;
+    UniversalTransaction.DefaultAction:=TACommit; // Retaining;
+    UniversalTransaction.DefaultDataBase:=Self;
+    DefaultTransaction:=UniversalTransaction;
   end;
   {$ENDIF}
   {$IFDEF ZEOS}
-  If Not Connected Then
   If GPT.DBPath<>'' Then
   begin
     If PosEx(DBTypeFirebird, GPT.DBType)>0 then
@@ -223,18 +206,6 @@ begin
     end
     Else
       Properties.Append('lc_ctype='+UpperCase(GPT.ServerCodePage));
-
-    try
-      DebugProc('Connected...');
-      Connect;
-      DebugProc('  ... OK');
-      FErrorCode:=0;
-    Except
-      On E: Exception do
-      begin
-        DebugProc('  ... Fail');
-      end;
-    end;
   end;
   {$ENDIF}
   {$IFDEF SQLdbIB}
@@ -293,17 +264,6 @@ begin
       Charset:=ReplaseCPtoWIN(GPT.ServerCodePage);
 
     Dialect:=GPT.SQLDialect;
-    try
-      DebugProc('Connected...');
-      Open;
-      FErrorCode:=0;
-      DebugProc('  ... OK');
-    Except
-      On E: Exception do
-      begin
-        DebugProc('  ... Fail');
-      end;
-    end;
   end;
   {$ENDIF}
   {$IFDEF SQLdb}
@@ -337,54 +297,40 @@ begin
     FSQLDBLibraryLoader.Enabled:=True;
   end;
 
-  If Not Connected Then
+  If GPT.DBPath<>'' Then
   begin
-    If GPT.DBPath<>'' Then
+    If Not FilenameIsAbsolute(GPT.DBPath) Then
+      GPT.DBPath:=ExtractFilePath(ParamStr(0))+GPT.DBPath;
+
+    ConnectorType:=GPT.DBType;
+    If GPT.ServerName<>'' Then
     begin
-      If Not FilenameIsAbsolute(GPT.DBPath) Then
-        GPT.DBPath:=ExtractFilePath(ParamStr(0))+GPT.DBPath;
-
-      ConnectorType:=GPT.DBType;
-      If GPT.ServerName<>'' Then
-      begin
-        DatabaseName:=GPT.DBPath;
-        HostName:=GPT.ServerName;
-        DebugProc('  DBPath: '+GPT.ServerName+':'+GPT.DBPath);
-      end
-      Else
-      begin
-        DatabaseName:=GPT.DBPath;
-        HostName:='';
-        DebugProc('  DBPath: '+GPT.DBPath);
-      end;
-      UserName:=GPT.DBUserName;
-      DebugProc('  USER NAME='+GPT.DBUserName);
-      If GPT.DBPassword<>'' Then
-      begin
-        Password:=GPT.DBPassword;
-        LoginPrompt:=False;
-      end
-      Else
-        LoginPrompt:=True;
-
-      If GPT.ServerCodePage='' Then
-        Charset:='utf8'
-      Else
-        Charset:=ReplaseCPtoWIN(GPT.ServerCodePage);
-
-      UniversalTransaction.Database:=Self;
-      try
-        DebugProc('Connected...');
-        Open;
-        FErrorCode:=0;
-        DebugProc('  ... OK');
-      Except
-        On E: Exception do
-        begin
-          DebugProc('  ... Fail');
-        end;
-      end;
+      DatabaseName:=GPT.DBPath;
+      HostName:=GPT.ServerName;
+      DebugProc('  DBPath: '+GPT.ServerName+':'+GPT.DBPath);
+    end
+    Else
+    begin
+      DatabaseName:=GPT.DBPath;
+      HostName:='';
+      DebugProc('  DBPath: '+GPT.DBPath);
     end;
+    UserName:=GPT.DBUserName;
+    DebugProc('  USER NAME='+GPT.DBUserName);
+    If GPT.DBPassword<>'' Then
+    begin
+      Password:=GPT.DBPassword;
+      LoginPrompt:=False;
+    end
+    Else
+      LoginPrompt:=True;
+
+    If GPT.ServerCodePage='' Then
+      Charset:='utf8'
+    Else
+      Charset:=ReplaseCPtoWIN(GPT.ServerCodePage);
+
+    UniversalTransaction.Database:=Self;
   end;
   {$ENDIF}
   {$IFDEF ODBC}
@@ -427,17 +373,6 @@ begin
       Charset:=ReplaseCPtoWIN(GPT.ServerCodePage);
 
     KeepConnection:=True;
-    try
-      DebugProc('Connected...');
-      Open;
-      FErrorCode:=0;
-      DebugProc('  ... OK');
-    Except
-      On E: Exception do
-      begin
-        DebugProc('  ... Fail');
-      end;
-    end;
   end;
   {$ENDIF}
   {$IFDEF SQLdbMySQL}
@@ -494,19 +429,20 @@ begin
     end;
 
     KeepConnection:=True;
-    try
-      DebugProc('Connected...');
-      Open;
-      FErrorCode:=0;
-      DebugProc('  ... OK');
-    Except
-      On E: Exception do
-      begin
-        DebugProc('  ... Fail');
-      end;
-    end;
   end;
   {$ENDIF}
+  try
+    DebugProc('Connect ...');
+    Open;
+    FErrorCode:=0;
+    DebugProc('  ... OK');
+  Except
+    On E: Exception do
+    begin
+      DebugProc('  ... Fail');
+      raise TDCLException.Create(-2, E.Message, True);
+    end;
+  end;
 end;
 
 procedure TDCLDBConnector.SetConnector(Query: TDCLDialogQuery);

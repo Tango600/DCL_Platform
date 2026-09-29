@@ -163,3 +163,4 @@ msNotifycation:='Уведомление';
 msForUser:='Для пользователя';
 msLoading:='Загрузка';
 msNotFilter:='Исключение';
+msConnectionError:='Ошибка соединения';

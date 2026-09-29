@@ -476,7 +476,10 @@ Begin
   MessageText:=GetDCLMessageString(msFildsNotInputValue)+' '+IntToStr(ErrorCode);
   End;
 
-  Result:=MessageText+LineEnding+AddText;
+  if MessageText<>'' then
+    Result:=MessageText+LineEnding;
+
+  Result:=Result+AddText;
 End;
 
 procedure LoadLangFile(const FileName: String);

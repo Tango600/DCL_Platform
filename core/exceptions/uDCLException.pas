@@ -12,22 +12,23 @@ type
 
   TDCLException = class(Exception)
   public
-    constructor Create(ErrorCode: Integer; AddText: String='');
+    constructor Create(ErrorCode: Integer; AddText: String=''; ShowMessage: Boolean=True);
   end;
 
 implementation
 
 uses
-  uDCLMultiLang;
+  uDCLMessages;
 
 { TDCLException }
 
-constructor TDCLException.Create(ErrorCode: Integer; AddText: String);
-var
-  MessageText: String;
+constructor TDCLException.Create(ErrorCode: Integer; AddText: String; ShowMessage: Boolean=True);
 begin
-  MessageText:=GetDCLErrorString(ErrorCode, AddText);
-  inherited Create(MessageText);
+  inherited Create(AddText);
+  if ShowMessage then
+  begin
+    ShowErrorMessage(ErrorCode, AddText);
+  end;
 end;
 
 end.
