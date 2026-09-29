@@ -26,8 +26,10 @@ begin
       IdentifyField+' and ru.'+RolesToUsersRoleIDField+'=r.'+RolesIDFiled+' and u.'+UserIDField+
       '=ru.'+RolesToUsersUserIDField;
     if UserID<>'' then
-      Result:=Result+' and u.'+UserIDField+'='+UserID+' and ';
-    Result:=Result+Where+' order by s.'+IdentifyField+', s.'+ParentField;
+      Result:=Result+' and u.'+UserIDField+'='+UserID;
+    if Length(Where)>3 then
+      Result:=Result+' and '+Where;
+    Result:=Result+' order by s.'+IdentifyField+', s.'+ParentField;
   end;
 end;
 
