@@ -45,8 +45,8 @@ type
     procedure Save(Sender: TObject);
     procedure Clear(Sender: TObject);
 
-    procedure SaveData(FileName: String);
-    procedure LoadData(FileName: String);
+    procedure SaveData(const FileName: String);
+    procedure LoadData(const FileName: String);
 
     property IsCompressed: Boolean read FIsCompressed write FIsCompressed;
     property ImageList: TImageList read FImages;
@@ -362,7 +362,7 @@ begin
   end;
 end;
 
-procedure TMediaFieldGroup.SaveData(FileName: String);
+procedure TMediaFieldGroup.SaveData(const FileName: String);
 var
   bmp: TBitmap;
   jpg: TJpegImage;
@@ -399,7 +399,7 @@ begin
   end;
 end;
 
-procedure TMediaFieldGroup.LoadData(FileName: String);
+procedure TMediaFieldGroup.LoadData(const FileName: String);
 var
   bmp: TBitmap;
   jpg: TJpegImage;
