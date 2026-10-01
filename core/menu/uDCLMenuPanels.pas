@@ -96,9 +96,10 @@ begin
         FMenuButton.Parent:=FButtonFlowPanel;
         FMenuButton.Caption:=ci.Title;
         FMenuButton.Flat:=True;
+        FMenuButton.Constraints.MinWidth:=PanelMenuButtonWidth;
         FMenuButton.Width:=PanelMenuButtonWidth;
         FMenuButton.Tag:=ci.Id;
-        //FMenuButton.AutoSize:=True;
+        FMenuButton.AutoSize:=True;
         FMenuButton.OnClick:=ClickMenu;
         it:=0;
       end
