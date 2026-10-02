@@ -98,18 +98,17 @@ begin
     Dest.Free;
   end;
 
-  If (Signature[0]=66)and(Signature[1]=77) Then
+  If (Signature[0]=$42)and(Signature[1]=$4D) Then
   begin
     GraphExt:='bmp';
     FGraphicFileType:=gftBMP;
   end
-  Else If (Signature[0]=$FF)and(Signature[1]=$D8) Then
+  Else If (Signature[0]=$FF)and(Signature[1]=$D8)and(Signature[2]=$FF) Then
   begin
     GraphExt:='jpg';
     FGraphicFileType:=gftJPEG;
   end
-  Else If (Signature[0]=$89)and(Signature[1]=$50)and(Signature[2]=$4E)and(Signature[3]=$47)and
-    (Signature[4]=$0D)and(Signature[5]=$0A)and(Signature[6]=$1A)and(Signature[7]=$0A) Then
+  Else If (Signature[0]=$89)and(Signature[1]=$50)and(Signature[2]=$4E)and(Signature[3]=$47) Then
   begin
     GraphExt:='png';
     FGraphicFileType:=gftPNG;
@@ -133,7 +132,7 @@ begin
   end
   Else
   begin
-    GraphExt:='Unk';
+    GraphExt:='dat';
     FGraphicFileType:=gftOther;
   end;
 end;
@@ -190,7 +189,8 @@ begin
 {$ENDIF}
     GraficField.DataField:=FFieldName;
     GraficField.Align:=alClient;
-    GraficField.Stretch:=False;
+    GraficField.Stretch:=True;
+    GraficField.Proportional:=True;
     GraficField.ReadOnly:=FReadOnly;
     If Field.Hint<>'' Then
     begin

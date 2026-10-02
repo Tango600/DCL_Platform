@@ -4873,10 +4873,12 @@ begin
           FieldWidth(DCLField, FQuery.FieldByName(DCLField.FieldName).DataType);
           case FQuery.FieldByName(DCLField.FieldName).DataType of
             ftMemo, ftFmtMemo, ftBlob: begin
-              If DCLField.DataFieldType=dftRichText Then
-                AddMediaFieldGroup(DCLField, gtRichText)
-              Else
+              case DCLField.DataFieldType of
+              dftGrafic: AddMediaFieldGroup(DCLField, gtGrafic);
+              dftRichText: AddMediaFieldGroup(DCLField, gtRichText);
+              else
                 AddMediaFieldGroup(DCLField, gtMemo);
+              end;
             end;
             ftGraphic, ftDBaseOle, ftParadoxOle, ftTypedBinary: begin
               AddMediaFieldGroup(DCLField, gtGrafic);
