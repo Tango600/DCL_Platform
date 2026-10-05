@@ -4,9 +4,6 @@ unit uDCLMain;
 interface
 
 uses
-  {$IFDEF MSWINDOWS}
-  Windows,
-  {$ENDIF}
   Classes, SysUtils, Generics.Collections, Forms, ExtCtrls, LazFileUtils, DB,
   Controls, StdCtrls, lcltype, Dialogs,
   fMain, fDCLLoginForm, fDCLProtectionForm,
