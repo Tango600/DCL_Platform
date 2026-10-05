@@ -7,13 +7,13 @@ uses
   {$IFDEF MSWINDOWS}
   Windows,
   {$ENDIF}
-  Classes, SysUtils, Generics.Collections, Forms, ExtCtrls, LazFileUtils,
-  Controls, StdCtrls, DB, lcltype, Dialogs,
+  Classes, SysUtils, Generics.Collections, Forms, ExtCtrls, LazFileUtils, DB,
+  Controls, StdCtrls, lcltype, Dialogs,
   fMain, fDCLLoginForm, fDCLProtectionForm,
   uDCLDBAwareTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenuSelector,
   uDCLNotifier, uIDCLMain, uIDCLForm, uIDCLGrid, uReturnFormValue, uDCLData,
   uDCLConst, uIDCLCommand, uDCLScriptsPackage, uDCLImages, uVariableNamespace,
-  uIDCLProtectionEngine, uDCLControls;
+  uIDCLProtectionEngine, uDCLControls, uSingleInstance;
 
 type
   { TDCLMain }
@@ -34,6 +34,7 @@ type
     FImages: TImageList;
     IProtectionEngine: IDCLProtectionEngine;
     TerminateByLastDialog: Boolean;
+    SingleInstanceMutex: TSingleInstanceMutex;
 
     function GetScriptText(const ScriptName: String): TStringList;
     function GetScript(const ScriptName: String): TDCLScript;
@@ -1052,6 +1053,8 @@ constructor TDCLMain.Create;
 var
   FDCLConfig: TDCLConfig;
   Params: TStringList;
+  S, mfn, appSuffix: String;
+  AppSufixFile: TextFile;
 
   Procedure InitGetAppConfigDir;
   Begin
@@ -1121,17 +1124,39 @@ begin
 
   CreateImageList;
 
-  {$IFDEF MSWINDOWS}
-  If GPT.OneCopy=ocmApp Then
+  If GPT.OneCopy<>ocmNone Then
   begin
-    CreateMutex(nil, True, MemFileName);
-    If GetLastError=ERROR_ALREADY_EXISTS Then
+    mfn:=MemFileName;
+    case GPT.OneCopy of
+    ocmSuffix: begin
+
+      appSuffix:='';
+      S:=Path+SuffixFileName;
+      if FileExists(S) then
+      begin
+        AssignFile(AppSufixFile, S);
+        Reset(AppSufixFile);
+        ReadLn(AppSufixFile, appSuffix);
+        CloseFile(AppSufixFile);
+      end;
+
+      if appSuffix<>'' then
+        mfn:=mfn+appSuffix
+      else
+        mfn:=mfn+DBEngineType.Replace(' ', '');
+    end;
+    ocmApp: begin
+      mfn:=MemFileName;
+    end;
+    end;
+
+    SingleInstanceMutex:=TSingleInstanceMutex.Create(GPT.AppConfigDir+mfn+'.si');
+    If SingleInstanceMutex.Check Then
     begin
       ShowErrorMessage(1, GetDCLMessageString(msAppRunning));
       Halt;
     end;
   end;
-  {$ENDIF}
 
   FDBConnector:=TDCLDBConnector.Create;
   if FDBConnector.Connected then
@@ -1166,17 +1191,15 @@ begin
   end;
   FreeAndNil(FDCLConfig);
 
-  {$IFDEF MSWINDOWS}
   If GPT.OneCopy=ocmBase Then
   begin
-    CreateMutex(nil, True, PChar(MemFileName+GPT.BaseID));
-    If GetLastError=ERROR_ALREADY_EXISTS Then
+    SingleInstanceMutex:=TSingleInstanceMutex.Create(GPT.AppConfigDir+MemFileName+GPT.BaseID+'.si');
+    If SingleInstanceMutex.Check Then
     begin
       ShowErrorMessage(1, GetDCLMessageString(msAppRunning));
       Halt;
     end;
   end;
-  {$ENDIF}
 
   FPackages:=TList<TPackageInfo>.Create;
   FScripts:=TList<TDCLScriptItem>.Create;
@@ -1214,6 +1237,7 @@ begin
   if Assigned(FDCLMenuSelector) then
     FreeAndNil(FDCLMenuSelector);
   FreeAndNil(LocalQuery);
+  FreeAndNil(SingleInstanceMutex);
   inherited Destroy;
 end;
 

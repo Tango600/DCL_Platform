@@ -56,6 +56,7 @@ const
 {$IFDEF SQLdbFamily}
   AccessLibVersion=laz_version;
 {$ENDIF}
+  SuffixFileName='.appSuffix';
 
   JPEGCompressionQuality=85;
 
@@ -98,7 +99,7 @@ const
   OSType='windows';
 {$ENDIF}
   GridAlternateColor=$f8f9f9;
-  MemFileName='DCL_Run_Unit_'+DBEngineType;
+  MemFileName='DCL_Platform';
 
   EncodingUTF8='utf8';
   AppTitle='DCL Platform';
@@ -193,7 +194,7 @@ Type
   TPairCondition=(pcNone, pcAnd, pcOr);
   TTransactionType=(trtWrite, trtRead, trtUniversal);
   TMenuType=(mtClassic, mtPanels);
-  TOneCopyMode=(ocmNone, ocmApp, ocmBase);
+  TOneCopyMode=(ocmNone, ocmApp, ocmSuffix, ocmBase);
 
 implementation
 
