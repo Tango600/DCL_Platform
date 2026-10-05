@@ -5,9 +5,8 @@ interface
 
 uses
   Classes, SysUtils, Controls, ComCtrls, StdCtrls, ExtCtrls, DB, DBCtrls,
-  Buttons, Dialogs, ExtDlgs, Graphics, Generics.Collections, uStringUtils,
-  uDCLConst, uDCLMeasurements, uDCLData, uDCLField, uLZW, uDCLImages,
-  uDCLMultiLang, uDCLMessages, uDCLUtils;
+  Buttons, Dialogs, ExtDlgs, Graphics, Generics.Collections, uDCLConst,
+  uDCLImages, uDCLData, uDCLField;
 
 type
 
@@ -54,6 +53,9 @@ type
 
 implementation
 
+uses
+  uStringUtils, uDCLMeasurements, uDCLMultiLang, uDCLMessages, uDCLUtils;
+
 { TMediaFieldGroup }
 
 function TMediaFieldGroup.GetImageIndex(PictureType: TPicturesTypes): Integer;
@@ -68,35 +70,13 @@ procedure TMediaFieldGroup.OnDBImageRead(Sender: TObject; S: TStream;
   var GraphExt: String);
 var
   Signature: Array of Byte;
-  Source, Dest: TStream;
-  Marker: Cardinal;
 begin
   SetLength(Signature, 10);
-  S.Read(Signature[0], 10);
   S.Position:=0;
-  Marker:=0;
-  S.Read(Marker, PAGSignatureSize);
+  S.Read(Signature[0], 10);
   S.Position:=0;
 
   FIsCompressed:=False;
-  If Marker=PAGSignature Then
-  // (Signature[0]=$50) and (Signature[1]=$41) and (Signature[2]=$47) then
-  begin
-    FIsCompressed:=True;
-    S.Position:=PAGSignatureSize;
-    Source:=TMemoryStream.Create;
-    Source.CopyFrom(S, S.Size-3);
-    Dest:=TMemoryStream.Create;
-    DecompressProc(Source, Dest);
-    Dest.Position:=0;
-    S.Position:=0;
-    S.CopyFrom(Dest, Dest.Size);
-    S.Position:=0;
-    S.Read(Signature[0], 10);
-    S.Position:=0;
-    Source.Free;
-    Dest.Free;
-  end;
 
   If (Signature[0]=$42)and(Signature[1]=$4D) Then
   begin
@@ -140,10 +120,7 @@ end;
 procedure TMediaFieldGroup.OnDBImageWrite(Sender: TObject; S: TStream;
   GraphExt: string);
 begin
-  if FIsCompressed then
-  begin
-
-  end;
+  //
 end;
 
 constructor TMediaFieldGroup.Create(Parent: TWinControl; Data: TDataSource;
@@ -182,10 +159,12 @@ begin
     FGraphicFileType:=gftJPEG;
     GraficField:=TDBImage.Create(Self);
     GraficField.Parent:=Self;
+    GraficField.WriteHeader:=False;
     GraficField.DataSource:=FData;
 {$IFDEF FPC}
     GraficField.Caption:='';
     GraficField.OnDBImageRead:=OnDBImageRead;
+    GraficField.OnDBImageWrite:=OnDBImageWrite;
 {$ENDIF}
     GraficField.DataField:=FFieldName;
     GraficField.Align:=alClient;
@@ -364,29 +343,16 @@ end;
 
 procedure TMediaFieldGroup.SaveData(const FileName: String);
 var
-  bmp: TBitmap;
-  jpg: TJpegImage;
-  MS: TMemoryStream;
   TS: TStringList;
 begin
   FFileName:=FileName;
-  Case GetGraficFileType(FileName) of
-  gftJPEG:
+  Case FGraphicFileType of
+  gftBMP, gftJPEG, gftPNG:
   begin
     FIsCompressed:=False;
-    MS:=TMemoryStream.Create;
-    TBlobField(FData.DataSet.FieldByName(FFieldName)).SaveToStream(MS);
-    MS.Seek(0, soFromBeginning);
-    bmp:=TBitmap.Create;
-    bmp.LoadFromStream(MS);
-    jpg:=TJpegImage.Create;
-    jpg.Assign(bmp);
-    jpg.CompressionQuality:=JPEGCompressionQuality;
-    jpg.SaveToFile(FileName);
-    FreeAndNil(bmp);
-    FreeAndNil(jpg);
+    TBlobField(FData.DataSet.FieldByName(FFieldName)).SaveToFile(FileName);
   end;
-  gftBMP, gftNone:
+  gftNone:
   If FData.DataSet.FieldByName(FFieldName).DataType in TBlobFields Then
     TBlobField(FData.DataSet.FieldByName(FFieldName)).SaveToFile(FileName)
   Else
@@ -401,28 +367,16 @@ end;
 
 procedure TMediaFieldGroup.LoadData(const FileName: String);
 var
-  bmp: TBitmap;
-  jpg: TJpegImage;
-  MS: TMemoryStream;
   TS: TStringList;
 begin
   FData.Edit;
   Case GetGraficFileType(FileName) of
-  gftJPEG:
+  gftBMP, gftJPEG, gftPNG:
   begin
     FIsCompressed:=False;
-    jpg:=TJpegImage.Create;
-    bmp:=TBitmap.Create;
-    jpg.LoadFromFile(FileName);
-    MS:=TMemoryStream.Create;
-    bmp.Assign(jpg);
-    bmp.SaveToStream(MS);
-    TBlobField(FData.DataSet.FieldByName(FFieldName)).LoadFromStream(MS);
-    FreeAndNil(jpg);
-    FreeAndNil(bmp);
-    FreeAndNil(MS);
+    TBlobField(FData.DataSet.FieldByName(FFieldName)).LoadFromFile(FileName)
   end;
-  gftBMP, gftNone:
+  gftNone:
   begin
     If FData.DataSet.FieldByName(FFieldName).DataType in TBlobFields Then
       TBlobField(FData.DataSet.FieldByName(FFieldName)).LoadFromFile(FileName)
