@@ -84,10 +84,6 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="libraries\FileBuffer.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
         <Filename Value="libraries\uLZW.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
@@ -483,6 +479,26 @@
       </Unit>
       <Unit>
         <Filename Value="libraries\uDetectDataType.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="libraries\uSingleInstance.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="libraries\uBitReader.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="libraries\uBitWriter.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="libraries\uBuffReader.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="libraries\uBuffWriter.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
     </Units>

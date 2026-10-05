@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Graphics,
-  uLZW, uDCLResources;
+  uBitReader, uBuffWriter, uLZW, uDCLResources;
 
 type
   TPicturesTypes=(ptNone, pt0x0, ptEsc, ptFind, ptPrint, ptStructure, ptFormDotNew,
@@ -26,6 +26,8 @@ const
 function GetIcon: TIcon;
 Var
   Marker: Cardinal;
+  br: TBitReader;
+  buw: TBuffWriter;
   MS, BS: TStream;
 Begin
   MS:=TMemoryStream.Create;
@@ -41,7 +43,15 @@ Begin
     Begin
       // Compressed BMP/
       BS:=TMemoryStream.Create;
-      DecompressProc(MS, BS);
+
+      br:=TBitReader.Create(MS, 1024);
+      buw:=TBuffWriter.Create(BS, 1020);
+
+      DecompressProc(br, buw);
+
+      br.Free;
+      buw.Free;
+
       BS.Position:=0;
       MS.Create;
       MS.CopyFrom(BS, BS.Size);
@@ -61,6 +71,8 @@ End;
 Function DrawBMPButton(Const BMPType: TPicturesTypes): TBitmap;
 Var
   Marker: Cardinal;
+  br: TBitReader;
+  buw: TBuffWriter;
   MS, BS: TStream;
 Begin
   Result:=nil;
@@ -134,7 +146,15 @@ Begin
     Begin
       // Compressed BMP/
       BS:=TMemoryStream.Create;
-      DecompressProc(MS, BS);
+
+      br:=TBitReader.Create(MS, 1024);
+      buw:=TBuffWriter.Create(BS, 1020);
+
+      DecompressProc(br, buw);
+
+      br.Free;
+      buw.Free;
+
       BS.Position:=0;
       MS.Free;
       MS:=TMemoryStream.Create;

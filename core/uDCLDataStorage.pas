@@ -45,7 +45,7 @@ type
 implementation
 
 uses
-  uDCLGlobalVariables;
+  uBitReader, uBitWriter, uBuffReader, uBuffWriter, uDCLGlobalVariables;
 
 { TDCLDataStorage }
 
@@ -64,6 +64,8 @@ end;
 
 function TDCLDataStorage.GetData(DataName: String; FindType: TFindType): TMemoryStream;
 var
+  br: TBitReader;
+  buw: TBuffWriter;
   BS, MS: TStream;
   Marker: Cardinal;
 begin
@@ -110,7 +112,14 @@ begin
           FIsCompressed:=True;
           BS:=TMemoryStream.Create;
           BS.Position:=0;
-          DecompressProc(MS, BS);
+
+          br:=TBitReader.Create(MS, 2048);
+          buw:=TBuffWriter.Create(BS, 2048);
+
+          br.Free;
+          buw.Free;
+
+          DecompressProc(br, buw);
           BS.Position:=0;
           MS.Position:=0;
           MS.CopyFrom(BS, BS.Size);
@@ -130,6 +139,8 @@ end;
 procedure TDCLDataStorage.SetData(DataName: String; FindType: TFindType;
   Stream: TStream; Compress: Boolean);
 var
+  bur: TBuffReader;
+  bw: TBitWriter;
   BS: TStream;
   Signature: Cardinal;
 begin
@@ -142,7 +153,15 @@ begin
       Signature:=PAGSignature;
       BS.Write(Signature, PAGSignatureSize);
       Stream.Position:=0;
-      CompressProc(Stream, BS);
+
+      bur:=TBuffReader.Create(Stream, 2048);
+      bw:=TBitWriter.Create(BS, 2048);
+
+      CompressProc(bur, bw);
+
+      bur.Free;
+      bw.Free;
+
       BS.Position:=0;
       Stream.Position:=0;
       Stream.CopyFrom(BS, BS.Size);

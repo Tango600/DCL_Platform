@@ -1,31 +1,25 @@
 Unit uLZW;
+{$mode delphi}
 
 // Модуль LZW паковщика и распаковщика
-// требует модуля FileBuffer
 interface
 
 uses
-  SysUtils,
-  FileBuffer;
+  Classes, SysUtils, uBitWriter, uBitReader, uBuffWriter, uBuffReader;
 
-Procedure CompressProc(Var Data, Arc: TByteFile);
-Procedure DecompressProc(Var Arc, Data: TByteFile);
-function TestCompress(Var Data, Arc: TByteFile): Real;
-
-Const
-  MaxWordSize=16;
-  MaxCode=65535;
-
-  TopChar=255;
-  ProgressStep=8192;
-  ClearDictValue=256;
-  FreezDict=ClearDictValue+1;
-  StepWordLength=ClearDictValue+2;
-  EndOfStream=ClearDictValue+3;
-
-  Signature: Array [1..4] of Byte=($50, $41, $47, $21);
+Procedure CompressProc(Var Data: TBuffReader; var Arc: TBitWriter);
+Procedure DecompressProc(Var Arc: TBitReader; var Data: TBuffWriter);
 
 implementation
+
+const
+  MaxWordSize=16;
+  MaxCode=65535;
+  TopChar=255;
+  ClearDictValue=256;
+  //FreezDict=ClearDictValue+1;
+  StepWordLength=ClearDictValue+2;
+  EndOfStream=ClearDictValue+3;
 
 Type
   DictR=Record
@@ -36,14 +30,14 @@ Type
   TDecodeBuffer=Array of Byte;
 
 Var
-  Overflow: Boolean;
+  TestMode, Overflow: Boolean;
   BitSize, AddChar: Byte;
   CurMaxCode, DictPos, MaxDictSize: Word;
-  DecodeBufferSize: Cardinal;
   Dict: Array of DictR;
 
   DecodeBuffer: TDecodeBuffer;
 
+// =========================Dictionary Begin==================================
 Function GetMaxDictSize(PowNum: Byte): Word;
 const
   BaseNum=2;
@@ -63,9 +57,6 @@ Begin
   MaxDictSize:=GetMaxDictSize(MaxWordSize);
   SetLength(Dict, MaxDictSize);
 End;
-
-
-// =========================Dictionary Begin==================================
 
 Procedure AddNode(s: Word; C: Byte);
 Var
@@ -185,25 +176,23 @@ Begin
   End;
   DictPos:=EndOfStream+1;
 End;
-
 // ======================Dictionary End=====================================
 
-Procedure CompressProc(Var Data, Arc: TByteFile);
+Procedure CompressProc(Var Data: TBuffReader; var Arc: TBitWriter);
 Var
   Code: Word;
   Index: LongInt;
 Begin
-  TestMode:=False;
+  ///TestMode:=False;
   InitDict;
 
-  BeginRead;
-  BeginWrite;
-  FSize:=GetFSize(Data);
   InitCoder;
-  Code:=GetBytes(Data);
-  While DataPos<FSize do
+  Code:=Data.ReadByte;
+  While Data.ReachToEnd<>rteYes do
   Begin
-    AddChar:=GetBytes(Data);
+    AddChar:=Data.ReadByte;
+
+    if Data.ReachToEnd=rteYes then break;
 
     Index:=FindNode(Code, AddChar);
     If Index<>-1 then
@@ -219,94 +208,85 @@ Begin
 
       If (Code>CurMaxCode)and(BitSize<MaxWordSize) then
       Begin
-        BitWrite(Arc, StepWordLength, BitSize);
+        Arc.BitsWrite(StepWordLength, BitSize);
         Inc(BitSize);
         CurMaxCode:=GetMaxDictSize(BitSize);
       End;
 
-      BitWrite(Arc, Code, BitSize);
+      Arc.BitsWrite(Code, BitSize);
 
       Code:=AddChar;
 
       If Overflow then
       Begin
-        BitWrite(Arc, AddChar, BitSize);
-        BitWrite(Arc, ClearDictValue, BitSize);
+        Arc.BitsWrite(AddChar, BitSize);
+        Arc.BitsWrite(ClearDictValue, BitSize);
         InitCoder;
       End;
     End;
   End;
 
-  BitWrite(Arc, Code, BitSize);
-  BitWrite(Arc, EndOfStream, BitSize);
+  Arc.BitsWrite(Code, BitSize);
+  Arc.BitsWrite(EndOfStream, BitSize);
 
-  EndBitWrite(Arc);
-  ResetBuffer(Arc);
+  Arc.Flush;
 End;
 
-//Показывает, во сколько раз архив будет меньше оригинала
-//Если результат меньше 1, то архив больше
-function TestCompress(Var Data, Arc: TByteFile): Real;
-begin
-  TestMode:=True;
-  CompressProc(Data, Arc);
-  Result:=FSize/ArcSize;
-end;
-
-Procedure OutPutDecodeBuffer(Var F: TByteFile; Buff: TDecodeBuffer);
-Var
-  le, i: Cardinal;
-Begin
-  le:=Length(Buff);
-  For i:=0 to le-1 do
-    OutputBytes(F, Buff[i]);
-End;
-
-Procedure DecodeString(DeCode: Word);
-Var
-  dc: Word;
-  ReversC, ForwC: Cardinal;
-  DS: TDecodeBuffer;
-Begin
-  dc:=DeCode;
-  DecodeBufferSize:=0;
-  Repeat
-    SetLength(DS, DecodeBufferSize+1);
-    DS[DecodeBufferSize]:=Dict[dc].AddChar;
-    dc:=Dict[dc].Code;
-    Inc(DecodeBufferSize);
-  Until dc=ClearDictValue;
-  SetLength(DecodeBuffer, DecodeBufferSize);
-  ReversC:=0;
-  For ForwC:=DecodeBufferSize-1 downto 0 do
-  Begin
-    DecodeBuffer[ReversC]:=DS[ForwC];
-    Inc(ReversC);
-  End;
-End;
-
-Procedure DecompressProc(Var Arc, Data: TByteFile);
+Procedure DecompressProc(Var Arc: TBitReader; var Data: TBuffWriter);
 Var
   NewCode, OldCode: Word;
+  DecodeBufferSize: Cardinal;
+
+  Procedure DecodeString(DeCode: Word);
+  Var
+    dc: Word;
+    ReversC, ForwC: Cardinal;
+    DS: TDecodeBuffer;
+  Begin
+    dc:=DeCode;
+    DecodeBufferSize:=0;
+    Repeat
+      SetLength(DS, DecodeBufferSize+1);
+      DS[DecodeBufferSize]:=Dict[dc].AddChar;
+      dc:=Dict[dc].Code;
+      Inc(DecodeBufferSize);
+    Until dc=ClearDictValue;
+    SetLength(DecodeBuffer, DecodeBufferSize);
+    ReversC:=0;
+    For ForwC:=DecodeBufferSize-1 downto 0 do
+    Begin
+      DecodeBuffer[ReversC]:=DS[ForwC];
+      Inc(ReversC);
+    End;
+  End;
+
+  Procedure OutPutDecodeBuffer;
+  Var
+    le, i: Cardinal;
+  Begin
+    le:=Length(DecodeBuffer);
+    For i:=0 to le-1 do
+      Data.WriteByte(DecodeBuffer[i]);
+  End;
+
 Begin
-  If Arc.Position>=Arc.Size then
+  If Arc.ReachToEnd=rteYes then
     Exit;
   TestMode:=False;
-  BeginRead;
+  DecodeBufferSize:=0;
   InitDict;
 
   NewCode:=0;
   InitCoder;
 
-  FSize:=GetFSize(Arc);
-  OldCode:=BitRead(Arc, BitSize);
-  OutputBytes(Data, OldCode);
+  OldCode:=Arc.BitsReadW(BitSize);
+  Data.WriteByte(OldCode);
 
   AddChar:=Byte(OldCode);
 
   While NewCode<>EndOfStream do
   Begin
-    NewCode:=BitRead(Arc, BitSize);
+    NewCode:=Arc.BitsReadW(BitSize);
 
     Case NewCode of
     EndOfStream:
@@ -315,16 +295,16 @@ Begin
     ClearDictValue:
     Begin
       InitCoder;
-      OldCode:=BitRead(Arc, BitSize);
+      OldCode:=Arc.BitsReadW(BitSize);
       AddChar:=Byte(OldCode);
-      NewCode:=BitRead(Arc, BitSize);
+      NewCode:=Arc.BitsReadW(BitSize);
     End;
 
     StepWordLength:
     Begin
       Inc(BitSize);
       CurMaxCode:=GetMaxDictSize(BitSize);
-      NewCode:=BitRead(Arc, BitSize);
+      NewCode:=Arc.BitsReadW(BitSize);
     End;
     End;
 
@@ -338,7 +318,7 @@ Begin
     Else
       DecodeString(NewCode);
 
-    OutPutDecodeBuffer(Data, DecodeBuffer);
+    OutPutDecodeBuffer;
 
     AddChar:=DecodeBuffer[0];
 
@@ -347,7 +327,7 @@ Begin
     OldCode:=NewCode;
   End;
 
-  ResetBuffer(Data);
+  Data.Flush;
 End;
 
 end.

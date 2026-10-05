@@ -84,7 +84,8 @@ type
 implementation
 
 uses
-  uBase41, uStringParams, uStringUtils, MD5, uLZW, uDCLConst;
+  uBase41, uStringParams, uStringUtils, MD5, uLZW, uDCLConst,
+  uBitReader, uBitWriter, uBuffReader, uBuffWriter;
 
 const
   KeySection='Key';
@@ -379,6 +380,8 @@ end;
 
 function TDCLScriptsPackage.EncodePackage: TStream;
 var
+  bw: TBitWriter;
+  bur: TBuffReader;
   RawPackage: TStream;
   I: TDCLScriptItem;
   CompressedPackage: TStream;
@@ -463,7 +466,15 @@ begin
 
     CompressedPackage:=TMemoryStream.Create;
     RawPackage:=TStringStream.Create(TextPackage.Text, TEncoding.UTF8);
-    CompressProc(RawPackage, CompressedPackage);
+
+    bur:=TBuffReader.Create(RawPackage, 1024);
+    bw:=TBitWriter.Create(CompressedPackage, 1024);
+
+    CompressProc(bur, bw);
+
+    bur.Free;
+    bw.Free;
+
     RawPackage.Free;
     FreeAndNil(TextPackage);
 
@@ -500,6 +511,8 @@ procedure TDCLScriptsPackage.Load(Package: TStream);
 var
   b: Byte;
   S: String;
+  br: TBitReader;
+  buw: TBuffWriter;
   PackageText: TStream;
   TextPackage: TStringList;
   MS: TStream;
@@ -530,7 +543,13 @@ begin
 
             PackageText:=TStringStream.Create('', TEncoding.UTF8);
 
-            DecompressProc(MS, PackageText);
+            br:=TBitReader.Create(MS, 1024);
+            buw:=TBuffWriter.Create(PackageText, 1020);
+
+            DecompressProc(br, buw);
+
+            br.Free;
+            buw.Free;
             MS.Free;
 
             TextPackage:=TStringList.Create;
