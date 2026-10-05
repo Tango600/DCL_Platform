@@ -37,7 +37,7 @@ begin
 
   try
     FFileStream:=TFileStream.Create(FFilePath, fMask);
-    {$IFDEF MSWINDPWS}
+    {$IFDEF MSWINDOWS}
     FileSetAttr(FFilePath, faHidden);
     {$ENDIF}
     Result:=False;
