@@ -99,7 +99,7 @@ const
   OSType='windows';
 {$ENDIF}
   GridAlternateColor=$f8f9f9;
-  MemFileName='DCL_Platform';
+  MemFileName='.DCL_Platform';
 
   EncodingUTF8='utf8';
   AppTitle='DCL Platform';
