@@ -5,7 +5,7 @@ interface
 
 uses
   SysUtils, Classes, DateUtils, Variants,
-  uDCLConst, uStringUtils, uDetectDataType, uStringParams;
+  uDCLConst, uStringUtils, uDetectDataType;
 
 Function ConvertOfficeType(const OfficeType: String): TOfficeFormat;
 

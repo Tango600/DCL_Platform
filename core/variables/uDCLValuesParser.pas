@@ -36,8 +36,8 @@ implementation
 
 uses
   uDCLUtils, uSystemUtils, uDCLMultiLang, uDBUtils, uConvertEx, uDCLTranscode,
-  uDCLDBUtils, uDCLGlobalVariables, uDCLVersion, uDCLConfigTable,
-  uExpressionParser, uStringParams, SumProps, uStringUtils;
+  uDCLDBUtils, uDCLGlobalVariables, uDCLVersion, uDCLConfigTable, uStringParams,
+  uExpressionParser, SumProps, uStringUtils, uDCLPlatformGlobalVariables;
 
 const
   MaxSysVars=35;

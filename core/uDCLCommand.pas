@@ -65,7 +65,7 @@ uses
   {$IFDEF TRANSACTIONDB}
   uDCLDBTransaction,
   {$ENDIF}
-  uDCLTextReport, uExpressionParser;
+  uDCLTextReport, uDCLPlatformGlobalVariables, uExpressionParser;
 
 const
   WhiteSpace=[' ',#9,#10,#13];
@@ -679,7 +679,6 @@ var
   {$ENDIF}
   OpenDialog: TOpenDialog;
   SaveDialog: TSaveDialog;
-  Parser: TDCLValuseParser;
   DCLEdit: TDCLEdit;
   DCLConfig: TDCLConfigTable;
   DataStorage: TDCLDataStorage;
@@ -1087,26 +1086,20 @@ begin
   {$IFDEF MSWINDOWS}
   If IsLexem('ReportOfficeSheet=', Command) then
   begin
-    Parser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, FUserLevel, FVariables);
-
-    SheetReportSelector:=TSheetOfficeReportSelector.Create(Command, FDBConnector, Parser);
+    SheetReportSelector:=TSheetOfficeReportSelector.Create(Command, FDBConnector, FParser);
     if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) and (FDCLGrid.Query.SQL.Text<>'') then
       SheetReportSelector.SetSQL(FDCLGrid.Query.SQL.Text);
 
     SheetReportSelector.Run;
-    FreeAndNil(Parser);
   end;
 
   If IsLexem('ReportOfficeText=', Command) then
   begin
-    Parser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, FUserLevel, FVariables);
-
-    TextOfficeReportSelector:=TTextOfficeReportSelector.Create(Command, FDBConnector, Parser);
+    TextOfficeReportSelector:=TTextOfficeReportSelector.Create(Command, FDBConnector, FParser);
     if Assigned(FDCLGrid) and Assigned(FDCLGrid.Query) and (FDCLGrid.Query.SQL.Text<>'') then
       TextOfficeReportSelector.SetSQL(FDCLGrid.Query.SQL.Text);
 
     TextOfficeReportSelector.Run;
-    FreeAndNil(Parser);
   end;
   {$ENDIF}
 

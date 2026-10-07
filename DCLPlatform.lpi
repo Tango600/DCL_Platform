@@ -501,6 +501,10 @@
         <Filename Value="wrappers\uSingleInstance.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="data\uDCLPlatformGlobalVariables.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
