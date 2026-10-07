@@ -187,7 +187,7 @@ type
     procedure AdjustToolPanel;
 
     procedure CreateFilterPanel;
-    procedure AdjustFilterPanel(Height: Integer);
+    procedure AutoAdjustFilterPanel;
 
     procedure OnResizeFilterPanel(Sender: TObject);
     procedure OnGridResize(Sender: TObject);
@@ -1350,10 +1350,15 @@ begin
   end;
 end;
 
-procedure TDCLGrid.AdjustFilterPanel(Height: Integer);
+procedure TDCLGrid.AutoAdjustFilterPanel;
 begin
-  if FFilterPanelHeight<Height then
-    FFilterPanelHeight:=Height;
+  if Assigned(FToolsPanel) then
+  begin
+    FToolsPanel.AutoSize:=True;
+
+    if Assigned(FFiltersPanel) then
+      FFiltersPanel.AutoSize:=True;
+  end;
 end;
 
 procedure TDCLGrid.AdjustToolPanel;
@@ -2718,21 +2723,25 @@ end;
 
 procedure TDCLGrid.AddFilter(Filter: TDBFilter);
 var
-  I, FTop: Integer;
+  I: Integer;
   S: String;
   Item: TComboFilterItem;
 begin
   CreateFilterPanel;
-  FTop:=FilterLabelTop;
 
   Filter.FilterLabel:=TDialogLabel.Create(FFiltersPanel);
   Filter.FilterLabel.Parent:=FFiltersPanel;
-  Filter.FilterLabel.Top:=FilterLabelTop;
-  Filter.FilterLabel.Left:=FFilterLeft;
+
+  Filter.FilterLabel.AnchorSideTop.Control:=FFiltersPanel;
+  Filter.FilterLabel.AnchorSideLeft.Control:=FFiltersPanel;
+
+  Filter.FilterLabel.BorderSpacing.Top:=FilterLabelTop;
+  Filter.FilterLabel.BorderSpacing.Left:=FFilterLeft;
+  Filter.FilterLabel.Anchors:=[akTop, akLeft];
+
   Filter.FilterLabel.Caption:=InitCap(Filter.Caption);
   if not GPT.DisableColorScheme and (GPT.MainColor<>NoColorValue) then
     Filter.FilterLabel.Font.Color:=NegativeColor(GPT.MainColor);
-  Inc(FTop, Filter.FilterLabel.Height+LabelTopInterval);
 
   case Filter.FilterType of
     ftNone: begin
@@ -2762,11 +2771,14 @@ begin
 
       Filter.Control:=TDCLDBLookupCombo.Create(FFiltersPanel);
       Filter.Control.Parent:=FFiltersPanel;
-      (Filter.Control as TDCLDBLookupCombo).Style:=csDropDownList;
-      Filter.Control.Top:=FTop;
-      Inc(FTop, NotCheckTopStep);  // Filter.Control.Height+CompenentTopStep);
 
-      Filter.Control.Left:=FFilterLeft;
+      Filter.Control.AnchorSideTop.Control:=Filter.FilterLabel;
+      Filter.Control.AnchorSideTop.Side:=asrBottom;
+      Filter.Control.BorderSpacing.Top:=LabelTopInterval;
+      Filter.Control.AnchorSideLeft.Control:=Filter.FilterLabel;
+      Filter.Control.Anchors:=[akTop, akLeft];
+
+      (Filter.Control as TDCLDBLookupCombo).Style:=csDropDownList;
       (Filter.Control as TDCLDBLookupCombo).ListField:=Filter.ListField;
       (Filter.Control as TDCLDBLookupCombo).KeyField:=Filter.KeyField;
 
@@ -2811,14 +2823,17 @@ begin
       Filter.Control:=TEdit.Create(FFiltersPanel);
       Filter.Control.Parent:=FFiltersPanel;
 
+      Filter.Control.AnchorSideTop.Control:=Filter.FilterLabel;
+      Filter.Control.AnchorSideTop.Side:=asrBottom;
+      Filter.Control.BorderSpacing.Top:=LabelTopInterval;
+      Filter.Control.AnchorSideLeft.Control:=Filter.FilterLabel;
+      Filter.Control.Anchors:=[akTop, akLeft];
+
       If Filter.FilterName<>'' Then
         Filter.Control.Name:=Filter.FilterName;
 
       (Filter.Control as TEdit).Text:='';
-      Filter.Control.Top:=FTop;
-      Inc(FTop, Filter.Control.Height+CompenentTopStep);
 
-      Filter.Control.Left:=FFilterLeft;
       Filter.Control.Width:=Filter.Width;
       (Filter.Control as TEdit).OnKeyUp:=OnContextFilter;
     end;
@@ -2834,10 +2849,14 @@ begin
         (Filter.Control as TComboBox).Style:=TComboBoxStyle.csDropDownList;
         (Filter.Control as TComboBox).DropDownCount:=DropDownRows;
         Filter.Control.Parent:=FFiltersPanel;
-        Filter.Control.Left:=FFilterLeft;
-        Filter.Control.Top:=FTop;
+
+        Filter.Control.AnchorSideTop.Control:=Filter.FilterLabel;
+        Filter.Control.AnchorSideTop.Side:=asrBottom;
+        Filter.Control.BorderSpacing.Top:=LabelTopInterval;
+        Filter.Control.AnchorSideLeft.Control:=Filter.FilterLabel;
+        Filter.Control.Anchors:=[akTop, akLeft];
+
         Filter.Control.Width:=Filter.Width;
-        Inc(FTop, NotCheckTopStep);  // Filter.Control.Height+CompenentTopStep);
 
         for I:=1 to ParamsCount(Filter.ListField) do
         begin
@@ -2872,16 +2891,25 @@ begin
   begin
     Filter.NotCheck:=TCheckBox.Create(FFiltersPanel);
     Filter.NotCheck.Parent:=FFiltersPanel;
-    Filter.NotCheck.Top:=FTop;
-    Filter.NotCheck.Left:=FFilterLeft;
+
+    Filter.NotCheck.AnchorSideTop.Control:=Filter.Control;
+    Filter.NotCheck.AnchorSideTop.Side:=asrBottom;
+    Filter.NotCheck.BorderSpacing.Top:=LabelTopInterval;
+    Filter.NotCheck.AnchorSideLeft.Control:=Filter.FilterLabel;
+    Filter.NotCheck.Anchors:=[akTop, akLeft];
+
     Filter.NotCheck.Caption:='';
     Filter.NotCheck.Width:=CheckWidth;
     Filter.NotCheck.OnClick:=OnFilterNotCheckClick;
 
     Filter.NotCheckLabel:=TDialogLabel.Create(FFiltersPanel);
     Filter.NotCheckLabel.Parent:=FFiltersPanel;
-    Filter.NotCheckLabel.Top:=FTop;
-    Filter.NotCheckLabel.Left:=CheckWidth+FFilterLeft;
+
+    Filter.NotCheckLabel.AnchorSideTop.Control:=Filter.NotCheck;
+    Filter.NotCheckLabel.AnchorSideLeft.Control:=Filter.NotCheck;
+    Filter.NotCheckLabel.AnchorSideLeft.Side:=asrBottom;
+    Filter.NotCheckLabel.Anchors:=[akTop, akLeft];
+
     if Filter.Width>80 then
       Filter.NotCheckLabel.Caption:=GetDCLMessageString(msNotFilter)
     else
@@ -2889,13 +2917,9 @@ begin
 
     if not GPT.DisableColorScheme and (GPT.MainColor<>NoColorValue) then
       Filter.NotCheckLabel.Font.Color:=NegativeColor(GPT.MainColor);
-
-    Inc(FTop, Filter.NotCheck.Height);
   end;
-  Inc(FTop, CompenentTopStep);
 
   Inc(FFilterLeft, FieldsStepLeft+Filter.Width);
-  AdjustFilterPanel(FTop);
 
   FFilters.Add(Filter);
 end;
@@ -2904,10 +2928,8 @@ procedure TDCLGrid.AddCalendar(ScrLine: String);
 var
   Calendar: TDCLCalendar;
   tmpS: String;
-  FTop: Integer;
 begin
   CreateFilterPanel;
-  FTop:=FilterLabelTop;
 
   Calendar:=TDCLCalendar.Create;
   Calendar.Caption:=FindParam('Label=', ScrLine);
@@ -2929,20 +2951,27 @@ begin
 
   Calendar.LabelField:=TDialogLabel.Create(FFiltersPanel);
   Calendar.LabelField.Parent:=FFiltersPanel;
-  Calendar.LabelField.Top:=FilterLabelTop;
-  Calendar.LabelField.Left:=FFilterLeft;
+
+  Calendar.LabelField.AnchorSideTop.Control:=FFiltersPanel;
+  Calendar.LabelField.AnchorSideLeft.Control:=FFiltersPanel;
+  Calendar.LabelField.BorderSpacing.Top:=FilterLabelTop;
+  Calendar.LabelField.BorderSpacing.Left:=FFilterLeft;
+  Calendar.LabelField.Anchors:=[akTop, akLeft];
+
   Calendar.LabelField.Caption:=InitCap(Calendar.Caption);
   if not GPT.DisableColorScheme and (GPT.MainColor<>NoColorValue) then
     Calendar.LabelField.Font.Color:=NegativeColor(GPT.MainColor);
-  Inc(FTop, Calendar.LabelField.Height+LabelTopInterval);
 
   Calendar.Control:=TDateTimePicker.Create(FFiltersPanel);
   Calendar.Control.Parent:=FFiltersPanel;
-  Calendar.Control.DateFormat:=GPT.DateFormat;
 
-  Calendar.Control.Top:=FTop;
-  Inc(FTop, Calendar.Control.Height+CompenentTopStep);
-  Calendar.Control.Left:=FFilterLeft;
+  Calendar.Control.AnchorSideTop.Control:=Calendar.LabelField;
+  Calendar.Control.AnchorSideTop.Side:=asrBottom;
+  Calendar.Control.AnchorSideLeft.Control:=Calendar.LabelField;
+  Calendar.Control.BorderSpacing.Top:=LabelTopInterval;
+  Calendar.Control.Anchors:=[akTop, akLeft];
+
+  Calendar.Control.DateFormat:=GPT.DateFormat;
 
   Calendar.Control.Date:=Calendar.Value;
   If Calendar.Variable<>'' Then
@@ -2950,8 +2979,6 @@ begin
 
   Calendar.Control.OnChange:=CalendarOnChange;
   Inc(FFilterLeft, FieldsStepLeft+Calendar.Control.Width);
-  Inc(FTop, CompenentTopStep);
-  AdjustFilterPanel(Ftop);
 
   FCalendars.Add(Calendar);
 end;
@@ -5077,6 +5104,8 @@ begin
   begin
     Grid.Prepeare;
   end;
+
+  AutoAdjustFilterPanel;
 end;
 
 procedure TDCLGrid.SetSQL(SQL: String);
