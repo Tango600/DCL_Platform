@@ -60,7 +60,7 @@ uses
   {$IFDEF MSWINDOWS}
   uSheetOfficeReportSelector, uTextOfficeReportSelector,
   {$ENDIF}
-  uDCLException, fAbout, uDCLGlobalVariables, uDCLConfigTable, uDCLDataStorage,
+  uDCLException, fDCLAbout, uDCLGlobalVariables, uDCLConfigTable, uDCLDataStorage,
   uRunProgram, uDCLMessages, uDCLMultiLang, uSQLUtils, uSystemUtils, uConvertEx,
   {$IFDEF TRANSACTIONDB}
   uDCLDBTransaction,

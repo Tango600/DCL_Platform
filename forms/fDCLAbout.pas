@@ -1,4 +1,4 @@
-﻿unit fAbout;
+﻿unit fDCLAbout;
 {$I DefineType.pas}
 
 interface

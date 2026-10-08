@@ -108,7 +108,7 @@ type
 implementation
 
 uses
-  uDCLConfig, uDCLDBStructure, uDCLMultiLang, fAbout, uDBUtils, uSystemUtils,
+  uDCLConfig, uDCLDBStructure, uDCLMultiLang, fDCLAbout, uDBUtils, uSystemUtils,
   uDCLGlobalVariables, uDCLUtils, uDCLMessages, uStringParams, uDCLCommand,
   {$IFDEF PROTECTION}uDCLProtectionEngine,{$ENDIF} uDCLUpdaterPackage,
   uStringUtils, uDCLQueryUtils, uDCLTranscode;
