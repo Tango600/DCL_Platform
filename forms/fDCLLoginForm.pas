@@ -36,9 +36,7 @@ type
     procedure FillUsersList;
     function CheckPassword: Boolean;
   public
-    constructor Create(DBConnector: TDCLDBConnector); overload;
-
-    property DBConnector: TDCLDBConnector read FDBConnector write FDBConnector;
+    constructor Create(const DBConnector: TDCLDBConnector); overload;
   end;
 
 implementation
@@ -122,7 +120,7 @@ begin
   FreeAndNil(FQuery);
 end;
 
-constructor TLoginForm.Create(DBConnector: TDCLDBConnector);
+constructor TLoginForm.Create(const DBConnector: TDCLDBConnector);
 begin
   FDBConnector:=DBConnector;
   inherited Create(Application);

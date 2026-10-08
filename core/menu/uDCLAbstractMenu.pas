@@ -74,24 +74,21 @@ procedure TDCLAbstractMenu.RunMenu(const Ident: Integer);
 var
   p: Integer;
   DialogName: String;
-  Host: Boolean;
   Scr: TStringList;
 begin
   if Ident>0 then
   begin
-    Host:=False;
     DialogName:=GetMenuCommandById(Ident);
     p:=Pos(';', DialogName);
     if p<>0 then
     begin
-      Host:=DialogName.Substring(p+1).ToLower.IndexOf('host=1')<>0;
       DialogName:=DialogName.Substring(0, p-1);
     end;
     Scr:=FMain.GetScriptText(DialogName);
     if (Scr.Count>0) and (Pos('script type=command', Scr[0].ToLower)<>0) then
       FMain.RunCommandScript(DialogName)
     else
-      FMain.OpenDialog(DialogName, Host);
+      FMain.OpenDialog(DialogName);
   end
   else
   begin

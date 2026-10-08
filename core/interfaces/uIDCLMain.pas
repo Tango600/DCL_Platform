@@ -25,7 +25,7 @@ type
     function GetScript(const ScriptName: String): TDCLScript;
     function GetScriptByIdent(Ident: Integer; OutRoles: Boolean): TDCLScript;
     procedure RunScript(IdentFrom, IdentTo: Integer);
-    procedure OpenDialog(const DialogName: String; Host: Boolean);
+    procedure OpenDialog(const DialogName: String);
     procedure RunCommandScript(const CommandName: String);
     function GetLoadedScripts: TList<TDCLScriptItem>;
     function GetPackages: TList<TPackageInfo>;

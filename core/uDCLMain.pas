@@ -6,7 +6,7 @@ interface
 uses
   Classes, SysUtils, Generics.Collections, Forms, ExtCtrls, LazFileUtils, DB,
   Controls, StdCtrls, lcltype, Dialogs,
-  fMain, fDCLLoginForm, fDCLProtectionForm,
+  fDCLLoginForm, fDCLProtectionForm,
   uDCLDBAwareTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenuSelector,
   uDCLNotifier, uIDCLMain, uIDCLForm, uIDCLGrid, uReturnFormValue, uDCLData,
   uDCLConst, uIDCLCommand, uDCLScriptsPackage, uDCLImages, uVariableNamespace,
@@ -66,7 +66,7 @@ type
 
     procedure CreateMenu;
 
-    procedure OpenDialog(const DialogName: String; Host: Boolean);
+    procedure OpenDialog(const DialogName: String);
     procedure RunCommandScript(const CommandName: String);
     procedure About;
 
@@ -215,7 +215,7 @@ begin
                 end
                 else
                 begin
-                  OpenDialog(RunItem.ScriptName, False);
+                  OpenDialog(RunItem.ScriptName);
                 end;
 
                 break;
@@ -240,8 +240,10 @@ begin
 end;
 
 function TDCLMain.CheckSigned(Package: TDCLScriptsPackage): Boolean;
+{$IFDEF ALLOWNODCL}
 var
   Signer, Password: String;
+{$ENDIF}
 begin
   Result:=False;
   {$IFDEF ALLOWNODCL}
@@ -716,7 +718,7 @@ begin
     DialogName:=FindDialogCall;
     if DialogName<>'' then
     begin
-      OpenDialog(DialogName, False);
+      OpenDialog(DialogName);
     end;
 
     if FindKioskMode or GPT.KioskMode then
@@ -1307,7 +1309,7 @@ begin
     FDCLMenuSelector:=TDCLMenuSelector.Create(Self, FMainForm, GPT.MenuType);
 end;
 
-procedure TDCLMain.OpenDialog(const DialogName: String; Host: Boolean);
+procedure TDCLMain.OpenDialog(const DialogName: String);
 begin
   CreateDialog(TVariableNamespace.Create('', ''), DialogName, True, nil, nil, GPT.AccessLevel, nil, False);
 end;
