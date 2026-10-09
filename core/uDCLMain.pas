@@ -900,6 +900,11 @@ begin
       LocalQuery.ParamByName('BG').AsString:=sGuid;
 
       LocalQuery.ExecSQL;
+      {$IFDEF TRANSACTIONDB}
+      if Assigned(FDBConnector.Transaction) then
+        if FDBConnector.Transaction.Active then
+          FDBConnector.Transaction.Commit;
+      {$ENDIF}
     end;
   end;
 end;
