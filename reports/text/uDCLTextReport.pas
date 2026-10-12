@@ -7,7 +7,7 @@ uses
   Classes, SysUtils, Controls, Forms, ComCtrls, StdCtrls, Buttons, ExtCtrls,
   DBCtrls, DB, Generics.Collections, LazUTF8, LazFileUtils,
   uDCLDBAwareTypes, uDCLConst, uIDCLMain, uDCLData, uDCLDBConnector, uIDCLGrid,
-  uDCLTypes, uDCLVariables, uVariableNamespace;
+  uDCLTypes, uDCLVariables, uDCLValuesParser, uVariableNamespace;
 
 type
 
@@ -29,6 +29,7 @@ type
       EndSkrypts: TStringList;
     FReportQuery: TDCLDialogQuery;
     FVarsToControls: TList<String>;
+    FParser: TDCLValuseParser;
 
     procedure GrabValListOnChange(Sender: TObject);
     procedure GrabValOnEdit(Sender: TObject);
@@ -55,8 +56,8 @@ implementation
 
 uses
   uDCLMultiLang, uDCLDBStructure, uStringParams, uStringUtils,
-  uDCLMeasurements, uDCLQueryUtils, uDCLGlobalVariables, uDCLValuesParser,
-  uDCLException, uConvertEx;
+  uDCLMeasurements, uDCLQueryUtils, uDCLGlobalVariables, uDCLException,
+  uConvertEx;
 
 const
   EditTopStep=23;
@@ -158,11 +159,8 @@ begin
 end;
 
 procedure TDCLTextReport.RePlaseVariables(var VarsSet: String);
-var
-  Parser: TDCLValuseParser;
 begin
-  Parser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, ulUndefined, FVariables);
-  Parser.TranslateVals(VarsSet, nil, False);
+  FParser.TranslateVals(VarsSet, nil, False);
 end;
 
 procedure TDCLTextReport.ReplaseRepParams(var ReplaseText: TStringList);
@@ -351,6 +349,9 @@ begin
   FParamsSetID:=ParamsSetID;
   FVariables:=DCLMain.Variables;
   FVarsToControls:=TList<String>.Create;
+
+  FParser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, ulUndefined, FVariables);
+  FParser.SetConnector(FDBConnector);
 end;
 
 procedure TDCLTextReport.InitReport(Mode: TNewQueryMode);
@@ -684,7 +685,6 @@ var
   Value, BodyText, LastField: String;
   StartPos, LengthParam: Cardinal;
   StartSel, DelLen: Integer;
-  Parser: TDCLValuseParser;
   Alig: String;
   Field, Field2: TField;
 begin
@@ -752,8 +752,7 @@ begin
   Else
     BodyText:='';
 
-  Parser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, ulUndefined, FVariables);
-  Parser.RePlaceProc(BodyText, nil);
+  FParser.RePlaceProc(BodyText, nil);
   Body.Append(BodyText);
 end;
 

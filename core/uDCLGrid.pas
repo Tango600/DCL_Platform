@@ -15,7 +15,7 @@ uses
   uDCLCommandButton, uDCLField, uDCLMessages, uDCLImages, cMediaFieldGroup,
   uDCLBaseLayoutManger, uDCLHorizontalFieldLayoutManger, uVariableNamespace,
   uDCLDBAwareTypes, uIDCLCommand, uIDCLGrid, uIDCLForm, uDBControlsTypes,
-  uDCLVerticalFieldLayoutManger, uDCLControls;
+  uDCLValuesParser, uDCLVerticalFieldLayoutManger, uDCLControls;
 
 type
   TStructureField=class
@@ -96,6 +96,7 @@ type
     PopupGridMenu: TPopupMenu;
     FLocalBookmark: TBookmark;
     FFieldLayout: TDCLBaseLayoutManger<TDCLField>;
+    FParser: TDCLValuseParser;
 
     procedure OnNavigClick(Sender: TObject; Button: TDBNavButtonType);
 
@@ -351,7 +352,7 @@ implementation
 
 uses
   EditBtn, LCLProc, uRunProgram, uReturnFormValue, cMyFilterCombo, StrUtils,
-  uDCLValuesParser, uSQLParser, uDCLUtils, uSystemUtils, LazUTF8, uDCLException,
+  uSQLParser, uDCLUtils, uSystemUtils, LazUTF8, uDCLException,
   uPrintBase, uDCLGlobalVariables, uDCLMD5, uExpressionParser, uDCLCommand,
   uDetectDataType, uConvertEx, uStringUtils, uSQLUtils;
 
@@ -561,14 +562,11 @@ begin
 end;
 
 procedure TDCLGrid.TranslateVal(var Params: String; CheckParams: Boolean);
-var
-  Parser: TDCLValuseParser;
 begin
-  Parser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, GetUserLevel, FIDCLMain.Variables);
-  Parser.ReplaceAllVariables(FNameSpace.CurrentNamespace, Params, FQuery);
+  FParser.ReplaceAllVariables(FNameSpace.CurrentNamespace, Params, FQuery);
   if CheckParams then
-    Parser.RePlaseParams(Params, FQuery);
-  Parser.RePlaceProc(Params, FQuery);
+    FParser.RePlaseParams(Params, FQuery);
+  FParser.RePlaceProc(Params, FQuery);
 end;
 
 function TDCLGrid.GetFlatNavigator: Boolean;
@@ -4338,6 +4336,9 @@ begin
   FGridStyle:=gsGrid;
   FCurrentTablePartIndex:=0;
 
+  FParser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, GetUserLevel, FIDCLMain.Variables);
+  FParser.SetConnector(FDBConnector);
+
   FMultiSelectMode:=False;
   FFilterLeft:=BeginStepLeft;
 
@@ -4412,6 +4413,8 @@ begin
   begin
     FLookupTables[i-1]:=nil;
   end;
+
+  FreeAndNil(FParser);
   FreeAndNil(FTableParts);
   FreeAndNil(FLookupTables);
   FForm:=nil;

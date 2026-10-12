@@ -5,7 +5,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  uDCLConst, uDCLDBConnector, uDCLDBAwareTypes, uDCLDBStructure;
+  uDCLConst;
 
 type
 
@@ -27,22 +27,23 @@ type
     procedure btLoginClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
-
   private
-    Tryes: Byte;
-    FDBConnector: TDCLDBConnector;
-    FQuery: TDCLDialogQuery;
+    FUsersList: TStringList;
+    FIsChange: Boolean;
 
     procedure FillUsersList;
-    function CheckPassword: Boolean;
+    function GetIsChange: Boolean;
+    function GetLogin: String;
+    function GetPassword: String;
   public
-    constructor Create(const DBConnector: TDCLDBConnector); overload;
+    constructor Create(var UsersList: TStringList); overload;
+
+    property Login: String read GetLogin;
+    property Password: String read GetPassword;
+    property IsChange: Boolean read GetIsChange;
   end;
 
 implementation
-
-uses
-  fChangePasswordForm, uDCLGlobalVariables, uDCLUtils;
 
 {$R *.lfm}
 
@@ -50,110 +51,66 @@ uses
 
 procedure TLoginForm.btLoginClick(Sender: TObject);
 begin
-  ModalResult:=mrNone;
-
-  if CheckPassword then
-  begin
-    ModalResult:=mrOK;
-
-    FQuery:=TDCLDialogQuery.Create(Self);
-    FDBConnector.SetConnector(FQuery);
-    FQuery.Params.Clear;
-    FQuery.SQL.Text:='select '+UserIDField+', '+UserAdminField+' from '+UsersTable+' where lower('+UserNameField+')=lower(:User)';
-    FQuery.Params.ParamByName('User').AsString:=cbLogin.Text;
-    FQuery.Open;
-    FQuery.First;
-    GPT.UserID:=FQuery.FieldByName(UserIDField).AsString;
-    GPT.AccessLevel:=TranslateDigitToUserLevel(FQuery.FieldByName(UserAdminField).AsInteger);
-    FQuery.Close;
-    FreeAndNil(FQuery);
-  end
-  else
-  begin
-    Inc(Tryes);
-    if Tryes>3 then
-      ModalResult:=mrClose;
-  end;
+  FIsChange:=False;
+  ModalResult:=mrOK;
 end;
 
 procedure TLoginForm.FormCreate(Sender: TObject);
 begin
-  Tryes:=0;
+  FillUsersList;
+  FIsChange:=False;
 end;
 
 procedure TLoginForm.FormShow(Sender: TObject);
 begin
-  FillUsersList;
+  FIsChange:=False;
+  edPassword.Clear;
 end;
 
 procedure TLoginForm.FillUsersList;
+var
+  u: String;
 begin
-  FQuery:=TDCLDialogQuery.Create(Self);
-  FDBConnector.SetConnector(FQuery);
-  FQuery.SQL.Text:='select * from '+UsersTable+' where '+ShowInListField+' is not null';
-  FQuery.Open;
-  while not FQuery.EOF do
+  cbLogin.Clear;
+  for u in FUsersList do
   begin
-    cbLogin.Items.Append(FQuery.FieldByName(UserNameField).AsString);
-
-    FQuery.Next;
+    cbLogin.Items.Append(u);
   end;
-  FQuery.Close;
-
-  FreeAndNil(FQuery);
+  if cbLogin.Items.Count=1 then
+    cbLogin.Text:=cbLogin.Items[0];
 end;
 
-function TLoginForm.CheckPassword: Boolean;
+function TLoginForm.GetIsChange: Boolean;
 begin
-  FQuery:=TDCLDialogQuery.Create(Self);
-  FDBConnector.SetConnector(FQuery);
-  FQuery.Params.Clear;
-  FQuery.SQL.Text:='select '+UserPassField+' from '+UsersTable+' where lower('+UserNameField+')=lower(:User)';
-  FQuery.Params.ParamByName('User').AsString:=cbLogin.Text;
-  FQuery.Open;
-  FQuery.First;
-  Result:=not FQuery.IsEmpty;
-  if Result then
-    Result:=(edPassword.Text=FQuery.FieldByName(UserPassField).AsString);
-
-  FQuery.Close;
-  FreeAndNil(FQuery);
+  Result:=FIsChange;
 end;
 
-constructor TLoginForm.Create(const DBConnector: TDCLDBConnector);
+function TLoginForm.GetLogin: String;
 begin
-  FDBConnector:=DBConnector;
+  Result:=cbLogin.Text;
+end;
+
+function TLoginForm.GetPassword: String;
+begin
+  Result:=edPassword.Text;
+end;
+
+constructor TLoginForm.Create(var UsersList: TStringList);
+begin
   inherited Create(Application);
+  FUsersList:=UsersList;
 end;
 
 procedure TLoginForm.btCancelClick(Sender: TObject);
 begin
+  FIsChange:=False;
   ModalResult:=mrClose;
 end;
 
 procedure TLoginForm.btChangePassClick(Sender: TObject);
-var
-  PassForm: TFormChangePassword;
 begin
-  if CheckPassword then
-  begin
-    PassForm:=TFormChangePassword.Create(Self);
-    if PassForm.ShowModal=mrOk then
-    begin
-      if PassForm.edPassword1.Text=PassForm.edPassword2.Text then
-      begin
-        FQuery:=TDCLDialogQuery.Create(Self);
-        FDBConnector.SetConnector(FQuery);
-        FQuery.Params.Clear;
-        FQuery.SQL.Text:='update '+UsersTable+' set '+UserPassField+'=:pass where lower('+UserNameField+')=lower(:User)';
-        FQuery.Params.ParamByName('User').AsString:=cbLogin.Text;
-        FQuery.Params.ParamByName('pass').AsString:=PassForm.edPassword1.Text;
-        FQuery.ExecSQL;
-        FreeAndNil(FQuery);
-      end;
-      PassForm.Release;
-    end;
-  end;
+  FIsChange:=True;
+  ModalResult:=mrOK;
 end;
 
 end.

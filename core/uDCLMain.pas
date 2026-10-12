@@ -6,7 +6,7 @@ interface
 uses
   Classes, SysUtils, Generics.Collections, Forms, ExtCtrls, LazFileUtils, DB,
   Controls, StdCtrls, lcltype, Dialogs,
-  fDCLLoginForm, fDCLProtectionForm,
+  fDCLLoginForm, fChangePasswordForm, fDCLProtectionForm,
   uDCLDBAwareTypes, uDCLForm, uDCLVariables, uDCLDBConnector, uDCLMenuSelector,
   uDCLNotifier, uIDCLMain, uIDCLForm, uIDCLGrid, uReturnFormValue, uDCLData,
   uDCLConst, uIDCLCommand, uDCLScriptsPackage, uDCLImages, uVariableNamespace,
@@ -65,6 +65,7 @@ type
     function GetDBConnector: TDCLDBConnector;
 
     procedure CreateMenu;
+    function GetUsersList: TStringList;
 
     procedure OpenDialog(const DialogName: String);
     procedure RunCommandScript(const CommandName: String);
@@ -76,6 +77,9 @@ type
     function GetImageIndexes: TDictionary<TPicturesTypes, Integer>;
 
     function IsNeedLogin: Boolean;
+    function CheckPassword(const Login, Password: String): Boolean;
+    procedure SetPassword(const Login, Password: String);
+    procedure FillUserInfoToGPT(const Login: String);
 
     procedure NotifyForms(Action: TFormsNotifyAction);
     procedure NotifyForm(const Form: IDCLForm; Action: TFormsNotifyAction);
@@ -133,22 +137,57 @@ begin
 
   if Result and (GPT.DCLUserName<>'') and (GPT.EnterPass<>'') then
   begin
-    LocalQuery.SQL.Text:='select * from '+UsersTable+' where lower('+UserNameField+')=lower(:UN) '+
-      'and '+UserAdminField+'>:UL';
-    LocalQuery.Prepare;
-    LocalQuery.ParamByName('UN').AsString:=GPT.DCLUserName;
-    LocalQuery.ParamByName('UL').AsInteger:=Ord(ulDeny);
-    LocalQuery.Open;
-    Result:=not ((GPT.EnterPass=LocalQuery.FieldByName(UserPassField).AsString) and not LocalQuery.IsEmpty);
-    if not Result then
-    begin
-      GPT.UserID:=LocalQuery.FieldByName(UserIDField).AsString;
-      GPT.AccessLevel:=TranslateDigitToUserLevel(LocalQuery.FieldByName(UserAdminField).AsInteger);
-      GPT.DCLLongUserName:=LocalQuery.FieldByName(LongUserNameField).AsString;
-      GPT.DCLUserName:=LocalQuery.FieldByName(UserNameField).AsString;
-    end;
-    LocalQuery.Close;
+    Result:=not CheckPassword(GPT.DCLUserName, GPT.EnterPass);
   end;
+end;
+
+function TDCLMain.CheckPassword(const Login, Password: String): Boolean;
+begin
+  LocalQuery.Params.Clear;
+  LocalQuery.SQL.Text:='select * from '+UsersTable+' where lower('+UserNameField+')=lower(:User) '+
+    'and '+UserAdminField+'>:UL';
+  LocalQuery.ParamByName('User').AsString:=Login;
+  LocalQuery.ParamByName('UL').AsInteger:=Ord(ulDeny);
+  LocalQuery.Open;
+  LocalQuery.First;
+  Result:=not LocalQuery.IsEmpty;
+  if Result then
+    Result:=(Password=LocalQuery.FieldByName(UserPassField).AsString);
+
+  LocalQuery.Close;
+end;
+
+procedure TDCLMain.SetPassword(const Login, Password: String);
+begin
+  LocalQuery.Params.Clear;
+  LocalQuery.SQL.Text:='update '+UsersTable+' set '+UserPassField+'=:pass where lower('+UserNameField+')=lower(:User)';
+  LocalQuery.ParamByName('User').AsString:=Login;
+  LocalQuery.ParamByName('pass').AsString:=Password;
+  LocalQuery.ExecSQL;
+  {$IFDEF TRANSACTIONDB}
+  if Assigned(FDBConnector.Transaction) then
+    if FDBConnector.Transaction.Active then
+      FDBConnector.Transaction.CommitRetaining;
+  {$ENDIF}
+end;
+
+procedure TDCLMain.FillUserInfoToGPT(const Login: String);
+begin
+  LocalQuery.Params.Clear;
+  LocalQuery.SQL.Text:='select * from '+UsersTable+' where lower('+UserNameField+')=lower(:UN) '+
+    'and '+UserAdminField+'>:UL';
+  LocalQuery.Prepare;
+  LocalQuery.ParamByName('UN').AsString:=Login;
+  LocalQuery.ParamByName('UL').AsInteger:=Ord(ulDeny);
+  LocalQuery.Open;
+  if not LocalQuery.IsEmpty then
+  begin
+    GPT.UserID:=LocalQuery.FieldByName(UserIDField).AsString;
+    GPT.AccessLevel:=TranslateDigitToUserLevel(LocalQuery.FieldByName(UserAdminField).AsInteger);
+    GPT.DCLLongUserName:=LocalQuery.FieldByName(LongUserNameField).AsString;
+    GPT.DCLUserName:=LocalQuery.FieldByName(UserNameField).AsString;
+  end;
+  LocalQuery.Close;
 end;
 
 procedure TDCLMain.LoadPackageFromFile(const FileName: String; Run: Boolean);
@@ -1248,15 +1287,42 @@ end;
 function TDCLMain.Start: Boolean;
 var
   LoginForm: TLoginForm;
+  ChangePasswordForm: TFormChangePassword;
   TimeToTerm: Boolean;
+  ul: TStringList;
+  Attempts: Integer;
 begin
   TimeToTerm:=False;
   if FDBConnector.Connected and IsNeedLogin or KeyState(vk_Shift) then
   begin
-    LoginForm:=TLoginForm.Create(GetDBConnector);
+    Attempts:=0;
+    ul:=GetUsersList;
+    LoginForm:=TLoginForm.Create(ul);
+    TimeToTerm:=True;
+    while (Attempts<3) and (LoginForm.ShowModal=mrOK) do
+    begin
+      TimeToTerm:=not CheckPassword(LoginForm.Login, LoginForm.Password);
+      if not TimeToTerm and not LoginForm.IsChange then
+        break;
 
-    TimeToTerm:=LoginForm.ShowModal<>mrOK;
+      if LoginForm.IsChange and not TimeToTerm then
+      begin
+        ChangePasswordForm:=TFormChangePassword.Create(LoginForm);
+        if ChangePasswordForm.ShowModal=mrOK then
+        begin
+          SetPassword(LoginForm.Login, ChangePasswordForm.NewPassword);
+          ShowMessage('Пароль изменён.');
+        end
+        else
+        begin
+          TimeToTerm:=True;
+        end;
+      end
+      else
+        Inc(Attempts);
+    end;
     LoginForm.Release;
+    FreeAndNil(ul);
   end
   else
   if not FDBConnector.Connected then
@@ -1264,6 +1330,9 @@ begin
     TimeToTerm:=True;
     ShowErrorMessage(0, GetDCLMessageString(msConnectDBError));
   end;
+
+  if not TimeToTerm then
+    FillUserInfoToGPT(GPT.DCLUserName);
 
   Result:=TimeToTerm;
 end;
@@ -1312,6 +1381,21 @@ procedure TDCLMain.CreateMenu;
 begin
   if Assigned(FMainForm) then
     FDCLMenuSelector:=TDCLMenuSelector.Create(Self, FMainForm, GPT.MenuType);
+end;
+
+function TDCLMain.GetUsersList: TStringList;
+begin
+  Result:=TStringList.Create;
+
+  LocalQuery.Params.Clear;
+  LocalQuery.SQL.Text:='select * from '+UsersTable+' where '+ShowInListField+' is not null';
+  LocalQuery.Open;
+  while not LocalQuery.EOF do
+  begin
+    Result.Append(LocalQuery.FieldByName(UserNameField).AsString);
+    LocalQuery.Next;
+  end;
+  LocalQuery.Close;
 end;
 
 procedure TDCLMain.OpenDialog(const DialogName: String);

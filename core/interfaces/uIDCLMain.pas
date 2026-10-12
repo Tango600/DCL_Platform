@@ -18,6 +18,9 @@ type
     procedure CloseAllDialogs;
     function Start: Boolean;
     procedure RunInterface(MainForm: TForm);
+    function GetUsersList: TStringList;
+    function CheckPassword(const Login, Password: String): Boolean;
+    procedure SetPassword(const Login, Password: String);
 
     function GetVariables: TVariables;
 

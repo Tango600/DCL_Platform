@@ -22,8 +22,10 @@ type
     procedure btOkClick(Sender: TObject);
     procedure chbShowPasswordsChange(Sender: TObject);
   private
+    function GetNewPassword: String;
 
   public
+    property NewPassword: String read GetNewPassword;
 
   end;
 
@@ -57,6 +59,11 @@ begin
     edPassword1.PasswordChar:=#0;
     edPassword2.PasswordChar:=#0;
   end;
+end;
+
+function TFormChangePassword.GetNewPassword: String;
+begin
+  Result:=edPassword1.Text;
 end;
 
 end.

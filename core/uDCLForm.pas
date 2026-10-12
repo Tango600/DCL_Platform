@@ -9,7 +9,7 @@ uses
   uDCLData, uDCLTypes, uDCLConst, uStringParams, uDCLQuery, uIDCLMain,
   uDCLMeasurements, uDCLDBConnector, uDCLUtils, uDCLVariables, uDCLMultiLang,
   uIDCLCommand, uReturnFormValue, uIDCLForm, uIDCLGrid, uDCLImages,
-  uVariableNamespace;
+  uDCLValuesParser, uVariableNamespace;
 
 type
 
@@ -39,6 +39,7 @@ type
     FReturnValueParams: TReturnValueParams;
     FUserLevel: TUserLevelsType;
     FStackLevel, FCurrentGridIndex: Integer;
+    FParser: TDCLValuseParser;
 
     //region TForm
     procedure SetWindowState(Value : TWindowState);
@@ -135,8 +136,8 @@ implementation
 
 uses
   IniFiles,
-  uDCLCommand, uDCLGrid, uDCLValuesParser, uDCLMessages, uDCLGlobalVariables,
-  uDetectDataType, uConvertEx, uStringUtils;
+  uDCLCommand, uDCLGrid, uDCLMessages, uDCLGlobalVariables, uDetectDataType,
+  uConvertEx, uStringUtils;
 
 { TDCLForm }
 
@@ -385,19 +386,14 @@ begin
 end;
 
 procedure TDCLForm.TranslateVal(var Params: String; const Grid: IDCLGrid; CheckParams: Boolean);
-var
-  Parser: TDCLValuseParser;
 begin
-  Parser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, FUserLevel, FVariables);
   if Assigned(Grid) then
-    Parser.ReplaceAllVariables(FNameSpace.CurrentNamespace, Params, Grid.Query)
+    FParser.ReplaceAllVariables(FNameSpace.CurrentNamespace, Params, Grid.Query)
   else
-    Parser.ReplaceAllVariables(FNameSpace.CurrentNamespace, Params, nil);
+    FParser.ReplaceAllVariables(FNameSpace.CurrentNamespace, Params, nil);
   if CheckParams then
   if Assigned(Grid) then
-    Parser.RePlaseParams(Params, Grid.Query);
-
-  FreeAndNil(Parser);
+    FParser.RePlaseParams(Params, Grid.Query);
 end;
 
 procedure TDCLForm.FormShow(Sender: TObject);
@@ -573,6 +569,8 @@ begin
 
   FNameSpace:=NameSpace;
   FVariables:=FIDCLMain.Variables;
+  FParser:=TDCLValuseParser.Create(FNameSpace.CurrentNamespace, FUserLevel, FVariables);
+  FParser.SetConnector(FDBConnector);
   FOPL:=OPL;
   FGrids:=TList<IDCLGrid>.Create;
 
@@ -759,6 +757,7 @@ end;
 
 destructor TDCLForm.Destroy;
 begin
+  FreeAndNil(FParser);
   FParentForm:=nil;
   FParentPanel:=nil;
   FIDCLMain:=nil;
