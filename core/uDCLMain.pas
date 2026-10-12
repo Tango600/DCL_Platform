@@ -903,7 +903,7 @@ begin
       {$IFDEF TRANSACTIONDB}
       if Assigned(FDBConnector.Transaction) then
         if FDBConnector.Transaction.Active then
-          FDBConnector.Transaction.Commit;
+          FDBConnector.Transaction.CommitRetaining;
       {$ENDIF}
     end;
   end;

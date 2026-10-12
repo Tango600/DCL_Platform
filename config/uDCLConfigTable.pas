@@ -62,6 +62,7 @@ end;
 procedure TDCLConfigTable.WriteConfig(const ConfigName, NewValue, UserId: String);
 var
   ParamsQuery: TDCLSimplyQuery;
+  Empty: Boolean;
 begin
   if Assigned(FDBConnector) and not GPT.NoParamsTable then
   begin
@@ -69,63 +70,55 @@ begin
     begin
       ParamsQuery:=TDCLSimplyQuery.Create(nil);
       FDBConnector.SetConnector(ParamsQuery);
+
+      ParamsQuery.SQL.Text:='select count(*) from '+GPTTableName+' where lower('+
+        GPTNameField+')=lower(:ParamName)';
+      ParamsQuery.ParamByName('ParamName').AsString:=ConfigName;
+
       if UserID<>'' then
       begin
-        ParamsQuery.SQL.Text:='select count(*) from '+GPTTableName+' where lower('+
-          GPTNameField+')=lower(:ParamName) and '+GPTUserIDField+'=:UserID';
+        ParamsQuery.SQL.Append(' and '+GPTUserIDField+'=:UserID');
         ParamsQuery.ParamByName('UserID').AsString:=UserID;
-      end
-      else
-      begin
-        ParamsQuery.SQL.Text:='select count(*) from '+GPTTableName+' where lower('+
-          GPTNameField+')=lower(:ParamName)';
       end;
-      ParamsQuery.ParamByName('ParamName').AsString:=ConfigName;
       ParamsQuery.Open;
+      Empty:=ParamsQuery.Fields[0].AsInteger=0;
+      ParamsQuery.Close;
 
-      If ParamsQuery.Fields[0].AsInteger>0 Then
+      If not Empty Then
       begin
-        ParamsQuery.Close;
+        ParamsQuery.SQL.Text:='update '+GPTTableName+' set '+
+        GPTValueField+' = :ParamValue where lower('+GPTNameField+
+          ')=lower(:ParamName)';
+
         if UserID<>'' then
         begin
-          ParamsQuery.SQL.Text:='update '+GPTTableName+' set '+
-          GPTValueField+' = :ParamValue where lower('+GPTNameField+
-            ')=lower(:ParamName) and '+GPTUserIDField+'=:UserID';
+          ParamsQuery.SQL.Append(' and '+GPTUserIDField+'=:UserID');
           ParamsQuery.ParamByName('UserID').AsString:=UserID;
-        end
-        else
-        begin
-          ParamsQuery.SQL.Text:='update '+GPTTableName+' set '+
-          GPTValueField+' = :ParamValue where lower('+GPTNameField+
-            ')=lower(:ParamName)';
         end;
-
-        ParamsQuery.ParamByName('ParamName').AsString:=ConfigName;
-        ParamsQuery.ParamByName('ParamValue').AsString:=NewValue;
-        ParamsQuery.ExecSQL;
       end
       else
       begin
-        ParamsQuery.Close;
         If UserID='' then
+        begin
           ParamsQuery.SQL.Text:='insert into '+GPTTableName+'('+GPTValueField+', '+
             GPTNameField+') values(:ParamValue, :ParamName)'
+        end
         else
         begin
           ParamsQuery.SQL.Text:='insert into '+GPTTableName+'('+GPTValueField+', '+
             GPTNameField+', '+GPTUserIDField+') values(:ParamValue, :ParamName, :UserID)';
           ParamsQuery.ParamByName('UserID').AsString:=UserID;
         end;
-
-        ParamsQuery.ParamByName('ParamName').AsString:=ConfigName;
-        ParamsQuery.ParamByName('ParamValue').AsString:=NewValue;
-        ParamsQuery.ExecSQL;
-        {$IFDEF TRANSACTIONDB}
-        if Assigned(FDBConnector.Transaction) then
-          if FDBConnector.Transaction.Active then
-            FDBConnector.Transaction.Commit;
-        {$ENDIF}
       end;
+
+      ParamsQuery.ParamByName('ParamName').AsString:=ConfigName;
+      ParamsQuery.ParamByName('ParamValue').AsString:=NewValue;
+      ParamsQuery.ExecSQL;
+      {$IFDEF TRANSACTIONDB}
+      if Assigned(FDBConnector.Transaction) then
+        if FDBConnector.Transaction.Active then
+          FDBConnector.Transaction.CommitRetaining;
+      {$ENDIF}
       FreeAndNil(ParamsQuery);
     end;
   end;
