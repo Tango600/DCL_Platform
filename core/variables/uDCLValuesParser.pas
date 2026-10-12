@@ -307,7 +307,7 @@ end;
 
 procedure TDCLValuseParser.RePlaceProc(var Params: String; Query: TDCLDialogQuery);
 var
-  Proc, Proc2, ResultStr, ProcParams, S: String;
+  Proc, Proc2, ResultStr, ProcParams: String;
   P, FunctionParamsCount, MaxLength, i, FindNum, Skobki, pv1, pv2, pv3, EndPos, ParamLen: Integer;
   FunctionParams: Array of String;
   DCLConfig: TDCLConfigTable;
@@ -377,6 +377,7 @@ Begin
             FunctionParams[i]:=GetParam(ProcParams, i);
           End;
 
+          ResultStr:='';
           if CompareProcName(FindNum, 'ToFloat') then
           Begin
             if Pos('.', FunctionParams[1])=0 then
@@ -448,15 +449,22 @@ Begin
           End
           else if CompareProcName(FindNum, 'ReadConfig') then
           Begin
-            DCLConfig:=TDCLConfigTable.Create(FDBConnector);
-            ResultStr:=DCLConfig.ReadConfig(FunctionParams[1], '');
-            FreeAndNil(DCLConfig);
+            ResultStr:='';
+            if Assigned(FDBConnector) then
+            begin
+              DCLConfig:=TDCLConfigTable.Create(FDBConnector);
+              ResultStr:=DCLConfig.ReadConfig(FunctionParams[1], '');
+              FreeAndNil(DCLConfig);
+            end;
           End
           else if CompareProcName(FindNum, 'WriteConfig') then
           Begin
-            DCLConfig:=TDCLConfigTable.Create(FDBConnector);
-            DCLConfig.WriteConfig(FunctionParams[1], FunctionParams[2], '');
-            FreeAndNil(DCLConfig);
+            if Assigned(FDBConnector) then
+            begin
+              DCLConfig:=TDCLConfigTable.Create(FDBConnector);
+              DCLConfig.WriteConfig(FunctionParams[1], FunctionParams[2], '');
+              FreeAndNil(DCLConfig);
+            end;
             ResultStr:='';
           End
           else if CompareProcName(FindNum, 'NVL') then

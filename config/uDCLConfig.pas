@@ -347,6 +347,10 @@ Begin
       GPT.DCLUserName:=lUser;
     if lPassword<>'' then
       GPT.EnterPass:=lPassword;
+
+    {$IFnDEF IDEMODE}
+    FreeAndNil(Parser);
+    {$ENDIF}
   end;
 End;
 
