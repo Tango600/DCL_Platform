@@ -1,5 +1,5 @@
 unit uDCLConfigTable;
-{$mode Delphi}
+{$I DefineType.pas}
 
 interface
 
@@ -120,6 +120,11 @@ begin
         ParamsQuery.ParamByName('ParamName').AsString:=ConfigName;
         ParamsQuery.ParamByName('ParamValue').AsString:=NewValue;
         ParamsQuery.ExecSQL;
+        {$IFDEF TRANSACTIONDB}
+        if Assigned(FDBConnector.Transaction) then
+          if FDBConnector.Transaction.Active then
+            FDBConnector.Transaction.Commit;
+        {$ENDIF}
       end;
       FreeAndNil(ParamsQuery);
     end;
