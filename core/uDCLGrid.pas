@@ -226,9 +226,9 @@ type
     procedure AddCalendar(ScrLine: String);
     procedure CalendarOnChange(Sender: TObject);
 
-    procedure AddCheckBox(Field: TDCLField; Scr: String);
-    procedure AddSimplyCheckBox(Field: TDCLField; Scr: String);
-    procedure AddDBCheckBox(Field: TDCLField; Scr: String);
+    procedure AddCheckBox(Field: TDCLField);
+    procedure AddSimplyCheckBox(Field: TDCLField);
+    procedure AddDBCheckBox(Field: TDCLField);
     procedure CheckOnClick(Sender: TObject);
 
     function GetSummQuery: String;
@@ -1566,15 +1566,15 @@ begin
 
       If (not FCurrentField.NoDataField) and (PosEx('DBCheckBox=', FCurrentField.FirstFieldsLine)<>0) Then
       begin
-        AddDBCheckBox(FCurrentField, FCurrentField.FirstFieldsLine);
+        AddDBCheckBox(FCurrentField);
       end
       Else If PosEx('SimplyCheckBox=', FCurrentField.FirstFieldsLine)<>0 Then
       begin
-        AddSimplyCheckBox(FCurrentField, FCurrentField.FirstFieldsLine);
+        AddSimplyCheckBox(FCurrentField);
       end
       Else If PosEx('CheckBox=', FCurrentField.FirstFieldsLine)<>0 Then
       begin
-        AddCheckBox(FCurrentField, FCurrentField.FirstFieldsLine);
+        AddCheckBox(FCurrentField);
       end;
 
       if PosEx('ContextButton=', FCurrentField.FirstFieldsLine)<>0 then
@@ -3010,15 +3010,15 @@ begin
   end;
 end;
 
-procedure TDCLGrid.AddCheckBox(Field: TDCLField; Scr: String);
+procedure TDCLGrid.AddCheckBox(Field: TDCLField);
 begin
   If (not Field.NoDataField) and FQuery.Active and FieldExists(FQuery, Field.FieldName) Then
-    AddDBCheckBox(Field, Scr)
+    AddDBCheckBox(Field)
   Else
-    AddSimplyCheckBox(Field, Scr);
+    AddSimplyCheckBox(Field);
 end;
 
-procedure TDCLGrid.AddSimplyCheckBox(Field: TDCLField; Scr: String);
+procedure TDCLGrid.AddSimplyCheckBox(Field: TDCLField);
 var
   CheckBox: TCheckBox;
 begin
@@ -3062,7 +3062,7 @@ begin
   end;
 end;
 
-procedure TDCLGrid.AddDBCheckBox(Field: TDCLField; Scr: String);
+procedure TDCLGrid.AddDBCheckBox(Field: TDCLField);
 var
   DBCheckBox: TDBCheckBox;
 begin
@@ -4920,7 +4920,7 @@ begin
               AddDBDateEdit(DCLField);  // глюк, не работает отображение времени !!!
             end;}
             ftBoolean: begin
-              AddDBCheckBox(DCLField, '');
+              AddDBCheckBox(DCLField);
             end
             else
               AddDBEdit(DCLField);
@@ -5243,7 +5243,6 @@ end;
 procedure TDCLGrid.UpdateAllControlsVariables;
 var
   Edit: TDCLField;
-  S: String;
 begin
   For Edit in FDCLFields do
   begin
@@ -5298,7 +5297,7 @@ end;
 procedure TDCLGrid.UpdateVariablesToControls;
 var
   Edit: TDCLField;
-  S, v: String;
+  v: String;
 begin
   For Edit in FDCLFields do
   begin
