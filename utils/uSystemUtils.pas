@@ -21,8 +21,6 @@ Function IsNoFileExt(const FileName:String): Boolean;
 Function AddToFileName(Const FileName, AddStr: String): String;
 Function GetTempFileName(const Ext: String): String;
 
-function ReplaseCPtoWIN(const CodePageName: String): String;
-
 function GetUserProfileDir: String;
 function GetUserDocumentsDir: String;
 
@@ -191,15 +189,6 @@ Begin
   Else
     Result:='tmp'+IntToStr(UpTime);
 End;
-
-function ReplaseCPtoWIN(const CodePageName: String): String;
-begin
-  Result:=CodePageName;
-  If Pos('cp', LowerCase(CodePageName))=1 then
-  Begin
-    Result:='WIN'+Copy(CodePageName, 3, Length(CodePageName));
-  End;
-end;
 
 function GetGUIDString: String;
 var

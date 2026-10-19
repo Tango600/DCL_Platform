@@ -16,13 +16,13 @@ uses
 
 const
 {$IFDEF MSWINDOWS}
-  DefaultLibraryLocation='fbclient.dll';
+  DefaultLibraryName='fbclient.dll';
 {$ENDIF}
 {$IFDEF LINUX}
-  DefaultLibraryLocation='libfbclient.so';
+  DefaultLibraryName='libfbclient.so';
 {$ENDIF}
 {$IFDEF DARWIN}
-  DefaultLibraryLocation='libfbclient.dylib';
+  DefaultLibraryName='libfbclient.dylib';
 {$ENDIF}
 {$IFDEF IBX}
   {$IFDEF IBXLaz}

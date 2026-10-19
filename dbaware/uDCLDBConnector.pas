@@ -47,7 +47,7 @@ type
 implementation
 
 uses
-  uDCLConst, uSystemUtils, uDCLGlobalVariables, uDCLException;
+  uDCLConst, uDCLGlobalVariables, uDCLException;
 
 { TDCLDBConnector }
 
@@ -83,7 +83,7 @@ begin
     If GPT.LibPath<>'' Then
       FirebirdLibraryPathName:=GPT.LibPath
     Else
-      FirebirdLibraryPathName:=DefaultLibraryLocation;
+      FirebirdLibraryPathName:=DefaultLibraryName;
     {$ENDIF}
 
     Params.Clear;
@@ -122,7 +122,7 @@ begin
       raise Exception.Create('Server code page not define!');
     End
     Else
-      Params.Append('lc_ctype='+UpperCase(ReplaseCPtoWIN(GPT.ServerCodePage)));
+      Params.Append('lc_ctype='+UpperCase(GPT.ServerCodePage));
 
     SQLDialect:=GPT.SQLDialect;
     UniversalTransaction.DefaultAction:=TACommit; // Retaining;
@@ -197,7 +197,7 @@ begin
     If GPT.LibPath<>'' Then
       LibraryLocation:=GPT.LibPath
     Else
-      LibraryLocation:=DefaultLibraryLocation;
+      LibraryLocation:=DefaultLibraryName;
 
     GPT.ServerCodePage:=NormalizeEncoding(GPT.ServerCodePage);
     If GPT.ServerCodePage='' Then
@@ -261,7 +261,7 @@ begin
     If GPT.ServerCodePage='' Then
       Charset:=DefaultCodePage
     Else
-      Charset:=ReplaseCPtoWIN(GPT.ServerCodePage);
+      Charset:=GPT.ServerCodePage;
 
     Dialect:=GPT.SQLDialect;
   end;
@@ -328,7 +328,7 @@ begin
     If GPT.ServerCodePage='' Then
       Charset:='utf8'
     Else
-      Charset:=ReplaseCPtoWIN(GPT.ServerCodePage);
+      Charset:=GPT.ServerCodePage;
 
     UniversalTransaction.Database:=Self;
   end;
@@ -370,7 +370,7 @@ begin
     If GPT.ServerCodePage='' Then
       Charset:='utf8'
     Else
-      Charset:=ReplaseCPtoWIN(GPT.ServerCodePage);
+      Charset:=GPT.ServerCodePage;
 
     KeepConnection:=True;
   end;
@@ -420,7 +420,7 @@ begin
     If GPT.ServerCodePage='' Then
       Charset:='utf8'
     Else
-      Charset:=ReplaseCPtoWIN(GPT.ServerCodePage);
+      Charset:=GPT.ServerCodePage;
 
     If GPT.ServerName<>'' Then
     begin
