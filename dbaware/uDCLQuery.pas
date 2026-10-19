@@ -33,7 +33,6 @@ type
   { TDCLQuery }
   TDCLQuery=class(TDCLDialogQuery)
   private
-    FDBConnector: TDatabaseObject;
     ShadowQuery: TDCLSimplyQuery;
     FUpdateSQL: TUpdateObj;
     {$IFDEF TRANSACTIONDB}

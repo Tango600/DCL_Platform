@@ -10,7 +10,7 @@ object LoginForm: TLoginForm
   ClientHeight = 157
   ClientWidth = 356
   Position = poScreenCenter
-  LCLVersion = '4.99.0.0'
+  LCLVersion = '4.8.0.0'
   OnCreate = FormCreate
   OnShow = FormShow
   object btLogin: TButton

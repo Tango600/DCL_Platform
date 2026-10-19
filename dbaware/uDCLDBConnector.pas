@@ -15,6 +15,12 @@ uses
   // добавить сюда модули Коннектров тех типов БД, с которыми предпологается
   // работать через SQLdb
   SQLDB, SQLDBLib, IBConnection,
+  {$IFDEF SQLdbMySQL}
+  mysql80conn,
+  {$ENDIF}
+  {$IFDEF ODBC}
+  odbcconn,
+  {$ENDIF}
   {$ENDIF}
   FileUtil, LazUTF8, LazFileUtils,
   uDCLDBAwareTypes, uDCLDebug;
