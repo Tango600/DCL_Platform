@@ -195,9 +195,7 @@ begin
 
     Protocol:=GPT.DBType;
     If GPT.LibPath<>'' Then
-      LibraryLocation:=GPT.LibPath
-    Else
-      LibraryLocation:=DefaultLibraryName;
+      LibraryLocation:=GPT.LibPath;
 
     GPT.ServerCodePage:=NormalizeEncoding(GPT.ServerCodePage);
     If GPT.ServerCodePage='' Then
@@ -209,6 +207,9 @@ begin
   end;
   {$ENDIF}
   {$IFDEF SQLdbIB}
+  if GPT.ServerCodePage='' then
+    GPT.ServerCodePage:=DefaultCodePage;
+
   GPT.IBAll:=True;
   UniversalTransaction:=TTransaction.Create(Self);
   UniversalTransaction.Params.Clear;
@@ -258,16 +259,16 @@ begin
     Else
       LoginPrompt:=True;
 
-    If GPT.ServerCodePage='' Then
-      Charset:=DefaultCodePage
-    Else
-      Charset:=GPT.ServerCodePage;
+    Charset:=GPT.ServerCodePage;
 
     Dialect:=GPT.SQLDialect;
   end;
   {$ENDIF}
   {$IFDEF SQLdb}
   DebugProc('Creating Connection...');
+  if GPT.ServerCodePage='' then
+    GPT.ServerCodePage:=DefaultCodePage;
+
   If (PosEx(DBTypeFirebird, GPT.DBType)>0) or (PosEx(DBTypeInterbase, GPT.DBType)>0) then
   Begin
     GPT.IBAll:=True;
@@ -325,17 +326,14 @@ begin
     Else
       LoginPrompt:=True;
 
-    If GPT.ServerCodePage='' Then
-      Charset:='utf8'
-    Else
-      Charset:=GPT.ServerCodePage;
+    Charset:=GPT.ServerCodePage;
 
     UniversalTransaction.Database:=Self;
   end;
   {$ENDIF}
   {$IFDEF ODBC}
   if GPT.ServerCodePage='' then
-    GPT.ServerCodePage:='utf8';
+    GPT.ServerCodePage:=DefaultCodePage;
 
   If PosEx(DBTypeFirebird, GPT.DBType)>0 then
   Begin
@@ -367,17 +365,14 @@ begin
     Else
       LoginPrompt:=True;
 
-    If GPT.ServerCodePage='' Then
-      Charset:='utf8'
-    Else
-      Charset:=GPT.ServerCodePage;
+    Charset:=GPT.ServerCodePage;
 
     KeepConnection:=True;
   end;
   {$ENDIF}
   {$IFDEF SQLdbMySQL}
   if GPT.ServerCodePage='' then
-    GPT.ServerCodePage:='utf8';
+    GPT.ServerCodePage:=DefaultCodePage;
 
   GPT.MySQL:=True;
   UniversalTransaction:=TTransaction.Create(Self);
@@ -417,10 +412,7 @@ begin
     Else
       LoginPrompt:=True;
 
-    If GPT.ServerCodePage='' Then
-      Charset:='utf8'
-    Else
-      Charset:=GPT.ServerCodePage;
+    Charset:=GPT.ServerCodePage;
 
     If GPT.ServerName<>'' Then
     begin

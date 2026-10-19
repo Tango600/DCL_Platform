@@ -15,16 +15,16 @@ uses
   Graphics, LazVersion;
 
 const
-{$IFDEF MSWINDOWS}
-  DefaultLibraryName='fbclient.dll';
-{$ENDIF}
-{$IFDEF LINUX}
-  DefaultLibraryName='libfbclient.so';
-{$ENDIF}
-{$IFDEF DARWIN}
-  DefaultLibraryName='libfbclient.dylib';
-{$ENDIF}
 {$IFDEF IBX}
+  {$IFDEF MSWINDOWS}
+  DefaultLibraryName='fbclient.dll';
+  {$ENDIF}
+  {$IFDEF LINUX}
+  DefaultLibraryName='libfbclient.so';
+  {$ENDIF}
+  {$IFDEF DARWIN}
+  DefaultLibraryName='libfbclient.dylib';
+  {$ENDIF}
   {$IFDEF IBXLaz}
   AccessLibVersion=IBX_VERSION;
   DBEngineType='IBX for Lazarus';
