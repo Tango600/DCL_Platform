@@ -1,5 +1,5 @@
 unit uDCLOfficeSheetReport;
-{$mode Delphi}
+{$mode Delphi}{$H+}
 
 interface
 
@@ -487,7 +487,7 @@ begin
           FExcel.Sheets[1].Range['DATA'].Cells.Item[RecRepNum, v1+1].NumberFormat:='';
         end;
 
-        sv:=UTF8Decode(Trim(DCLQuery.Fields[v1].AsString));
+        sv:=Trim(DCLQuery.Fields[v1].AsString);
         If Not IsDate Then
           FExcel.Sheets[1].Range['DATA'].Cells.Item[RecRepNum, v1+1].Value:=sv;
 

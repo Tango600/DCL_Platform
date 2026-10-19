@@ -1,5 +1,5 @@
 unit uDCLDBFilter;
-{$mode Delphi}
+{$mode Delphi}{$H+}
 
 interface
 

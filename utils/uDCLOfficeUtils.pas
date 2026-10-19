@@ -267,7 +267,7 @@ Begin
   Except
     ShowErrorMessage(-6010, '');
   End;
-  verr:=Trim(MsWord.Version);
+  verr:=UTF8Trim(MsWord.Version);
   verr1:='';
   For i:=1 To Length(verr) Do
     If Not(verr[i] In DigiChar) Then

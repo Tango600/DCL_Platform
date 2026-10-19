@@ -3468,7 +3468,7 @@ begin
   begin
     case Filter.FilterType of
     ftDBFilter: begin
-      Filter.FilterString:=TrimRight((Sender as TDCLDBLookupCombo).KeyValue);
+      Filter.FilterString:=TrimRight(VarToStr((Sender as TDCLDBLookupCombo).KeyValue));
     end;
     ftComboFilter: begin
       cbx:=Sender as TComboBox;

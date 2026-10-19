@@ -206,7 +206,7 @@ end;
 
 function DCLCompareStrings(const S1, S2: String): Integer;
 var
-  l1, l2, i1, i2: Integer;
+  l1, l2, i1: Integer;
   c1, c2: Char;
   isSame: Boolean;
 begin
