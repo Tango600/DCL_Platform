@@ -1231,45 +1231,45 @@ begin
 
       ReadBaseID;
     end;
+
+    If GPT.OneCopy=ocmBase Then
+    begin
+      SingleInstanceMutex:=TSingleInstanceMutex.Create(GPT.AppConfigDir+MemFileName+GPT.BaseID+'.si');
+      If SingleInstanceMutex.Check Then
+      begin
+        ShowErrorMessage(1, GetDCLMessageString(msAppRunning));
+        Halt;
+      end;
+    end;
+
+    FPackages:=TList<TPackageInfo>.Create;
+    FScripts:=TList<TDCLScriptItem>.Create;
+
+    GPT.TimeStampFormat:=GPT.DateFormat+' '+GPT.TimeFormat;
+    {$IFDEF MSWINDOWS}
+    SysUtils.GetFormatSettings;
+    {$ENDIF}
+
+    if GPT.TimeSeparator<>#0 then
+      FormatSettings.TimeSeparator:=GPT.TimeSeparator;
+    if GPT.DateSeparator<>#0 then
+      FormatSettings.DateSeparator:=GPT.DateSeparator;
+    if GPT.DateFormat<>'' then
+      FormatSettings.ShortDateFormat:=GPT.DateFormat;
+    if GPT.TimeFormat<>'' then
+      FormatSettings.LongTimeFormat:=GPT.TimeFormat;
+
+    if GPT.ThousandSeparator<>#0 then
+      FormatSettings.ThousandSeparator:=GPT.ThousandSeparator;
+    if GPT.DecimalSeparator<>#0 then
+      FormatSettings.DecimalSeparator:=GPT.DecimalSeparator;
+
+    {$IFNDEF NODCLMESSAGES}
+    If GPT.UseMessages then
+      FDCLNotifier:=TDCLNotifier.Create(Self);
+    {$ENDIF}
   end;
   FreeAndNil(FDCLConfig);
-
-  If GPT.OneCopy=ocmBase Then
-  begin
-    SingleInstanceMutex:=TSingleInstanceMutex.Create(GPT.AppConfigDir+MemFileName+GPT.BaseID+'.si');
-    If SingleInstanceMutex.Check Then
-    begin
-      ShowErrorMessage(1, GetDCLMessageString(msAppRunning));
-      Halt;
-    end;
-  end;
-
-  FPackages:=TList<TPackageInfo>.Create;
-  FScripts:=TList<TDCLScriptItem>.Create;
-
-  GPT.TimeStampFormat:=GPT.DateFormat+' '+GPT.TimeFormat;
-{$IFDEF MSWINDOWS}
-  SysUtils.GetFormatSettings;
-{$ENDIF}
-
-  if GPT.TimeSeparator<>#0 then
-    FormatSettings.TimeSeparator:=GPT.TimeSeparator;
-  if GPT.DateSeparator<>#0 then
-    FormatSettings.DateSeparator:=GPT.DateSeparator;
-  if GPT.DateFormat<>'' then
-    FormatSettings.ShortDateFormat:=GPT.DateFormat;
-  if GPT.TimeFormat<>'' then
-    FormatSettings.LongTimeFormat:=GPT.TimeFormat;
-
-  if GPT.ThousandSeparator<>#0 then
-    FormatSettings.ThousandSeparator:=GPT.ThousandSeparator;
-  if GPT.DecimalSeparator<>#0 then
-    FormatSettings.DecimalSeparator:=GPT.DecimalSeparator;
-
-  {$IFNDEF NODCLMESSAGES}
-  If GPT.UseMessages then
-    FDCLNotifier:=TDCLNotifier.Create(Self);
-  {$ENDIF}
 end;
 
 destructor TDCLMain.Destroy;
