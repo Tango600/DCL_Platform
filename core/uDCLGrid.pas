@@ -555,7 +555,7 @@ begin
     Except
       on E: Exception do
       begin
-        raise TDCLException.Create(-1100, E.Message);
+        raise EDCLException.Create(-1100, E.Message);
       end;
     end;
   end;
@@ -1682,7 +1682,7 @@ begin
       Except
         on E: Exception do
         begin
-          raise TDCLException.Create( - 1107, E.Message);
+          raise EDCLException.Create( - 1107, E.Message);
         end;
       end;
     end;
@@ -2558,7 +2558,7 @@ begin
     Except
       on E: Exception do
       begin
-        raise TDCLException.Create( - 1115, E.Message);
+        raise EDCLException.Create( - 1115, E.Message);
       end;
     end;
     Field.LookupData.LookupDS:=TDataSource.Create(Self.GetComponent);
@@ -2712,7 +2712,7 @@ begin
       Except
         on E: Exception do
         begin
-          raise TDCLException.Create( - 1115, E.Message);
+          raise EDCLException.Create( - 1115, E.Message);
         end;
       end;
     end;
@@ -2763,7 +2763,7 @@ begin
       Except
         on E: Exception do
         begin
-          raise TDCLException.Create( - 1116, E.Message);
+          raise EDCLException.Create( - 1116, E.Message);
         end;
       end;
 
@@ -4447,7 +4447,7 @@ begin
   Except
     on E: Exception do
     begin
-      raise TDCLException.Create(-1100, E.Message);
+      raise EDCLException.Create(-1100, E.Message);
     end;
   End;
 
@@ -4569,7 +4569,7 @@ begin
         FQuery.Open;
       except
         on E: Exception do
-          raise TDCLException.Create(-1000, E.Message);
+          raise EDCLException.Create(-1000, E.Message);
       end;
     end;
   end;

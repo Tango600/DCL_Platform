@@ -156,7 +156,7 @@ begin
       on E: Exception do
       begin
         OOSetVisible(Document, True);
-        raise TDCLException.Create( - 1104, E.Message);
+        raise EDCLException.Create( - 1104, E.Message);
       end;
     end;
     DCLQuery.First;
@@ -412,7 +412,7 @@ begin
       on E: Exception do
       begin
         FExcel.Visible:=True;
-        raise TDCLException.Create( - 1104, E.Message);
+        raise EDCLException.Create( - 1104, E.Message);
       end;
     end;
     DCLQuery.First;

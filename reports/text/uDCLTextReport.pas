@@ -293,7 +293,7 @@ begin
     Except
       on E: Exception do
       begin
-        raise TDCLException.Create( - 1109, E.Message);
+        raise EDCLException.Create( - 1109, E.Message);
       end;
     end;
 
@@ -566,7 +566,7 @@ begin
         Except
           on E: Exception do
           begin
-            raise TDCLException.Create( - 1108, E.Message);
+            raise EDCLException.Create( - 1108, E.Message);
           end;
         end;
 
@@ -673,7 +673,7 @@ begin
     Except
       on E: Exception do
       begin
-        raise TDCLException.Create( - 1106, E.Message);
+        raise EDCLException.Create( - 1106, E.Message);
       end;
     end;
     Screen.Cursor:=crDefault;

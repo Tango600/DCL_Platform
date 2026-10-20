@@ -53,7 +53,7 @@ type
 implementation
 
 uses
-  uDCLConst, uDCLGlobalVariables, uDCLException;
+  uDCLConst, uDCLException, uDCLGlobalVariables;
 
 { TDCLDBConnector }
 
@@ -438,7 +438,7 @@ begin
     On E: Exception do
     begin
       DebugProc('  ... Fail');
-      raise TDCLException.Create(-2, E.Message, True);
+      raise EDCLException.Create(-2, E.Message);
     end;
   end;
 end;

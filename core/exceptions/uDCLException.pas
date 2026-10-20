@@ -8,27 +8,21 @@ uses
 
 type
 
-  { TDCLException }
+  { EDCLException }
 
-  TDCLException = class(Exception)
+  EDCLException = class(Exception)
   public
-    constructor Create(ErrorCode: Integer; AddText: String=''; ShowMessage: Boolean=True);
+    constructor Create(ErrorCode: Integer; AddText: String='');
   end;
 
 implementation
 
-uses
-  uDCLMessages;
+{ EDCLException }
 
-{ TDCLException }
-
-constructor TDCLException.Create(ErrorCode: Integer; AddText: String; ShowMessage: Boolean=True);
+constructor EDCLException.Create(ErrorCode: Integer; AddText: String);
 begin
   inherited Create(AddText);
-  if ShowMessage then
-  begin
-    ShowErrorMessage(ErrorCode, AddText);
-  end;
+  HelpContext:=ErrorCode;
 end;
 
 end.

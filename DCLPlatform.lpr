@@ -12,7 +12,7 @@ uses
   Interfaces,
   {$ENDIF}
   Classes, Forms, SysUtils, uIDCLMain, fMain,
-  uDCLMain, uDCLConst, uDCLException
+  uDCLMain, uDCLConst, uDCLException, uDCLMessages
   ;
 
 {$R *.res}
@@ -46,13 +46,13 @@ begin
       DCL.Finalize;
     end;
   except
-    on E: TDCLException do
+    on E: EDCLException do
     begin
-      // пропуск перехваченных исключений
+      ShowErrorMessage(E.HelpContext, E.Message);
     end;
     on E: Exception do
     begin
-      raise TDCLException.Create(-1, E.Message);
+      ShowErrorMessage(-1, E.Message);
     end;
   end;
   DCL:=nil;

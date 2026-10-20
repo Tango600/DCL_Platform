@@ -462,7 +462,7 @@ begin
         except
           on E: Exception do
           begin
-            raise TDCLException.Create(-1105, E.Message);
+            raise EDCLException.Create(-1105, E.Message);
           end;
         end;
       Finally
@@ -567,7 +567,7 @@ begin
       Except
         on E: Exception do
         begin
-          raise TDCLException.Create(-1110, E.Message);
+          raise EDCLException.Create(-1110, E.Message);
         end;
       end;
     Finally

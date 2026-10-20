@@ -11,7 +11,7 @@ uses
 implementation
 
 uses
-  uDCLMultiLang;
+  uDCLErrors;
 
 Function ShowErrorMessage(ErrorCode: Integer; AddText: String=''): Integer;
 Var
