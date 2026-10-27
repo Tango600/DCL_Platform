@@ -11,7 +11,7 @@ uses
   {$IFDEF FPC}
   Interfaces,
   {$ENDIF}
-  Classes, Forms, SysUtils, uIDCLMain, fMain,
+  Classes, Forms, SysUtils, uIDCLMain, fPlatformMain,
   uDCLMain, uDCLConst, uDCLException, uDCLMessages
   ;
 

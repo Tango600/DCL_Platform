@@ -1,4 +1,4 @@
-unit fMain;
+unit fPlatformMain;
 {$mode Delphi}
 
 interface
