@@ -4,13 +4,14 @@ unit fDCLLoginForm;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls;
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
+  uIAuthForm;
 
 type
 
   { TLoginForm }
 
-  TLoginForm = class(TForm)
+  TLoginForm = class(TForm, IAuthForm)
     btLogin: TButton;
     btCancel: TButton;
     btChangePass: TButton;
@@ -31,15 +32,17 @@ type
     FIsChange: Boolean;
 
     procedure FillUsersList;
-    function GetIsChange: Boolean;
+    function GetFormResult: RAuthData;
     function GetLogin: String;
     function GetPassword: String;
   public
     constructor Create(var UsersList: TStringList); overload;
 
+    function ShowAuthForm: RAuthData;
+
     property Login: String read GetLogin;
     property Password: String read GetPassword;
-    property IsChange: Boolean read GetIsChange;
+    property FormResult: RAuthData read GetFormResult;
   end;
 
 implementation
@@ -64,6 +67,7 @@ procedure TLoginForm.FormShow(Sender: TObject);
 begin
   FIsChange:=False;
   edPassword.Clear;
+  cbLogin.SetFocus;
 end;
 
 procedure TLoginForm.FillUsersList;
@@ -79,9 +83,12 @@ begin
     cbLogin.Text:=cbLogin.Items[0];
 end;
 
-function TLoginForm.GetIsChange: Boolean;
+function TLoginForm.GetFormResult: RAuthData;
 begin
-  Result:=FIsChange;
+  if FIsChange then
+    Result.Accept:=afrChangePassword
+  else
+    Result.Accept:=afrAccept;
 end;
 
 function TLoginForm.GetLogin: String;
@@ -98,6 +105,17 @@ constructor TLoginForm.Create(var UsersList: TStringList);
 begin
   inherited Create(Application);
   FUsersList:=UsersList;
+end;
+
+function TLoginForm.ShowAuthForm: RAuthData;
+begin
+  Result.Clear;
+  if ShowModal=mrOK then
+  begin
+    Result.Login:=cbLogin.Text;
+    Result.Password:=edPassword.Text;
+    Result.Accept:=afrAccept;
+  end;
 end;
 
 procedure TLoginForm.btCancelClick(Sender: TObject);

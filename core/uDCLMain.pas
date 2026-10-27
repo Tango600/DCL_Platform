@@ -115,7 +115,7 @@ uses
   uDCLConfig, uDCLDBStructure, uDCLMultiLang, fDCLAbout, uDBUtils, uSystemUtils,
   uDCLGlobalVariables, uDCLUtils, uDCLMessages, uStringParams, uDCLCommand,
   {$IFDEF PROTECTION}uDCLProtectionEngine,{$ENDIF} uDCLUpdaterPackage,
-  uStringUtils, uDCLQueryUtils, uDCLTranscode;
+  uStringUtils, uDCLQueryUtils, uDCLTranscode, uIAuthForm;
 
 { TDCLMain }
 
@@ -1286,7 +1286,7 @@ end;
 
 function TDCLMain.Start: Boolean;
 var
-  LoginForm: TLoginForm;
+  LoginForm: IAuthForm;
   ChangePasswordForm: TFormChangePassword;
   TimeToTerm: Boolean;
   ul: TStringList;
@@ -1299,15 +1299,15 @@ begin
     ul:=GetUsersList;
     LoginForm:=TLoginForm.Create(ul);
     TimeToTerm:=True;
-    while (Attempts<3) and (LoginForm.ShowModal=mrOK) do
+    while (Attempts<3) and (LoginForm.ShowAuthForm.Accept=afrAccept) do
     begin
       TimeToTerm:=not CheckPassword(LoginForm.Login, LoginForm.Password);
-      if not TimeToTerm and not LoginForm.IsChange then
+      if not TimeToTerm and not (LoginForm.FormResult.Accept=afrChangePassword) then
         break;
 
-      if LoginForm.IsChange and not TimeToTerm then
+      if (LoginForm.FormResult.Accept=afrChangePassword) and not TimeToTerm then
       begin
-        ChangePasswordForm:=TFormChangePassword.Create(LoginForm);
+        ChangePasswordForm:=TFormChangePassword.Create(nil);
         if ChangePasswordForm.ShowModal=mrOK then
         begin
           SetPassword(LoginForm.Login, ChangePasswordForm.NewPassword);
@@ -1321,7 +1321,6 @@ begin
       else
         Inc(Attempts);
     end;
-    LoginForm.Release;
     FreeAndNil(ul);
   end
   else

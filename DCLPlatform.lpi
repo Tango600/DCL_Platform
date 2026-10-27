@@ -509,6 +509,10 @@
         <Filename Value="core\uDCLErrors.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="core\interfaces\uIAuthForm.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
